@@ -1,0 +1,36 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        'ssgmce-blue': '#003366',
+        'ssgmce-dark-blue': '#002244',
+        'ssgmce-light-blue': '#0066cc',
+        'ssgmce-orange': '#ff6600',
+        'ssgmce-light-orange': '#ff9933',
+      },
+      fontFamily: {
+        sans: ['Roboto', 'Open Sans', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Arial', 'sans-serif'],
+        heading: ['Poppins', 'Roboto', 'sans-serif'],
+      },
+      fontSize: {
+        'xs': ['0.75rem', { lineHeight: '1rem' }],
+        'sm': ['0.813rem', { lineHeight: '1.25rem' }],
+        'base': ['0.875rem', { lineHeight: '1.5rem' }],
+        'lg': ['0.938rem', { lineHeight: '1.625rem' }],
+        'xl': ['1rem', { lineHeight: '1.75rem' }],
+        '2xl': ['1.125rem', { lineHeight: '1.875rem' }],
+        '3xl': ['1.25rem', { lineHeight: '2rem' }],
+        '4xl': ['1.5rem', { lineHeight: '2.25rem' }],
+        '5xl': ['1.875rem', { lineHeight: '2.5rem' }],
+        '6xl': ['2.25rem', { lineHeight: '2.75rem' }],
+        '7xl': ['3rem', { lineHeight: '3.5rem' }],
+      },
+    },
+  },
+  plugins: [],
+}
