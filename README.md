@@ -1,4 +1,4 @@
-# SSGMCE College Website Clone - MERN Stack
+# College Website Clone - MERN Stack
 
 A professional clone of the SSGMCE (Shri Sant Gajanan Maharaj College of Engineering) website built using the MERN stack with a clean Client-Server architecture.
 
