@@ -90,7 +90,7 @@ const Footer = () => {
         <div className="container mx-auto px-4 py-3">
           <div className="flex flex-col md:flex-row justify-between items-center gap-1 text-xs text-gray-400">
             <p>&copy; {new Date().getFullYear()} SSGMCE Shegaon. All Rights Reserved.</p>
-            <p>Designed & Developed with ❤️ by Gaurav</p>
+            {/* <p>Designed & Developed with ❤️ by Gaurav</p> */}
           </div>
         </div>
       </div>

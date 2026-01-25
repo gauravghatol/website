@@ -2,10 +2,10 @@ import React from 'react';
 import PageHeader from './PageHeader';
 import { motion } from 'framer-motion';
 
-const GenericPage = ({ title, children }) => {
+const GenericPage = ({ title, children, backgroundImage }) => {
   return (
     <>
-      <PageHeader title={title} path={title} />
+      <PageHeader title={title} path={title} backgroundImage={backgroundImage} />
       <div className="container mx-auto px-4 py-12">
         <motion.div
            initial={{ opacity: 0, y: 20 }}

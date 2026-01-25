@@ -1,9 +1,10 @@
 import React from 'react';
 import GenericPage from '../../components/GenericPage';
+import mbaBanner from '../../assets/images/departments/mba/MBA banner.png';
 
 const MBA = () => {
   return (
-    <GenericPage title="Master of Business Administration (MBA)">
+    <GenericPage title="Master of Business Administration (MBA)" backgroundImage={mbaBanner}>
       
         <div className="space-y-8">
             <section>

@@ -1,9 +1,10 @@
 import React from 'react';
 import GenericPage from '../../components/GenericPage';
+import ashBanner from '../../assets/images/departments/ash/ASH banner.png';
 
 const AppliedSciences = () => {
   return (
-    <GenericPage title="Applied Sciences and Humanities">
+    <GenericPage title="Applied Sciences and Humanities" backgroundImage={ashBanner}>
       
         <div className="space-y-8">
             <section>

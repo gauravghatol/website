@@ -1,9 +1,10 @@
 import React from 'react';
 import GenericPage from '../../components/GenericPage';
+import itBanner from '../../assets/images/departments/it/IT banner.png';
 
 const IT = () => {
   return (
-    <GenericPage title="Information Technology">
+    <GenericPage title="Information Technology" backgroundImage={itBanner}>
       
         <div className="space-y-8">
             <section>

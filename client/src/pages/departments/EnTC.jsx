@@ -1,9 +1,10 @@
 import React from 'react';
 import GenericPage from '../../components/GenericPage';
+import electronicsBanner from '../../assets/images/departments/electronics/Electronics Banner.png';
 
 const EnTC = () => {
   return (
-    <GenericPage title="Electronics & Telecommunication Engg.">
+    <GenericPage title="Electronics & Telecommunication Engg." backgroundImage={electronicsBanner}>
       
         <div className="space-y-8">
             <section>
