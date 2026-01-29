@@ -194,30 +194,33 @@ const Navbar = () => {
             {/* Left side - Quick Links */}
             <div className="flex items-center space-x-1 md:space-x-2 ml-6 md:ml-12 lg:ml-20">
               <button className="bg-ssgmce-orange hover:bg-ssgmce-light-orange px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white">
-                FRA Fee
+                FRA Fee Structure
               </button>
               <button className="bg-blue-700 hover:bg-blue-600 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden sm:inline">
                 Best Practices
               </button>
               <button className="bg-red-600 hover:bg-red-500 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden md:inline">
-                Blog
+                SSGMCE Blog
               </button>
               <button className="bg-ssgmce-orange hover:bg-ssgmce-light-orange px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden lg:inline">
-                Grievance
-              </button>
-              <button className="bg-red-600 hover:bg-red-500 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden lg:inline">
-                Brochure
+                Grievance Form
               </button>
             </div>
             
             {/* Right side - Contact Info moved/removed */}
             <div className="flex items-center space-x-2 md:space-x-4 text-white mr-6 md:mr-12 lg:mr-20">
+               <a href="#" className="bg-red-600 hover:bg-red-500 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white">
+                 Institute Brochure
+               </a>
                <a href="#" className="bg-ssgmce-orange hover:bg-ssgmce-light-orange px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white">
+                 Academic Calendar
+               </a>
+               <button className="bg-red-600 hover:bg-red-500 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden lg:inline">
                  Alumni Registration
-               </a>
-               <a href="#" className="bg-ssgmce-orange hover:bg-ssgmce-light-orange px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white">
+               </button>
+               <button className="bg-blue-700 hover:bg-blue-600 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden lg:inline">
                  ERP Login
-               </a>
+               </button>
             </div>
           </div>
         </div>
@@ -237,17 +240,17 @@ const Navbar = () => {
 
       {/* Main Navigation Menu - White Background */}
       <nav className="bg-white sticky top-0 z-50 shadow-md border-b border-gray-200">
-        <div className="container mx-auto px-3 md:px-4">
-          <div className="flex justify-between items-center">
+        <div className="w-full px-4 md:px-6 lg:px-8">
+          <div className="flex justify-between items-center min-h-[60px] md:min-h-[70px]">
             {/* Logo on Left */}
-            <Link to="/" className="flex-shrink-0 py-1">
+            <Link to="/" className="flex-shrink-0 py-2 md:py-2.5">
               <img 
                 src={logo} 
                 alt="SSGMCE" 
-                className="h-8 md:h-9 w-auto object-contain"
+                className="h-10 md:h-12 lg:h-14 w-auto object-contain"
                 onError={(e) => {
                   e.target.style.display = 'none';
-                  e.target.parentElement.innerHTML = '<span class="text-ssgmce-blue font-bold text-base md:text-lg">SSGMCE</span>';
+                  e.target.parentElement.innerHTML = '<span class="text-ssgmce-blue font-bold text-lg md:text-xl">SSGMCE</span>';
                 }}
               />
             </Link>
@@ -261,7 +264,7 @@ const Navbar = () => {
             </button>
 
             {/* Desktop Menu */}
-            <ul className="hidden md:flex items-center flex-1 justify-end">
+            <ul className="hidden md:flex items-center flex-1 justify-end gap-0.5 lg:gap-1">
               {menuItems.map((item, index) => (
                 <li
                   key={index}
@@ -274,10 +277,10 @@ const Navbar = () => {
                 >
                   {item.dropdown ? (
                     <>
-                      <button className={`px-2 lg:px-2.5 py-2 text-gray-700 font-medium hover:text-ssgmce-blue transition-colors duration-300 flex items-center gap-0.5 whitespace-nowrap text-[11px] lg:text-xs ${
+                      <button className={`px-2.5 lg:px-3 py-2.5 text-gray-700 font-medium hover:text-ssgmce-blue transition-colors duration-300 flex items-center gap-0.5 whitespace-nowrap text-xs lg:text-sm ${
                         isActive(item.path) ? 'text-ssgmce-blue border-b-2 border-ssgmce-blue' : ''
                       }`}>
-                        {item.name} <FaChevronDown className="text-[9px]" />
+                        {item.name} <FaChevronDown className="text-[10px]" />
                       </button>
                       {activeDropdown === item.name && (
                         <ul className={`absolute top-full ${item.name === 'Activities' ? 'right-0 grid grid-cols-2 min-w-[500px]' : 'left-0 min-w-[240px]'} bg-white shadow-xl border-t-2 border-ssgmce-orange z-50`}>
@@ -289,9 +292,9 @@ const Navbar = () => {
                             >
                               {subItem.hasSubDropdown ? (
                                 <>
-                                  <div className="flex items-center justify-between px-3 py-2 text-gray-700 hover:bg-ssgmce-blue hover:text-white transition-all duration-200 cursor-pointer text-xs">
+                                  <div className="flex items-center justify-between px-3.5 py-2 text-gray-700 hover:bg-ssgmce-blue hover:text-white transition-all duration-200 cursor-pointer text-xs">
                                     <span>{subItem.name}</span>
-                                    <FaChevronRight className="text-[9px]" />
+                                    <FaChevronRight className="text-[10px]" />
                                   </div>
                                   {activeSubDropdown === subItem.name && (
                                     <ul className="absolute left-full top-0 bg-white shadow-xl min-w-[280px] border-t-2 border-ssgmce-orange ml-0">
@@ -299,7 +302,7 @@ const Navbar = () => {
                                         <li key={nestedIndex} className="border-b border-gray-100 last:border-b-0">
                                           <Link
                                             to={nestedItem.path}
-                                            className="block px-3 py-2 text-gray-700 hover:bg-ssgmce-blue hover:text-white transition-all duration-200 text-xs"
+                                            className="block px-3.5 py-2 text-gray-700 hover:bg-ssgmce-blue hover:text-white transition-all duration-200 text-xs"
                                           >
                                             {nestedItem.name}
                                           </Link>
@@ -311,7 +314,7 @@ const Navbar = () => {
                               ) : (
                                 <Link
                                   to={subItem.path}
-                                  className="block px-3 py-2 text-gray-700 hover:bg-ssgmce-blue hover:text-white transition-all duration-200 text-xs"
+                                  className="block px-3.5 py-2 text-gray-700 hover:bg-ssgmce-blue hover:text-white transition-all duration-200 text-xs"
                                 >
                                   {subItem.name}
                                 </Link>
@@ -324,7 +327,7 @@ const Navbar = () => {
                   ) : (
                     <Link
                       to={item.path}
-                      className={`block px-2 lg:px-2.5 py-2 text-gray-700 font-medium hover:text-ssgmce-blue transition-colors duration-300 whitespace-nowrap text-[11px] lg:text-xs ${
+                      className={`block px-2.5 lg:px-3 py-2.5 text-gray-700 font-medium hover:text-ssgmce-blue transition-colors duration-300 whitespace-nowrap text-xs lg:text-sm ${
                         isActive(item.path) ? 'text-ssgmce-blue border-b-2 border-ssgmce-blue' : ''
                       }`}
                     >

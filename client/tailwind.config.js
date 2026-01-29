@@ -14,8 +14,8 @@ export default {
         'ssgmce-light-orange': '#ff9933',
       },
       fontFamily: {
-        sans: ['Roboto', 'Open Sans', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Arial', 'sans-serif'],
-        heading: ['Poppins', 'Roboto', 'sans-serif'],
+        sans: ['Poppins', 'sans-serif'],
+        heading: ['Poppins', 'sans-serif'],
       },
       fontSize: {
         'xs': ['0.75rem', { lineHeight: '1rem' }],
