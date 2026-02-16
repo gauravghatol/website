@@ -1,9 +1,16 @@
 import { useEffect } from "react";
 import PageHeader from "../../components/PageHeader";
 import AdmissionsSidebar from "../../components/AdmissionsSidebar";
-import AdmissionProcess from "../../components/AdmissionProcess";
-import admissionsData from "../../data/admissionsData";
-import { FaCheckCircle, FaInfoCircle, FaFileAlt } from "react-icons/fa";
+import {
+  FaCheckCircle,
+  FaFilePdf,
+  FaMoneyBillWave,
+  FaIdCard,
+  FaClipboardList,
+  FaExclamationTriangle,
+  FaUniversity,
+  FaShieldAlt,
+} from "react-icons/fa";
 
 const DSEAdmissions = () => {
   useEffect(() => {
@@ -28,269 +35,285 @@ const DSEAdmissions = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-9 space-y-12">
-            {/* Introduction */}
-            <section className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white p-8 rounded-xl shadow-lg">
-              <h2 className="text-2xl font-bold mb-4">
-                What is Direct Second Year Engineering (DSE)?
+            {/* Page Header Notice */}
+            <section className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white p-6 rounded-xl shadow-lg">
+              <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+                <FaUniversity className="text-3xl" />
+                IMPORTANT INSTRUCTIONS FOR THE STUDENTS THOSE WHO ARE REPORTING
+                FOR ADMISSION THROUGH CAP-2025-26
               </h2>
-              <p className="leading-relaxed">
-                Direct Second Year Engineering (DSE), also known as Lateral
-                Entry, allows diploma holders and B.Sc. graduates to join
-                directly into the second year (Third Semester) of the B.E.
-                program. This provides an excellent opportunity for students
-                with technical diplomas to upgrade their qualifications to a
-                degree level without repeating the first year of engineering.
-              </p>
             </section>
 
-            {/* Eligibility Criteria */}
-            <section>
+            {/* Important Admission Documents */}
+            <section className="bg-white p-8 rounded-xl shadow-lg">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-8 flex items-center gap-3">
-                <FaInfoCircle className="text-ssgmce-orange" />
-                Eligibility Criteria
+                <FaClipboardList className="text-ssgmce-orange" />
+                Important Admission Documents & Information
               </h2>
-              <div className="bg-white p-8 rounded-xl shadow-lg border-t-4 border-ssgmce-orange">
-                <h3 className="text-2xl font-bold text-ssgmce-blue mb-6">
-                  {admissionsData.eligibility.undergraduate.dseAdmission.title}
-                </h3>
-                <ul className="space-y-4">
-                  {admissionsData.eligibility.undergraduate.dseAdmission.criteria.map(
-                    (item, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
-                        <FaCheckCircle className="text-green-600 mt-1 flex-shrink-0 text-xl" />
-                        <span className="text-gray-700">{item}</span>
-                      </li>
-                    ),
-                  )}
-                </ul>
-              </div>
-            </section>
-
-            {/* Branch-wise Eligibility */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
-              <h2 className="text-2xl font-bold text-ssgmce-blue mb-6">
-                Branch-wise Diploma Eligibility
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-4 py-3 text-left">
-                        B.E. Branch
-                      </th>
-                      <th className="border border-gray-300 px-4 py-3 text-left">
-                        Eligible Diploma Branches
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="hover:bg-blue-50">
-                      <td className="border border-gray-300 px-4 py-3 font-semibold text-ssgmce-blue">
-                        Computer Science & Engineering
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-gray-700">
-                        Computer Engineering, Computer Technology, Information
-                        Technology
-                      </td>
-                    </tr>
-                    <tr className="bg-gray-50 hover:bg-blue-50">
-                      <td className="border border-gray-300 px-4 py-3 font-semibold text-ssgmce-blue">
-                        Information Technology
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-gray-700">
-                        Computer Engineering, Information Technology, Computer
-                        Technology
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-blue-50">
-                      <td className="border border-gray-300 px-4 py-3 font-semibold text-ssgmce-blue">
-                        Mechanical Engineering
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-gray-700">
-                        Mechanical Engineering, Production Engineering,
-                        Automobile Engineering
-                      </td>
-                    </tr>
-                    <tr className="bg-gray-50 hover:bg-blue-50">
-                      <td className="border border-gray-300 px-4 py-3 font-semibold text-ssgmce-blue">
-                        Electrical Engineering
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-gray-700">
-                        Electrical Engineering, Electrical Power System
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-blue-50">
-                      <td className="border border-gray-300 px-4 py-3 font-semibold text-ssgmce-blue">
-                        Electronics & Telecommunication
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-gray-700">
-                        Electronics & Telecommunication, Electronics
-                        Engineering, Electronics & Communication
-                      </td>
-                    </tr>
-                    <tr className="bg-gray-50 hover:bg-blue-50">
-                      <td className="border border-gray-300 px-4 py-3 font-semibold text-ssgmce-blue">
-                        Civil Engineering
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-gray-700">
-                        Civil Engineering, Construction Technology
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            {/* Seat Availability */}
-            <section className="bg-white p-8 rounded-xl shadow-lg border-t-4 border-ssgmce-blue">
-              <h2 className="text-2xl font-bold text-ssgmce-blue mb-6">
-                DSE Seat Availability
-              </h2>
-              <div className="bg-blue-50 border-l-4 border-ssgmce-orange p-6 rounded-lg mb-6">
-                <p className="text-gray-700">
-                  <strong className="text-ssgmce-blue">Note:</strong> DSE seats
-                  are typically 10% of the total sanctioned intake for each
-                  branch, subject to availability and DTE Maharashtra norms. The
-                  actual number of seats may vary each year.
-                </p>
-              </div>
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                  { branch: "Computer Science & Engineering", seats: "12-15" },
-                  { branch: "Information Technology", seats: "6-8" },
-                  { branch: "Mechanical Engineering", seats: "12-15" },
-                  { branch: "Electrical Engineering", seats: "6-8" },
-                  { branch: "Electronics & Telecommunication", seats: "6-8" },
-                  { branch: "Civil Engineering", seats: "6-8" },
-                ].map((item, idx) => (
-                  <div
+                  {
+                    icon: <FaMoneyBillWave />,
+                    title: "Process of Online Payment of Fees",
+                    link: "/documents/dse-online-payment-process.pdf",
+                    color: "blue",
+                  },
+                  {
+                    icon: <FaIdCard />,
+                    title: "Process for creating ABC ID",
+                    link: "/documents/abc-id-creation-process.pdf",
+                    color: "orange",
+                  },
+                  {
+                    icon: <FaClipboardList />,
+                    title: "Documents required for Admission",
+                    link: "/documents/dse-required-documents.pdf",
+                    color: "blue",
+                  },
+                  {
+                    icon: <FaFilePdf />,
+                    title: "Direct 2nd Year: Application Form (AGAINST CAP)",
+                    link: "/documents/dse-application-form-cap.pdf",
+                    color: "orange",
+                  },
+                ].map((doc, idx) => (
+                  <a
                     key={idx}
-                    className="border-2 border-gray-200 rounded-lg p-4 hover:border-ssgmce-orange transition-colors duration-300"
+                    href={doc.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`group p-6 rounded-lg border-2 ${
+                      doc.color === "blue"
+                        ? "border-ssgmce-blue bg-blue-50 hover:bg-blue-100"
+                        : "border-ssgmce-orange bg-orange-50 hover:bg-orange-100"
+                    } hover:shadow-xl transition-all duration-300 cursor-pointer`}
                   >
-                    <h3 className="font-bold text-ssgmce-blue text-sm mb-2">
-                      {item.branch}
-                    </h3>
-                    <p className="text-2xl font-bold text-ssgmce-orange">
-                      {item.seats}
-                    </p>
-                    <p className="text-xs text-gray-600">Approx. Seats</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Admission Process */}
-            <section>
-              <h2 className="text-3xl font-bold text-ssgmce-blue mb-8">
-                Admission Process
-              </h2>
-              <AdmissionProcess
-                steps={admissionsData.admissionProcess.undergraduate.dseProcess}
-                title="DSE / Lateral Entry Admission Process"
-              />
-            </section>
-
-            {/* Documents Required */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
-              <h2 className="text-2xl font-bold text-ssgmce-blue mb-6 flex items-center gap-3">
-                <FaFileAlt className="text-ssgmce-orange" />
-                Documents Required for DSE Admission
-              </h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                {admissionsData.documentsRequired.dse.map((doc, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
-                  >
-                    <FaCheckCircle className="text-ssgmce-orange mt-1 flex-shrink-0" />
-                    <span className="text-gray-700">{doc}</span>
-                  </div>
-                ))}
-                {admissionsData.documentsRequired.common
-                  .slice(0, 10)
-                  .map((doc, idx) => (
-                    <div
-                      key={`common-${idx}`}
-                      className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
-                    >
-                      <FaCheckCircle className="text-ssgmce-orange mt-1 flex-shrink-0" />
-                      <span className="text-gray-700">{doc}</span>
+                    <div className="flex flex-col items-center text-center gap-4">
+                      <div
+                        className={`text-4xl ${
+                          doc.color === "blue"
+                            ? "text-ssgmce-blue"
+                            : "text-ssgmce-orange"
+                        } group-hover:scale-110 transition-transform duration-300`}
+                      >
+                        {doc.icon}
+                      </div>
+                      <h3
+                        className={`text-base font-semibold ${
+                          doc.color === "blue"
+                            ? "text-ssgmce-blue"
+                            : "text-ssgmce-orange"
+                        } group-hover:underline min-h-[3rem] flex items-center`}
+                      >
+                        {doc.title}
+                      </h3>
+                      <span
+                        className={`text-xs font-medium ${
+                          doc.color === "blue"
+                            ? "text-blue-700"
+                            : "text-orange-700"
+                        }`}
+                      >
+                        Click to view PDF
+                      </span>
                     </div>
-                  ))}
+                  </a>
+                ))}
               </div>
             </section>
 
-            {/* Fee Structure Note */}
-            <section className="bg-orange-50 border-l-4 border-ssgmce-orange p-6 rounded-lg">
-              <h3 className="text-lg font-bold text-ssgmce-blue mb-3">
-                Fee Structure
-              </h3>
-              <p className="text-gray-700">
-                DSE students pay the same fee structure as regular B.E.
-                students. Please refer to the
-                <a
-                  href="/admissions/fee-structure"
-                  className="text-ssgmce-orange font-semibold hover:underline"
-                >
-                  {" "}
-                  Fee Structure page{" "}
-                </a>
-                for detailed information about category-wise fees.
-              </p>
+            {/* CAP Admission Instructions */}
+            <section className="bg-gradient-to-br from-blue-50 to-orange-50 p-8 rounded-xl shadow-lg border-l-4 border-ssgmce-blue">
+              <h2 className="text-3xl font-bold text-ssgmce-blue mb-6 flex items-center gap-3">
+                <FaUniversity className="text-ssgmce-orange" />
+                Important Instructions for CAP Admission 2025-26
+              </h2>
+              <div className="space-y-4">
+                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+                  <p className="text-gray-800 leading-relaxed">
+                    <span className="font-bold text-ssgmce-blue">
+                      Read the following instructions carefully and accordingly
+                      report the institute as per the Schedule declared by State
+                      CET Cell for CAP Admission:
+                    </span>
+                  </p>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <div className="flex items-start gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 bg-ssgmce-blue text-white rounded-full flex items-center justify-center font-bold">
+                      1
+                    </span>
+                    <p className="text-gray-700 leading-relaxed">
+                      All the admissions will be carried out as per the
+                      guidelines of{" "}
+                      <strong>
+                        Admission Regulatory Authority, Govt. of Maharashtra,
+                        State Common Entrance Test Cell, DTE, M.S., Mumbai
+                      </strong>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <div className="flex items-start gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 bg-ssgmce-blue text-white rounded-full flex items-center justify-center font-bold">
+                      2
+                    </span>
+                    <p className="text-gray-700 leading-relaxed">
+                      It is <strong className="text-red-600">mandatory</strong>{" "}
+                      to pay Seat acceptance Fees on{" "}
+                      <a
+                        href="http://cetcell.mahacet.org"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-ssgmce-blue hover:underline font-semibold"
+                      >
+                        http://cetcell.mahacet.org
+                      </a>{" "}
+                      and bring <strong>Seat acceptance Letter</strong> along
+                      with <strong>Acknowledgment Receipt</strong> obtain from
+                      Scrutiny Center along with all the Originals and attested
+                      Copies of the documents signed and stamped by SC Center.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <div className="flex items-start gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 bg-ssgmce-blue text-white rounded-full flex items-center justify-center font-bold">
+                      3
+                    </span>
+                    <p className="text-gray-700 leading-relaxed">
+                      College Fees is to be paid through{" "}
+                      <strong>online mode</strong> as per the fee structure
+                      available on college website or on notice board.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </section>
 
-            {/* Important Notes */}
+            {/* Required Original Documents */}
             <section className="bg-white p-8 rounded-xl shadow-lg">
-              <h2 className="text-2xl font-bold text-ssgmce-blue mb-6">
-                Important Notes
+              <h2 className="text-3xl font-bold text-ssgmce-blue mb-6 flex items-center gap-3">
+                <FaClipboardList className="text-ssgmce-orange" />
+                Required Original Documents for Admission
               </h2>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <span className="text-ssgmce-orange font-bold text-xl">
-                    •
-                  </span>
-                  <p className="text-gray-700">
-                    DSE students complete the remaining 3 years (6 semesters) of
-                    the B.E. program
-                  </p>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-ssgmce-orange font-bold text-xl">
-                    •
-                  </span>
-                  <p className="text-gray-700">
-                    All admissions are done through DTE Maharashtra CAP process
-                    only
-                  </p>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-ssgmce-orange font-bold text-xl">
-                    •
-                  </span>
-                  <p className="text-gray-700">
-                    Gap certificate is mandatory if there is a gap of more than
-                    1 year after diploma
-                  </p>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-ssgmce-orange font-bold text-xl">
-                    •
-                  </span>
-                  <p className="text-gray-700">
-                    B.Sc. graduates must have Mathematics as one of the subjects
-                    in all three years
-                  </p>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-ssgmce-orange font-bold text-xl">
-                    •
-                  </span>
-                  <p className="text-gray-700">
-                    Final year diploma students can apply provisionally
-                    (admission subject to passing)
-                  </p>
-                </li>
-              </ul>
+              <p className="text-gray-700 mb-6 font-semibold">
+                Following Original Documents to be produced at the time of
+                Admission:
+              </p>
+              <div className="grid md:grid-cols-2 gap-4">
+                {[
+                  "Seat Acceptance Form after payment of Rs. 1000/- to CET Cell",
+                  "Receipt-cum-Acknowledgement by Scrutiny Center/Facilitation Center",
+                  "S.S.C. Mark sheet",
+                  "H.S.C. Mark sheet",
+                  "Final Semester (Sixth) Diploma Mark sheet",
+                  "Transfer/Leaving Certificate",
+                  "Indian Nationality Certificate",
+                  "Domicile Certificate/ Birth Certificate",
+                  "For OBC/SBC/NT/VJ/SEBC-Category Students: Caste, Caste Validity and Non-creamy Layer (Valid up to 31st March 2026) and Photocopy of Income Certificate valid up to 31st March 2025",
+                  "For EWS - EWS Certificate (As per Proforma-V given in the Information Brochure)",
+                  "For EWS/EBC - Photocopy of Income Certificate valid up to 31st March 2026 (below Rs. 8.00 Lakhs)",
+                  "For SC/ST - Caste Certificate, Caste Validity Certificate and Photocopy of Income Certificate valid up to 31st March 2026",
+                  "Photocopy of Aadhar Card and Five Passport Size Photographs",
+                  "Migration Certificate (Students passed HSC Exam other than Maharashtra State)",
+                  "One Set of Photocopies Signed and Stamped by Scrutiny Center",
+                  "One Set of Photocopies of all above Documents (For Student)",
+                ].map((doc, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    <FaCheckCircle className="text-green-600 mt-1 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm leading-relaxed">
+                      {doc}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Important Notes - Anti Capitation */}
+            <section className="bg-gradient-to-r from-red-50 to-orange-50 p-8 rounded-xl shadow-lg border-l-4 border-red-600">
+              <h2 className="text-3xl font-bold text-red-700 mb-6 flex items-center gap-3">
+                <FaExclamationTriangle className="text-red-600" />
+                Important Notice
+              </h2>
+              <div className="space-y-4">
+                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-ssgmce-blue">
+                  <div className="flex items-start gap-4">
+                    <FaShieldAlt className="text-ssgmce-blue text-2xl flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="font-bold text-ssgmce-blue text-lg mb-2">
+                        Merit-Based Transparent Admission
+                      </h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        All the admissions at{" "}
+                        <strong>
+                          Shri Sant Gajanan Maharaj College of Engineering,
+                          Shegaon
+                        </strong>{" "}
+                        are done strictly on the basis of{" "}
+                        <strong className="text-green-600">Merit</strong> and in
+                        a{" "}
+                        <strong className="text-green-600">
+                          Transparent Manner
+                        </strong>{" "}
+                        by way of counseling.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-600">
+                  <div className="flex items-start gap-4">
+                    <FaExclamationTriangle className="text-red-600 text-2xl flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="font-bold text-red-700 text-lg mb-2">
+                        Beware of Fraudulent Agents
+                      </h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        Institute has{" "}
+                        <strong className="text-red-600">
+                          NOT authorized any agency or agent
+                        </strong>{" "}
+                        for admitting students. In this regard, Parents and
+                        Candidates are sincerely advised{" "}
+                        <strong>
+                          not to fall prey to unscrupulous agents or agencies
+                        </strong>
+                        .
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-600">
+                  <div className="flex items-start gap-4">
+                    <FaShieldAlt className="text-green-600 text-2xl flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="font-bold text-green-700 text-lg mb-2">
+                        No Capitation Fees
+                      </h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        <strong className="text-green-600">
+                          No Capitation fees
+                        </strong>{" "}
+                        are collected by the institute by adhering to the{" "}
+                        <strong>Anti Capitation Act</strong>.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-ssgmce-blue text-white p-6 rounded-lg shadow-md text-center">
+                  <p className="font-bold text-xl">Dr. S. B. Somani</p>
+                  <p className="text-lg">Principal</p>
+                </div>
+              </div>
             </section>
           </div>
         </div>
