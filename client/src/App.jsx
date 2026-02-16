@@ -137,6 +137,7 @@ import Goals from "./pages/placements/Goals";
 import Internship from "./pages/placements/Internship";
 import Objectives from "./pages/placements/Objectives";
 import PlacementBrochure from "./pages/placements/PlacementBrochure";
+import PlacementContact from "./pages/placements/PlacementContact";
 import PlacementStats from "./pages/placements/PlacementStats";
 import Recruiters from "./pages/placements/Recruiters";
 import COE from "./pages/research/COE";
@@ -1321,6 +1322,14 @@ function App() {
             element={
               <Layout>
                 <Recruiters />
+              </Layout>
+            }
+          />
+          <Route
+            path="/placements/contact"
+            element={
+              <Layout>
+                <PlacementContact />
               </Layout>
             }
           />
