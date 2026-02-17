@@ -1,9 +1,6 @@
 import { useEffect } from "react";
 import PageHeader from "../../components/PageHeader";
 import AdmissionsSidebar from "../../components/AdmissionsSidebar";
-import FeeTable from "../../components/FeeTable";
-import admissionsData from "../../data/admissionsData";
-import { FaDownload } from "react-icons/fa";
 
 const FeeStructure = () => {
   useEffect(() => {
@@ -15,7 +12,7 @@ const FeeStructure = () => {
     <div className="min-h-screen bg-gray-50">
       <PageHeader
         title="Fee Structure"
-        subtitle={`Academic Year ${admissionsData.academicYear}`}
+        subtitle="Academic Year 2025-26"
         backgroundImage="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&q=80"
       />
 
@@ -28,62 +25,388 @@ const FeeStructure = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-9 space-y-12">
-            {/* Download Section */}
+            {/* Header Note */}
             <div className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white p-6 rounded-xl shadow-lg">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div>
-                  <h3 className="text-xl font-bold mb-2">
-                    Complete Fee Structure Document
-                  </h3>
-                  <p className="text-sm opacity-90">
-                    Download the official fee structure PDF for all programs
-                  </p>
-                </div>
-                <button
-                  onClick={() =>
-                    window.open(admissionsData.downloads.feeStructure, "_blank")
-                  }
-                  className="flex items-center gap-2 bg-ssgmce-orange hover:bg-orange-600 px-6 py-3 rounded-lg font-semibold transition-colors duration-300"
-                >
-                  <FaDownload /> Download PDF
-                </button>
-              </div>
+              <h3 className="text-xl font-bold mb-2">
+                Fee Structure for Academic Year 2025-26
+              </h3>
+              <p className="text-sm opacity-90">
+                * Fees are decided by Fees Regulating Authority, M.S. Mumbai and
+                will be binding to all the admitted candidates for the academic
+                year 2025-26.
+              </p>
             </div>
 
-            {/* UG Fee Structure */}
-            <section>
-              <h2 className="text-3xl font-bold text-ssgmce-blue mb-8">
-                Under-Graduate (B.E.) Fee Structure
+            {/* First Year B.E. Fee Structure */}
+            <section className="bg-white p-8 rounded-xl shadow-lg">
+              <h2 className="text-3xl font-bold text-ssgmce-blue mb-6">
+                First Year Bachelor of Engineering (B.E.)
               </h2>
-              <FeeTable
-                feeData={admissionsData.feeStructure.undergraduate}
-                title="B.E. Annual Fee Structure"
-                downloadLink={admissionsData.downloads.feeStructure}
-              />
+              <p className="text-gray-600 mb-4">
+                प्रथम वर्ष अभियांत्रिकी (पदवी)
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
+                      <th className="border border-gray-300 px-4 py-3 text-left">
+                        Particulars / विवरण
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-right">
+                        Open/Against CAP
+                        <br />
+                        (खुला/कॅप विरुध्द)
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-right">
+                        OBC/EBC/EWS/SEBC
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-right">
+                        VJ/NT/SBC/TFWS
+                        <br />
+                        (Girls/OBC/EWS/SEBC)
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-right">
+                        SC/ST
+                        <br />
+                        (अजा/अजजा)
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="hover:bg-blue-50">
+                      <td className="border border-gray-300 px-4 py-3 font-semibold">
+                        Tuition Fees
+                        <br />
+                        <span className="text-sm text-gray-600">
+                          शैक्षणिक शुल्क
+                        </span>
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 1,16,521.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 58,261.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        00.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        00.00
+                      </td>
+                    </tr>
+                    <tr className="bg-gray-50 hover:bg-blue-50">
+                      <td className="border border-gray-300 px-4 py-3 font-semibold">
+                        Development Fees
+                        <br />
+                        <span className="text-sm text-gray-600">
+                          विकास शुल्क
+                        </span>
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 17,479.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 17,479.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 17,479.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        00.00
+                      </td>
+                    </tr>
+                    <tr className="bg-ssgmce-blue text-white font-bold">
+                      <td className="border border-gray-300 px-4 py-3">
+                        Total / एकूण
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right text-lg">
+                        ₹ 1,34,000.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right text-lg">
+                        ₹ 75,740.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right text-lg">
+                        ₹ 17,479.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right text-lg">
+                        00.00
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
-            {/* PG Fee Structure */}
-            <section>
-              <h2 className="text-3xl font-bold text-ssgmce-blue mb-8">
-                Post-Graduate (M.E.) Fee Structure
+            {/* Direct Second Year B.E. Fee Structure */}
+            <section className="bg-white p-8 rounded-xl shadow-lg">
+              <h2 className="text-3xl font-bold text-ssgmce-blue mb-6">
+                Direct Second Year Bachelor of Engineering (B.E.)
               </h2>
-              <FeeTable
-                feeData={admissionsData.feeStructure.postgraduate}
-                title="M.E. Annual Fee Structure"
-                downloadLink={admissionsData.downloads.feeStructure}
-              />
+              <p className="text-gray-600 mb-4">
+                प्रत्यक्ष द्वितीय वर्ष अभियांत्रिकी (पदवी)
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
+                      <th className="border border-gray-300 px-4 py-3 text-left">
+                        Particulars / विवरण
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-right">
+                        Open/Against CAP
+                        <br />
+                        (खुला/कॅप विरुध्द)
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-right">
+                        OBC/EBC/EWS/SEBC
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-right">
+                        VJ/NT/SBC/TFWS
+                        <br />
+                        (Girls/OBC/EWS/SEBC)
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-right">
+                        SC/ST
+                        <br />
+                        (अजा/अजजा)
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="hover:bg-blue-50">
+                      <td className="border border-gray-300 px-4 py-3 font-semibold">
+                        Tuition Fees
+                        <br />
+                        <span className="text-sm text-gray-600">
+                          शैक्षणिक शुल्क
+                        </span>
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 1,16,521.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 58,261.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        00.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        00.00
+                      </td>
+                    </tr>
+                    <tr className="bg-gray-50 hover:bg-blue-50">
+                      <td className="border border-gray-300 px-4 py-3 font-semibold">
+                        Development Fees
+                        <br />
+                        <span className="text-sm text-gray-600">
+                          विकास शुल्क
+                        </span>
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 17,479.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 17,479.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 17,479.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        00.00
+                      </td>
+                    </tr>
+                    <tr className="bg-ssgmce-blue text-white font-bold">
+                      <td className="border border-gray-300 px-4 py-3">
+                        Total / एकूण
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right text-lg">
+                        ₹ 1,34,000.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right text-lg">
+                        ₹ 75,740.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right text-lg">
+                        ₹ 17,479.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right text-lg">
+                        00.00
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             {/* MBA Fee Structure */}
-            <section>
-              <h2 className="text-3xl font-bold text-ssgmce-blue mb-8">
-                MBA Fee Structure
+            <section className="bg-white p-8 rounded-xl shadow-lg">
+              <h2 className="text-3xl font-bold text-ssgmce-blue mb-6">
+                First Year Master in Business Administration (MBA)
               </h2>
-              <FeeTable
-                feeData={admissionsData.feeStructure.mba}
-                title="MBA Annual Fee Structure"
-                downloadLink={admissionsData.downloads.feeStructure}
-              />
+              <p className="text-gray-600 mb-4">
+                प्रथम वर्ष व्यवस्थापन प्रशासन पदव्युत्तर (एम.बी.ए.)
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
+                      <th className="border border-gray-300 px-4 py-3 text-left">
+                        Particulars / विवरण
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-right">
+                        Open/Against CAP
+                        <br />
+                        (खुला/कॅप विरुध्द)
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-right">
+                        OBC/EBC/EWS/SEBC
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-right">
+                        VJ/NT/SBC/TFWS/EWS/SEBC
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-right">
+                        SC/ST
+                        <br />
+                        (अजा/अजजा)
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="hover:bg-blue-50">
+                      <td className="border border-gray-300 px-4 py-3 font-semibold">
+                        Tuition Fees
+                        <br />
+                        <span className="text-sm text-gray-600">
+                          शैक्षणिक शुल्क
+                        </span>
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 89,525.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 44,763.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        00.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        00.00
+                      </td>
+                    </tr>
+                    <tr className="bg-gray-50 hover:bg-blue-50">
+                      <td className="border border-gray-300 px-4 py-3 font-semibold">
+                        Development Fees
+                        <br />
+                        <span className="text-sm text-gray-600">
+                          विकास शुल्क
+                        </span>
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 10,475.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 10,475.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 10,475.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        00.00
+                      </td>
+                    </tr>
+                    <tr className="bg-ssgmce-blue text-white font-bold">
+                      <td className="border border-gray-300 px-4 py-3">
+                        Total / एकूण
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right text-lg">
+                        ₹ 1,00,000.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right text-lg">
+                        ₹ 55,238.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right text-lg">
+                        ₹ 10,475.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right text-lg">
+                        00.00
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            {/* M.E. Fee Structure */}
+            <section className="bg-white p-8 rounded-xl shadow-lg">
+              <h2 className="text-3xl font-bold text-ssgmce-blue mb-6">
+                First Year Master in Engineering (PG-M.E.)
+              </h2>
+              <p className="text-gray-600 mb-4">
+                प्रथम वर्ष पदव्युत्तर अभियांत्रिकी (पदव्युत्तर एम.ई.)
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
+                      <th className="border border-gray-300 px-4 py-3 text-left">
+                        Particulars / विवरण
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-right">
+                        Open/OBC/SBC/VJ/NT/ST
+                        <br />
+                        Against CAP
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-right">
+                        SC
+                        <br />
+                        (CAP Scholarship Only)
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="hover:bg-blue-50">
+                      <td className="border border-gray-300 px-4 py-3 font-semibold">
+                        Tuition Fees
+                        <br />
+                        <span className="text-sm text-gray-600">
+                          शैक्षणिक शुल्क
+                        </span>
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 46,975.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        00.00
+                      </td>
+                    </tr>
+                    <tr className="bg-gray-50 hover:bg-blue-50">
+                      <td className="border border-gray-300 px-4 py-3 font-semibold">
+                        Development Fees
+                        <br />
+                        <span className="text-sm text-gray-600">
+                          विकास शुल्क
+                        </span>
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        ₹ 5,025.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right">
+                        00.00
+                      </td>
+                    </tr>
+                    <tr className="bg-ssgmce-blue text-white font-bold">
+                      <td className="border border-gray-300 px-4 py-3">
+                        Total / एकूण
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right text-lg">
+                        ₹ 52,000.00
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-right text-lg">
+                        00.00
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             {/* Additional Information */}
@@ -145,16 +468,14 @@ const FeeStructure = () => {
               </p>
               <div className="space-y-1 text-sm">
                 <p>
-                  <strong>Phone:</strong>{" "}
-                  {admissionsData.contactInfo.admissionOffice.phone}
+                  <strong>Phone:</strong> 07265-252211 / 252212
                 </p>
                 <p>
-                  <strong>Email:</strong>{" "}
-                  {admissionsData.contactInfo.admissionOffice.email}
+                  <strong>Email:</strong> admission@ssgmce.ac.in
                 </p>
                 <p>
-                  <strong>Timings:</strong>{" "}
-                  {admissionsData.contactInfo.admissionOffice.timings}
+                  <strong>Timings:</strong> Monday to Saturday, 10:00 AM - 5:00
+                  PM
                 </p>
               </div>
             </section>
