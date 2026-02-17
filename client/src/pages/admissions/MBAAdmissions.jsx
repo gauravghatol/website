@@ -1,13 +1,15 @@
 import { useEffect } from "react";
 import PageHeader from "../../components/PageHeader";
 import AdmissionsSidebar from "../../components/AdmissionsSidebar";
-import FeeTable from "../../components/FeeTable";
-import admissionsData from "../../data/admissionsData";
 import {
   FaCheckCircle,
-  FaInfoCircle,
-  FaFileAlt,
-  FaChartLine,
+  FaFilePdf,
+  FaMoneyBillWave,
+  FaIdCard,
+  FaClipboardList,
+  FaExclamationTriangle,
+  FaUniversity,
+  FaShieldAlt,
 } from "react-icons/fa";
 
 const MBAAdmissions = () => {
@@ -33,198 +35,136 @@ const MBAAdmissions = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-9 space-y-12">
-            {/* Introduction */}
-            <section className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white p-8 rounded-xl shadow-lg">
-              <h2 className="text-2xl font-bold mb-4">About MBA Program</h2>
-              <p className="leading-relaxed mb-4">
-                The MBA program at SSGMCE provides comprehensive management
-                education covering all aspects of business administration. We
-                focus on developing leadership, analytical, and entrepreneurial
-                skills essential for corporate and startup environments. The
-                program is designed to transform graduates into competent
-                managers capable of handling complex business challenges.
-              </p>
-              <div className="grid md:grid-cols-3 gap-4 mt-6">
-                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg">
-                  <div className="text-3xl font-bold text-ssgmce-orange">
-                    2 Years
-                  </div>
-                  <div className="text-sm opacity-90">Program Duration</div>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg">
-                  <div className="text-3xl font-bold text-ssgmce-orange">
-                    60
-                  </div>
-                  <div className="text-sm opacity-90">Total Intake</div>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg">
-                  <div className="text-3xl font-bold text-ssgmce-orange">
-                    SGBAU
-                  </div>
-                  <div className="text-sm opacity-90">Affiliated To</div>
-                </div>
-              </div>
-            </section>
-
-            {/* Eligibility Criteria */}
-            <section>
-              <h2 className="text-3xl font-bold text-ssgmce-blue mb-8 flex items-center gap-3">
-                <FaInfoCircle className="text-ssgmce-orange" />
-                Eligibility Criteria
+            {/* Page Header Notice */}
+            <section className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white p-6 rounded-xl shadow-lg">
+              <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+                <FaUniversity className="text-3xl" />
+                IMPORTANT INSTRUCTIONS FOR THE STUDENTS THOSE WHO WANT TO SEEK
+                ADMISSION FOR INSTITUTE LEVEL SEATS & CAP VACANCY FOR THE
+                SESSION 2025-26
               </h2>
-              <div className="bg-white p-8 rounded-xl shadow-lg border-t-4 border-ssgmce-orange">
-                <h3 className="text-2xl font-bold text-ssgmce-blue mb-6">
-                  {admissionsData.eligibility.mba.title}
-                </h3>
-                <ul className="space-y-4">
-                  {admissionsData.eligibility.mba.criteria.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-3">
-                      <FaCheckCircle className="text-green-600 mt-1 flex-shrink-0 text-xl" />
-                      <span className="text-gray-700 text-lg">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </section>
 
-            {/* Specializations */}
+            {/* Important Admission Documents */}
             <section className="bg-white p-8 rounded-xl shadow-lg">
-              <h2 className="text-2xl font-bold text-ssgmce-blue mb-6">
-                MBA Specializations Offered
+              <h2 className="text-3xl font-bold text-ssgmce-blue mb-8 flex items-center gap-3">
+                <FaClipboardList className="text-ssgmce-orange" />
+                Important Admission Documents & Information
               </h2>
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                   {
-                    title: "Marketing Management",
-                    desc: "Brand management, digital marketing, consumer behavior, advertising & sales",
-                    icon: "📊",
+                    icon: <FaMoneyBillWave />,
+                    title: "Process for Online Fees to SSGMCE, Shegaon",
+                    link: "/documents/mba-online-fees-process.pdf",
+                    color: "blue",
                   },
                   {
-                    title: "Financial Management",
-                    desc: "Corporate finance, investment analysis, financial markets, risk management",
-                    icon: "💰",
+                    icon: <FaIdCard />,
+                    title: "Process for creating ABC ID",
+                    link: "/documents/abc-id-creation-process.pdf",
+                    color: "orange",
                   },
                   {
-                    title: "Human Resource Management",
-                    desc: "Talent acquisition, organizational behavior, performance management, labor laws",
-                    icon: "👥",
+                    icon: <FaClipboardList />,
+                    title: "Documents required for Admission",
+                    link: "/documents/mba-required-documents.pdf",
+                    color: "blue",
                   },
                   {
-                    title: "Operations Management",
-                    desc: "Supply chain, production planning, quality management, project management",
-                    icon: "⚙️",
+                    icon: <FaFilePdf />,
+                    title: "M.B.A. 1st Year Application Form (AGAINST CAP)",
+                    link: "/documents/mba-application-form-cap.pdf",
+                    color: "orange",
                   },
-                ].map((spec, idx) => (
-                  <div
+                ].map((doc, idx) => (
+                  <a
                     key={idx}
-                    className="border-2 border-gray-200 rounded-lg p-6 hover:border-ssgmce-orange hover:shadow-lg transition-all duration-300"
+                    href={doc.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`group p-6 rounded-lg border-2 ${
+                      doc.color === "blue"
+                        ? "border-ssgmce-blue bg-blue-50 hover:bg-blue-100"
+                        : "border-ssgmce-orange bg-orange-50 hover:bg-orange-100"
+                    } hover:shadow-xl transition-all duration-300 cursor-pointer`}
                   >
-                    <div className="text-4xl mb-3">{spec.icon}</div>
-                    <h3 className="text-xl font-bold text-ssgmce-blue mb-2">
-                      {spec.title}
-                    </h3>
-                    <p className="text-sm text-gray-600">{spec.desc}</p>
-                  </div>
+                    <div className="flex flex-col items-center text-center gap-4">
+                      <div
+                        className={`text-4xl ${
+                          doc.color === "blue"
+                            ? "text-ssgmce-blue"
+                            : "text-ssgmce-orange"
+                        } group-hover:scale-110 transition-transform duration-300`}
+                      >
+                        {doc.icon}
+                      </div>
+                      <h3
+                        className={`text-base font-semibold ${
+                          doc.color === "blue"
+                            ? "text-ssgmce-blue"
+                            : "text-ssgmce-orange"
+                        } group-hover:underline min-h-[3rem] flex items-center`}
+                      >
+                        {doc.title}
+                      </h3>
+                      <span
+                        className={`text-xs font-medium ${
+                          doc.color === "blue"
+                            ? "text-blue-700"
+                            : "text-orange-700"
+                        }`}
+                      >
+                        Click to view PDF
+                      </span>
+                    </div>
+                  </a>
                 ))}
               </div>
             </section>
 
-            {/* Seat Matrix */}
-            <section className="bg-white p-8 rounded-xl shadow-lg border-t-4 border-ssgmce-blue">
-              <h2 className="text-2xl font-bold text-ssgmce-blue mb-6">
-                MBA Seat Distribution
+            {/* CAP Round Seat Matrix */}
+            <section className="bg-white p-8 rounded-xl shadow-lg">
+              <h2 className="text-3xl font-bold text-ssgmce-blue mb-6">
+                CAP Round 2025-26: Seat Matrix
               </h2>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
                       <th className="border border-gray-300 px-4 py-3 text-left">
-                        Category
+                        SN
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-left">
+                        Course Name
                       </th>
                       <th className="border border-gray-300 px-4 py-3 text-center">
-                        Number of Seats
+                        Total Intake
                       </th>
                       <th className="border border-gray-300 px-4 py-3 text-center">
-                        Percentage
+                        Seats Available for CAP
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-center">
+                        Choice Code
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="hover:bg-blue-50">
-                      <td className="border border-gray-300 px-4 py-3 font-semibold">
-                        Open Category
+                    <tr className="hover:bg-blue-50 transition-colors">
+                      <td className="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">
+                        1
                       </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center text-ssgmce-orange font-bold text-xl">
-                        {admissionsData.seatMatrix.mba.openCategory}
+                      <td className="border border-gray-300 px-4 py-3 text-gray-800 font-medium">
+                        Master of Business Administration
                       </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center text-gray-700">
-                        60%
+                      <td className="border border-gray-300 px-4 py-3 text-center font-semibold text-ssgmce-blue text-xl">
+                        60
                       </td>
-                    </tr>
-                    <tr className="bg-gray-50 hover:bg-blue-50">
-                      <td className="border border-gray-300 px-4 py-3 font-semibold">
-                        EWS (Economically Weaker Section)
+                      <td className="border border-gray-300 px-4 py-3 text-center font-semibold text-green-600 text-xl">
+                        60
                       </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center text-ssgmce-orange font-bold text-xl">
-                        {admissionsData.seatMatrix.mba.ews}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center text-gray-700">
-                        10%
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-blue-50">
-                      <td className="border border-gray-300 px-4 py-3 font-semibold">
-                        OBC (Other Backward Class)
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center text-ssgmce-orange font-bold text-xl">
-                        {admissionsData.seatMatrix.mba.obc}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center text-gray-700">
-                        27%
-                      </td>
-                    </tr>
-                    <tr className="bg-gray-50 hover:bg-blue-50">
-                      <td className="border border-gray-300 px-4 py-3 font-semibold">
-                        SC (Scheduled Caste)
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center text-ssgmce-orange font-bold text-xl">
-                        {admissionsData.seatMatrix.mba.sc}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center text-gray-700">
-                        15%
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-blue-50">
-                      <td className="border border-gray-300 px-4 py-3 font-semibold">
-                        ST (Scheduled Tribe)
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center text-ssgmce-orange font-bold text-xl">
-                        {admissionsData.seatMatrix.mba.st}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center text-gray-700">
-                        8%
-                      </td>
-                    </tr>
-                    <tr className="bg-gray-50 hover:bg-blue-50">
-                      <td className="border border-gray-300 px-4 py-3 font-semibold">
-                        VJNT (Vimukta Jati & Nomadic Tribes)
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center text-ssgmce-orange font-bold text-xl">
-                        {admissionsData.seatMatrix.mba.vjnt}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center text-gray-700">
-                        5%
-                      </td>
-                    </tr>
-                    <tr className="bg-ssgmce-blue text-white hover:bg-blue-800">
-                      <td className="border border-gray-300 px-4 py-3 font-bold text-lg">
-                        Total Intake
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center font-bold text-2xl text-ssgmce-orange">
-                        {admissionsData.seatMatrix.mba.intake}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center font-bold">
-                        100%
+                      <td className="border border-gray-300 px-4 py-3 text-center font-mono font-bold text-ssgmce-orange text-lg">
+                        110110110
                       </td>
                     </tr>
                   </tbody>
@@ -232,186 +172,211 @@ const MBAAdmissions = () => {
               </div>
             </section>
 
-            {/* Fee Structure */}
-            <section>
-              <h2 className="text-3xl font-bold text-ssgmce-blue mb-8">
-                Fee Structure
-              </h2>
-              <FeeTable
-                feeData={admissionsData.feeStructure.mba}
-                title="MBA Annual Fee Structure"
-                downloadLink={admissionsData.downloads.feeStructure}
-              />
-            </section>
-
-            {/* Admission Process */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
-              <h2 className="text-2xl font-bold text-ssgmce-blue mb-6">
-                MBA Admission Process
+            {/* Admission Instructions */}
+            <section className="bg-gradient-to-br from-blue-50 to-orange-50 p-8 rounded-xl shadow-lg border-l-4 border-ssgmce-blue">
+              <h2 className="text-3xl font-bold text-ssgmce-blue mb-6 flex items-center gap-3">
+                <FaUniversity className="text-ssgmce-orange" />
+                Important Instructions for Admission
               </h2>
               <div className="space-y-4">
-                {[
-                  {
-                    step: 1,
-                    title: "Appear for Entrance Exam",
-                    desc: "Take MAH-CET (DTE Maharashtra) or other accepted exams like CAT, MAT, CMAT, XAT, ATMA",
-                  },
-                  {
-                    step: 2,
-                    title: "Register on DTE Portal",
-                    desc: "Register for MBA admissions on DTE Maharashtra website after exam results",
-                  },
-                  {
-                    step: 3,
-                    title: "Fill Application Form",
-                    desc: "Complete the online application with personal, academic, and exam details",
-                  },
-                  {
-                    step: 4,
-                    title: "Document Upload",
-                    desc: "Upload scanned copies of degree, marksheets, entrance scorecard, and certificates",
-                  },
-                  {
-                    step: 5,
-                    title: "CAP Rounds",
-                    desc: "Participate in Centralized Admission Process rounds and fill college preferences",
-                  },
-                  {
-                    step: 6,
-                    title: "Seat Allotment",
-                    desc: "Check seat allotment results on DTE portal after each CAP round",
-                  },
-                  {
-                    step: 7,
-                    title: "Reporting to College",
-                    desc: "Visit SSGMCE with original documents for verification within 3 days",
-                  },
-                  {
-                    step: 8,
-                    title: "Fee Payment & Confirmation",
-                    desc: "Pay admission fees and complete joining formalities to secure your seat",
-                  },
-                ].map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex gap-4 p-4 border-l-4 border-ssgmce-orange bg-gray-50 rounded-r-lg hover:bg-blue-50 transition-colors duration-200"
-                  >
-                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-ssgmce-blue to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                      {item.step}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-ssgmce-blue mb-1">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm text-gray-700">{item.desc}</p>
-                    </div>
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <div className="flex items-start gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 bg-ssgmce-blue text-white rounded-full flex items-center justify-center font-bold">
+                      1
+                    </span>
+                    <p className="text-gray-700 leading-relaxed">
+                      All the admissions will be carried out as per the
+                      guidelines of{" "}
+                      <strong>
+                        Admission Regulatory Authority, Govt. of Maharashtra,
+                        State Common Entrance Test Cell, DTE, M.S., Mumbai
+                      </strong>
+                    </p>
                   </div>
-                ))}
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <div className="flex items-start gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 bg-ssgmce-blue text-white rounded-full flex items-center justify-center font-bold">
+                      2
+                    </span>
+                    <p className="text-gray-700 leading-relaxed">
+                      Registration by candidate for CAP{" "}
+                      <a
+                        href="http://cetcell.mahacet.org"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-ssgmce-blue hover:underline font-semibold"
+                      >
+                        (http://cetcell.mahacet.org/)
+                      </a>{" "}
+                      is <strong className="text-red-600">Mandatory</strong> for
+                      admission against CAP Vacancy. The students should attach
+                      photocopy of <strong>Acknowledgment Receipt</strong>{" "}
+                      obtain from Facilitation Center along with the prescribed
+                      Application Form which is available on Institute
+                      website/in office.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <div className="flex items-start gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 bg-ssgmce-blue text-white rounded-full flex items-center justify-center font-bold">
+                      3
+                    </span>
+                    <p className="text-gray-700 leading-relaxed">
+                      Fees to be paid at the time of Admission for CAP Vacancy
+                      is of <strong>Open Category</strong> (
+                      <strong className="text-green-600">
+                        SC Category is Exempted
+                      </strong>
+                      ).
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <div className="flex items-start gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 bg-ssgmce-blue text-white rounded-full flex items-center justify-center font-bold">
+                      4
+                    </span>
+                    <p className="text-gray-700 leading-relaxed">
+                      For more details for admissions,{" "}
+                      <strong>visit college website on regular interval</strong>
+                      . Documents to be keep ready: Following Original Documents
+                      along with <strong>soft copy</strong> and{" "}
+                      <strong>
+                        two sets of photocopies & five Photographs
+                      </strong>{" "}
+                      at the time of reporting for admission to the institute.
+                    </p>
+                  </div>
+                </div>
               </div>
             </section>
 
-            {/* Career Opportunities */}
+            {/* Required Original Documents */}
             <section className="bg-white p-8 rounded-xl shadow-lg">
-              <h2 className="text-2xl font-bold text-ssgmce-blue mb-6 flex items-center gap-3">
-                <FaChartLine className="text-ssgmce-orange" />
-                Career Opportunities
+              <h2 className="text-3xl font-bold text-ssgmce-blue mb-6 flex items-center gap-3">
+                <FaClipboardList className="text-ssgmce-orange" />
+                Required Original Documents for Admission
               </h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                {[
-                  {
-                    title: "Corporate Sector",
-                    roles:
-                      "Management Trainee, Business Analyst, Marketing Manager, HR Manager",
-                  },
-                  {
-                    title: "Banking & Finance",
-                    roles:
-                      "Financial Analyst, Investment Banker, Relationship Manager, Credit Manager",
-                  },
-                  {
-                    title: "Consulting",
-                    roles:
-                      "Business Consultant, Strategy Analyst, Operations Consultant",
-                  },
-                  {
-                    title: "Entrepreneurship",
-                    roles:
-                      "Startup Founder, Business Owner, Freelance Consultant",
-                  },
-                  {
-                    title: "E-Commerce",
-                    roles:
-                      "Product Manager, Digital Marketing Manager, Operations Head",
-                  },
-                  {
-                    title: "Government Jobs",
-                    roles:
-                      "Bank PO, Management Cadre, Public Sector Undertakings",
-                  },
-                ].map((career, idx) => (
-                  <div
-                    key={idx}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-300"
-                  >
-                    <h3 className="font-bold text-ssgmce-blue mb-2">
-                      {career.title}
-                    </h3>
-                    <p className="text-sm text-gray-600">{career.roles}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Documents Required */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
-              <h2 className="text-2xl font-bold text-ssgmce-blue mb-6 flex items-center gap-3">
-                <FaFileAlt className="text-ssgmce-orange" />
-                Documents Required
-              </h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                {admissionsData.documentsRequired.mba.map((doc, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
-                  >
-                    <FaCheckCircle className="text-ssgmce-orange mt-1 flex-shrink-0" />
-                    <span className="text-gray-700">{doc}</span>
-                  </div>
-                ))}
-                {admissionsData.documentsRequired.common
-                  .slice(0, 8)
-                  .map((doc, idx) => (
-                    <div
-                      key={`common-${idx}`}
-                      className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
-                    >
-                      <FaCheckCircle className="text-ssgmce-orange mt-1 flex-shrink-0" />
-                      <span className="text-gray-700">{doc}</span>
-                    </div>
-                  ))}
-              </div>
-            </section>
-
-            {/* Contact */}
-            <section className="bg-blue-50 border-l-4 border-ssgmce-blue p-6 rounded-lg">
-              <h3 className="text-lg font-bold text-ssgmce-blue mb-3">
-                MBA Program Coordinator
-              </h3>
-              <p className="text-gray-700 mb-3">
-                For MBA-specific queries, contact:
+              <p className="text-gray-700 mb-6 font-semibold">
+                Documents to be produced at the time of Admission:
               </p>
-              <div className="space-y-1 text-sm">
-                <p>
-                  <strong>Phone:</strong>{" "}
-                  {admissionsData.contactInfo.admissionOffice.phone}
+              <div className="grid md:grid-cols-2 gap-4">
+                {[
+                  "Receipt-cum-Acknowledgement by Facilitation Center (FC)/Scrutiny Center",
+                  "MHT-CET-2025 / Any Entrance Exam Approved by State CET Cell",
+                  "S.S.C. Mark sheet",
+                  "H.S.C. Mark sheet",
+                  "Graduation Mark sheet",
+                  "Transfer/Leaving Certificate",
+                  "Indian Nationality Certificate",
+                  "Aadhar Card and Domicile Certificate/ Birth Certificate",
+                  "Migration Certificate (Students who have passed Degree Exam other than SGBAU)",
+                  "For Category Students: Caste, Caste Validity, Non-creamy Layer (Valid up to 31st March 2026)",
+                ].map((doc, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    <FaCheckCircle className="text-green-600 mt-1 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm leading-relaxed">
+                      {doc}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
+                <p className="text-gray-800 text-sm">
+                  <strong className="text-yellow-700">
+                    @ Immigration (Migration) Fees:
+                  </strong>{" "}
+                  Rs. 125/- will be charged extra for the students passed Degree
+                  exam other than SGBAU, Amravati
                 </p>
-                <p>
-                  <strong>Email:</strong> mba@ssgmce.ac.in
-                </p>
-                <p>
-                  <strong>Timings:</strong>{" "}
-                  {admissionsData.contactInfo.admissionOffice.timings}
-                </p>
+              </div>
+            </section>
+
+            {/* Important Notes - Anti Capitation */}
+            <section className="bg-gradient-to-r from-red-50 to-orange-50 p-8 rounded-xl shadow-lg border-l-4 border-red-600">
+              <h2 className="text-3xl font-bold text-red-700 mb-6 flex items-center gap-3">
+                <FaExclamationTriangle className="text-red-600" />
+                Important Notice
+              </h2>
+              <div className="space-y-4">
+                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-ssgmce-blue">
+                  <div className="flex items-start gap-4">
+                    <FaShieldAlt className="text-ssgmce-blue text-2xl flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="font-bold text-ssgmce-blue text-lg mb-2">
+                        Merit-Based Transparent Admission
+                      </h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        All the admissions at{" "}
+                        <strong>
+                          Shri Sant Gajanan Maharaj College of Engineering,
+                          Shegaon
+                        </strong>{" "}
+                        are done strictly on the basis of{" "}
+                        <strong className="text-green-600">Merit</strong> and in
+                        a{" "}
+                        <strong className="text-green-600">
+                          Transparent Manner
+                        </strong>{" "}
+                        by way of counseling.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-600">
+                  <div className="flex items-start gap-4">
+                    <FaExclamationTriangle className="text-red-600 text-2xl flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="font-bold text-red-700 text-lg mb-2">
+                        Beware of Fraudulent Agents
+                      </h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        Institute has{" "}
+                        <strong className="text-red-600">
+                          NOT authorized any agency or agent
+                        </strong>{" "}
+                        for admitting students. In this regard, Parents and
+                        Candidates are sincerely advised{" "}
+                        <strong>
+                          not to fall prey to unscrupulous agents or agencies
+                        </strong>
+                        .
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-600">
+                  <div className="flex items-start gap-4">
+                    <FaShieldAlt className="text-green-600 text-2xl flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="font-bold text-green-700 text-lg mb-2">
+                        No Capitation Fees
+                      </h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        <strong className="text-green-600">
+                          No Capitation fees
+                        </strong>{" "}
+                        are collected by the institute by adhering to the{" "}
+                        <strong>Anti Capitation Act</strong>.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-ssgmce-blue text-white p-6 rounded-lg shadow-md text-center">
+                  <p className="font-bold text-xl">Dr. S. B. Somani</p>
+                  <p className="text-lg">Principal</p>
+                </div>
               </div>
             </section>
           </div>
