@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { FaGraduationCap, FaUsers, FaTrophy, FaBuilding, FaArrowRight, FaChevronLeft, FaChevronRight, FaClock, FaMapMarkerAlt, FaMicroscope, FaHandshake } from 'react-icons/fa';
-import { useState, useEffect } from 'react';
+import { FaGraduationCap, FaUsers, FaTrophy, FaBuilding, FaArrowRight, FaClock, FaMapMarkerAlt, FaMicroscope, FaHandshake } from 'react-icons/fa';
+import { useState } from 'react';
 import StatCard from '../components/StatCard';
 import NewsCard from '../components/NewsCard';
 import NewsTicker from '../components/NewsTicker';
@@ -8,10 +8,10 @@ import useFetch from '../hooks/useFetch';
 import mainGate from '../assets/images/home/Main-Gate.avif';
 import campusView from '../assets/images/home/Campus-View.avif';
 import arialView from '../assets/images/home/Arial-view.jpeg';
+import droneVideo from '../assets/images/home/drone shot.mp4';
 
 const Home = () => {
   const { data: newsData } = useFetch('/api/news');
-  const [currentSlide, setCurrentSlide] = useState(0);
 
   // Fallback data if API is empty
   const staticNews = [
@@ -22,78 +22,23 @@ const Home = () => {
 
   const newsItems = (newsData && newsData.length > 0) ? newsData : staticNews;
 
-  const slides = [
-    {
-      image: mainGate,
-      title: 'सर्वे भवन्तु सुखिनः',
-      subtitle: 'Bestowed by the blessings of Shri Sant Gajanan Maharaj.'
-    },
-    {
-      image: campusView,
-      title: 'Excellence in Engineering Education',
-      subtitle: 'Shaping Future Engineers Since 1983'
-    },
-    {
-      image: arialView,
-      title: 'State-of-the-Art Infrastructure',
-      subtitle: 'Modern Labs and World-Class Facilities'
-    }
-  ];
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
-  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-
   return (
     <div className="animation-fade-in font-sans">
       
-      {/* Hero Carousel */}
+      {/* Hero Video */}
       <section className="relative h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden">
-        {slides.map((slide, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10"></div>
-            <img
-              src={slide.image}
-              alt={slide.title}
-              className="w-full h-full object-contain"
-            />
-            <div className="absolute bottom-20 left-0 right-0 z-20 text-center text-white px-4">
-              <h2 className="text-3xl md:text-5xl font-bold mb-3 drop-shadow-lg tracking-wide">{slide.title}</h2>
-              <p className="text-lg md:text-2xl font-light drop-shadow-md">{slide.subtitle}</p>
-            </div>
-          </div>
-        ))}
-        
-        {/* Navigation Arrows */}
-        <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full backdrop-blur-sm transition-all border border-white/30">
-          <FaChevronLeft size={20} />
-        </button>
-        <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full backdrop-blur-sm transition-all border border-white/30">
-          <FaChevronRight size={20} />
-        </button>
-
-        {/* Slide Indicators */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
-           {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                index === currentSlide ? 'w-8 bg-ssgmce-orange' : 'w-3 bg-white/60 hover:bg-white'
-              }`}
-            />
-          ))}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10"></div>
+        <video
+          src={droneVideo}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute bottom-20 left-0 right-0 z-20 text-center text-white px-4">
+          <h2 className="text-3xl md:text-5xl font-bold mb-3 drop-shadow-lg tracking-wide">सर्वे भवन्तु सुखिनः</h2>
+          <p className="text-lg md:text-2xl font-light drop-shadow-md">Bestowed by the blessings of Shri Sant Gajanan Maharaj.</p>
         </div>
       </section>
 
