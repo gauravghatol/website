@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FaBars, FaTimes, FaChevronDown, FaChevronRight, FaHome } from 'react-icons/fa';
 import logo from '../assets/images/common/logo.png';
@@ -8,6 +8,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeSubDropdown, setActiveSubDropdown] = useState(null);
+  const subDropdownTimeout = useRef(null);
   const location = useLocation();
 
   const isActive = (path) => location.pathname === path;
@@ -16,6 +17,8 @@ const Navbar = () => {
     {
       name: 'About',
       path: '/about',
+      megaMenuImage: 'https://images.unsplash.com/photo-1562774053-701939374585?w=800&h=600&fit=crop',
+      megaMenuTitle: 'About SSGMCE',
       dropdown: [
         { name: 'SSGMCE At Glance', path: '/about' },
         { name: 'Vision-Mission, Core Values & Goals', path: '/about/vision' },
@@ -30,6 +33,8 @@ const Navbar = () => {
     },
     {
       name: 'Academics',
+      megaMenuImage: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&h=600&fit=crop',
+      megaMenuTitle: 'Academic Excellence',
       dropdown: [
         { 
           name: 'Departments', 
@@ -42,7 +47,7 @@ const Navbar = () => {
             { name: 'Electronics and Telecommunication Engg.', path: '/departments/entc' },
             { name: 'Information Technology', path: '/departments/it' },
             { name: 'Mechanical Engineering', path: '/departments/mechanical' },
-            { name: 'Master of Business Administration(MBA)', path: '/departments/mba' },
+            { name: 'Master of Business Administration (MBA)', path: '/departments/mba' },
           ]
         },
         { name: 'Academics Planner & Calendar', path: '/academics/planner' },
@@ -61,6 +66,8 @@ const Navbar = () => {
     {
       name: 'Admissions',
       path: '/admissions',
+      megaMenuImage: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&h=600&fit=crop',
+      megaMenuTitle: 'Join SSGMCE',
       dropdown: [
         { name: 'Institute Brochure', path: '/admissions/brochure' },
         { name: 'Under-Graduate Program (UG)', path: '/admissions/ug' },
@@ -74,6 +81,8 @@ const Navbar = () => {
     {
       name: 'Research & Innovation',
       path: '/research',
+      megaMenuImage: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&h=600&fit=crop',
+      megaMenuTitle: 'Innovation & Research',
       dropdown: [
         { name: 'Research and Development Cell (RDC)', path: '/research/rdc' },
         { name: 'Research Policy Document', path: '/research/policy' },
@@ -91,6 +100,8 @@ const Navbar = () => {
     {
       name: 'Facilities',
       path: '/gallery',
+      megaMenuImage: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=800&h=600&fit=crop',
+      megaMenuTitle: 'World-Class Facilities',
       dropdown: [
         { name: 'Administrative Office', path: '/facilities/admin' },
         { name: 'Central Library', path: '/facilities/library' },
@@ -103,6 +114,8 @@ const Navbar = () => {
     {
       name: 'Placements',
       path: '/placements',
+      megaMenuImage: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&h=600&fit=crop',
+      megaMenuTitle: 'Career Opportunities',
       dropdown: [
         { name: 'Placement Brochure', path: '/placements/brochure' },
         { name: 'About Training & Placement Cell', path: '/placements/about' },
@@ -120,6 +133,8 @@ const Navbar = () => {
     {
       name: 'IQAC',
       path: '/iqac',
+      megaMenuImage: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&h=600&fit=crop',
+      megaMenuTitle: 'Quality Assurance',
       dropdown: [
         { name: 'Vision Mission, Quality Policies', path: '/iqac/vision' },
         { name: 'Composition & Function', path: '/iqac/composition' },
@@ -141,6 +156,8 @@ const Navbar = () => {
     {
       name: 'Documents',
       path: '/documents',
+      megaMenuImage: 'https://images.unsplash.com/photo-1568667256549-094345857637?w=800&h=600&fit=crop',
+      megaMenuTitle: 'Important Documents',
       dropdown: [
         { name: 'Policies and Procedure', path: '/documents/policies' },
         { name: 'Mandatory Disclosure', path: '/documents/disclosure' },
@@ -158,6 +175,8 @@ const Navbar = () => {
     {
       name: 'Activities',
       path: '/events',
+      megaMenuImage: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800&h=600&fit=crop',
+      megaMenuTitle: 'Student Activities',
       dropdown: [
         { name: 'INNOVO 2025', path: '/activities/innovo' },
         { name: 'Drone Club', path: '/activities/drone' },
@@ -239,7 +258,7 @@ const Navbar = () => {
       </div>
 
       {/* Main Navigation Menu - White Background */}
-      <nav className="bg-white sticky top-0 z-50 shadow-md border-b border-gray-200">
+      <nav className="bg-white sticky top-0 z-50 shadow-md border-b border-gray-200 relative">
         <div className="w-full px-4 md:px-6 lg:px-8">
           <div className="flex justify-between items-center min-h-[60px] md:min-h-[70px]">
             {/* Logo on Left */}
@@ -264,79 +283,164 @@ const Navbar = () => {
             </button>
 
             {/* Desktop Menu */}
-            <ul className="hidden md:flex items-center flex-1 justify-end gap-0.5 lg:gap-1">
-              {menuItems.map((item, index) => (
-                <li
-                  key={index}
-                  className="relative group"
-                  onMouseEnter={() => item.dropdown && setActiveDropdown(item.name)}
-                  onMouseLeave={() => {
-                    setActiveDropdown(null);
-                    setActiveSubDropdown(null);
-                  }}
-                >
-                  {item.dropdown ? (
-                    <>
-                      <button className={`px-2.5 lg:px-3 py-2.5 text-gray-700 font-medium hover:text-ssgmce-blue transition-colors duration-300 flex items-center gap-0.5 whitespace-nowrap text-xs lg:text-sm ${
-                        isActive(item.path) ? 'text-ssgmce-blue border-b-2 border-ssgmce-blue' : ''
+            <div 
+              className="hidden md:flex items-center flex-1 justify-end"
+              onMouseLeave={() => {
+                setActiveDropdown(null);
+                setActiveSubDropdown(null);
+              }}
+            >
+              <div className="relative">
+              <ul className="flex items-center gap-0.5 lg:gap-1">
+                {menuItems.map((item, index) => (
+                  <li
+                    key={index}
+                    onMouseEnter={() => item.dropdown ? setActiveDropdown(item.name) : setActiveDropdown(null)}
+                  >
+                    {item.dropdown ? (
+                      <button className={`px-2.5 lg:px-3 py-2.5 text-gray-700 font-medium hover:text-ssgmce-blue transition-colors duration-300 flex items-center whitespace-nowrap text-sm lg:text-base ${
+                        activeDropdown === item.name ? 'text-ssgmce-blue border-b-2 border-ssgmce-orange' : isActive(item.path) ? 'text-ssgmce-blue border-b-2 border-ssgmce-blue' : ''
                       }`}>
-                        {item.name} <FaChevronDown className="text-[10px]" />
+                        {item.name}
                       </button>
-                      {activeDropdown === item.name && (
-                        <ul className={`absolute top-full ${item.name === 'Activities' ? 'right-0 grid grid-cols-2 min-w-[500px]' : 'left-0 min-w-[240px]'} bg-white shadow-xl border-t-2 border-ssgmce-orange z-50`}>
-                          {item.dropdown.map((subItem, subIndex) => (
-                            <li 
-                              key={subIndex} 
-                              className="border-b border-gray-100 last:border-b-0 relative"
-                              onMouseEnter={() => subItem.hasSubDropdown && setActiveSubDropdown(subItem.name)}
-                            >
-                              {subItem.hasSubDropdown ? (
-                                <>
-                                  <div className="flex items-center justify-between px-3.5 py-2 text-gray-700 hover:bg-ssgmce-blue hover:text-white transition-all duration-200 cursor-pointer text-xs">
-                                    <span>{subItem.name}</span>
-                                    <FaChevronRight className="text-[10px]" />
-                                  </div>
-                                  {activeSubDropdown === subItem.name && (
-                                    <ul className="absolute left-full top-0 bg-white shadow-xl min-w-[280px] border-t-2 border-ssgmce-orange ml-0">
-                                      {subItem.subDropdown.map((nestedItem, nestedIndex) => (
-                                        <li key={nestedIndex} className="border-b border-gray-100 last:border-b-0">
-                                          <Link
-                                            to={nestedItem.path}
-                                            className="block px-3.5 py-2 text-gray-700 hover:bg-ssgmce-blue hover:text-white transition-all duration-200 text-xs"
-                                          >
-                                            {nestedItem.name}
-                                          </Link>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  )}
-                                </>
-                              ) : (
-                                <Link
-                                  to={subItem.path}
-                                  className="block px-3.5 py-2 text-gray-700 hover:bg-ssgmce-blue hover:text-white transition-all duration-200 text-xs"
-                                >
-                                  {subItem.name}
-                                </Link>
-                              )}
-                            </li>
+                    ) : (
+                      <Link
+                        to={item.path}
+                        className={`block px-2.5 lg:px-3 py-2.5 text-gray-700 font-medium hover:text-ssgmce-blue transition-colors duration-300 whitespace-nowrap text-sm lg:text-base ${
+                          isActive(item.path) ? 'text-ssgmce-blue border-b-2 border-ssgmce-blue' : ''
+                        }`}
+                        onMouseEnter={() => setActiveDropdown(null)}
+                      >
+                        {item.name}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+
+              {/* Mega Menu Panel - spans full width of menu tabs */}
+              {activeDropdown && (() => {
+                const activeItem = menuItems.find(item => item.name === activeDropdown);
+                if (!activeItem || !activeItem.dropdown) return null;
+                
+                // All items go into columns (including sub-dropdown items like Departments)
+                const allItems = activeItem.dropdown;
+                
+                // Split items into columns
+                const getColumns = (items, colCount) => {
+                  const perCol = Math.ceil(items.length / colCount);
+                  const cols = [];
+                  for (let i = 0; i < colCount; i++) {
+                    cols.push(items.slice(i * perCol, (i + 1) * perCol));
+                  }
+                  return cols;
+                };
+                
+                const colCount = allItems.length > 16 ? 3 : allItems.length > 8 ? 2 : 2;
+                const columns = getColumns(allItems, colCount);
+                
+                return (
+                  <div className="absolute left-0 right-0 top-full pt-3 z-50">
+                    <div className="bg-white rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.12)] relative">
+                    <div className="px-8 py-8">
+                      <div className="flex gap-8">
+                        {/* Left Side - Menu Items */}
+                        <div className="flex-1 flex gap-8">
+                          {columns.map((col, colIdx) => (
+                            <div key={`col-${colIdx}`} className="flex-1 min-w-[180px]">
+                              <ul className="space-y-1.5">
+                                {col.map((subItem, subIndex) => (
+                                  <li key={subIndex} className="relative">
+                                    {subItem.hasSubDropdown ? (
+                                      <div
+                                        onMouseEnter={() => {
+                                          clearTimeout(subDropdownTimeout.current);
+                                          setActiveSubDropdown(subItem.name);
+                                        }}
+                                        onMouseLeave={() => {
+                                          subDropdownTimeout.current = setTimeout(() => setActiveSubDropdown(null), 150);
+                                        }}
+                                      >
+                                        <button className="w-full flex items-center justify-between py-1.5 text-gray-700 hover:text-ssgmce-orange transition-all text-base font-medium group">
+                                          {subItem.name}
+                                          <FaChevronRight className="text-[10px] text-gray-400 group-hover:text-ssgmce-orange transition-colors" />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <Link
+                                        to={subItem.path}
+                                        className="block py-1.5 text-gray-700 hover:text-ssgmce-orange hover:underline transition-all text-base font-medium"
+                                      >
+                                        {subItem.name}
+                                      </Link>
+                                    )}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
                           ))}
-                        </ul>
-                      )}
-                    </>
-                  ) : (
-                    <Link
-                      to={item.path}
-                      className={`block px-2.5 lg:px-3 py-2.5 text-gray-700 font-medium hover:text-ssgmce-blue transition-colors duration-300 whitespace-nowrap text-xs lg:text-sm ${
-                        isActive(item.path) ? 'text-ssgmce-blue border-b-2 border-ssgmce-blue' : ''
-                      }`}
-                    >
-                      {item.name}
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
+                        </div>
+                        
+                        {/* Right Side - Promotional Image */}
+                        <div className="w-[350px] relative overflow-hidden rounded-lg shadow-lg flex-shrink-0">
+                          <img 
+                            src={activeItem.megaMenuImage} 
+                            alt={activeItem.megaMenuTitle}
+                            className="w-full h-full object-cover min-h-[300px]"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-6">
+                            <h3 className="text-white text-2xl font-bold mb-2">
+                              {activeItem.megaMenuTitle}
+                            </h3>
+                            <p className="text-white/90 text-sm mb-4">
+                              Explore our comprehensive offerings
+                            </p>
+                            <button className="bg-ssgmce-orange hover:bg-ssgmce-light-orange text-white px-5 py-2.5 rounded-md text-sm font-semibold transition-all hover:shadow-lg w-fit">
+                              Learn More
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Sub-dropdown panel - anchored to mega menu container */}
+                    {(() => {
+                      const subItem = activeItem.dropdown.find(item => item.hasSubDropdown && item.name === activeSubDropdown);
+                      if (!subItem) return null;
+                      return (
+                        <div 
+                          className="absolute right-full top-0 bottom-0 pr-2 z-50"
+                          onMouseEnter={() => {
+                            clearTimeout(subDropdownTimeout.current);
+                            setActiveSubDropdown(subItem.name);
+                          }}
+                          onMouseLeave={() => {
+                            subDropdownTimeout.current = setTimeout(() => setActiveSubDropdown(null), 150);
+                          }}
+                        >
+                          <div className="bg-white rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.12)] h-full py-6 px-6 min-w-[300px] flex flex-col justify-center">
+                            <ul className="flex flex-col justify-between h-full">
+                              {subItem.subDropdown.map((nestedItem, nestedIndex) => (
+                                <li key={nestedIndex}>
+                                  <Link
+                                    to={nestedItem.path}
+                                    className="block py-1.5 text-gray-600 hover:text-ssgmce-orange hover:underline transition-all text-base"
+                                  >
+                                    {nestedItem.name}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    </div>
+                  </div>
+                );
+              })()}
+              </div>
+            </div>
           </div>
 
           {/* Mobile Menu */}
