@@ -5,9 +5,6 @@ import StatCard from '../components/StatCard';
 import NewsCard from '../components/NewsCard';
 import NewsTicker from '../components/NewsTicker';
 import useFetch from '../hooks/useFetch';
-import mainGate from '../assets/images/home/Main-Gate.avif';
-import campusView from '../assets/images/home/Campus-View.avif';
-import arialView from '../assets/images/home/Arial-view.jpeg';
 import droneVideo from '../assets/images/home/drone shot.mp4';
 
 const Home = () => {
