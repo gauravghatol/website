@@ -1,130 +1,92 @@
-import React, { useEffect } from 'react';
-import PageHeader from '../../components/PageHeader';
+import React from 'react';
+import GenericPage from '../../components/GenericPage';
 import ResearchSidebar from '../../components/ResearchSidebar';
-import {
-  FaBriefcase,
-  FaChalkboardTeacher,
-  FaExchangeAlt,
-  FaIndustry,
-  FaCheck
-} from 'react-icons/fa';
+import { FaUserTie, FaMapMarkerAlt, FaCalendarAlt, FaCogs, FaFilePdf, FaChevronRight } from 'react-icons/fa';
+
+const trainingData = [
+  { sr: 1, name: 'Dr. A. S. Tale', institution: 'Vigyan Ashram, Pabal, Pune', area: 'Diploma in Digital Fabrication', duration: '25 Jan 2021 – 24 Jun 2021' },
+  { sr: 2, name: 'Dr. Pavan M. Kuchar', institution: 'Vigyan Ashram, Pabal, Pune', area: 'Diploma in Digital Fabrication', duration: '26 Jan 2021 – 28 Jul 2021' },
+  { sr: 3, name: 'Mr. V. S. Karale', institution: 'Vigyan Ashram, Pabal, Pune', area: 'Diploma in Digital Fabrication', duration: '26 Jan 2021 – 30 Jun 2021' },
+  { sr: 4, name: 'Mr. G. N. Bonde', institution: 'KPIT Technologies Ltd., Pune', area: 'Mathematical Modeling of Electrical and Mechanical System Using MATLAB Simulink', duration: '11 Jul 2022 – 10 Sep 2022' },
+  { sr: 5, name: 'Mr. Nitin G. More', institution: 'Vigyan Ashram, Pabal, Pune', area: 'Diploma in Digital Fabrication', duration: '29 Jan 2020 – 01 Aug 2020' },
+  { sr: 6, name: 'Mr. Rajesh V. Rajkolhe', institution: 'Universal Orbital Systems Pvt. Ltd., Narhe, Pune', area: 'Design and Manufacturing', duration: '12 Jun 2017 – 12 Aug 2017' },
+  { sr: 7, name: 'Mr. Kunal R. Gandhare', institution: 'Bhogle Automotive, MIDC, Chh. Sambhajinagar', area: 'Product Design', duration: '12 Jun 2017 – 12 Aug 2017' },
+  { sr: 8, name: 'Mr. V. S. Ingole', institution: 'Vigyan Ashram, Pabal, Pune', area: 'Embedded Systems', duration: '22 Jan 2020 – 17 Jul 2020' },
+  { sr: 9, name: 'Mr. V. V. Ratnaparkhi', institution: 'Space Application Centre, ISRO, Ahmedabad', area: 'GaN Based Power Amplifier Design', duration: '15 May 2017 – 29 Oct 2017' },
+  { sr: 10, name: 'Mr. Sumit S. Muddalkar', institution: 'MindScripts Technologies, Pune', area: 'Advanced Java', duration: 'May 2017 – Jun 2017' },
+  { sr: 11, name: 'Mr. Pritam H. Gohatre', institution: 'MindScripts Technologies, Pune', area: 'Diploma in Software Testing', duration: '04 Jun 2018 – 28 Jul 2018' },
+];
 
 const Sabbatical = () => {
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    document.title = 'Sabbatical Training | Research - SSGMCE';
-  }, []);
-
-  const beneficiaries = [
-    { faculty: 'Prof. A. B. C', dept: 'CSE', company: 'TCS, Pune', duration: '2 Months' },
-    { faculty: 'Dr. X. Y. Z', dept: 'Electrical', company: 'Siemens, Mumbai', duration: '1 Month' },
-    { faculty: 'Prof. P. Q. R', dept: 'Mechanical', company: 'Tata Motors, Pune', duration: '45 Days' }
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <PageHeader
-        title="Faculty Sabbatical Training"
-        subtitle="Bridging the Industry-Academia Gap"
-        breadcrumbs={[
-          { label: 'Research', link: '/research/overview' },
-          { label: 'Sabbatical' }
-        ]}
-      />
+    <GenericPage title="Sabbatical Training" sidebar={<ResearchSidebar />}>
+      {/* Intro */}
+      <p className="text-gray-600 mb-6 leading-relaxed">
+        SSGMCE encourages faculty members to undertake sabbatical training at premier industries, research
+        organizations, and academic institutions. This initiative enhances teaching quality and brings
+        real-world expertise into the classroom.
+      </p>
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-3">
-            <ResearchSidebar />
-          </div>
-
-          <div className="lg:col-span-9 space-y-10">
-            {/* Overview */}
-            <section className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
-              <div className="flex flex-col md:flex-row items-center gap-8">
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-4">Why Sabbatical Training?</h2>
-                  <p className="text-gray-700 leading-relaxed mb-4">
-                    To keep pace with rapidly changing technologies, SSGMCE encourages faculty members to undergo Sabbatical Training in relevant industries. This initiative helps faculty gain hands-on experience, understand current industry practices, and incorporate them into the teaching-learning process.
-                  </p>
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-3 text-gray-700">
-                      <FaCheck className="text-green-500" /> Exposure to industrial environment
-                    </li>
-                    <li className="flex items-center gap-3 text-gray-700">
-                      <FaCheck className="text-green-500" /> Problem-solving on real-world projects
-                    </li>
-                    <li className="flex items-center gap-3 text-gray-700">
-                      <FaCheck className="text-green-500" /> Curriculum enhancement
-                    </li>
-                  </ul>
-                </div>
-                <div className="w-full md:w-1/3 flex justify-center">
-                  <FaIndustry className="text-9xl text-blue-100" />
-                </div>
-              </div>
-            </section>
-
-            {/* Process Steps */}
-            <section>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <span className="w-2 h-8 bg-blue-600 rounded-full"></span>
-                Process Workflow
-              </h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative text-center">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
-                  <h3 className="mt-4 font-bold text-lg mb-2">Identification</h3>
-                  <p className="text-sm text-gray-600">Faculty identifies relevant industry and training area.</p>
-                </div>
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative text-center">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
-                  <h3 className="mt-4 font-bold text-lg mb-2">Approval</h3>
-                  <p className="text-sm text-gray-600">Institute grants paid leave and sponsorship for the training period.</p>
-                </div>
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative text-center">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
-                  <h3 className="mt-4 font-bold text-lg mb-2">Implementation</h3>
-                  <p className="text-sm text-gray-600">Knowledge transfer to students through revised curriculum and workshops.</p>
-                </div>
-              </div>
-            </section>
-
-            {/* Recent Beneficiaries */}
-            <section>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <span className="w-2 h-8 bg-orange-500 rounded-full"></span>
-                Recent Training Details
-              </h2>
-              <div className="bg-white rounded-xl shadow overflow-hidden">
-                <table className="w-full text-left">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="p-4 font-semibold text-gray-600">Faculty Name</th>
-                      <th className="p-4 font-semibold text-gray-600">Department</th>
-                      <th className="p-4 font-semibold text-gray-600">Industry / Company</th>
-                      <th className="p-4 font-semibold text-gray-600">Duration</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {beneficiaries.map((b, i) => (
-                      <tr key={i} className="hover:bg-gray-50">
-                        <td className="p-4 font-medium text-gray-800 flex items-center gap-2">
-                          <FaChalkboardTeacher className="text-gray-400" /> {b.faculty}
-                        </td>
-                        <td className="p-4 text-gray-600">{b.dept}</td>
-                        <td className="p-4 font-medium text-blue-600">{b.company}</td>
-                        <td className="p-4 text-gray-600 text-sm bg-gray-50">{b.duration}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </div>
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
+        <div className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-center">
+          <p className="text-2xl font-bold text-gray-800">{trainingData.length}</p>
+          <p className="text-xs text-gray-500 mt-0.5">Faculty Trained</p>
+        </div>
+        <div className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-center">
+          <p className="text-2xl font-bold text-gray-800">8</p>
+          <p className="text-xs text-gray-500 mt-0.5">Partner Organizations</p>
+        </div>
+        <div className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-center col-span-2 sm:col-span-1">
+          <p className="text-2xl font-bold text-gray-800">2017–22</p>
+          <p className="text-xs text-gray-500 mt-0.5">Active Period</p>
         </div>
       </div>
-    </div>
+
+      {/* Training Cards */}
+      <h2 className="text-lg font-semibold text-ssgmce-blue mb-4">Training Details</h2>
+      <div className="space-y-3 mb-8">
+        {trainingData.map((t) => (
+          <div
+            key={t.sr}
+            className="bg-white border border-gray-200 rounded-xl p-4 hover:border-gray-300 transition"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-ssgmce-blue/10 border border-ssgmce-blue/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <FaUserTie className="text-sm text-ssgmce-blue" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-gray-800">{t.name}</h3>
+                <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="flex items-start gap-1.5">
+                    <FaMapMarkerAlt className="text-xs text-gray-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-xs text-gray-500">{t.institution}</span>
+                  </div>
+                  <div className="flex items-start gap-1.5">
+                    <FaCogs className="text-xs text-gray-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-xs text-gray-600 font-medium">{t.area}</span>
+                  </div>
+                  <div className="flex items-start gap-1.5">
+                    <FaCalendarAlt className="text-xs text-gray-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-xs text-gray-500">{t.duration}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* PDF Link */}
+      <a
+        href="https://www.ssgmce.ac.in/uploads/pdf/Sabbatical-Training-Deatils_Signed.pdf"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 px-4 py-2.5 bg-ssgmce-saffron text-white hover:bg-ssgmce-saffron/90 rounded-lg transition text-sm font-medium"
+      >
+        <FaFilePdf /> Download Signed Document <FaChevronRight className="text-xs" />
+      </a>
+    </GenericPage>
   );
 };
 

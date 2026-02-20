@@ -1,130 +1,132 @@
-import React, { useEffect } from 'react';
-import PageHeader from '../../components/PageHeader';
+import React from 'react';
+import { FaExternalLinkAlt, FaMicrochip, FaCar, FaCogs, FaSolarPanel, FaIndustry, FaLaptopCode, FaFlask } from 'react-icons/fa';
+import GenericPage from '../../components/GenericPage';
 import ResearchSidebar from '../../components/ResearchSidebar';
-import {
-  FaMicrochip,
-  FaBrain,
-  FaRobot,
-  FaBolt,
-  FaArrowRight,
-  FaTools
-} from 'react-icons/fa';
+
+const facilities = [
+  {
+    name: "Cadence Center",
+    icon: FaMicrochip,
+    description: "Cadence VLSI and Embedded System Design Centre equipped with industry-standard Cadence EDA tools for VLSI design, simulation, and verification. Supports research and training in semiconductor design and embedded systems.",
+    image: "https://www.ssgmce.ac.in/images/blog/cadence-img.jpg",
+    reportUrl: "https://www.ssgmce.ac.in/uploads/Cadence%20VLSI%20and%20Embedded%20System%20Design%20Centre.pdf",
+    department: "Electronics & Telecommunication",
+  },
+  {
+    name: "Electric Vehicle Lab",
+    icon: FaCar,
+    description: "State-of-the-art Electric Vehicle Laboratory for research and development in EV technology, battery management systems, motor controllers, and sustainable transportation solutions.",
+    image: "https://www.ssgmce.ac.in/images/blog/EV-Lab-1.webp",
+    reportUrl: "https://www.ssgmce.ac.in/uploads/Report%20Electric%20_Vehicle%20_lab.pdf",
+    department: "Electrical Engineering",
+  },
+  {
+    name: "FAB Lab",
+    icon: FaCogs,
+    description: "Fabrication Laboratory (FAB Lab) providing hands-on access to modern fabrication tools including 3D printers, laser cutters, CNC machines, and prototyping equipment for innovation and product development.",
+    image: "https://www.ssgmce.ac.in/images/blog/Fab-Lab.png",
+    reportUrl: "https://www.ssgmce.ac.in/uploads/Annual%20Report%20of%20Fablab%202023-24.pdf",
+    department: "Mechanical Engineering",
+  },
+  {
+    name: "Solar Production Center",
+    icon: FaSolarPanel,
+    description: "Center of Excellence in Solar Energy featuring solar panel production facility, sun simulators, battery assembly setup, solar product display gallery, and solar radiation measurement equipment for renewable energy research.",
+    image: "https://www.ssgmce.ac.in/images/blog/solar_production.webp",
+    reportUrl: "https://www.ssgmce.ac.in/uploads/SOLAR-CENTER-REPORT.pdf",
+    department: "Electrical Engineering",
+  },
+  {
+    name: "PLC Automation Lab",
+    icon: FaIndustry,
+    description: "PLC and Factory Automation Laboratory equipped with programmable logic controllers, SCADA systems, and industrial automation hardware for training and research in Industry 4.0 technologies.",
+    image: "https://www.ssgmce.ac.in/images/blog/PLC_Automation_lab.PNG",
+    reportUrl: "https://www.ssgmce.ac.in/uploads/Report_Training%20Program%20Conducted_PLC%20and%20Factory%20Automation%20Lab%20(1).pdf",
+    department: "Electrical Engineering",
+  },
+  {
+    name: "SAP ERP Center",
+    icon: FaLaptopCode,
+    description: "SAP ERP (Enterprise Resource Planning) Center providing hands-on experience with SAP modules for students. Covers business process management, supply chain, finance, and human resource management using SAP software.",
+    image: "https://www.ssgmce.ac.in/images/blog/sap_erp.jfif",
+    reportUrl: "https://www.ssgmce.ac.in/uploads/pdf/ERP%20Center%20Overview.pdf",
+    department: "MBA",
+  },
+  {
+    name: "Dr. Georg H Endress Laboratory",
+    icon: FaFlask,
+    description: "Advanced instrumentation and process automation laboratory established in collaboration with Endress+Hauser. Equipped with cutting-edge measurement and control instruments for flow, level, pressure, and temperature measurement.",
+    image: "https://www.ssgmce.ac.in/images/blog/Endress_Laboratory.PNG",
+    reportUrl: "https://www.ssgmce.ac.in/uploads/Detailed%20Report%20E%5EMH%20lab.pdf",
+    department: "Electronics & Telecommunication",
+  },
+];
 
 const COE = () => {
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    document.title = 'Centre of Excellence | Research - SSGMCE';
-  }, []);
-
-  const centers = [
-    {
-      icon: FaMicrochip,
-      title: 'VLSI Design & Embedded Systems',
-      dept: 'Electronics & Telecommunication',
-      description: 'Advanced facility for research in VLSI design, FPGA prototyping, and embedded system development.',
-      features: ['Cadence Tools Suite', 'Xilinx Vivado Boards', 'IoT Development Kits']
-    },
-    {
-      icon: FaBrain,
-      title: 'AI & Data Science',
-      dept: 'Computer Science & Engineering',
-      description: 'Dedicated to research in Artificial Intelligence, Machine Learning, and Big Data Analytics.',
-      features: ['High Performance Computing GPU Server', 'Deep Learning Workstations', 'Cloud Computing Setup']
-    },
-    {
-      icon: FaRobot,
-      title: 'Robotics & Automation',
-      dept: 'Mechanical Engineering',
-      description: 'Focuses on industrial automation, robotics, and mechatronics systems.',
-      features: ['Industrial Robot Arm', 'PLC & SCADA Systems', 'Drone Prototyping Lab']
-    },
-    {
-      icon: FaBolt,
-      title: 'Power Systems & Drives',
-      dept: 'Electrical Engineering',
-      description: 'Research in smart grids, renewable energy integration, and electric drives.',
-      features: ['Power Quality Analyzers', 'Solar PV Emulator', 'Variable Frequency Drives']
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <PageHeader
-        title="Centre of Excellence"
-        subtitle="State-of-the-Art Facilities for Advanced Research"
-        breadcrumbs={[
-          { label: 'Research', link: '/research/overview' },
-          { label: 'COE' }
-        ]}
-      />
+    <GenericPage title="Center of Excellence" sidebar={<ResearchSidebar />}>
+      <p className="text-gray-700 mb-2">
+        SSGMCE houses multiple Centers of Excellence and advanced research facilities dedicated to fostering innovation, hands-on learning, and industry-relevant research across various engineering disciplines.
+      </p>
+      <p className="text-gray-500 text-sm mb-8">
+        These facilities provide students and faculty with access to state-of-the-art equipment and tools for cutting-edge research and development.
+      </p>
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-3">
-            <ResearchSidebar />
-          </div>
-
-          <div className="lg:col-span-9 space-y-10">
-            {/* Introduction */}
-            <section className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 relative overflow-hidden">
-              <div className="relative z-10">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4"> fostering Innovation through Excellence</h2>
-                <p className="text-gray-700 leading-relaxed mb-6">
-                  SSGMCE has established several Centres of Excellence (CoE) in collaboration with industry partners and government agencies. These centres provide state-of-the-art infrastructure and advanced tools to faculty and students for conducting high-end research and development in cutting-edge technologies.
-                </p>
-                <div className="flex gap-4">
-                  <div className="flex items-center gap-2 text-sm font-medium text-blue-600 bg-blue-50 px-4 py-2 rounded-lg">
-                    <FaTools /> Advanced Labs
-                  </div>
-                  <div className="flex items-center gap-2 text-sm font-medium text-orange-600 bg-orange-50 px-4 py-2 rounded-lg">
-                    <FaArrowRight /> Industry Driven
-                  </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {facilities.map((facility, idx) => {
+          const Icon = facility.icon;
+          return (
+            <div
+              key={idx}
+              className="group bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
+            >
+              {/* Image */}
+              <div className="relative h-48 overflow-hidden">
+                <img
+                  src={facility.image}
+                  alt={facility.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <div
+                  className="absolute inset-0 bg-ssgmce-blue items-center justify-center hidden"
+                >
+                  <Icon className="text-white text-5xl" />
+                </div>
+                <div className="absolute top-3 right-3 bg-ssgmce-saffron text-white text-xs px-2 py-1 rounded-full font-medium">
+                  {facility.department}
                 </div>
               </div>
-              {/* Background Decoration */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-orange-50 rounded-full blur-3xl opacity-50 -mr-16 -mt-16"></div>
-            </section>
 
-            {/* Centres Grid */}
-            <section>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <span className="w-2 h-8 bg-blue-600 rounded-full"></span>
-                Our Centres
-              </h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                {centers.map((center, idx) => {
-                  const Icon = center.icon;
-                  return (
-                    <div key={idx} className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                      <div className="p-6">
-                        <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mb-4 text-white shadow-lg group-hover:scale-110 transition-transform">
-                          <Icon className="text-2xl" />
-                        </div>
-
-                        <h3 className="text-xl font-bold text-gray-800 mb-2">{center.title}</h3>
-                        <p className="text-sm text-blue-600 font-medium mb-3">{center.dept}</p>
-                        <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                          {center.description}
-                        </p>
-
-                        <div className="space-y-2">
-                          {center.features.map((feature, i) => (
-                            <div key={i} className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg">
-                              <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                              {feature}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              {/* Content */}
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Icon className="text-ssgmce-blue text-lg flex-shrink-0" />
+                  <h3 className="text-lg font-bold text-ssgmce-blue leading-tight">
+                    {facility.name}
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                  {facility.description}
+                </p>
+                <a
+                  href={facility.reportUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-ssgmce-saffron hover:text-ssgmce-blue transition-colors"
+                >
+                  View Detailed Report
+                  <FaExternalLinkAlt className="text-xs" />
+                </a>
               </div>
-            </section>
-          </div>
-        </div>
+            </div>
+          );
+        })}
       </div>
-    </div>
+    </GenericPage>
   );
 };
 

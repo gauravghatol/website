@@ -1,4 +1,5 @@
-import PageHeader from "/src/components/PageHeader";
+import PageHeader from "../../components/PageHeader";
+import usePageContent from "../../hooks/usePageContent";
 import {
   FaUniversity,
   FaCalendar,
@@ -189,9 +190,10 @@ const HorizontalTimeline = ({ milestones }) => {
   );
 };
 
-import usePageContent from "../../hooks/usePageContent";
-
 const AtGlance = () => {
+  useEffect(() => {
+    document.title = 'At A Glance | SSGMCE';
+  }, []);
   const { page, loading, error } = usePageContent("about-at-glance");
 
   // Animated counter hook

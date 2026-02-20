@@ -1,200 +1,101 @@
-import PageHeader from "/src/components/PageHeader";
-import {
-  FaQuoteLeft,
-  FaEnvelope,
-  FaPhone,
-  FaAward,
-  FaLightbulb,
-  FaUsers,
-} from "react-icons/fa";
-import principalImg from "/src/assets/images/about/principal_c.png";
+import PageHeader from '../../components/PageHeader';
+import { FaQuoteLeft, FaQuoteRight, FaGraduationCap, FaHandshake, FaChartLine, FaHeart } from 'react-icons/fa';
+import { useEffect } from 'react';
 
 const PrincipalMsg = () => {
+  useEffect(() => {
+    document.title = 'Principal Speaks | SSGMCE';
+  }, []);
   return (
     <div>
-      <PageHeader
-        title="Principal Speaks"
-        subtitle="From the Desk of the Principal"
-      />
+      <PageHeader title="Principal Speaks" subtitle="From the Desk of the Principal" />
 
       {/* Principal Speaks */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row gap-10 items-start">
+      <section className="py-16 lg:py-20 bg-white">
+        <div className="container mx-auto px-16">
+          <div className="flex flex-col lg:flex-row gap-12 items-start">
+            {/* Principal Photo & Info */}
             <div className="lg:w-1/3">
               <div className="sticky top-24">
-                <div className="relative">
-                  <div className="absolute -inset-2 bg-gradient-to-r from-ssgmce-blue to-ssgmce-orange rounded-2xl blur opacity-25"></div>
-                  <div className="relative rounded-xl overflow-hidden shadow-2xl border-4 border-white">
-                    <img
-                      src={principalImg}
-                      alt="Principal"
-                      className="w-full h-auto"
-                      onError={(e) =>
-                        (e.target.src =
-                          "https://via.placeholder.com/400x500?text=Principal+Photo")
-                      }
-                    />
-                  </div>
+                <div className="rounded-2xl overflow-hidden shadow-2xl mb-6 border-4 border-gray-100">
+                  <img
+                    src="https://www.ssgmce.ac.in/administrator/uploads/principal_c.png"
+                    alt="Dr. S. B. Somani - Principal SSGMCE"
+                    className="w-full h-auto"
+                    onError={(e) => e.target.src = 'https://via.placeholder.com/400x500?text=Principal+Photo'}
+                  />
                 </div>
-                <div className="bg-gradient-to-br from-ssgmce-blue to-blue-700 text-white p-6 rounded-xl shadow-lg mt-6">
-                  <h3 className="text-2xl font-bold mb-2">Dr. S. B. Somani</h3>
-                  <p className="text-blue-100 font-semibold mb-4">Principal</p>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-center">
-                      <FaEnvelope className="mr-3 text-ssgmce-orange" />
-                      <span>principal@ssgmce.ac.in</span>
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold text-ssgmce-blue">Dr. S. B. Somani</h3>
+                  <p className="text-ssgmce-orange font-semibold mt-1">Principal</p>
+                  <p className="text-gray-500 text-sm mt-1">Shri Sant Gajanan Maharaj College of Engineering, Shegaon</p>
+                </div>
+
+                {/* Quick highlights */}
+                <div className="mt-6 space-y-3">
+                  {[
+                    { icon: <FaGraduationCap />, text: "Quality Education Since 1983" },
+                    { icon: <FaHandshake />, text: "Industry-Academia Collaboration" },
+                    { icon: <FaChartLine />, text: "Excellent Placement Records" },
+                    { icon: <FaHeart />, text: "Value-Based Education" },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <span className="text-ssgmce-orange">{item.icon}</span>
+                      <span className="text-gray-700 text-sm font-medium">{item.text}</span>
                     </div>
-                    <div className="flex items-center">
-                      <FaPhone className="mr-3 text-ssgmce-orange" />
-                      <span>+91-7265-252285</span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
 
+            {/* Message Content */}
             <div className="lg:w-2/3">
-              <div className="mb-8">
-                <h2 className="text-3xl lg:text-4xl font-bold text-ssgmce-blue mb-4 relative">
-                  Message from the Principal
-                  <span className="block h-1 w-24 bg-ssgmce-orange mt-3 rounded-full"></span>
-                </h2>
+              <div className="flex items-center mb-6">
+                <div className="w-1 h-8 bg-ssgmce-orange mr-3"></div>
+                <h2 className="text-3xl font-bold text-ssgmce-blue">Principal Speaks</h2>
               </div>
 
-              {/* Quote Section */}
-              <div className="bg-gradient-to-r from-blue-50 to-orange-50 border-l-4 border-ssgmce-orange p-6 rounded-r-xl mb-8 relative">
-                <FaQuoteLeft className="text-4xl text-ssgmce-orange/20 absolute top-4 left-4" />
-                <p className="text-lg italic text-gray-700 pl-8">
-                  "Education is not just about acquiring knowledge, but about
-                  developing character, values, and a spirit of service to
-                  humanity."
-                </p>
-              </div>
+              <FaQuoteLeft className="text-4xl text-ssgmce-orange/20 mb-4" />
 
               <div className="prose max-w-none text-gray-700 leading-relaxed text-justify space-y-5">
                 <p className="text-lg">
-                  <strong className="text-ssgmce-blue">
-                    Dear Students, Parents, and Well-wishers,
-                  </strong>
+                  <strong className="text-ssgmce-blue">Dear Friends,</strong>
                 </p>
                 <p>
-                  On behalf of the faculty, staff, and our fellow students, I am
-                  pleased to welcome you to{" "}
-                  <strong>
-                    Shri Sant Gajanan Maharaj College of Engineering (SSGMCE),
-                    Shegaon
-                  </strong>
-                  . When you made SSGMCE as your College of choice, you took the
-                  first step in ensuring your place among the illustrious sons
-                  and daughters of this great institution.
+                  On behalf of the faculty, staff and our fellow students, I am pleased to welcome you to Shri Sant Gajanan Maharaj College of Engineering (SSGMCE), Shegaon. When you made SSGMCE as your College of choice, you took the first step in ensuring your place among the illustrious sons and daughters of this great institution. When you chose to study in SSGMCE, you made your first major investment decision.
                 </p>
                 <p>
-                  SSGMCE, one of the leading technical institutes in the
-                  Vidarbha region, has always strived for quality education
-                  since its inception in <strong>1983</strong>. Over the last
-                  four decades, we have successfully nurtured scientific temper,
-                  professional competence, and social commitment among budding
-                  technocrats to find solutions to problems and serve the global
-                  society.
+                  Shri Sant Gajanan Maharaj College of Engineering, one of the leading technical institutes in Vidarbha region, always strives for quality education since its inception. In the last four decades it has successfully nurtured the scientific temper, Professional Competence and Social Commitment among the budding technocrats to find solutions to the problems and serve the global society.
                 </p>
                 <p>
-                  We live in challenging times where technology is evolving at
-                  an unprecedented pace. As the Principal of SSGMCE, I am
-                  privileged to work with a dedicated and talented group of
-                  educators who are committed to helping you propel your career
-                  ascent. Our focus extends beyond technical competence; we
-                  inculcate moral and ethical values among students so that they
-                  become good human beings and responsible citizens of the
-                  global society.
+                  We live in challenging times, pressured by career demands and the need to balance our professional and personal lives, choosing how best to continue our education and deciding which higher education institution is best suited to our needs, matters more than ever.
                 </p>
                 <p>
-                  Our institution has been recognized with{" "}
-                  <strong>NAAC A+ accreditation</strong>, designated as a{" "}
-                  <strong>TCS Priority College</strong>, and ranked{" "}
-                  <strong>AAA by Careers360</strong>. These achievements reflect
-                  our commitment to excellence in education, research, and
-                  overall development.
+                  As a Principal of SSGMCE, I am privileged to work with a dedicated and talented group of educators who are committed to helping you to propel on the career ascent. An integrated set of academic processes on campus are aligned to develop the world class technocrats so as to deliver the best performance under diverse circumstances, so as to evolve the overall thinking process to radically transform the organizations, they shall work for, by leveraging the technical and human skills acquired and nurtured on campus.
                 </p>
                 <p>
-                  We encourage our students to participate actively in
-                  co-curricular and extracurricular activities, technical
-                  competitions, research projects, and community service. These
-                  experiences complement classroom learning and prepare you for
-                  real-world challenges.
+                  Whichever program interests you, I'm sure that you'll be impressed by the preparation and focus of our dedicated faculty who will help to ensure that you gain the knowledge, skills and experiences you need to succeed in your career.
                 </p>
                 <p>
-                  I take this opportunity to extend my heartiest wishes to all
-                  students to achieve success in their future endeavours. May
-                  you continue to uphold the values and traditions of SSGMCE and
-                  make meaningful contributions to society.
+                  Apart from technical competence, we inculcate the moral and ethical values among the students so that they become good human beings and responsible citizens of the global society.
                 </p>
-                <p className="font-bold text-ssgmce-blue mt-6 text-lg">
-                  With warm regards,
-                  <br />
-                  Dr. S. B. Somani
-                  <br />
-                  <span className="text-base font-semibold text-gray-600">
-                    Principal, SSGMCE Shegaon
-                  </span>
+                <p>
+                  I am glad to share that SSGMCE holds a good position in terms of academic results, placement, MOUs with national and international bodies, publications, research grants to faculty members and vast sports arena.
                 </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Leadership Focus Areas */}
-      <section className="py-16 bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-800">
-              Leadership <span className="text-ssgmce-blue">Focus Areas</span>
-            </h2>
-            <div className="w-24 h-1 bg-ssgmce-orange mx-auto mt-4 rounded-full"></div>
-          </div>
+                <FaQuoteRight className="text-4xl text-ssgmce-orange/20 mb-4" />
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-ssgmce-blue">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-50 rounded-full mb-6">
-                <FaAward className="text-3xl text-ssgmce-blue" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-3">
-                Academic Excellence
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Fostering a culture of continuous learning, innovation, and
-                research to maintain high academic standards and
-                industry-relevant curriculum.
-              </p>
-            </div>
+                <div className="bg-gradient-to-r from-blue-50 to-orange-50 p-6 rounded-xl border-l-4 border-ssgmce-orange mt-6">
+                  <p className="text-gray-800 font-medium italic">
+                    I take this opportunity to extend my heartiest wishes to all students to achieve success in their future endeavours.
+                  </p>
+                </div>
 
-            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-ssgmce-orange">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-50 rounded-full mb-6">
-                <FaLightbulb className="text-3xl text-ssgmce-orange" />
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <p className="font-bold text-ssgmce-blue text-lg">Dr. S. B. Somani</p>
+                  <p className="text-ssgmce-orange font-medium">Principal, SSGMCE, Shegaon</p>
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-3">
-                Innovation & Research
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Encouraging students and faculty to pursue cutting-edge
-                research, file patents, and develop innovative solutions for
-                societal challenges.
-              </p>
-            </div>
-
-            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-ssgmce-blue">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-50 rounded-full mb-6">
-                <FaUsers className="text-3xl text-ssgmce-blue" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-3">
-                Holistic Development
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Nurturing well-rounded individuals through spiritual values,
-                ethical practices, and comprehensive personality development
-                programs.
-              </p>
             </div>
           </div>
         </div>
