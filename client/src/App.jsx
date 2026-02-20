@@ -11,6 +11,8 @@ import Research from "./pages/Research";
 import Events from "./pages/Events";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
+import AtGlance from "./pages/about/AtGlance";
+import BoardOfDirectors from "./pages/about/BoardOfDirectors";
 import Committees from "./pages/about/Committees";
 import GoverningBody from "./pages/about/GoverningBody";
 import Inspiration from "./pages/about/Inspiration";
@@ -296,6 +298,22 @@ function App() {
             element={
               <Layout>
                 <Contact />
+              </Layout>
+            }
+          />
+          <Route
+            path="/about/glance"
+            element={
+              <Layout>
+                <AtGlance />
+              </Layout>
+            }
+          />
+          <Route
+            path="/about/directors"
+            element={
+              <Layout>
+                <BoardOfDirectors />
               </Layout>
             }
           />

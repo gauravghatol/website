@@ -1,139 +1,128 @@
-import React, { useEffect } from 'react';
-import PageHeader from '../../components/PageHeader';
+import React from 'react';
+import GenericPage from '../../components/GenericPage';
 import ResearchSidebar from '../../components/ResearchSidebar';
-import {
-  FaRocket,
-  FaFileAlt,
-  FaUsers,
-  FaBullseye,
-  FaLightbulb
-} from 'react-icons/fa';
+import { FaFilePdf, FaLightbulb, FaRocket, FaUsers, FaClipboardList, FaBullseye, FaChevronRight } from 'react-icons/fa';
+
+const policyDocs = [
+  {
+    title: 'NISP Policy and Procedures',
+    subtitle: 'SGIARC-TBI — Institute-level innovation & startup policy framework',
+    url: 'https://www.ssgmce.ac.in/uploads/pdf/SGIARC-TBI-NISP.pdf',
+    icon: FaClipboardList,
+    accent: 'blue',
+  },
+  {
+    title: 'MHRD NISP Policy',
+    subtitle: 'Ministry of Education — National Innovation and Startup Policy document',
+    url: 'https://www.ssgmce.ac.in/uploads/pdf/MHRD_NISP_policy.pdf',
+    icon: FaBullseye,
+    accent: 'indigo',
+  },
+  {
+    title: 'NISP Expert Committee',
+    subtitle: 'Composition and details of the NISP Expert Committee',
+    url: 'https://www.ssgmce.ac.in/uploads/pdf/NISP%20_Expert%20Committee.pdf',
+    icon: FaUsers,
+    accent: 'teal',
+  },
+];
+
+const meetings = [
+  {
+    title: '1st NISP Meeting',
+    url: 'https://www.ssgmce.ac.in/uploads/pdf/NISP%201st%20meeting%20Policy.pdf',
+  },
+  {
+    title: '2nd NISP Meeting',
+    url: 'https://www.ssgmce.ac.in/uploads/pdf/NISP%202nd%20meeting%20policy.pdf',
+  },
+];
+
+const accentMap = {
+  blue: { light: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600', icon: 'text-blue-500' },
+  indigo: { light: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-600', icon: 'text-indigo-500' },
+  teal: { light: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-600', icon: 'text-teal-500' },
+};
+
+const objectives = [
+  { icon: FaLightbulb, text: 'Foster a culture of innovation and entrepreneurship among students and faculty' },
+  { icon: FaRocket, text: 'Facilitate startups through incubation, mentorship, and funding support' },
+  { icon: FaUsers, text: 'Build an ecosystem connecting academia, industry, and government' },
+  { icon: FaBullseye, text: 'Align institutional practices with the National Innovation and Startup Policy of MHRD' },
+];
 
 const NISP = () => {
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    document.title = 'NISP | Research - SSGMCE';
-  }, []);
-
-  const nispCommittee = [
-    { name: 'Dr. S. B. Somani', role: 'Principal', designation: 'Chairperson' },
-    { name: 'Dr. R. M. Kharate', role: 'Dean (R&D)', designation: 'Coordinator' },
-    { name: 'Dr. S. B. Patil', role: 'HOD (CSE)', designation: 'Member' },
-    { name: 'Mr. A. V. Patil', role: 'Industry Expert', designation: 'External Member' },
-    { name: 'Mr. S. K. Singh', role: 'Startup Founder', designation: 'Alumni Member' }
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <PageHeader
-        title="National Innovation and Startup Policy (NISP)"
-        subtitle="Nurturing Innovation and Entrepreneurship Ecosystem"
-        breadcrumbs={[
-          { label: 'Research', link: '/research/overview' },
-          { label: 'NISP' }
-        ]}
-      />
+    <GenericPage title="National Innovation and Startup Policy (NISP)" sidebar={<ResearchSidebar />}>
+      {/* Intro */}
+      <p className="text-gray-600 mb-6 leading-relaxed">
+        In alignment with the Ministry of Education's National Innovation and Startup Policy, SSGMCE has established
+        a comprehensive framework to nurture creativity, innovation, and entrepreneurship. The policy is implemented
+        through <span className="font-medium text-gray-700">SGIARC-TBI</span> (Technology Business Incubator) to
+        support student and faculty-led startups and research ventures.
+      </p>
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-3">
-            <ResearchSidebar />
-          </div>
-
-          <div className="lg:col-span-9 space-y-10">
-            {/* About NISP */}
-            <section className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
-              <div className="flex items-start gap-6">
-                <div className="hidden md:block">
-                  <div className="w-20 h-20 bg-orange-50 rounded-2xl flex items-center justify-center rotate-3">
-                    <FaRocket className="text-4xl text-orange-500" />
-                  </div>
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-4">About NISP</h2>
-                  <p className="text-gray-700 leading-relaxed mb-4">
-                    The 'National Innovation and Startup Policy 2019 for Students and Faculty of Higher Education Institutions (HEIs)' was launched by the Ministry of Education, Govt. of India. The guiding framework envisions an educational system oriented towards startups and entrepreneurship opportunities for students and faculty.
-                  </p>
-                  <p className="text-gray-700 leading-relaxed">
-                    SSGMCE has adopted the NISP to actively engage students and faculty in innovation and entrepreneurship related activities.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* Vision & Mission */}
-            <section className="grid md:grid-cols-2 gap-6">
-              <div className="bg-white p-6 rounded-2xl shadow-md border-t-4 border-blue-600">
-                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <FaLightbulb className="text-blue-600" /> Vision
-                </h3>
-                <p className="text-gray-600">
-                  "To emerging as a premier institute creating a vibrant ecosystem for innovation and entrepreneurship that nurtures job creators rather than job seekers."
-                </p>
-              </div>
-              <div className="bg-white p-6 rounded-2xl shadow-md border-t-4 border-orange-500">
-                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <FaBullseye className="text-orange-500" /> Mission
-                </h3>
-                <ul className="text-gray-600 space-y-2 list-disc list-inside">
-                  <li>To provide a supportive environment for startups.</li>
-                  <li>To facilitate technology transfer and commercialization.</li>
-                  <li>To define clear pathways for faculty and student entrepreneurship.</li>
-                </ul>
-              </div>
-            </section>
-
-            {/* Committee */}
-            <section>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <span className="w-2 h-8 bg-blue-600 rounded-full"></span>
-                NISP Implementation Committee
-              </h2>
-              <div className="bg-white rounded-xl shadow border border-gray-100 overflow-hidden">
-                <table className="w-full text-left">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="p-4 font-semibold text-gray-600">Name</th>
-                      <th className="p-4 font-semibold text-gray-600">Designation</th>
-                      <th className="p-4 font-semibold text-gray-600">Role in NISP</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {nispCommittee.map((member, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50">
-                        <td className="p-4 font-medium text-gray-800 flex items-center gap-2">
-                          <FaUsers className="text-gray-400" /> {member.name}
-                        </td>
-                        <td className="p-4 text-gray-600">{member.role}</td>
-                        <td className="p-4 text-blue-600 font-medium">{member.designation}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            {/* Downloads */}
-            <section className="flex gap-4">
-              <button className="flex items-center gap-3 bg-gray-900 text-white px-6 py-4 rounded-xl hover:bg-gray-800 transition-colors flex-1 justify-center">
-                <FaFileAlt className="text-xl" />
-                <div className="text-left">
-                  <div className="font-bold">SSGMCE Innovation Policy</div>
-                  <div className="text-xs text-gray-400">Download PDF (2.4 MB)</div>
-                </div>
-              </button>
-              <button className="flex items-center gap-3 bg-white border border-gray-200 text-gray-800 px-6 py-4 rounded-xl hover:bg-gray-50 transition-colors flex-1 justify-center">
-                <FaFileAlt className="text-xl text-blue-600" />
-                <div className="text-left">
-                  <div className="font-bold">MoE NISP Framework</div>
-                  <div className="text-xs text-gray-500">External Link</div>
-                </div>
-              </button>
-            </section>
-          </div>
+      {/* Objectives */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-ssgmce-blue mb-4">Key Objectives</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {objectives.map((obj, i) => (
+            <div key={i} className="flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-lg p-3.5">
+              <obj.icon className="text-ssgmce-blue mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-gray-700 leading-snug">{obj.text}</p>
+            </div>
+          ))}
         </div>
       </div>
-    </div>
+
+      {/* Policy Documents */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-ssgmce-blue mb-4">Policy Documents</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {policyDocs.map((doc, i) => {
+            const c = accentMap[doc.accent];
+            return (
+              <a
+                key={i}
+                href={doc.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`group block bg-white border border-gray-200 rounded-xl p-4 hover:${c.border} transition`}
+              >
+                <div className={`w-9 h-9 rounded-lg ${c.light} ${c.border} border flex items-center justify-center mb-3`}>
+                  <doc.icon className={`text-sm ${c.icon}`} />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-800 mb-1 group-hover:text-ssgmce-saffron transition">{doc.title}</h3>
+                <p className="text-xs text-gray-500 leading-snug mb-3">{doc.subtitle}</p>
+                <span className={`inline-flex items-center gap-1 text-xs font-medium ${c.text}`}>
+                  <FaFilePdf /> View PDF <FaChevronRight className="text-[10px]" />
+                </span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Meeting Minutes */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-ssgmce-blue mb-4">NISP Meeting Minutes</h2>
+        <div className="flex flex-wrap gap-3">
+          {meetings.map((m, i) => (
+            <a
+              key={i}
+              href={m.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition text-sm font-medium text-gray-700"
+            >
+              <FaFilePdf className="text-red-400" />
+              {m.title}
+              <FaChevronRight className="text-xs text-gray-400" />
+            </a>
+          ))}
+        </div>
+      </div>
+    </GenericPage>
   );
 };
 

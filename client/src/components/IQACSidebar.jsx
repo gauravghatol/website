@@ -24,7 +24,7 @@ const IQACSidebar = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="bg-gradient-to-r from-blue-900 to-blue-800 p-4">
+      <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">
         <h3 className="text-white font-bold text-lg flex items-center">
           <FaClipboardList className="mr-2" />
           IQAC
@@ -39,7 +39,7 @@ const IQACSidebar = () => {
                   to={link.path}
                   className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
                     location.pathname === link.path
-                      ? "bg-blue-100 text-blue-700 font-semibold"
+                      ? "bg-ssgmce-saffron/10 text-ssgmce-blue font-semibold border-l-2 border-ssgmce-saffron"
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
