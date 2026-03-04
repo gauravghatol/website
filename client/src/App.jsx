@@ -12,6 +12,7 @@ import Research from "./pages/Research";
 import Events from "./pages/Events";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
+import NIRFRanking from "./pages/NIRFRanking";
 import AtGlance from "./pages/about/AtGlance";
 import BoardOfDirectors from "./pages/about/BoardOfDirectors";
 import Committees from "./pages/about/Committees";
@@ -278,6 +279,14 @@ function App() {
             element={
               <Layout>
                 <Placements />
+              </Layout>
+            }
+          />
+          <Route
+            path="/nirf"
+            element={
+              <Layout>
+                <NIRFRanking />
               </Layout>
             }
           />
