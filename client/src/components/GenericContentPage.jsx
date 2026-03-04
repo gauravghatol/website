@@ -13,6 +13,7 @@ import DocumentsSidebar from './DocumentsSidebar';
 import EditableText from './admin/EditableText';
 import EditableImage from './admin/EditableImage';
 import EditableSection from './admin/EditableSection';
+import MarkdownEditor from './admin/MarkdownEditor';
 import { useEdit } from '../contexts/EditContext';
 
 // Map pageId prefixes to their sidebar components
@@ -36,7 +37,7 @@ const GenericContentPage = ({ pageId }) => {
 
   // Use live data from context if available/editing, otherwise fetched page
   const displayPage = (isEditing && data && data.sections) ? data : page;
-  const sections = displayPage?.sections || [];
+  const sections = Array.isArray(displayPage?.sections) ? displayPage.sections : [];
 
   useEffect(() => {
     const fetchPageData = async () => {
@@ -148,12 +149,24 @@ const GenericContentPage = ({ pageId }) => {
                     </div>
                   )}
 
-                  {/* RichText Section (Treated as text for now, should use a WYSIWYG later) */}
+                  {/* RichText Section - uses inline WYSIWYG editor in edit mode */}
                   {section.type === 'richtext' && (
                     <div className="prose max-w-none text-gray-700">
-                      <div dangerouslySetInnerHTML={{ __html: section.content.text }} />
-                      {isEditing && <p className="text-xs text-red-400 mt-1">* Rich text editing not fully supported in inline mode yet.</p>}
+                      <EditableText
+                        value={section.content.text}
+                        path={`sections[${index}].content.text`}
+                        richText={true}
+                        multiline={true}
+                      />
                     </div>
+                  )}
+
+                  {/* Markdown Section - clean textarea editor with preview */}
+                  {section.type === 'markdown' && (
+                    <MarkdownEditor
+                      value={section.content.text}
+                      path={`sections[${index}].content.text`}
+                    />
                   )}
 
                   {/* Stats Section */}
@@ -196,14 +209,14 @@ const GenericContentPage = ({ pageId }) => {
                     </div>
                   )}
 
-                  {/* Table Section */}
+                  {/* Table Section (structured – admissions, research etc. that aren't yet in markdown) */}
                   {section.type === 'table' && section.content.headers && section.content.rows && (
                     <div className="overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200 border">
                         <thead className="bg-ssgmce-blue text-white">
                           <tr>
-                            {section.content.headers.map((h, idx) => (
-                              <th key={idx} className="px-4 py-3 text-left text-sm font-semibold">{h}</th>
+                            {section.content.headers.map((h, hIdx) => (
+                              <th key={hIdx} className="px-4 py-3 text-left text-sm font-semibold">{h}</th>
                             ))}
                           </tr>
                         </thead>
@@ -217,6 +230,11 @@ const GenericContentPage = ({ pageId }) => {
                           ))}
                         </tbody>
                       </table>
+                      {isEditing && (
+                        <p className="mt-2 text-xs text-gray-400 italic">
+                          To edit this table, convert the section to Markdown type in the database.
+                        </p>
+                      )}
                     </div>
                   )}
 

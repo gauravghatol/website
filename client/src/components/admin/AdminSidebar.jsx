@@ -13,6 +13,7 @@ import {
   FaFileImage,
   FaChartLine,
   FaUsers,
+  FaComments,
   FaBookOpen,
   FaCog,
   FaChevronLeft,
@@ -86,6 +87,7 @@ const AdminSidebar = ({ collapsed, setCollapsed }) => {
       items: [
         { name: "Placements", path: "/admin/placements", icon: FaBriefcase },
         { name: "Recruiters", path: "/admin/recruiters", icon: FaUsers },
+        { name: "Testimonials", path: "/admin/testimonials", icon: FaComments },
       ],
     },
     {

@@ -79,6 +79,7 @@ const sectionSchema = new mongoose.Schema(
       enum: [
         "text",
         "richtext",
+        "markdown",
         "list",
         "image",
         "stats",

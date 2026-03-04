@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useEdit } from '../contexts/EditContext';
 
 const links = [
   { name: 'Placement Brochure', path: '/placements/brochure' },
@@ -15,21 +16,29 @@ const links = [
   { name: 'Contact Us', path: '/placements/contact' },
 ];
 
+/** Convert a public path to a pageId slug: /placements/about → placements-about */
+const pathToPageId = (path) => path.replace(/^\//, '').replace(/\//g, '-');
+
 const PlacementSidebar = ({ sections }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isEditing } = useEdit();
 
   const handleScroll = (e, id) => {
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
-      const headerOffset = 100; // Adjust for sticky header
+      const headerOffset = 100;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    }
+  };
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
+  const handleLinkClick = (e, path) => {
+    if (isEditing) {
+      e.preventDefault();
+      navigate(`/admin/visual/${pathToPageId(path)}`);
     }
   };
 
@@ -41,11 +50,13 @@ const PlacementSidebar = ({ sections }) => {
       </h3>
       <ul className="space-y-1">
         {links.map((link) => {
-          const isActive = location.pathname === link.path;
+          const isActive = location.pathname === link.path ||
+            (isEditing && location.pathname === `/admin/visual/${pathToPageId(link.path)}`);
           return (
             <li key={link.path}>
               <Link
-                to={link.path}
+                to={isEditing ? `/admin/visual/${pathToPageId(link.path)}` : link.path}
+                onClick={(e) => handleLinkClick(e, link.path)}
                 className={`block px-4 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${isActive
                   ? 'bg-ssgmce-blue text-white shadow-md transform translate-x-1'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-ssgmce-blue'
@@ -58,7 +69,7 @@ const PlacementSidebar = ({ sections }) => {
               {isActive && sections && sections.length > 0 && (
                 <ul className="mt-1 mb-2 ml-4 pl-3 border-l-2 border-blue-200 space-y-1">
                   {sections
-                    .filter(s => s.title && s.title !== 'Intro') // Filter out Intro or untitled sections
+                    .filter(s => s.title && s.title !== 'Intro')
                     .sort((a, b) => a.order - b.order)
                     .map((section) => (
                       <li key={section.sectionId}>

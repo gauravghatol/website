@@ -1,12 +1,5 @@
-import React from 'react';
-import GenericPage from '../../components/GenericPage';
+import GenericContentPage from "../../components/GenericContentPage";
 
-const AlumniRegistration = () => {
-  return (
-    <GenericPage title="Alumni Registration">
-      <p>Portal for alumni to register and stay connected with their alma mater.</p>
-    </GenericPage>
-  );
-};
+const AlumniRegistration = () => <GenericContentPage pageId="placements-alumni" />;
 
 export default AlumniRegistration;
