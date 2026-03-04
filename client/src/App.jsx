@@ -68,6 +68,7 @@ import EnTC from "./pages/departments/EnTC";
 import IT from "./pages/departments/IT";
 import MBA from "./pages/departments/MBA";
 import Mechanical from "./pages/departments/Mechanical";
+import FacultyDetail from "./pages/FacultyDetail";
 import AICTE from "./pages/documents/AICTE";
 import Audit from "./pages/documents/Audit";
 import Financial from "./pages/documents/Financial";
@@ -261,6 +262,14 @@ function App() {
             element={
               <Layout>
                 <Faculty />
+              </Layout>
+            }
+          />
+          <Route
+            path="/faculty/:facultyId"
+            element={
+              <Layout>
+                <FacultyDetail />
               </Layout>
             }
           />

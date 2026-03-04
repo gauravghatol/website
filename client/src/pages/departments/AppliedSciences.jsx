@@ -27,6 +27,7 @@ import {
   FaBook,
   FaExternalLinkAlt,
   FaInfoCircle,
+  FaChalkboardTeacher,
   FaPlus,
   FaTrash,
   FaPalette,
@@ -429,6 +430,7 @@ const AppliedSciences = () => {
   const [showAllPos, setShowAllPos] = useState(false);
   const [researchTab, setResearchTab] = useState("projects");
   const [projectYear, setProjectYear] = useState("2023-24");
+  const [achievementTab, setAchievementTab] = useState("faculty");
 
   // Load department data (works in both edit and public view modes)
   const {
@@ -443,6 +445,20 @@ const AppliedSciences = () => {
   const updateField = (path, value) => {
     updateData(path, value);
   };
+
+  const updateArrayString = (key, defaultArr, index, value) => {
+    const arr = [...t(key, defaultArr)];
+    arr[index] = value;
+    updateData(key, arr);
+  };
+
+  const defaultCourseMaterials = [
+    {
+      year: "First Year",
+      title: "First Year B.E. (Semester I & II)",
+      link: "https://drive.google.com/drive/folders/1az9OFTOJ_Z1eKyPPo-a_s_Wd0N53_lZa",
+    },
+  ];
 
   const updateFacultyMember = (index, field, value) => {
     const faculty = JSON.parse(
@@ -730,7 +746,7 @@ const AppliedSciences = () => {
 
   const [researchYear, setResearchYear] = useState("2023-24");
   const [placementYear, setPlacementYear] = useState("2023-24");
-  const [visibleCourseSem, setVisibleCourseSem] = useState(null);
+  const [expandedSemester, setExpandedSemester] = useState(null);
 
   const academicsLinks = [
     { id: "overview", label: "Department Overview" },
@@ -1480,10 +1496,21 @@ const AppliedSciences = () => {
     faculty: (
       <div className="space-y-10">
         <div className="text-center border-b border-gray-200 pb-6 mb-8">
-          <h3 className="text-3xl font-bold text-gray-900">Our Faculty</h3>
-          <p className="text-gray-500 mt-2">
-            Department of Applied Sciences and Humanities
-          </p>
+          <h3 className="text-3xl font-bold text-gray-900">
+            <EditableText
+              value={t("facultyTitle", "Our Faculty")}
+              onSave={(val) => updateField("facultyTitle", val)}
+            />
+          </h3>
+          <div className="text-gray-500 mt-2">
+            <EditableText
+              value={t(
+                "facultySubtitle",
+                "Department of Applied Sciences and Humanities",
+              )}
+              onSave={(val) => updateField("facultySubtitle", val)}
+            />
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -1493,108 +1520,238 @@ const AppliedSciences = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex"
+              className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300  flex relative"
             >
+              {/* Delete Button */}
+              {isEditing && (
+                <button
+                  onClick={() => {
+                    const updated = t(
+                      "templateData.faculty",
+                      APPLIED_DEFAULT_FACULTY,
+                    ).filter((_, idx) => idx !== i);
+                    updateField("templateData.faculty", updated);
+                  }}
+                  className="absolute top-2 right-2 z-10 bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md hover:bg-red-600 transition-colors"
+                  title="Remove faculty member"
+                >
+                  Remove
+                </button>
+              )}
+
               {/* Image Area - Fixed Width */}
-              <div className="w-36 sm:w-44 min-h-[200px] bg-gray-50 flex-shrink-0 relative overflow-hidden border-r border-gray-100 flex items-center justify-center">
+              <div className="w-32 sm:w-40 bg-gray-50 flex-shrink-0 relative overflow-hidden border-r border-gray-100">
                 {fac.photo ? (
                   <EditableImage
                     src={fac.photo}
-                    onSave={(val) => updateFacultyMember(i, "photo", val)}
-                    alt={fac.name || "Faculty"}
-                    className="w-full h-full object-contain transition-transform group-hover:scale-105 duration-500"
+                    onSave={(url) => {
+                      const updated = [
+                        ...t("templateData.faculty", APPLIED_DEFAULT_FACULTY),
+                      ];
+                      updated[i].photo = url;
+                      updateField("templateData.faculty", updated);
+                    }}
+                    alt={fac.name}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
+                  <div
+                    className="w-full h-full flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => {
+                      if (isEditing) {
+                        const url = prompt("Enter faculty photo URL:");
+                        if (url) {
+                          const updated = [
+                            ...t(
+                              "templateData.faculty",
+                              APPLIED_DEFAULT_FACULTY,
+                            ),
+                          ];
+                          updated[i].photo = url;
+                          updateField("templateData.faculty", updated);
+                        }
+                      }
+                    }}
+                  >
                     <FaUserTie className="text-5xl text-gray-300" />
+                    {isEditing && (
+                      <span className="absolute bottom-2 text-xs text-gray-500">
+                        Click to add
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
 
               {/* Content Area */}
               <div className="p-5 flex-1 flex flex-col justify-center">
-                <Link
-                  to={`/faculty/${fac.id}`}
-                  className="text-lg font-bold text-gray-900 hover:text-ssgmce-blue transition-colors cursor-pointer"
-                >
-                  <EditableText
-                    value={fac.name}
-                    onSave={(val) => updateFacultyMember(i, "name", val)}
-                  />
-                </Link>
-                <p className="text-ssgmce-blue font-medium text-sm mb-3 uppercase tracking-wide text-[11px]">
+                <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
+                  {isEditing ? (
+                    <EditableText
+                      value={fac.name}
+                      onSave={(val) => {
+                        const updated = [
+                          ...t("templateData.faculty", APPLIED_DEFAULT_FACULTY),
+                        ];
+                        updated[i].name = val;
+                        updateField("templateData.faculty", updated);
+                      }}
+                    />
+                  ) : (
+                    <Link
+                      to={`/faculty/${fac.id}`}
+                      className="hover:text-ssgmce-blue hover:underline transition-colors cursor-pointer"
+                    >
+                      {fac.name}
+                    </Link>
+                  )}
+                </h4>
+                <div className="text-ssgmce-blue font-medium text-sm mb-3 uppercase tracking-wide text-[11px]">
                   <EditableText
                     value={fac.role}
-                    onSave={(val) => updateFacultyMember(i, "role", val)}
+                    onSave={(val) => {
+                      const updated = [
+                        ...t("templateData.faculty", APPLIED_DEFAULT_FACULTY),
+                      ];
+                      updated[i].role = val;
+                      updateField("templateData.faculty", updated);
+                    }}
                   />
-                </p>
+                </div>
 
                 {/* Compact Details */}
                 <div className="space-y-2 text-sm text-gray-600">
-                  {fac.area && (
-                    <p className="line-clamp-2 text-xs">
-                      <span className="font-bold text-gray-700">Area: </span>
+                  {(fac.area || isEditing) && (
+                    <div className="line-clamp-2 text-xs">
+                      <span className="font-bold text-gray-700">
+                        <EditableText
+                          value={t("facultyAreaLabel", "Area: ")}
+                          onSave={(val) => updateField("facultyAreaLabel", val)}
+                        />
+                      </span>
                       <EditableText
                         value={
                           Array.isArray(fac.area)
                             ? fac.area.join(", ")
-                            : fac.area
+                            : fac.area || "Research areas..."
                         }
-                        onSave={(val) =>
-                          updateFacultyMember(
-                            i,
-                            "area",
-                            val
-                              .split(",")
-                              .map((item) => item.trim())
-                              .filter(Boolean),
-                          )
-                        }
+                        onSave={(val) => {
+                          const updated = [
+                            ...t(
+                              "templateData.faculty",
+                              APPLIED_DEFAULT_FACULTY,
+                            ),
+                          ];
+                          updated[i].area = val.split(",").map((s) => s.trim());
+                          updateField("templateData.faculty", updated);
+                        }}
                       />
-                    </p>
+                    </div>
                   )}
 
                   <div className="pt-2 flex flex-col gap-1">
-                    {fac.vidwanId && (
-                      <span className="flex items-center text-xs">
-                        <FaUserTie className="mr-2 text-gray-400" />
-                        <span className="font-semibold text-gray-700">
-                          Vidwan ID:{" "}
-                        </span>
-                        <a
-                          href={`https://vidwan.inflibnet.ac.in/profile/${fac.vidwanId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-ssgmce-blue hover:underline ml-1"
-                        >
-                          {fac.vidwanId}
-                        </a>
-                      </span>
-                    )}
-                    {fac.email && (
-                      <span className="flex items-center hover:text-ssgmce-blue transition-colors truncate text-xs">
-                        <FaEnvelope className="mr-2 text-gray-400" />
+                    {(fac.email || isEditing) && (
+                      <div className="flex items-center hover:text-ssgmce-blue transition-colors truncate text-xs">
+                        <FaEnvelope className="mr-2 text-gray-400 flex-shrink-0" />{" "}
                         <EditableText
-                          value={fac.email}
-                          onSave={(val) => updateFacultyMember(i, "email", val)}
+                          value={fac.email || "email@ssgmce.ac.in"}
+                          onSave={(val) => {
+                            const updated = [
+                              ...t(
+                                "templateData.faculty",
+                                APPLIED_DEFAULT_FACULTY,
+                              ),
+                            ];
+                            updated[i].email = val;
+                            updateField("templateData.faculty", updated);
+                          }}
                         />
-                      </span>
+                      </div>
                     )}
-                    {fac.phone && (
-                      <span className="flex items-center hover:text-ssgmce-blue transition-colors text-xs">
-                        <FaPhone className="mr-2 text-gray-400" />
+                    {(fac.email2 || isEditing) && (
+                      <div className="flex items-center hover:text-ssgmce-blue transition-colors truncate text-xs">
+                        <FaEnvelope className="mr-2 text-gray-400 flex-shrink-0" />{" "}
                         <EditableText
-                          value={fac.phone}
-                          onSave={(val) => updateFacultyMember(i, "phone", val)}
+                          value={fac.email2 || "secondary@ssgmce.ac.in"}
+                          onSave={(val) => {
+                            const updated = [
+                              ...t(
+                                "templateData.faculty",
+                                APPLIED_DEFAULT_FACULTY,
+                              ),
+                            ];
+                            updated[i].email2 = val;
+                            updateField("templateData.faculty", updated);
+                          }}
+                        />
+                      </div>
+                    )}
+                    {(fac.phone || isEditing) && (
+                      <span className="flex items-center text-xs">
+                        <FaPhone className="mr-2 text-gray-400 flex-shrink-0" />{" "}
+                        <EditableText
+                          value={fac.phone || "+91XXXXXXXXXX"}
+                          onSave={(val) => {
+                            const updated = [
+                              ...t(
+                                "templateData.faculty",
+                                APPLIED_DEFAULT_FACULTY,
+                              ),
+                            ];
+                            updated[i].phone = val;
+                            updateField("templateData.faculty", updated);
+                          }}
                         />
                       </span>
                     )}
                   </div>
+
+                  {fac.vidwanId && (
+                    <a
+                      href={`https://vidwan.inflibnet.ac.in/profile/${fac.vidwanId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-[10px] font-bold text-emerald-600 mt-1 hover:underline uppercase tracking-wide"
+                    >
+                      Vidwan Profile <FaAngleRight className="ml-1" />
+                    </a>
+                  )}
+                  <Link
+                    to={`/faculty/${fac.id}`}
+                    className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
+                  >
+                    View Profile <FaAngleRight className="ml-1" />
+                  </Link>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
+
+        {/* Add New Faculty Button */}
+        {isEditing && (
+          <div className="mt-6">
+            <button
+              onClick={() => {
+                const updated = [
+                  ...t("templateData.faculty", APPLIED_DEFAULT_FACULTY),
+                  {
+                    name: "New Faculty Member",
+                    role: "Assistant Professor",
+                    area: ["Research Area"],
+                    email: "newfaculty@ssgmce.ac.in",
+                    phone: "+91XXXXXXXXXX",
+                    photo: "",
+                  },
+                ];
+                updateField("templateData.faculty", updated);
+              }}
+              className="w-full py-3 px-4 bg-ssgmce-blue text-white rounded-lg hover:bg-ssgmce-dark-blue transition-colors font-medium"
+            >
+              + Add New Faculty Member
+            </button>
+          </div>
+        )}
       </div>
     ),
 
@@ -2221,947 +2378,746 @@ const AppliedSciences = () => {
 
     "course-material": (
       <div className="space-y-8">
-        {/* Header Section */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-3">
-            Course Material
-          </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Access comprehensive study materials, lecture notes, and reference
-            resources for all courses
-          </p>
+        {/* Course Material Header */}
+        <div className="text-center">
+          <div className="w-16 h-16 bg-orange-50 text-ssgmce-orange rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
+            <FaChalkboardTeacher />
+          </div>
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
+            <EditableText
+              value={t("courseMaterial.title", "Course Material")}
+              onSave={(val) => updateData("courseMaterial.title", val)}
+            />
+          </h3>
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <EditableText
+              value={t(
+                "courseMaterial.description",
+                "Access comprehensive course materials, lecture notes, assignments, and study resources for all semesters.",
+              )}
+              onSave={(val) => updateData("courseMaterial.description", val)}
+              multiline
+            />
+          </div>
         </div>
 
-        {/* Main Content Card */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow duration-300">
-          <div className="bg-[#003366] px-6 py-4">
-            <div className="flex items-center justify-center">
-              <FaBook className="text-2xl text-white mr-3" />
-              <h3 className="text-xl font-bold text-white">
-                Academic Resources
+        {/* Course Material Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white px-8 py-5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-wide">
+                Course Material
               </h3>
+              <p className="text-sm text-orange-100 mt-1">
+                Department of Applied Sciences & Humanities
+              </p>
             </div>
+            <FaChalkboardTeacher className="text-4xl text-orange-200 opacity-40" />
           </div>
 
-          <div className="p-8">
-            <div className="flex flex-col items-center space-y-6">
-              {/* Icon and Description */}
-              <div className="text-center space-y-4">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-50 rounded-full">
-                  <FaDownload className="text-4xl text-[#003366]" />
-                </div>
-                <p className="text-gray-600 text-lg max-w-xl">
-                  All course materials including lecture notes, assignments,
-                  previous year papers, and reference materials are available in
-                  our Google Drive repository.
-                </p>
-              </div>
-
-              {/* Drive Link Button */}
-              <a
-                href="https://drive.google.com/drive/folders/1az9OFTOJ_Z1eKyPPo-a_s_Wd0N53_lZa"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-8 py-4 bg-[#003366] text-white font-semibold rounded-lg hover:bg-[#002244] transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg"
-              >
-                <FaDownload className="mr-3 text-xl" />
-                Access Course Material
-                <FaExternalLinkAlt className="ml-3 text-sm" />
-              </a>
-
-              {/* Additional Info */}
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200 w-full max-w-2xl">
-                <div className="flex items-start space-x-3">
-                  <FaInfoCircle className="text-ssgmce-blue text-xl mt-1 flex-shrink-0" />
-                  <div className="text-sm text-gray-600">
-                    <p className="font-semibold mb-1">Important Note:</p>
-                    <p>
-                      Materials are regularly updated. Please check back
-                      frequently for new content and announcements.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th className="px-6 py-4 font-bold text-center w-20">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 font-bold">Year / Class</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    Access Materials
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {(t("courseMaterials", defaultCourseMaterials) || []).map(
+                  (material, i) => (
+                    <tr
+                      key={i}
+                      className="hover:bg-orange-50/30 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-center font-mono text-gray-400">
+                        {i + 1}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-gray-800">
+                          <EditableText
+                            value={material.title}
+                            onSave={(val) =>
+                              updateArrayString(
+                                "courseMaterials",
+                                defaultCourseMaterials,
+                                i,
+                                { ...material, title: val },
+                              )
+                            }
+                          />
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <a
+                          href={material.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-ssgmce-orange hover:text-orange-700 font-medium text-xs border border-gray-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
+                        >
+                          <FaDownload className="text-xs" /> Access Drive
+                        </a>
+                      </td>
+                    </tr>
+                  ),
+                )}
+              </tbody>
+            </table>
           </div>
-        </div>
+          <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+            Click on "Access Drive" to view and download course materials from
+            the respective year's shared folder.
+          </div>
+        </motion.div>
       </div>
     ),
 
     "course-outcome": (
       <div className="space-y-8">
         {/* Header */}
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Course Outcome</h2>
-          <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-800 mb-3">
+            Course Outcomes
+          </h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Comprehensive course outcomes for all semesters of B.E. Applied
+            Sciences & Humanities
+          </p>
         </div>
 
-        {/* B.E. Course Outcomes Table */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-          <div className="bg-gradient-to-r from-blue-50 to-white p-6 border-b border-gray-200">
-            <h3 className="text-xl font-bold text-blue-900 text-center">
-              B. E. Course Outcomes
+        {/* B.E. Course Outcomes */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-[#003366] px-6 py-4 text-center">
+            <h3 className="text-xl font-bold text-white">
+              B.E. Applied Sciences & Humanities - Course Outcomes
             </h3>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-100 border-b-2 border-gray-300">
-                  <th className="px-6 py-4 text-center text-base font-bold text-ssgmce-blue border-r border-gray-300">
-                    Semester
-                  </th>
-                  <th className="px-6 py-4 text-center text-base font-bold text-ssgmce-blue">
-                    View Details
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { semester: "B.E. Semester-I", id: "sem1" },
-                  { semester: "B.E. Semester-II", id: "sem2" },
-                ].map((row, index) => (
-                  <tr
-                    key={index}
-                    className="border-b border-gray-200 hover:bg-blue-50/30 transition-colors"
+          <div className="p-6 space-y-2">
+            {/* B.E. Semester I (CSE, IT, ELPO) */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem1" ? null : "be-sem1",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-I (CSE, IT, ELPO)
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem1" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem1" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
                   >
-                    <td className="px-6 py-4 text-center text-gray-700 font-medium border-r border-gray-200">
-                      {row.semester}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => {
-                          setVisibleCourseSem(row.id);
-                          setTimeout(() => {
-                            const element = document.getElementById(
-                              `course-${row.id}`,
-                            );
-                            if (element) {
-                              element.scrollIntoView({
-                                behavior: "smooth",
-                                block: "center",
-                              });
-                            }
-                          }, 100);
-                        }}
-                        className="text-ssgmce-blue hover:text-ssgmce-orange font-medium hover:underline transition-colors"
-                      >
-                        view
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      {/* 1A1 Engineering Mathematics-I */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1A1 - Engineering Mathematics-I
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand to find n th order derivative of
+                            functions, Roll's Theorem, expand the function in a
+                            power series and evaluate indeterminate forms.
+                          </li>
+                          <li>
+                            Find partial derivatives and Obtain maxima and
+                            minima of a function under constraint by Lagrange's
+                            method
+                          </li>
+                          <li>
+                            Find powers and roots of complex numbers using De
+                            Moivre's Theorem, separate the complex quantity in
+                            real & imaginary parts, and find logarithms of
+                            complex numbers
+                          </li>
+                          <li>
+                            Solve ordinary differential equations of first order
+                            and first degree by various methods and application
+                            of these methods to solve real life fields.
+                          </li>
+                          <li>
+                            Solve ordinary differential equations of first order
+                            and higher degree by various methods and
+                            applications of Electrical circuits and orthogonal
+                            Trajectory.
+                          </li>
+                          <li>
+                            Understand the concept of Convergence of Sequence
+                            and series.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1A2 Engineering Physics */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1A2 - Engineering Physics
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            To apply the knowledge of solid state devices such
+                            as semiconductor diode, Zener diode & LED in various
+                            electronic applications.
+                          </li>
+                          <li>
+                            To apply the knowledge of Quantum Mechanics in
+                            Engineering fields.
+                          </li>
+                          <li>
+                            To apply the principles of electron Ballistics to
+                            demonstrate the functioning of CRO & Mass
+                            Spectrograph.
+                          </li>
+                          <li>
+                            To apply the principles of geometrical optics such
+                            as interference & diffraction in various Engineering
+                            fields.
+                          </li>
+                          <li>
+                            To apply the principles of fiber optics & LASER &
+                            fundamentals of acoustics, ultrasonics, & fluid
+                            dynamics in various domains of Engineering.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1A3 Engineering Mechanics */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1A3 - Engineering Mechanics
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply composition and resolution of forces and
+                            principles of statics to analyze system of rigid
+                            bodies and simple structures.
+                          </li>
+                          <li>
+                            Calculate frictional forces for simple contact,
+                            wedges and belt friction.
+                          </li>
+                          <li>
+                            Locate centroid and calculate moment of inertia.
+                          </li>
+                          <li>Calculate various kinematic quantities.</li>
+                          <li>
+                            Solve the problems using different kinetic equations
+                            related to direct and interconnected particles.
+                          </li>
+                          <li>
+                            Apply principle of conservation of momentum and laws
+                            of impact.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1A4 Computer Programming */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1A4 - Computer Programming
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain fundamental concepts of computer and
+                            computing.
+                          </li>
+                          <li>
+                            Test and execute the programs and correct syntax and
+                            logical errors.
+                          </li>
+                          <li>
+                            Demonstrate various concepts of operators,
+                            expressions to solve real life problems.
+                          </li>
+                          <li>
+                            Demonstrate various concepts of control structure to
+                            solve complex problems
+                          </li>
+                          <li>
+                            Use arrays, strings and structures to formulate
+                            algorithms and programs.
+                          </li>
+                          <li>
+                            Demonstrate various concepts of functions, pointers
+                            and file handling mechanism.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1A5 Communication Skills */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1A5 - Communication Skills
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the importance of communication at the
+                            workplace and use grammatically correct sentences in
+                            oral and written communication.
+                          </li>
+                          <li>
+                            Enhance vocabulary and learn the basics of business
+                            correspondence to effectively write letters,
+                            proposals, reports and newsletters
+                          </li>
+                          <li>
+                            Learn the right kind of pronunciation with proper
+                            stress, intonation and pauses during the
+                            conversation.
+                          </li>
+                          <li>
+                            Learn the basics of public speaking, group
+                            discussions, presentations and interviews to
+                            showcase the better performance in personal and
+                            professional life.
+                          </li>
+                          <li>
+                            Learn the planning, management and execution of
+                            seminars, conferences and group activities and hone
+                            the leadership, managerial skills and team spirit.
+                          </li>
+                          <li>
+                            Communicate effectively and ethically in
+                            multi-cultural environment and adapt to the changes
+                            time to time.
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester II (EXTC/MECH) */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem2" ? null : "be-sem2",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-II (EXTC/MECH)
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem2" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem2" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      {/* 1A1 Engineering Mathematics-I */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1A1 - Engineering Mathematics-I
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand to find n th order derivative of
+                            functions, Roll's Theorem, expand the function in a
+                            power series and evaluate indeterminate forms.
+                          </li>
+                          <li>
+                            Find partial derivatives and Obtain maxima and
+                            minima of a function under constraint by using
+                            Lagrange's method
+                          </li>
+                          <li>
+                            Find powers and roots of complex numbers using De
+                            Moivre's Theorem, separate the complex quantity in
+                            real & imaginary parts, and find logarithms of
+                            complex numbers
+                          </li>
+                          <li>
+                            Solve ordinary differential equations of first order
+                            and first degree by various methods and apply these
+                            methods to solve problems in engineering fields.
+                          </li>
+                          <li>
+                            Solve ordinary differential equations of first order
+                            and higher degree by various methods and
+                            applications of Electrical circuits and orthogonal
+                            Trajectory.
+                          </li>
+                          <li>
+                            Understand the concept of Convergence of Sequence
+                            and series.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1A2 Engineering Physics */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1A2 - Engineering Physics
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            To apply the knowledge of solid state devices such
+                            as semiconductor diode, Zener diode & LED in various
+                            electronic applications.
+                          </li>
+                          <li>
+                            To apply the knowledge of Quantum Mechanics in
+                            Engineering fields.
+                          </li>
+                          <li>
+                            To apply the principles of electron Ballistics to
+                            demonstrate the functioning of CRO & Mass
+                            Spectrograph.
+                          </li>
+                          <li>
+                            To apply the principles of geometrical optics such
+                            as interference & diffraction in various Engineering
+                            fields.
+                          </li>
+                          <li>
+                            To apply the principles of fiber optics & LASER &
+                            fundamentals of acoustics, ultrasonics, & fluid
+                            dynamics in various domains of Engineering.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1A3 Engineering Mechanics */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1A3 - Engineering Mechanics
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply composition and resolution of forces and
+                            principles of statics to analyze system of rigid
+                            bodies and simple structures.
+                          </li>
+                          <li>
+                            Calculate frictional forces for simple contact,
+                            wedges and belt friction.
+                          </li>
+                          <li>
+                            Locate centroid and calculate moment of inertia.
+                          </li>
+                          <li>Calculate various kinematic quantities.</li>
+                          <li>
+                            Solve the problems using different kinetic equations
+                            related to direct and interconnected particles.
+                          </li>
+                          <li>
+                            Apply principle of conservation of momentum and laws
+                            of impact.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1A4 Computer Programming */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1A4 - Computer Programming
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain fundamental concepts of computer and
+                            computing.
+                          </li>
+                          <li>
+                            Test and execute the programs and correct syntax and
+                            logical errors.
+                          </li>
+                          <li>
+                            Demonstrate various concepts of operators,
+                            expressions to solve real life problems.
+                          </li>
+                          <li>
+                            Demonstrate various concepts of control structure to
+                            solve complex problems
+                          </li>
+                          <li>
+                            Use arrays, strings and structures to formulate
+                            algorithms and programs.
+                          </li>
+                          <li>
+                            Demonstrate various concepts of functions, pointers
+                            and file handling mechanism.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1A5 Workshop */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1A5 - Workshop
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply various forging operations for the completion
+                            of given component
+                          </li>
+                          <li>
+                            Apply various fitting operations for the completion
+                            of given component
+                          </li>
+                          <li>
+                            Apply various thread manufacturing processes
+                            operations for the completion of given component
+                          </li>
+                          <li>
+                            Apply various sheet metal processes operations for
+                            the completion of given component
+                          </li>
+                          <li>
+                            Apply various welding techniques to fabricate the
+                            parts
+                          </li>
+                          <li>
+                            Apply various carpentry operations for the
+                            completion of given component
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* Divider for CSE,IT,ELPO section */}
+                      <div className="border-t-2 border-gray-300 pt-4">
+                        <p className="text-center text-sm font-bold text-gray-600 mb-4">
+                          CSE, IT, ELPO
+                        </p>
+                      </div>
+
+                      {/* 1B1 Engineering Mathematics-II */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1B1 - Engineering Mathematics-II
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Solve the inverse of matrix by various methods,
+                            solutions of simultaneous equation, and Eigen values
+                            & Eigen vectors of a matrix
+                          </li>
+                          <li>
+                            Use the tool of Fourier expansion for learning
+                            advance engineering Mathematics
+                          </li>
+                          <li>
+                            Solve integrals by Gamma & Beta function, Reduction
+                            Formulae
+                          </li>
+                          <li>
+                            Use new techniques of DUIS to evaluate integrals
+                          </li>
+                          <li>Solve the numerical on double integrals</li>
+                          <li>
+                            Solve Triple integrals and their uses to find the
+                            volume of Triple integrals, mean value and RMS
+                            values
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1B2 Engineering Chemistry */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1B2 - Engineering Chemistry
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply the knowledge of chemistry in softening
+                            processes, its quality parameters for the use of
+                            water in industry.
+                          </li>
+                          <li>
+                            Identify various types of corrosion and methods to
+                            protect the metallic structure from corrosive
+                            environment and understanding of the energy storage
+                            system (battery)
+                          </li>
+                          <li>
+                            Apply the knowledge of useful engineering materials
+                            such as cement and lubricant based on their
+                            properties.
+                          </li>
+                          <li>
+                            Apply the knowledge about the properties of chemical
+                            fuels for the generation of power
+                          </li>
+                          <li>
+                            Apply the knowledge of various polymeric material
+                            w.r.t synthesis, properties and applications
+                          </li>
+                          <li>
+                            Identify various phases of material at different
+                            thermodynamic variables and analysis of materials by
+                            using advance analytical techniques.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1B3 Electrical Engineering */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1B3 - Electrical Engineering
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>Analyze the electric and magnetic circuits.</li>
+                          <li>
+                            Analyze single phase & three phase AC circuits.
+                          </li>
+                          <li>
+                            Understand the operating principles &
+                            Characteristics of electrical machines.
+                          </li>
+                          <li>
+                            Elaborate the construction and working of various
+                            measuring instruments and earthing.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1B4 Engineering Graphics */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1B4 - Engineering Graphics
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>Prepare the engineering drawings.</li>
+                          <li>
+                            Apply the concepts of the projections and sectional
+                            views of three Dimensional objects.
+                          </li>
+                          <li>
+                            Analyse the orthographic and isometric views of
+                            three dimensional objects.
+                          </li>
+                          <li>
+                            Explain the engineering drawings and represent
+                            engineering systems.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1B5 Communication Skills */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1B5 - Communication Skills
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, the students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the importance of communication at the
+                            workplace and use grammatically correct sentences in
+                            oral and written communication.
+                          </li>
+                          <li>
+                            Enhance vocabulary and learn the basics of business
+                            correspondence to effectively write letters,
+                            proposals, reports and newsletters
+                          </li>
+                          <li>
+                            Learn the right kind of pronunciation with proper
+                            stress, intonation and pauses during the
+                            conversation.
+                          </li>
+                          <li>
+                            Learn the basics of public speaking, group
+                            discussions, presentations and interviews
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
-
-        {/* Semester I Detailed Course Outcomes */}
-        {visibleCourseSem === "sem1" && (
-          <motion.div
-            id="course-sem1"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 scroll-mt-24"
-          >
-            <div className="bg-[#003366] p-4">
-              <h3 className="text-xl font-bold text-white text-center">
-                COURSE OUTCOMES OF ALL COURSES OF THE FIRST SEMESTER B.E.
-              </h3>
-              <p className="text-gray-200 text-center text-sm mt-1">
-                (APPLIED SCIENCES AND HUMANITIES)
-              </p>
-              <p className="text-white text-center text-sm mt-2 font-semibold">
-                CSE, IT, ELPO
-              </p>
-            </div>
-
-            <div className="p-6 space-y-8">
-              {/* Engineering Mathematics-I */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1A1 - Engineering Mathematics-I
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "Understand to find n th order derivative of functions, Roll's Theorem, expand the function in a power series and evaluate indeterminate forms.",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "Find partial derivatives and Obtain maxima and minima of a function under constraint by Lagrange's method",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "Find powers and roots of complex numbers using De Moivre's Theorem, separate the complex quantity in real & imaginary parts, and find logarithms of complex numbers",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "Solve ordinary differential equations of first order and first degree by various methods and application of these methods to solve real life fields.",
-                        },
-                        {
-                          code: "CO5",
-                          desc: "Solve ordinary differential equations of first order and higher degree by various methods and applications of Electrical circuits and orthogonal Trajectory.",
-                        },
-                        {
-                          code: "CO6",
-                          desc: "Understand the concept of Convergence of Sequence and series.",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Engineering Physics */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1A2 - Engineering Physics
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "To apply the knowledge of solid state devices such as semiconductor diode, Zener diode & LED in various electronic applications.",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "To apply the knowledge of Quantum Mechanics in Engineering fields.",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "To apply the principles of electron Ballistics to demonstrate the functioning of CRO & Mass Spectrograph.",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "To apply the principles of geometrical optics such as interference & diffraction in various Engineering fields.",
-                        },
-                        {
-                          code: "CO5",
-                          desc: "To apply the principles of fiber optics & LASER & fundamentals of acoustics, ultrasonics, & fluid dynamics in various domains of Engineering.",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Engineering Mechanics */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1A3 - Engineering Mechanics
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "Apply composition and resolution of forces and principles of statics to analyze system of rigid bodies and simple structures.",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "Calculate frictional forces for simple contact, wedges and belt friction.",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "Locate centroid and calculate moment of inertia.",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "Calculate various kinematic quantities.",
-                        },
-                        {
-                          code: "CO5",
-                          desc: "Solve the problems using different kinetic equations related to direct and interconnected particles.",
-                        },
-                        {
-                          code: "CO6",
-                          desc: "Apply principle of conservation of momentum and laws of impact.",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Computer Programming */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1A4 - Computer Programming
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "Explain fundamental concepts of computer and computing.",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "Test and execute the programs and correct syntax and logical errors.",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "Demonstrate various concepts of operators, expressions to solve real life problems.",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "Demonstrate various concepts of control structure to solve complex problems",
-                        },
-                        {
-                          code: "CO5",
-                          desc: "Use arrays, strings and structures to formulate algorithms and programs.",
-                        },
-                        {
-                          code: "CO6",
-                          desc: "Demonstrate various concepts of functions, pointers and file handling mechanism.",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Communication Skills */}
-              <div>
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1A5 - Communication Skills
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "Understand the importance of communication at the workplace and use grammatically correct sentences in oral and written communication.",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "Enhance vocabulary and learn the basics of business correspondence to effectively write letters, proposals, reports and newsletters",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "Learn the right kind of pronunciation with proper stress, intonation and pauses during the conversation.",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "Learn the basics of public speaking, group discussions, presentations and interviews to showcase the better performance in personal and professional life.",
-                        },
-                        {
-                          code: "CO5",
-                          desc: "Learn the planning, management and execution of seminars, conferences and group activities and hone the leadership, managerial skills and team spirit.",
-                        },
-                        {
-                          code: "CO6",
-                          desc: "Communicate effectively and ethically in multi-cultural environment and adapt to the changes time to time.",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Semester II Detailed Course Outcomes */}
-        {visibleCourseSem === "sem2" && (
-          <motion.div
-            id="course-sem2"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 scroll-mt-24"
-          >
-            <div className="bg-[#003366] p-4">
-              <h3 className="text-xl font-bold text-white text-center">
-                COURSE OUTCOMES OF ALL COURSES OF THE SECOND SEMESTER B.E.
-              </h3>
-              <p className="text-gray-200 text-center text-sm mt-1">
-                (APPLIED SCIENCES AND HUMANITIES)
-              </p>
-              <p className="text-white text-center text-sm mt-2 font-semibold">
-                EXTC/MECH
-              </p>
-            </div>
-
-            <div className="p-6 space-y-8">
-              {/* Engineering Mathematics-I */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1A1 - Engineering Mathematics-I
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "Understand to find n th order derivative of functions, Roll's Theorem, expand the function in a power series and evaluate indeterminate forms.",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "Find partial derivatives and Obtain maxima and minima of a function under constraint by using Lagrange's method",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "Find powers and roots of complex numbers using De Moivre's Theorem, separate the complex quantity in real & imaginary parts, and find logarithms of complex numbers",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "Solve ordinary differential equations of first order and first degree by various methods and apply these methods to solve problems in engineering fields.",
-                        },
-                        {
-                          code: "CO5",
-                          desc: "Solve ordinary differential equations of first order and higher degree by various methods and applications of Electrical circuits and orthogonal Trajectory.",
-                        },
-                        {
-                          code: "CO6",
-                          desc: "Understand the concept of Convergence of Sequence and series.",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Engineering Physics */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1A2 - Engineering Physics
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "To apply the knowledge of solid state devices such as semiconductor diode, Zener diode & LED in various electronic applications.",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "To apply the knowledge of Quantum Mechanics in Engineering fields.",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "To apply the principles of electron Ballistics to demonstrate the functioning of CRO & Mass Spectrograph.",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "To apply the principles of geometrical optics such as interference & diffraction in various Engineering fields.",
-                        },
-                        {
-                          code: "CO5",
-                          desc: "To apply the principles of fiber optics & LASER & fundamentals of acoustics, ultrasonics, & fluid dynamics in various domains of Engineering.",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Engineering Mechanics */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1A3 - Engineering Mechanics
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "Apply composition and resolution of forces and principles of statics to analyze system of rigid bodies and simple structures.",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "Calculate frictional forces for simple contact, wedges and belt friction.",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "Locate centroid and calculate moment of inertia.",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "Calculate various kinematic quantities.",
-                        },
-                        {
-                          code: "CO5",
-                          desc: "Solve the problems using different kinetic equations related to direct and interconnected particles.",
-                        },
-                        {
-                          code: "CO6",
-                          desc: "Apply principle of conservation of momentum and laws of impact.",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Computer Programming */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1A4 - Computer Programming
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "Explain fundamental concepts of computer and computing.",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "Test and execute the programs and correct syntax and logical errors.",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "Demonstrate various concepts of operators, expressions to solve real life problems.",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "Demonstrate various concepts of control structure to solve complex problems",
-                        },
-                        {
-                          code: "CO5",
-                          desc: "Use arrays, strings and structures to formulate algorithms and programs.",
-                        },
-                        {
-                          code: "CO6",
-                          desc: "Demonstrate various concepts of functions, pointers and file handling mechanism.",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Workshop */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1A5 - Workshop
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "Apply various forging operations for the completion of given component",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "Apply various fitting operations for the completion of given component",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "Apply various thread manufacturing processes operations for the completion of given component",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "Apply various sheet metal processes operations for the completion of given component",
-                        },
-                        {
-                          code: "CO5",
-                          desc: "Apply various welding techniques to fabricate the parts",
-                        },
-                        {
-                          code: "CO6",
-                          desc: "Apply various carpentry operations for the completion of given component",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Divider for CSE,IT,ELPO section */}
-              <div className="border-t-4 border-gray-200 pt-6">
-                <div className="bg-blue-50 p-4 rounded-lg mb-6">
-                  <p className="text-center text-lg font-bold text-blue-900">
-                    CSE, IT, ELPO
-                  </p>
-                </div>
-              </div>
-
-              {/* Engineering Mathematics-II */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1B1 - Engineering Mathematics-II
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "Solve the inverse of matrix by various methods, solutions of simultaneous equation, and Eigen values & Eigen vectors of a matrix",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "Use the tool of Fourier expansion for learning advance engineering Mathematics",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "Solve integrals by Gamma & Beta function, Reduction Formulae",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "Use new techniques of DUIS to evaluate integrals",
-                        },
-                        {
-                          code: "CO5",
-                          desc: "Solve the numerical on double integrals",
-                        },
-                        {
-                          code: "CO6",
-                          desc: "Solve Triple integrals and their uses to find the volume of Triple integrals, mean value and RMS values",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Engineering Chemistry */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1B2 - Engineering Chemistry
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "Apply the knowledge of chemistry in softening processes, its quality parameters for the use of water in industry.",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "Identify various types of corrosion and methods to protect the metallic structure from corrosive environment and understanding of the energy storage system (battery)",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "Apply the knowledge of useful engineering materials such as cement and lubricant based on their properties.",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "Apply the knowledge about the properties of chemical fuels for the generation of power",
-                        },
-                        {
-                          code: "CO5",
-                          desc: "Apply the knowledge of various polymeric material w.r.t synthesis, properties and applications",
-                        },
-                        {
-                          code: "CO6",
-                          desc: "Identify various phases of material at different thermodynamic variables and analysis of materials by using advance analytical techniques.",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Electrical Engineering */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1B3 - Electrical Engineering
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "Analyze the electric and magnetic circuits.",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "Analyze single phase & three phase AC circuits.",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "Understand the operating principles & Characteristics of electrical machines.",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "Elaborate the construction and working of various measuring instruments and earthing.",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Engineering Graphics */}
-              <div className="border-b border-gray-200 pb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1B4 - Engineering Graphics
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "Prepare the engineering drawings.",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "Apply the concepts of the projections and sectional views of three Dimensional objects.",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "Analyse the orthographic and isometric views of three dimensional objects.",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "Explain the engineering drawings and represent engineering systems.",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Communication Skills */}
-              <div>
-                <h4 className="text-lg font-bold text-gray-900 mb-3 bg-gray-50 p-3 rounded">
-                  1B5 - Communication Skills
-                </h4>
-                <p className="text-sm text-gray-700 mb-3 font-semibold">
-                  After successfully completing the course, the students will be
-                  able to:
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {[
-                        {
-                          code: "CO1",
-                          desc: "Understand the importance of communication at the workplace and use grammatically correct sentences in oral and written communication.",
-                        },
-                        {
-                          code: "CO2",
-                          desc: "Enhance vocabulary and learn the basics of business correspondence to effectively write letters, proposals, reports and newsletters",
-                        },
-                        {
-                          code: "CO3",
-                          desc: "Learn the right kind of pronunciation with proper stress, intonation and pauses during the conversation.",
-                        },
-                        {
-                          code: "CO4",
-                          desc: "Learn the basics of public speaking, group discussions, presentations and interviews",
-                        },
-                      ].map((outcome, i) => (
-                        <tr key={i} className="border-b border-gray-300">
-                          <td className="border-r border-gray-300 px-4 py-3 font-bold text-gray-800 w-20 text-center bg-gray-50">
-                            {outcome.code}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">
-                            {outcome.desc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
       </div>
     ),
 
@@ -3174,117 +3130,211 @@ const AppliedSciences = () => {
           <p className="text-gray-600 mt-3">2021-22 To 2025-26</p>
         </div>
 
-        {/* Achievement Cards */}
-        <div className="space-y-4">
-          {[
-            {
-              name: "Dr. A. S. Tale",
-              items: [
-                "Became Fab Graduate (Diploma Hands on Digital Fabrication) 2021 MIT BOSTON (VIGYAN ASHRAM)",
-                "Awarded with Doctor of Philosophy (Ph.D) Notification No.56/2021",
-                "Completed Refresher course National Education Policy and its Implementation held during 12th Feb to 24th Feb 2024 and obtain grade A+",
-                "Published Patent on Exploring Superconducting Devices for Efficient Quantum Information Processing and Storage (Application No.202341069399 A, Publication Date: 24/11/2023)",
-                "Published A text book of Nano science & Technology (ISBN 978-81-971218-5-2)",
-                "Published a paper in Journal of Electrical Systems (Q4) journal. (J. Electrical Systems 20-11s (2024): 3658-3666)",
-                "Published a Copy right for SMART AZOLA MULTIPLIER SYSTEM on 30/12/2025 (LD-28448/2025-CO)",
-              ],
-            },
-            {
-              name: "Dr. Rajesh M Kharate",
-              items: [
-                "Associate Professor recognized as SUPERVISOR FOR Ph.D. Thursday, the 28th September, 2023, No. 153 / 2023",
-                "Invited as Resource Person-CAREER COUNSELLNG organized by Dastur Ratanji, Khamgaon, What after 10th, 12th and Graduation on 22.07.2023 at Tilak Smarak Mahila Mandal Sabhagruha, Khamgaon",
-                "CAREER COUNSELLNG organised by Dastur Ratanji Library in association with Tilak Smarak Mahila Mandal, Khamgaon on 30.06.2024 at Tilak Smarak Mahila Mandal Sabhagruha, Khamgaon",
-              ],
-            },
-            {
-              name: "Prof. N. S. Thakare",
-              items: [
-                "Recognized as Best P.O.- NSS, SGBAU, Amravati, M.S., India",
-              ],
-            },
-            {
-              name: "Prof. A. S. Alane",
-              items: [
-                "Registered for Ph.D. (Registration at SGBAU Amravati no.3172/2024)",
-              ],
-            },
-            {
-              name: "Dr. M. S. Pande",
-              items: [
-                "Published A text book of Research Innovative Basket (National Education Policy 2020, ISBN:978-81-970810-4-0)",
-                "Recognized as Reviewer for publication in Journal of Condensed Matter",
-              ],
-            },
-            {
-              name: "Dr. Manisha Sandeep Pande",
-              items: [
-                "Completed the NEP 2020 Orientation & Sensitization Programme under the Malaviya Mission Teacher Training Programme (MM-TTP) of the University Grants Commission (UGC) jointly Organized by UGC-Malaviya Mission Teacher Training Centre, Sant Gadge Baba Amravati University, Amravati, and SSGMCE, Shegaon (Maharashtra) from 24th February, 2025 to 05th March, 2025 and obtained grade A+",
-                "Book Chapter: Study of magnesium doped zinc cobaltite thick film for resistive type H2S gas detection. RESEARCH INNOVATIVE BASKET (Volume 2) ISBN:978-81-970810-4-0",
-              ],
-            },
-            {
-              name: "Prof. H. S. Patil",
-              items: [
-                "Published a book-LITERATURE MEETS LIBRARIES",
-                "Published a book chapter on title Enhancing Communicative Competence through English Language Laboratories: A Study of Undergraduate Learners in Amravati",
-                "Completed PGCTE from EFLU, Hyderabad in Aug.2025",
-                "Delivered Guest Lectures on Soft Skills for FINAL year Students at various institutions: Shripad Krushna Kolhatkar College (Jalgaon Jamod), Shivaji College, Rajshri Shahu College of Pharmacy (Buldhana), Dr.R.N.Lahoti College of Pharmacy (Sultanpur), Sanmati Engineering College (Washim), P.Laddad (Buldhana)",
-              ],
-            },
-            {
-              name: "Prof. K. P. Deshmukh",
-              items: ["Registered for Ph.D"],
-            },
-            {
-              name: "Prof. S. V. Bhagat",
-              items: [
-                "Completed Refresher course National Education Policy and its Implementation held during 12th Feb to 24th Feb 2024 and obtain grade A+",
-                "Submitted Ph.D thesis in December 2025",
-              ],
-            },
-            {
-              name: "Student Achievements",
-              items: [
-                "Mr. Vinit S. Atkare (First Year Mechanical Engineering) won third place at AVISHKAR 2024 for his project on Non-contact Glucose Detection Using Optical and Analytical Techniques",
-                "Miss. Sakshi Rajankar, Miss. Tanushri Kharche, Miss. Vaishnavi Tale (First Year) won first rank in Cyber Security Bootcamp organized by ACM, SSGMCE, Shegaon",
-                "Rajveer Singh (First Year) emerged winner in RumbleReel organized by Institute of Technology, Management and Research, Nashik",
-                "Rajveer Singh (First Year) emerged winner in Project Xpo 2K25 organised by V. B. Kolte College of Engineering, Malkapur",
-                "Rajveer Singh and team (First Year) secured first position in hackathon 5.0 (Online) organized by Amity University Online",
-              ],
-            },
-          ].map((person, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+        {/* Tab Menu */}
+        <div className="flex justify-center mb-8">
+          <div className="inline-flex rounded-lg bg-gray-100 p-1">
+            <button
+              onClick={() => setAchievementTab("faculty")}
+              className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                achievementTab === "faculty"
+                  ? "bg-[#003366] text-white shadow-md"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+              }`}
             >
-              {/* Header with Name */}
-              <div className="bg-[#003366] px-6 py-4">
-                <h3 className="text-lg font-bold text-white flex items-center">
-                  <FaTrophy className="mr-3 text-yellow-300" />
-                  {person.name}
-                </h3>
-              </div>
-
-              {/* Achievement Items */}
-              <div className="p-6">
-                <ul className="space-y-3">
-                  {person.items.map((item, itemIndex) => (
-                    <li key={itemIndex} className="flex items-start group">
-                      <div className="flex-shrink-0 w-2 h-2 rounded-full bg-orange-500 mt-2 mr-4 group-hover:bg-orange-600 transition-colors"></div>
-                      <p className="text-gray-700 text-sm leading-relaxed flex-1">
-                        {item}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
-          ))}
+              <FaUserTie className="text-lg" />
+              Faculty Achievements
+            </button>
+            <button
+              onClick={() => setAchievementTab("student")}
+              className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                achievementTab === "student"
+                  ? "bg-[#003366] text-white shadow-md"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+              }`}
+            >
+              <FaAward className="text-lg" />
+              Student Achievements
+            </button>
+          </div>
         </div>
+
+        {/* Faculty Achievements Tab Content */}
+        {achievementTab === "faculty" && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-4"
+          >
+            {[
+              {
+                name: "Dr. A. S. Tale",
+                items: [
+                  "Became Fab Graduate (Diploma Hands on Digital Fabrication) 2021 MIT BOSTON (VIGYAN ASHRAM)",
+                  "Awarded with Doctor of Philosophy (Ph.D) Notification No.56/2021",
+                  "Completed Refresher course National Education Policy and its Implementation held during 12th Feb to 24th Feb 2024 and obtain grade A+",
+                  "Published Patent on Exploring Superconducting Devices for Efficient Quantum Information Processing and Storage (Application No.202341069399 A, Publication Date: 24/11/2023)",
+                  "Published A text book of Nano science & Technology (ISBN 978-81-971218-5-2)",
+                  "Published a paper in Journal of Electrical Systems (Q4) journal. (J. Electrical Systems 20-11s (2024): 3658-3666)",
+                  "Published a Copy right for SMART AZOLA MULTIPLIER SYSTEM on 30/12/2025 (LD-28448/2025-CO)",
+                ],
+              },
+              {
+                name: "Dr. Rajesh M Kharate",
+                items: [
+                  "Associate Professor recognized as SUPERVISOR FOR Ph.D. Thursday, the 28th September, 2023, No. 153 / 2023",
+                  "Invited as Resource Person-CAREER COUNSELLNG organized by Dastur Ratanji, Khamgaon, What after 10th, 12th and Graduation on 22.07.2023 at Tilak Smarak Mahila Mandal Sabhagruha, Khamgaon",
+                  "CAREER COUNSELLNG organised by Dastur Ratanji Library in association with Tilak Smarak Mahila Mandal, Khamgaon on 30.06.2024 at Tilak Smarak Mahila Mandal Sabhagruha, Khamgaon",
+                ],
+              },
+              {
+                name: "Prof. N. S. Thakare",
+                items: [
+                  "Recognized as Best P.O.- NSS, SGBAU, Amravati, M.S., India",
+                ],
+              },
+              {
+                name: "Prof. A. S. Alane",
+                items: [
+                  "Registered for Ph.D. (Registration at SGBAU Amravati no.3172/2024)",
+                ],
+              },
+              {
+                name: "Dr. M. S. Pande",
+                items: [
+                  "Published A text book of Research Innovative Basket (National Education Policy 2020, ISBN:978-81-970810-4-0)",
+                  "Recognized as Reviewer for publication in Journal of Condensed Matter",
+                ],
+              },
+              {
+                name: "Dr. Manisha Sandeep Pande",
+                items: [
+                  "Completed the NEP 2020 Orientation & Sensitization Programme under the Malaviya Mission Teacher Training Programme (MM-TTP) of the University Grants Commission (UGC) jointly Organized by UGC-Malaviya Mission Teacher Training Centre, Sant Gadge Baba Amravati University, Amravati, and SSGMCE, Shegaon (Maharashtra) from 24th February, 2025 to 05th March, 2025 and obtained grade A+",
+                  "Book Chapter: Study of magnesium doped zinc cobaltite thick film for resistive type H2S gas detection. RESEARCH INNOVATIVE BASKET (Volume 2) ISBN:978-81-970810-4-0",
+                ],
+              },
+              {
+                name: "Prof. H. S. Patil",
+                items: [
+                  "Published a book-LITERATURE MEETS LIBRARIES",
+                  "Published a book chapter on title Enhancing Communicative Competence through English Language Laboratories: A Study of Undergraduate Learners in Amravati",
+                  "Completed PGCTE from EFLU, Hyderabad in Aug.2025",
+                  "Delivered Guest Lectures on Soft Skills for FINAL year Students at various institutions: Shripad Krushna Kolhatkar College (Jalgaon Jamod), Shivaji College, Rajshri Shahu College of Pharmacy (Buldhana), Dr.R.N.Lahoti College of Pharmacy (Sultanpur), Sanmati Engineering College (Washim), P.Laddad (Buldhana)",
+                ],
+              },
+              {
+                name: "Prof. K. P. Deshmukh",
+                items: ["Registered for Ph.D"],
+              },
+              {
+                name: "Prof. S. V. Bhagat",
+                items: [
+                  "Completed Refresher course National Education Policy and its Implementation held during 12th Feb to 24th Feb 2024 and obtain grade A+",
+                  "Submitted Ph.D thesis in December 2025",
+                ],
+              },
+            ].map((person, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+              >
+                {/* Header with Name */}
+                <div className="bg-[#003366] px-6 py-4">
+                  <h3 className="text-lg font-bold text-white flex items-center">
+                    <FaTrophy className="mr-3 text-yellow-300" />
+                    {person.name}
+                  </h3>
+                </div>
+
+                {/* Achievement Items */}
+                <div className="p-6">
+                  <ul className="space-y-3">
+                    {person.items.map((item, itemIndex) => (
+                      <li key={itemIndex} className="flex items-start group">
+                        <div className="flex-shrink-0 w-2 h-2 rounded-full bg-orange-500 mt-2 mr-4 group-hover:bg-orange-600 transition-colors"></div>
+                        <p className="text-gray-700 text-sm leading-relaxed flex-1">
+                          {item}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        {/* Student Achievements Tab Content */}
+        {achievementTab === "student" && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-4"
+          >
+            {[
+              {
+                name: "Mr. Vinit S. Atkare",
+                branch: "First Year Mechanical Engineering",
+                items: [
+                  "Won third place at AVISHKAR 2024 for his project on Non-contact Glucose Detection Using Optical and Analytical Techniques",
+                ],
+              },
+              {
+                name: "Miss. Sakshi Rajankar, Miss. Tanushri Kharche, Miss. Vaishnavi Tale",
+                branch: "First Year",
+                items: [
+                  "Won first rank in Cyber Security Bootcamp organized by ACM, SSGMCE, Shegaon",
+                ],
+              },
+              {
+                name: "Rajveer Singh",
+                branch: "First Year",
+                items: [
+                  "Emerged winner in RumbleReel organized by Institute of Technology, Management and Research, Nashik",
+                  "Emerged winner in Project Xpo 2K25 organised by V. B. Kolte College of Engineering, Malkapur",
+                  "Secured first position in hackathon 5.0 (Online) organized by Amity University Online (Team Achievement)",
+                ],
+              },
+            ].map((student, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+              >
+                {/* Header with Name */}
+                <div className="bg-[#003366] px-6 py-4">
+                  <h3 className="text-lg font-bold text-white flex items-center">
+                    <FaAward className="mr-3 text-yellow-300" />
+                    {student.name}
+                  </h3>
+                  <p className="text-blue-200 text-sm mt-1 ml-8">
+                    {student.branch}
+                  </p>
+                </div>
+
+                {/* Achievement Items */}
+                <div className="p-6">
+                  <ul className="space-y-3">
+                    {student.items.map((item, itemIndex) => (
+                      <li key={itemIndex} className="flex items-start group">
+                        <div className="flex-shrink-0 w-2 h-2 rounded-full bg-orange-500 mt-2 mr-4 group-hover:bg-orange-600 transition-colors"></div>
+                        <p className="text-gray-700 text-sm leading-relaxed flex-1">
+                          {item}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
     ),
 

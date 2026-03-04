@@ -1,9 +1,43 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import GenericPage from "../../components/GenericPage";
 import { useDepartmentData } from "../../hooks/useDepartmentData";
 import EditableText from "../../components/admin/EditableText";
 import EditableImage from "../../components/admin/EditableImage";
+import {
+  defaultFaculty as MECH_DEFAULTS,
+  defaultPrideGate,
+  defaultPrideToppersBE,
+  defaultPrideAlumni,
+  defaultActivities,
+  defaultNewsletters,
+  defaultAchievements,
+  defaultInnovativePractices,
+  defaultMechPatents,
+  defaultMechPublications,
+  defaultMechCopyrights,
+  defaultMechInstitutePatents,
+  defaultLearningResources,
+  defaultNBAResources,
+} from "../../data/mechanicalDefaults";
+import { defaultPlacements } from "../../data/mechPlacements";
+import { defaultMechInternships } from "../../data/mechInternships";
 import mechanicalBanner from "../../assets/images/departments/mechanical/Mechnical banner.png";
+
+// Industrial Visit Photos
+import ivSanjeevVertex2024 from "../../assets/images/departments/mechanical/industrial-visits/sanjeev_vertex_sambhajinagar_2024.jpeg";
+import ivTooltech2023 from "../../assets/images/departments/mechanical/industrial-visits/tooltech_sambhajinagar_2023.jpeg";
+import ivParasThermal2022 from "../../assets/images/departments/mechanical/industrial-visits/paras_thermal_2022.jpg";
+import ivHindustanHardy2020 from "../../assets/images/departments/mechanical/industrial-visits/hindustan_hardy_nashik_2020.jpg";
+import ivBosch2020 from "../../assets/images/departments/mechanical/industrial-visits/bosch_nashik_2020.jpg";
+import ivGreavesCotton2019 from "../../assets/images/departments/mechanical/industrial-visits/greaves_cotton_aurangabad_2019.jpg";
+import ivAutoexpo2018 from "../../assets/images/departments/mechanical/industrial-visits/autoexpo_aurangabad_2018.jpeg";
+import ivYantra2019 from "../../assets/images/departments/mechanical/industrial-visits/yantra_aurangabad_2019.jpg";
+import ivVinodrai2018 from "../../assets/images/departments/mechanical/industrial-visits/vinodrai_aurangabad_2018.jpg";
+import ivSiemens2018 from "../../assets/images/departments/mechanical/industrial-visits/siemens_aurangabad_2018.jpeg";
+import ivFlowtech2018 from "../../assets/images/departments/mechanical/industrial-visits/flowtech_aurangabad_2018.jpeg";
+import ivGreavesCotton2018 from "../../assets/images/departments/mechanical/industrial-visits/greaves_cotton_aurangabad_2018.jpeg";
+
 import {
   FaLaptopCode,
   FaBullseye,
@@ -23,6 +57,17 @@ import {
   FaProjectDiagram,
   FaCalendarAlt,
   FaDownload,
+  FaUsers,
+  FaUserGraduate,
+  FaChalkboardTeacher,
+  FaTimes,
+  FaChevronLeft,
+  FaChevronRight,
+  FaExternalLinkAlt,
+  FaImages,
+  FaSearchPlus,
+  FaMapMarkerAlt,
+  FaFileAlt,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -48,6 +93,33 @@ import GSWahile from "../../assets/images/departments/mechanical/faculty/ASB.jpg
 import VTMhaske from "../../assets/images/departments/mechanical/faculty/VTMhaske.jpg";
 import ParagJadhav from "../../assets/images/departments/mechanical/faculty/Parag Jadhav.png";
 
+// Photo map for resolving mechanical faculty photo string references
+const mechPhotoMap = {
+  SPT,
+  VKT: VKThute,
+  JGK: JGKhan,
+  MBB,
+  CVP: CVPatil,
+  ASB,
+  NBB: NBBorkar,
+  NHK,
+  SQS: SQSyed,
+  PTP: PTPatokar,
+  KVC,
+  PD: PiyushDalke,
+  KRD: KRDudhe,
+  SPJ,
+  GSW: GSWahile,
+  VTM: VTMhaske,
+  PJ: ParagJadhav,
+};
+
+// Resolve mechanical faculty photos from string references to actual imports
+const resolvedMechFaculty = MECH_DEFAULTS.map((f) => ({
+  ...f,
+  photo: mechPhotoMap[f.photo] || f.photo,
+}));
+
 // Staff Photos
 import GRJodh from "../../assets/images/departments/mechanical/Staff/Gopal Jodh.jpg";
 import SDDeshmukh from "../../assets/images/departments/mechanical/Staff/SDD.jpg";
@@ -72,152 +144,7 @@ import GRPayghan from "../../assets/images/departments/mechanical/Staff/GRPaygha
 import AADhage from "../../assets/images/departments/mechanical/Staff/AADhage.jpg";
 import RNPachade from "../../assets/images/departments/mechanical/Staff/RNPachade.jpg";
 
-const MECH_DEFAULT_FACULTY = [
-  {
-    name: "Dr. S. P. Trikal",
-    role: "Professor & Head",
-    area: ["Manufacturing"],
-    email: "hod_mech@ssgmce.ac.in",
-    phone: "",
-    photo: SPT,
-  },
-  {
-    name: "Dr. V.K. Thute",
-    role: "Associate Professor",
-    area: ["Mechanical System Design"],
-    email: "vinaythute@ssgmce.ac.in",
-    phone: "",
-    photo: VKThute,
-  },
-  {
-    name: "Dr. J. G. Khan",
-    role: "Associate Professor",
-    area: ["Lean Manufacturing"],
-    email: "javed.khan@ssgmce.ac.in",
-    phone: "",
-    photo: JGKhan,
-  },
-  {
-    name: "Mr. M. B. Bhambere",
-    role: "Assistant Professor",
-    area: ["Thermal Engineering", "Computational Fluid Dynamics (CFD)"],
-    email: "mbbhambere@ssgmce.ac.in",
-    phone: "",
-    photo: MBB,
-  },
-  {
-    name: "Mr. C. V. Patil",
-    role: "Assistant Professor",
-    area: ["Computer Aided Design and Manufacturing"],
-    email: "cvpatil@ssgmce.ac.in",
-    phone: "",
-    photo: CVPatil,
-  },
-  {
-    name: "Mr. A. S. Bharule",
-    role: "Assistant Professor",
-    area: ["Machine Design & Analysis"],
-    email: "asbharule@ssgmce.ac.in",
-    phone: "",
-    photo: ASB,
-  },
-  {
-    name: "Mr. N. B. Borkar",
-    role: "Assistant Professor",
-    area: ["Production"],
-    email: "nbborkar@ssgmce.ac.in",
-    phone: "",
-    photo: NBBorkar,
-  },
-  {
-    name: "Dr. N. H. Khandare",
-    role: "Associate Professor",
-    area: [
-      "Lean and Agile Manufacturing",
-      "Production & Manufacturing Engineering",
-    ],
-    email: "nhkhandare@ssgmce.ac.in",
-    phone: "",
-    photo: NHK,
-  },
-  {
-    name: "Mr. S. Q. Syed",
-    role: "Assistant Professor",
-    area: ["Thermal"],
-    email: "sqsyed@ssgmce.ac.in",
-    phone: "",
-    photo: SQSyed,
-  },
-  {
-    name: "Mr. P. T. Patokar",
-    role: "Assistant Professor",
-    area: ["Manufacturing Engineering"],
-    email: "ptpatokar@ssgmce.ac.in",
-    phone: "",
-    photo: PTPatokar,
-  },
-  {
-    name: "Dr. K. V. Chandan",
-    role: "Assistant Professor",
-    area: ["Design and Development of Composite Materials"],
-    email: "kvchandan@ssgmce.ac.in",
-    phone: "",
-    photo: KVC,
-  },
-  {
-    name: "Dr. Piyush Dalke",
-    role: "Assistant Professor",
-    area: ["Hybrid Nano-fluids", "Manufacturing Engineering"],
-    email: "padalke@ssgmce.ac.in",
-    phone: "",
-    photo: PiyushDalke,
-  },
-  {
-    name: "Mr. K. R. Dudhe",
-    role: "Assistant Professor",
-    area: ["Thermal Engineering", "Pillow Plate Heat Exchanger"],
-    email: "krdudhe@ssgmce.ac.in",
-    phone: "",
-    photo: KRDudhe,
-  },
-  {
-    name: "Dr. S. P. Joshi",
-    role: "Assistant Professor",
-    area: [
-      "Thermal Engineering",
-      "Energy Management",
-      "Heat Transfer Augmentation",
-    ],
-    email: "spjoshi@ssgmce.ac.in",
-    phone: "",
-    photo: SPJ,
-  },
-  {
-    name: "Mr. G. S. Wahile",
-    role: "Assistant Professor",
-    area: ["Thermal Engineering", "Mechatronics", "IoT", "Photovoltaic Panel"],
-    email: "gswahile@ssgmce.ac.in",
-    phone: "",
-    photo: GSWahile,
-  },
-  {
-    name: "Mr. V. T. Mhaske",
-    role: "Assistant Professor",
-    area: ["Cryogenics Engineering", "Heat & Power"],
-    email: "vtmhaske@ssgmce.ac.in",
-    phone: "",
-    photo: VTMhaske,
-  },
-  {
-    name: "Mr. Parag Jadhav",
-    role: "Professor of Practice",
-    area: ["Industry Expert"],
-    email: "",
-    phone: "",
-    photo: ParagJadhav,
-    isIndustry: true,
-  },
-];
+const MECH_DEFAULT_FACULTY = resolvedMechFaculty;
 
 const Mechanical = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -228,7 +155,23 @@ const Mechanical = () => {
   const [researchTab, setResearchTab] = useState("patents");
   const [projectYear, setProjectYear] = useState("2024-25");
   const [researchYear, setResearchYear] = useState("2024-25");
+  const researchYears = [
+    "2024-25",
+    "2023-24",
+    "2022-23",
+    "2021-22",
+    "2020-21",
+    "2019-20",
+    "2018-19",
+  ];
   const [placementYear, setPlacementYear] = useState(null);
+  const [prideTab, setPrideTab] = useState("gate");
+  const [activitiesVisible, setActivitiesVisible] = useState(6);
+  const [lightboxActivity, setLightboxActivity] = useState(null);
+  const [achievementTab, setAchievementTab] = useState("faculty");
+  const [certificateLightbox, setCertificateLightbox] = useState(null);
+  const [ivLightbox, setIvLightbox] = useState(null);
+  const [internshipYear, setInternshipYear] = useState("2023-24");
 
   // Load department data (works in both edit and public view modes)
   const {
@@ -252,6 +195,74 @@ const Mechanical = () => {
     updateField("templateData.faculty", faculty);
   };
 
+  // Activity helper
+  const updateActivity = (idx, field, value) => {
+    const arr = JSON.parse(JSON.stringify(t("activities", defaultActivities)));
+    arr[idx][field] = value;
+    updateData("activities", arr);
+  };
+
+  // Newsletter helper
+  const updateNewsletter = (type, index, field, value) => {
+    if (type === "latest") {
+      const latest = JSON.parse(
+        JSON.stringify(t("newsletters_latest", defaultNewsletters.latest)),
+      );
+      latest[field] = value;
+      updateData("newsletters_latest", latest);
+    } else {
+      const archives = JSON.parse(
+        JSON.stringify(t("newsletters_archives", defaultNewsletters.archives)),
+      );
+      archives[index][field] = value;
+      updateData("newsletters_archives", archives);
+    }
+  };
+
+  // Pride section helper functions
+  const updatePrideGate = (yearIdx, studentIdx, cellIdx, val) => {
+    const newGate = JSON.parse(
+      JSON.stringify(t("pride.gate", defaultPrideGate)),
+    );
+    newGate[yearIdx].students[studentIdx][cellIdx] = val;
+    updateData("pride.gate", newGate);
+  };
+
+  const updatePrideToppers = (key, yearIdx, recordIdx, field, val) => {
+    const newData = JSON.parse(
+      JSON.stringify(t(`pride.toppers.${key}`, defaultPrideToppersBE)),
+    );
+    newData[yearIdx].records[recordIdx][field] = val;
+    updateData(`pride.toppers.${key}`, newData);
+  };
+
+  const updateOverviewTable = (path, defaultArr, rowIdx, cellIdx, val) => {
+    const newData = JSON.parse(JSON.stringify(t(path, defaultArr)));
+    newData[rowIdx][cellIdx] = val;
+    updateData(path, newData);
+  };
+
+  // Patents & Publications helper functions
+  const updatePatent = (year, index, field, value) => {
+    const patents = JSON.parse(
+      JSON.stringify(
+        t(`research.patents.${year}`, defaultMechPatents[year] || []),
+      ),
+    );
+    patents[index] = { ...patents[index], [field]: value };
+    updateData(`research.patents.${year}`, patents);
+  };
+
+  const updatePublication = (year, index, field, value) => {
+    const publications = JSON.parse(
+      JSON.stringify(
+        t(`research.publications.${year}`, defaultMechPublications[year] || []),
+      ),
+    );
+    publications[index] = { ...publications[index], [field]: value };
+    updateData(`research.publications.${year}`, publications);
+  };
+
   useEffect(() => {
     if (activeTab === "student-projects") {
       window.scrollTo(0, 0);
@@ -266,6 +277,7 @@ const Mechanical = () => {
     { id: "course-outcomes", label: "Course Outcomes" },
     { id: "curriculum", label: "Scheme and Syllabus" },
     { id: "laboratories", label: "Infrastructure and Laboratories" },
+    { id: "pride", label: "Pride of the Department" },
     { id: "placements", label: "Placement Statistics" },
     { id: "activities", label: "Curricular Activities" },
     { id: "newsletter", label: "Newsletter" },
@@ -693,7 +705,8 @@ const Mechanical = () => {
 
     "course-outcomes": (
       <div className="space-y-8">
-        <div className="text-center space-y-3">
+        {/* Header */}
+        <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-3">
             Course Outcomes
           </h2>
@@ -708,56 +721,1384 @@ const Mechanical = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-[#003366] px-6 py-4 text-center">
             <h3 className="text-xl font-bold text-white">
-              B.E. Course Outcomes
+              B.E. Mechanical Engineering - Course Outcomes
             </h3>
           </div>
 
           <div className="p-6 space-y-2">
-            {/* Placeholder for B.E. Semesters */}
-            {[
-              "Semester-I",
-              "Semester-II",
-              "Semester-III",
-              "Semester-IV",
-              "Semester-V",
-              "Semester-VI",
-              "Semester-VII",
-              "Semester-VIII",
-            ].map((sem, idx) => (
-              <div key={idx} className="border-b border-gray-200 pb-2">
-                <button
-                  onClick={() =>
-                    setExpandedSemester(
-                      expandedSemester === `be-sem${idx + 1}`
-                        ? null
-                        : `be-sem${idx + 1}`,
-                    )
-                  }
-                  className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-                >
-                  <span className="font-medium text-gray-700">B.E. {sem}</span>
-                  <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                    {expandedSemester === `be-sem${idx + 1}` ? "Hide" : "View"}
-                  </span>
-                </button>
-                <AnimatePresence>
-                  {expandedSemester === `be-sem${idx + 1}` && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-4 py-4 bg-gray-50">
-                        <p className="text-gray-600 italic text-center">
-                          Course outcomes data will be added here
+            {/* B.E. Semester-III */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem3" ? null : "be-sem3",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-III
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem3" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem3" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      {/* 3ME01 Engineering Mathematics - III */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ME01 Engineering Mathematics - III
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
                         </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply the knowledge linear differential equation to
+                            solve problems.
+                          </li>
+                          <li>
+                            Apply Laplace transform to solve differential
+                            equation.
+                          </li>
+                          <li>
+                            Apply the concept of Partial differential equation,
+                            probability and statistics.
+                          </li>
+                          <li>Apply the knowledge of complex analysis.</li>
+                          <li>Apply the knowledge of Numerical analysis.</li>
+                          <li>
+                            Apply the knowledge of vector calculus to solve
+                            physical problems.
+                          </li>
+                        </ol>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
+
+                      {/* 3ME02 Manufacturing Processes */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ME02 Manufacturing Processes
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the working principles of basic
+                            manufacturing processes.
+                          </li>
+                          <li>
+                            Apply the knowledge of casting processes for the
+                            specified working conditions.
+                          </li>
+                          <li>
+                            Analyze the various causes of casting defects to
+                            provide remedial action.
+                          </li>
+                          <li>
+                            Apply the knowledge of various forming processes for
+                            the given operating conditions.
+                          </li>
+                          <li>
+                            Apply the knowledge of basic and advance welding
+                            processes for detection and prevention of welding
+                            defects.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 3ME03 Mechanics of Materials */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ME03 Mechanics of Materials
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Determine stresses in uniaxial tension and
+                            compression conditions.
+                          </li>
+                          <li>
+                            Draw SFD, BMD and calculate bending stresses in
+                            beams.
+                          </li>
+                          <li>
+                            Apply torsion theory to shafts and helical springs.
+                          </li>
+                          <li>
+                            Determine stresses in thin, thick cylinders and thin
+                            spherical shells.
+                          </li>
+                          <li>
+                            Calculate strain energy and principal stresses given
+                            loading conditions.
+                          </li>
+                          <li>
+                            Determine deflection of beams under various loading
+                            conditions.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 3ME04 Engineering Thermodynamics */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ME04 Engineering Thermodynamics
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Illustrate the basic concept of thermodynamics,
+                            thermodynamic systems, work and heat
+                          </li>
+                          <li>
+                            Apply first law of thermodynamics to flow processes.
+                          </li>
+                          <li>
+                            Apply first law of thermodynamics to Non-flow
+                            processes.
+                          </li>
+                          <li>
+                            Apply second law of thermodynamics and explain
+                            concept of entropy.
+                          </li>
+                          <li>
+                            Explain the properties of steam, work done and heat
+                            transfer during various thermodynamic processes.
+                          </li>
+                          <li>
+                            Analyze thermodynamic cycles of various thermal
+                            systems.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 3ME05 Fluid Mechanics */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ME05 Fluid Mechanics
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Determine the values of various fluid properties at
+                            rest and in motion
+                          </li>
+                          <li>
+                            Apply general governing equations for fluid flow
+                            problems
+                          </li>
+                          <li>
+                            Apply the concept of Boundary layer theory for
+                            internal and external fluid flow
+                          </li>
+                          <li>
+                            Solve numerical based on force exerted by jet on
+                            plate by principle of impulse momentum
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 3ME10 Machine Drawing */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ME10 Machine Drawing
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Demonstrate the techniques of sectioning and
+                            visualizing the objects
+                          </li>
+                          <li>Understand and sketch the missing views</li>
+                          <li>
+                            Develop surfaces of objects and apply knowledge
+                            during their fabrication
+                          </li>
+                          <li>
+                            Understand the concept of intersection of solid
+                            objects
+                          </li>
+                          <li>
+                            Apply the conventions for materials and parts used
+                            in industries
+                          </li>
+                          <li>
+                            Prepare the assembly and detail drawings of simple
+                            machine components
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester-IV */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem4" ? null : "be-sem4",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-IV
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem4" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem4" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      {/* 4ME01 Material Science */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4ME01 Material Science
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Illustrate the basic concepts of metallurgy and
+                            materials classification in details.
+                          </li>
+                          <li>
+                            Illustrate the Iron-Carbon Equilibrium Diagram of
+                            metal materials and application of composites
+                          </li>
+                          <li>
+                            Understand different alloying elements and their
+                            effects on properties of steels and different types
+                            of alloys and their application
+                          </li>
+                          <li>
+                            Classify different types of cast iron, non-ferrous
+                            metal and alloys and their use, properties and
+                            applications
+                          </li>
+                          <li>
+                            Explain various principles of heat treatment used in
+                            metallurgy
+                          </li>
+                          <li>
+                            Explain various heat treatment processes, powder
+                            metallurgy and their industrial applications.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 4ME02 Energy Conversion - I */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4ME02 Energy Conversion - I
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain the different types of boiler and its
+                            mounting and accessories.
+                          </li>
+                          <li>
+                            Analyze the performance of boiler and Chimney.
+                          </li>
+                          <li>Analyze the performance of condensers.</li>
+                          <li>Analyze the performance of steam turbines.</li>
+                          <li>
+                            Classify different types of the nuclear reactor.
+                          </li>
+                          <li>
+                            Illustrate various renewable energy sources for
+                            power generations.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 4ME03 Manufacturing Technology */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4ME03 Manufacturing Technology
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply the concept of mechanics of metal cutting for
+                            various machining processes.
+                          </li>
+                          <li>
+                            Analyze the process parameters for given Lathe
+                            operations.
+                          </li>
+                          <li>
+                            Apply the knowledge of drilling, boring and
+                            broaching process to solve the related problems.
+                          </li>
+                          <li>
+                            Apply the knowledge of milling and gear
+                            manufacturing process to solve the related problems.
+                          </li>
+                          <li>
+                            Apply the concept of grinding process for finishing
+                            operations.
+                          </li>
+                          <li>
+                            Identify the various unconventional machining
+                            processes.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 4ME04 Basic Electrical Drives and Control */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4ME04 Basic Electrical Drives and Control
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain electric drives and power electronics,
+                            including motor heating and cooling.
+                          </li>
+                          <li>
+                            Analyze characteristics of DC and special motors
+                            like servo, stepper, and brushless DC
+                          </li>
+                          <li>
+                            Evaluate principles and types of AC motors including
+                            single and three-phase induction motors.
+                          </li>
+                          <li>
+                            Apply speed control techniques for AC and DC motors
+                            using thyristorized methods.
+                          </li>
+                          <li>
+                            Identify and describe sensors and transducers in
+                            mechatronic systems.
+                          </li>
+                          <li>
+                            Select suitable electric drives for various
+                            industrial applications.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 4ME05 Hydraulic and Pneumatic Systems */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4ME05 Hydraulic and Pneumatic Systems
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Analyze different turbines for engineering
+                            applications
+                          </li>
+                          <li>
+                            Compare the pumping systems and examine their
+                            performance characteristics
+                          </li>
+                          <li>
+                            Identify various principles of compressible fluid
+                            flow.
+                          </li>
+                          <li>Classify different types of hydraulic systems</li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester-V */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem5" ? null : "be-sem5",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-V
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem5" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem5" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      {/* 5ME01 Heat Transfer */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5ME01 Heat Transfer
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Analyze the thermal systems by applying the
+                            fundamental concept of conduction, convection and
+                            radiation.
+                          </li>
+                          <li>
+                            Apply the laws of radiations to heat transfer
+                            systems
+                          </li>
+                          <li>
+                            Evaluate the heat transfer coefficients for forced
+                            and free convection.
+                          </li>
+                          <li>Analyze the performance of heat exchangers</li>
+                        </ol>
+                      </div>
+
+                      {/* 5ME02 Metrology and Quality Control */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5ME02 Metrology and Quality Control
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the concept of inspection, quality
+                            control and its importance to industry.
+                          </li>
+                          <li>
+                            Demonstrate the skills of controlling various out of
+                            control processes using statistical quality control
+                            tools.
+                          </li>
+                          <li>
+                            Understand the importance of improving production
+                            and productivity using Various Non Destructive
+                            Testing approach.
+                          </li>
+                          <li>
+                            Apply the knowledge of various measurement standards
+                            and techniques in the industry to measure various
+                            parameters related to metrology.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 5ME03 Kinematics of Machines */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5ME03 Kinematics of Machines
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain the concept of link, kinematic mechanisms,
+                            machines, inversions and their applications.
+                          </li>
+                          <li>
+                            Analyze the mechanisms and machines on the basis of
+                            velocity and acceleration.
+                          </li>
+                          <li>
+                            Apply the graphical and analytical methods for
+                            analysis and synthesis of mechanisms for the
+                            input-output coordination.
+                          </li>
+                          <li>
+                            Explain the working principle and applications of
+                            different types of brakes, clutches, dynamometers
+                            and gear trains.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 5ME04 Measurement Systems */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5ME04 Measurement Systems
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Identify types, functional elements of Measurement
+                            system and types of input to the measurement system.
+                          </li>
+                          <li>
+                            Use the concepts of general performance
+                            characteristics for choosing measuring instrument.
+                          </li>
+                          <li>
+                            Demonstrate process of calibration of instruments.
+                          </li>
+                          <li>
+                            Select and use instrument for various physical
+                            quantities.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 5ME05 Industrial Robotics and Applications */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5ME05 Industrial Robotics and Applications
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Illustrate Robot's anatomy, joints types, wrist
+                            construction, robot standard configurations and
+                            their work space.
+                          </li>
+                          <li>
+                            Explain the construction and working of different
+                            types of End Effectors.
+                          </li>
+                          <li>
+                            Explain various robot drives, robot motion control
+                            and its levels.
+                          </li>
+                          <li>
+                            Explain various methods of teaching and programming
+                            the robots.
+                          </li>
+                          <li>
+                            Explain principle of working and applications of
+                            different types of robot sensors.
+                          </li>
+                          <li>
+                            Identify a particular type of robot depending on the
+                            its application in manufacturing.
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester-VI */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem6" ? null : "be-sem6",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-VI
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem6" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem6" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      {/* 6ME01 Design of Machine Elements */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ME01 Design of Machine Elements
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply principles and design considerations used in
+                            machine design
+                          </li>
+                          <li>
+                            Design different temporary and permanents joints for
+                            static loading
+                          </li>
+                          <li>
+                            Design shafts and couplings for various applications
+                            for static loading
+                          </li>
+                          <li>
+                            Design bearings for various applications and IC
+                            engine parts
+                          </li>
+                          <li>
+                            Utilize design data books in designing various
+                            machine elements
+                          </li>
+                          <li>
+                            Generate geometric model/drawings using dimensions
+                            of designed machine elements
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 6ME02 Dynamics of Machines */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ME02 Dynamics of Machines
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply the concept of static force analysis to
+                            kinematic mechanisms.
+                          </li>
+                          <li>
+                            Apply the concept of the dynamic force analysis to
+                            kinematic mechanisms.
+                          </li>
+                          <li>
+                            Apply the concept of gyroscopic couple and forces on
+                            a dynamic body.
+                          </li>
+                          <li>
+                            Apply the basics of longitudinal vibrations and
+                            determine the natural frequency of the vibrating
+                            system.
+                          </li>
+                          <li>
+                            Apply the basics of transverse vibrations and
+                            calculate the natural frequency of the vibrating
+                            system.
+                          </li>
+                          <li>
+                            Evaluate the balancing masses and their orientation
+                            for balancing of the rotating and reciprocating
+                            masses.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 6ME03 Control System Engineering */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ME03 Control System Engineering
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Demonstrate the fundamental concepts of automatic
+                            Control, mathematical modeling &amp; determination
+                            of the transfer function of control systems using
+                            various methods
+                          </li>
+                          <li>
+                            Analyze the time response of various systems &amp;
+                            determine the Static error coefficients for
+                            different input &amp; type of the systems
+                          </li>
+                          <li>
+                            Evaluate the stability of linear systems using
+                            various methods.
+                          </li>
+                          <li>
+                            Design and selection of industrial controller and
+                            Understanding of automatic speed controllers for
+                            Machine tools, Prime Movers and Steam Generator.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 6ME04 Non-Conventional Energy Sources */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ME04 Non-Conventional Energy Sources
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Illustrate basic concept of renewable and
+                            non-renewable sources
+                          </li>
+                          <li>
+                            Apply the basic concept of solar energy utilization
+                            and storage.
+                          </li>
+                          <li>
+                            Illustrate basics working of photovoltaic panel,
+                            fuel cell and geothermal energy
+                          </li>
+                          <li>Apply the concept of energy from ocean</li>
+                          <li>Apply the concept of energy from wind.</li>
+                          <li>
+                            Demonstrate understanding the concept of bio-mass
+                            energy resources.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 6ME04 Lean Manufacturing */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ME04 Lean Manufacturing
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain the concept and applications of lean
+                            manufacturing
+                          </li>
+                          <li>
+                            Interpret different element of lean manufacturing
+                          </li>
+                          <li>
+                            Interpret different tools of lean manufacturing
+                          </li>
+                          <li>
+                            Apply lean manufacturing in real life situation
+                          </li>
+                          <li>
+                            Identify the barriers in implementation of Lean
+                            Manufacturing.
+                          </li>
+                          <li>Explain the concept of Six Sigma</li>
+                        </ol>
+                      </div>
+
+                      {/* 6ME08 Computer Aided Design and Simulation */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ME08 Computer Aided Design and Simulation
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>Understand the concept of CAD.</li>
+                          <li>
+                            Apply knowledge using CAD modeling for component
+                            design
+                          </li>
+                          <li>
+                            Apply the knowledge of geometric transformation.
+                          </li>
+                          <li>
+                            Construct the Mechanical &amp; Manufacturing
+                            simulation systems
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester-VII */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem7" ? null : "be-sem7",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-VII
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem7" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem7" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      {/* 7ME01 Mechatronics */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ME01 Mechatronics
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain the scope and application of mechatronics,
+                            various electromechanical devices and components.
+                          </li>
+                          <li>
+                            Explain the concepts of electronics signal data and
+                            data conversion.
+                          </li>
+                          <li>
+                            Explain the working and applications of various
+                            electronic devices.
+                          </li>
+                          <li>
+                            Illustrate the working of different control
+                            components of Hydraulic and Pneumatic Systems.
+                          </li>
+                          <li>
+                            Construct pneumatic circuits used in mechanical line
+                            automation for industrial applications.
+                          </li>
+                          <li>
+                            Construct pneumatic circuits used in mechanical line
+                            automation for industrial applications.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 7ME02 Productivity Techniques */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ME02 Productivity Techniques
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply project selection methods to evaluate the
+                            feasibility of projects.
+                          </li>
+                          <li>
+                            Use appropriate project management practices, tools
+                            and methodologies.
+                          </li>
+                          <li>
+                            Analyze and document project requirements,
+                            assumptions and constraints.
+                          </li>
+                          <li>
+                            Apply project time and cost estimates to define
+                            project baseline, schedule and budget.
+                          </li>
+                          <li>
+                            Organize and manage critical resources for effective
+                            project implementation.
+                          </li>
+                          <li>Analyze risks in implementing project.</li>
+                        </ol>
+                      </div>
+
+                      {/* 7ME03 Industrial Management & Costing */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ME03 Industrial Management &amp; Costing
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply the concepts of Management and Finance for
+                            industry.
+                          </li>
+                          <li>
+                            Apply the process of Marketing , Promotions and
+                            sales to serve the demands of society.
+                          </li>
+                          <li>
+                            Analyze the concepts of estimation, costing and
+                            balance sheet for the industry.
+                          </li>
+                          <li>
+                            Plan for managerial and financial activities for the
+                            industry.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 7ME04 Energy Conversion-II */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ME04 Energy Conversion-II
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Analyze the performance of reciprocating compressor.
+                          </li>
+                          <li>Analyze the performance of rotary compressor.</li>
+                          <li>
+                            Solve the problems based on refrigeration cycles.
+                          </li>
+                          <li>
+                            Explain different air conditioning system and
+                            psychrometric process.
+                          </li>
+                          <li>Solve the problems based on gas turbines.</li>
+                          <li>
+                            Explain the working of electric and hybrid vehicles.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 7ME05 Automobile Engineering */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ME05 Automobile Engineering
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Compare the different types of automobiles and their
+                            working
+                          </li>
+                          <li>
+                            Analyze the concepts of fuels supply system and
+                            cooling system in automobile
+                          </li>
+                          <li>
+                            Identify the need of different electrical systems in
+                            conventional automobile and Electrical Vehicles(E.V)
+                          </li>
+                          <li>
+                            Explain the functioning of Transmission, Suspension,
+                            lubrication and control systems in Automobile.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 7ME05 Computational Fluid Dynamics */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ME05 Computational Fluid Dynamics
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Solve the governing partial differential equations
+                            of fluid flow and heat transfer problems
+                          </li>
+                          <li>
+                            Construct and solve different mathematical models
+                            and computational methods for fluid flows
+                          </li>
+                          <li>
+                            Apply the discretization method to solve fluid flow
+                            and heat transfer problems
+                          </li>
+                          <li>
+                            Examine a CFD scheme for the respective fluid
+                            flow/transport phenomenon problem
+                          </li>
+                          <li>
+                            Apply verification and validation of numerical model
+                          </li>
+                          <li>
+                            Demonstrate the ability to use modern CFD Software
+                            tools
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 7ME09 Seminar */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ME09 Seminar
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Organize seminar content logically to ensure clarity
+                            in objectives and coherence in information flow
+                          </li>
+                          <li>
+                            Demonstrate in-depth understanding of the seminar
+                            topic by explaining key concepts with clarity and
+                            elaboration.
+                          </li>
+                          <li>
+                            Apply effective presentation and communication
+                            techniques to engage the audience professionally.
+                          </li>
+                          <li>
+                            Create clear, and visually appealing presentation
+                            materials to enhance understanding
+                          </li>
+                          <li>
+                            Analyse and respond to audience queries with logical
+                            reasoning and critical thinking.
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester-VIII */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem8" ? null : "be-sem8",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-VIII
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem8" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem8" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      {/* 8ME01 Operation Research Techniques */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8ME01 Operation Research Techniques
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply graphical and simplex methods to solve Linear
+                            Programming (LP) problems.
+                          </li>
+                          <li>
+                            Apply Transportation Models and Assignment Models to
+                            determine optimal solutions.
+                          </li>
+                          <li>
+                            Analyze PERT and CPM Network Models to assess
+                            project timelines and resource efficiency.
+                          </li>
+                          <li>
+                            Solve waiting line and sequencing models to
+                            determine optimal solution.
+                          </li>
+                          <li>
+                            Solve Simulation and Dynamic Programming problems
+                            for optimal strategies.
+                          </li>
+                          <li>
+                            Apply replacement models for individual and group
+                            policies.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 8ME02 I.C. Engines */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8ME02 I.C. Engines
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Analyze the various performance parameters of IC
+                            engines by using principles of thermodynamics.
+                          </li>
+                          <li>Compare the major fuel groups for IC engines</li>
+                          <li>
+                            Explain the normal &amp; Abnormal combustion
+                            processes in SI and CI engines
+                          </li>
+                          <li>
+                            Identify relevance of environment and emissions from
+                            IC engine
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 8ME03 Production Planning & Control */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8ME03 Production Planning &amp; Control
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the importance of production planning and
+                            control, its functions and advantages.
+                          </li>
+                          <li>
+                            Apply the skills of calculating for sales forecasts
+                            using various forecasting methods.
+                          </li>
+                          <li>
+                            Formulate production order and Production Plan for
+                            given batch size
+                          </li>
+                          <li>
+                            Explain concept of machine capacity, loading of
+                            machines man machine activity charts.
+                          </li>
+                          <li>
+                            Explain concept of inventory control &amp; various
+                            cases of inventory system
+                          </li>
+                          <li>
+                            Apply the modern philosophies of management like
+                            CIM, JIT, MRP-I and MRP-II.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 8ME03 Artificial Intelligence */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8ME03 Artificial Intelligence
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Illustrate the concept of knowledge and knowledge
+                            base.
+                          </li>
+                          <li>
+                            Explain the structure and working of an Expert
+                            System.
+                          </li>
+                          <li>
+                            Illustrate the methods of knowledge representation.
+                          </li>
+                          <li>
+                            Explain the design pre-requisites and design
+                            procedure of expert system
+                          </li>
+                          <li>
+                            Explain the skills of development of expert system
+                            for industrial problems.
+                          </li>
+                          <li>
+                            Illustrate the concept of fuzzy logic and fuzzy
+                            engineering.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 8ME04 Refrigeration & Air Conditioning */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8ME04 Refrigeration &amp; Air Conditioning
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Analyze the effect of different parameters on
+                            performance of Vapour Compressor Refrigeration
+                            System (VCR) with different types of refrigerant.
+                          </li>
+                          <li>
+                            Analyze the elementary treatment of multistage
+                            pressure system along with fundamental of cryogenics
+                            engineering.
+                          </li>
+                          <li>
+                            Explain various components of refrigeration system
+                            and applications including leak detection.
+                          </li>
+                          <li>
+                            Apply the use of psychometric chart in the design of
+                            air-conditioning systems.
+                          </li>
+                          <li>
+                            Illustrate the details Classification of air
+                            conditioning systems &amp; its its applications.
+                          </li>
+                          <li>
+                            Analyze cooling load for different Air Conditioning
+                            System
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 8ME04 Robotics & Industrial Applications */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8ME04 Robotics &amp; Industrial Applications
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain the concept of robotics and its
+                            applications.
+                          </li>
+                          <li>
+                            Illustrate robot anatomy and various configurations
+                            for different industrial applications.
+                          </li>
+                          <li>
+                            Apply the concept of kinematic analysis of robots.
+                          </li>
+                          <li>
+                            Apply the concept robot programming, its methods and
+                            programming languages.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 8ME07 Project */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8ME07 Project
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Analyze relevant literature and define a research
+                            problem with well-formulated objectives.
+                          </li>
+                          <li>
+                            Plan and execute the project using appropriate
+                            methodologies and systematic work distribution.
+                          </li>
+                          <li>
+                            Demonstrate technical proficiency through structured
+                            presentations, demonstrations, and effective
+                            communication.
+                          </li>
+                          <li>
+                            Interpret and analyze feedback, refine project
+                            implementation, and present meaningful results and
+                            conclusions.
+                          </li>
+                          <li>
+                            Exhibit professional ethics, teamwork, and project
+                            documentation skills through effective report
+                            writing and participation in research dissemination
+                            activities.
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
 
@@ -765,54 +2106,368 @@ const Mechanical = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-[#003366] px-6 py-4 text-center">
             <h3 className="text-xl font-bold text-white">
-              M.E. Advanced Manufacturing & Mechanical Systems Design - Course
-              Outcomes
+              M.E. Advanced Manufacturing &amp; Mechanical Systems Design -
+              Course Outcomes
             </h3>
           </div>
 
           <div className="p-6 space-y-2">
-            {/* Placeholder for M.E. Semesters */}
-            {["Semester-I", "Semester-II", "Semester-III", "Semester-IV"].map(
-              (sem, idx) => (
-                <div key={idx} className="border-b border-gray-200 pb-2">
-                  <button
-                    onClick={() =>
-                      setExpandedSemester(
-                        expandedSemester === `me-sem${idx + 1}`
-                          ? null
-                          : `me-sem${idx + 1}`,
-                      )
-                    }
-                    className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+            {/* M.E. Semester-I */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "me-sem1" ? null : "me-sem1",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  M.E. Semester-I
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "me-sem1" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "me-sem1" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
                   >
-                    <span className="font-medium text-gray-700">
-                      M.E. {sem}
-                    </span>
-                    <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                      {expandedSemester === `me-sem${idx + 1}`
-                        ? "Hide"
-                        : "View"}
-                    </span>
-                  </button>
-                  <AnimatePresence>
-                    {expandedSemester === `me-sem${idx + 1}` && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="px-4 py-4 bg-gray-50">
-                          <p className="text-gray-600 italic text-center">
-                            Course outcomes data will be added here
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ),
-            )}
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      {/* 1MMD1 Advanced Manufacturing Processes */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1MMD1 Advanced Manufacturing Processes
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the mechanics of metal machining
+                            processes.
+                          </li>
+                          <li>
+                            Apply the concept of computer numerical control
+                            technology.
+                          </li>
+                          <li>Understand various metal casting processes.</li>
+                          <li>Distinguish the various welding processes.</li>
+                          <li>Analyze various metal forming processes.</li>
+                          <li>
+                            Apply various unconventional machining processes.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1MMD2 Advanced Machine Design */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1MMD2 Advanced Machine Design
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply failure theories to ductile and brittle
+                            materials
+                          </li>
+                          <li>Apply Stress-Life approach</li>
+                          <li>Apply Strain-Life approach</li>
+                          <li>Apply LEFM approach</li>
+                          <li>
+                            Apply fatigue from variable amplitude loading and
+                            statistical aspects
+                          </li>
+                          <li>
+                            Apply surface failure approach in mechanical design
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1MMD3 Computer Aided Design and Engineering */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1MMD3 Computer Aided Design and Engineering
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>Illustrate concept of CAD/ CAM and CIM.</li>
+                          <li>
+                            Apply knowledge using CAD modeling for component
+                            design.
+                          </li>
+                          <li>
+                            Illustrate the fundamentals of finite element
+                            analysis
+                          </li>
+                          <li>
+                            Apply FEA techniques to analyze problems in stress
+                            on beams, three dimensional frames, heat transfer
+                            and fluid flow.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1MMD4 Design for Material Handling Equipments */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1MMD4 Design for Material Handling Equipments
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Selection of a proper material handling system
+                          </li>
+                          <li>
+                            Awareness about the specifications of the elements
+                            of a material handling system like ropes, chains,
+                            pulleys, sheaves etc. for Hoist.
+                          </li>
+                          <li>
+                            Forces involved with in material handling like load
+                            lifting, buckets, belts etc.
+                          </li>
+                          <li>
+                            Types of conveyors and the Safety associated with
+                            it.
+                          </li>
+                          <li>
+                            Selection of Drives and Grabbing and Arresting
+                            Mechanism Attachments for materials handling
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 1MMD5 Lean Manufacturing */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1MMD5 Lean Manufacturing
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain the concept, history and applications of
+                            lean manufacturing
+                          </li>
+                          <li>
+                            Interpret different elements of Toyota Production
+                            System,
+                          </li>
+                          <li>
+                            Interpret different tools of lean production
+                            processes
+                          </li>
+                          <li>Apply cellular systems for production.</li>
+                          <li>
+                            Apply the concepts of TPM for quality improvement.
+                          </li>
+                          <li>
+                            Apply the concepts of Lean Manufacturing for
+                            sustaining improvements
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* M.E. Semester-II */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "me-sem2" ? null : "me-sem2",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  M.E. Semester-II
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "me-sem2" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "me-sem2" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      {/* 2MMD1 Advanced Material Technology */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          2MMD1 Advanced Material Technology
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Comprehensive understanding of various advanced
+                            materials.
+                          </li>
+                          <li>
+                            Understanding the principles and concepts of
+                            internal structure of materials.
+                          </li>
+                          <li>
+                            Applying the knowledge of material properties for
+                            various applications.
+                          </li>
+                          <li>
+                            Exploring the advanced manufacturing techniques of
+                            various metals and non metals.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 2MMD2 Rapid Prototyping & Tooling */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          2MMD2 Rapid Prototyping &amp; Tooling
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Aware of role of rapid prototyping in product
+                            development process
+                          </li>
+                          <li>
+                            To identify various Rapid Prototyping Processes
+                          </li>
+                          <li>
+                            Analyze the principles of Stereo lithography and
+                            Laser sintering process
+                          </li>
+                          <li>
+                            Understand various types of Pre-processing,
+                            processing, post-processing errors in Rapid
+                            prototyping.
+                          </li>
+                          <li>
+                            To Identify the various types of data formats and
+                            software's used in Rapid prototyping
+                          </li>
+                          <li>
+                            To Understand the concept of Reverse engineering
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 2MMD3 Mechatronics in System Design */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          2MMD3 Mechatronics in System Design
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand scope and application of mechatronics
+                            with various electromechanical devices and
+                            components
+                          </li>
+                          <li>
+                            Understand basics of electronic signals, working,
+                            applications of electronic devices like
+                            microcontroller, PLC etc.
+                          </li>
+                          <li>
+                            Understand role, working of different control
+                            components of hydraulic, pneumatic systems and their
+                            Applications
+                          </li>
+                          <li>
+                            Make pneumatic circuits commonly used in mechanical
+                            line automation and their industrial applications.
+                          </li>
+                          <li>
+                            Make hydraulic circuits commonly used in mechanical
+                            line automation and their industrial applications.
+                          </li>
+                          <li>
+                            Analyze and also make simple but complete
+                            mechatronics systems.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 2MMD4 Experimental Stress Analysis */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          2MMD4 Experimental Stress Analysis
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply stress optic law using photo elastic bench
+                          </li>
+                          <li>Use strain measurement methods</li>
+                          <li>Use electrical resistance strain gauge</li>
+                          <li>Apply Moire Methods</li>
+                          <li>Apply brittle coating methods</li>
+                        </ol>
+                      </div>
+
+                      {/* 2MMD5 Computer Assisted Production Management */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          2MMD5 Computer Assisted Production Management
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain the fundamental knowledge of Computer Aided
+                            Process Planning
+                          </li>
+                          <li>Explain Computer Assisted Quality Control</li>
+                          <li>Explain Capacity Planning</li>
+                          <li>
+                            Explain the Just in Time and Computer Aided
+                            Inventory Control.
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>
@@ -1053,6 +2708,514 @@ const Mechanical = () => {
       </div>
     ),
 
+    pride: (
+      <div className="space-y-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex items-center gap-3 mb-8">
+            <FaTrophy className="text-4xl text-yellow-500" />
+            <h3 className="text-3xl font-bold text-gray-800">
+              Pride of the Department
+            </h3>
+          </div>
+
+          {/* Tabs for different sections */}
+          <div className="flex gap-2 mb-6 border-b">
+            <button
+              onClick={() => setPrideTab("gate")}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                prideTab === "gate"
+                  ? "border-b-4 border-ssgmce-orange text-ssgmce-blue"
+                  : "text-gray-600 hover:text-ssgmce-blue"
+              }`}
+            >
+              GATE Qualified
+            </button>
+            <button
+              onClick={() => setPrideTab("toppers")}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                prideTab === "toppers"
+                  ? "border-b-4 border-ssgmce-orange text-ssgmce-blue"
+                  : "text-gray-600 hover:text-ssgmce-blue"
+              }`}
+            >
+              University Toppers
+            </button>
+            <button
+              onClick={() => setPrideTab("alumni")}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                prideTab === "alumni"
+                  ? "border-b-4 border-ssgmce-orange text-ssgmce-blue"
+                  : "text-gray-600 hover:text-ssgmce-blue"
+              }`}
+            >
+              Top Alumnis of Department
+            </button>
+          </div>
+
+          {/* GATE Qualified Students */}
+          {prideTab === "gate" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              {t("pride.gate", defaultPrideGate).map((gateYear, yearIdx) => (
+                <div
+                  key={yearIdx}
+                  className="bg-white rounded-lg shadow-md overflow-hidden"
+                >
+                  <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
+                    <h4 className="text-xl font-bold">
+                      <EditableText
+                        value={
+                          gateYear.title ||
+                          `GATE Qualified Students ${gateYear.year}`
+                        }
+                        onSave={(val) => {
+                          const newGate = JSON.parse(
+                            JSON.stringify(t("pride.gate", defaultPrideGate)),
+                          );
+                          newGate[yearIdx].title = val;
+                          updateData("pride.gate", newGate);
+                        }}
+                      />
+                    </h4>
+                  </div>
+                  {gateYear.students.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            {[
+                              "Sr. No.",
+                              "Name of Student",
+                              "Class",
+                              "Valid Score",
+                              "Category",
+                            ].map((h, i) => (
+                              <th
+                                key={i}
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              >
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {gateYear.students.map((student, studentIdx) => (
+                            <tr key={studentIdx} className="hover:bg-gray-50">
+                              {student.map((cell, cellIdx) => (
+                                <td
+                                  key={cellIdx}
+                                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                >
+                                  <EditableText
+                                    value={cell}
+                                    onSave={(val) =>
+                                      updatePrideGate(
+                                        yearIdx,
+                                        studentIdx,
+                                        cellIdx,
+                                        val,
+                                      )
+                                    }
+                                  />
+                                </td>
+                              ))}
+                              {isEditing && (
+                                <td
+                                  className="px-6 py-4 text-sm text-red-500 cursor-pointer"
+                                  onClick={() => {
+                                    const newGate = JSON.parse(
+                                      JSON.stringify(
+                                        t("pride.gate", defaultPrideGate),
+                                      ),
+                                    );
+                                    newGate[yearIdx].students = newGate[
+                                      yearIdx
+                                    ].students.filter(
+                                      (_, idx) => idx !== studentIdx,
+                                    );
+                                    updateData("pride.gate", newGate);
+                                  }}
+                                >
+                                  Delete
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="px-6 py-8 text-center text-gray-400 italic">
+                      No GATE qualified students for this year.
+                    </div>
+                  )}
+                  {isEditing && (
+                    <button
+                      onClick={() => {
+                        const newGate = JSON.parse(
+                          JSON.stringify(t("pride.gate", defaultPrideGate)),
+                        );
+                        const nextSr = String(gateYear.students.length + 1);
+                        newGate[yearIdx].students.push([
+                          nextSr,
+                          "New Student",
+                          "4M",
+                          "0",
+                          "OPEN",
+                        ]);
+                        updateData("pride.gate", newGate);
+                      }}
+                      className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                    >
+                      Add Student
+                    </button>
+                  )}
+                </div>
+              ))}
+              {isEditing && (
+                <button
+                  onClick={() => {
+                    const newGate = JSON.parse(
+                      JSON.stringify(t("pride.gate", defaultPrideGate)),
+                    );
+                    newGate.push({
+                      year: "2025",
+                      title: "GATE Qualified Students 2025",
+                      students: [],
+                    });
+                    updateData("pride.gate", newGate);
+                  }}
+                  className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                >
+                  Add Year
+                </button>
+              )}
+            </motion.div>
+          )}
+
+          {/* University Toppers */}
+          {prideTab === "toppers" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              {[
+                {
+                  label: "B.E. UNIVERSITY RANK HOLDERS",
+                  key: "be",
+                  default: defaultPrideToppersBE,
+                },
+              ].map((category) => (
+                <div
+                  key={category.key}
+                  className="bg-white rounded-lg shadow-md overflow-hidden"
+                >
+                  <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
+                    <h4 className="text-xl font-bold">{category.label}</h4>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          {[
+                            "Year",
+                            "Name of the Student",
+                            "University Rank",
+                            "CGPA/Percentage",
+                          ].map((h, i) => (
+                            <th
+                              key={i}
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {t(`pride.toppers.${category.key}`, category.default)
+                          .length > 0 ? (
+                          t(
+                            `pride.toppers.${category.key}`,
+                            category.default,
+                          ).map((yearGroup, yearIdx) => (
+                            <React.Fragment key={yearIdx}>
+                              {yearGroup.records.map((record, recordIdx) => (
+                                <tr
+                                  key={recordIdx}
+                                  className="hover:bg-gray-50"
+                                >
+                                  {recordIdx === 0 && (
+                                    <td
+                                      className="px-6 py-4 text-sm font-medium text-gray-900"
+                                      rowSpan={yearGroup.records.length}
+                                    >
+                                      <EditableText
+                                        value={yearGroup.year}
+                                        onSave={(val) => {
+                                          const newData = JSON.parse(
+                                            JSON.stringify(
+                                              t(
+                                                `pride.toppers.${category.key}`,
+                                                category.default,
+                                              ),
+                                            ),
+                                          );
+                                          newData[yearIdx].year = val;
+                                          updateData(
+                                            `pride.toppers.${category.key}`,
+                                            newData,
+                                          );
+                                        }}
+                                      />
+                                    </td>
+                                  )}
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <EditableText
+                                      value={record.name}
+                                      onSave={(val) =>
+                                        updatePrideToppers(
+                                          category.key,
+                                          yearIdx,
+                                          recordIdx,
+                                          "name",
+                                          val,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <EditableText
+                                      value={record.rank}
+                                      onSave={(val) =>
+                                        updatePrideToppers(
+                                          category.key,
+                                          yearIdx,
+                                          recordIdx,
+                                          "rank",
+                                          val,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <EditableText
+                                      value={record.score}
+                                      onSave={(val) =>
+                                        updatePrideToppers(
+                                          category.key,
+                                          yearIdx,
+                                          recordIdx,
+                                          "score",
+                                          val,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  {isEditing && (
+                                    <td
+                                      className="px-6 py-4 text-sm text-red-500 cursor-pointer"
+                                      onClick={() => {
+                                        const newData = JSON.parse(
+                                          JSON.stringify(
+                                            t(
+                                              `pride.toppers.${category.key}`,
+                                              category.default,
+                                            ),
+                                          ),
+                                        );
+                                        newData[yearIdx].records = newData[
+                                          yearIdx
+                                        ].records.filter(
+                                          (_, idx) => idx !== recordIdx,
+                                        );
+                                        if (
+                                          newData[yearIdx].records.length === 0
+                                        ) {
+                                          newData.splice(yearIdx, 1);
+                                        }
+                                        updateData(
+                                          `pride.toppers.${category.key}`,
+                                          newData,
+                                        );
+                                      }}
+                                    >
+                                      Delete
+                                    </td>
+                                  )}
+                                </tr>
+                              ))}
+                            </React.Fragment>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={4}
+                              className="px-6 py-8 text-center text-gray-400 italic"
+                            >
+                              No data available yet.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  {isEditing && (
+                    <button
+                      onClick={() => {
+                        const newData = JSON.parse(
+                          JSON.stringify(
+                            t(
+                              `pride.toppers.${category.key}`,
+                              category.default,
+                            ),
+                          ),
+                        );
+                        newData.push({
+                          year: "2024-25",
+                          records: [
+                            {
+                              name: "New Student",
+                              rank: "1st",
+                              score: "9.5 CGPA",
+                            },
+                          ],
+                        });
+                        updateData(`pride.toppers.${category.key}`, newData);
+                      }}
+                      className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                    >
+                      Add Year Group
+                    </button>
+                  )}
+                </div>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Top Alumni */}
+          {prideTab === "alumni" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-lg shadow-md overflow-hidden"
+            >
+              <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
+                <h4 className="text-xl font-bold">
+                  <EditableText
+                    value={t("pride.alumniTitle", "Top Alumnis of Department")}
+                    onSave={(val) => updateData("pride.alumniTitle", val)}
+                  />
+                </h4>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      {[
+                        "S. N.",
+                        "Names of Alumni",
+                        "Position",
+                        "Names of Organisation",
+                      ].map((h, i) => (
+                        <th
+                          key={i}
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {t("pride.alumni", defaultPrideAlumni).length > 0 ? (
+                      t("pride.alumni", defaultPrideAlumni).map(
+                        (alumnus, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                              {idx + 1}.
+                            </td>
+                            {alumnus.map((cell, cellIdx) => (
+                              <td
+                                key={cellIdx}
+                                className="px-6 py-4 text-sm text-gray-900"
+                              >
+                                <EditableText
+                                  value={cell}
+                                  onSave={(val) =>
+                                    updateOverviewTable(
+                                      "pride.alumni",
+                                      defaultPrideAlumni,
+                                      idx,
+                                      cellIdx,
+                                      val,
+                                    )
+                                  }
+                                />
+                              </td>
+                            ))}
+                            {isEditing && (
+                              <td
+                                className="px-6 py-4 text-sm text-red-500 cursor-pointer"
+                                onClick={() => {
+                                  const newArr = t(
+                                    "pride.alumni",
+                                    defaultPrideAlumni,
+                                  ).filter((_, i) => i !== idx);
+                                  updateData("pride.alumni", newArr);
+                                }}
+                              >
+                                Delete
+                              </td>
+                            )}
+                          </tr>
+                        ),
+                      )
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-6 py-8 text-center text-gray-400 italic"
+                        >
+                          No alumni data available yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {isEditing && (
+                <button
+                  onClick={() => {
+                    const newArr = [
+                      ...t("pride.alumni", defaultPrideAlumni),
+                      ["New Alumni", "Position", "Organisation"],
+                    ];
+                    updateData("pride.alumni", newArr);
+                  }}
+                  className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                >
+                  Add Alumni
+                </button>
+              )}
+            </motion.div>
+          )}
+        </motion.div>
+      </div>
+    ),
+
     placements: (
       <div className="space-y-8">
         <AnimatePresence mode="wait">
@@ -1095,38 +3258,32 @@ const Mechanical = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-sm">
-                    {[
-                      { year: "2024-25", count: "39*", id: "2024-25" },
-                      { year: "2023-24", count: "61", id: "2023-24" },
-                      { year: "2022-23", count: "58", id: "2022-23" },
-                      { year: "2021-22", count: "42", id: "2021-22" },
-                      { year: "2020-21", count: "27", id: "2020-21" },
-                      { year: "2019-20", count: "35", id: "2019-20" },
-                      { year: "2018-19", count: "27", id: "2018-19" },
-                    ].map((row, index) => (
-                      <tr
-                        key={index}
-                        className="hover:bg-blue-50/30 transition-colors"
-                      >
-                        <td className="px-6 py-4 text-center font-mono text-gray-400">
-                          {index + 1}
-                        </td>
-                        <td className="px-6 py-4 text-center font-bold text-gray-700">
-                          {row.year}
-                        </td>
-                        <td className="px-6 py-4 text-center font-bold text-ssgmce-blue text-lg">
-                          {row.count}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <button
-                            onClick={() => setPlacementYear(row.id)}
-                            className="text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
-                          >
-                            View Details
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {t("placements.summary", defaultPlacements.summary).map(
+                      (row, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-blue-50/30 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-center font-mono text-gray-400">
+                            {index + 1}
+                          </td>
+                          <td className="px-6 py-4 text-center font-bold text-gray-700">
+                            {row.year}
+                          </td>
+                          <td className="px-6 py-4 text-center font-bold text-ssgmce-blue text-lg">
+                            {row.count}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <button
+                              onClick={() => setPlacementYear(row.id)}
+                              className="text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                            >
+                              View Details
+                            </button>
+                          </td>
+                        </tr>
+                      ),
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1161,172 +3318,58 @@ const Mechanical = () => {
                 </div>
               </div>
 
-              {placementYear === "2024-25" ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
-                        <tr>
-                          <th className="px-6 py-4 font-bold text-center w-16">
-                            Sr. No.
-                          </th>
-                          <th className="px-6 py-4 font-bold">
-                            Name of Company
-                          </th>
-                          <th className="px-6 py-4 font-bold">
-                            Name of Students
-                          </th>
-                          <th className="px-6 py-4 font-bold text-right">
-                            Package Offered
-                          </th>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
+                      <tr>
+                        <th className="px-6 py-4 font-bold text-center w-16">
+                          Sr. No.
+                        </th>
+                        <th className="px-6 py-4 font-bold">Name of Student</th>
+                        <th className="px-6 py-4 font-bold">Company Name</th>
+                        <th className="px-6 py-4 font-bold text-right">CTC</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {t(
+                        `placements.details.${placementYear}`,
+                        defaultPlacements.details[placementYear] || [],
+                      ).map((student, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-center font-mono text-gray-400">
+                            {index + 1}
+                          </td>
+                          <td className="px-6 py-4 font-medium text-gray-800">
+                            {student.name}
+                          </td>
+                          <td className="px-6 py-4 text-gray-600">
+                            {student.company}
+                          </td>
+                          <td className="px-6 py-4 text-right font-bold text-ssgmce-blue">
+                            {student.ctc}
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {[
-                          {
-                            company:
-                              "Schneider Electric India Pvt. Ltd., Mumbai",
-                            students: "Sakshi Soni",
-                            ctc: "5.5 LPA",
-                          },
-                          {
-                            company: "BOSCH Limited, Nashik",
-                            students: "Manoj Chavhan",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            company: "Triputi Cryogenic Pvt. Ltd., Navi Mumbai",
-                            students: "Aniketsirh Rajput, Manoj Chavhan",
-                            ctc: "3.00 - 3.50 LPA",
-                          },
-                          {
-                            company: "JNK India Ltd., Mumbai",
-                            students: "Akash Jadhao, Mihir Gaar",
-                            ctc: "5.13 LPA",
-                          },
-                          {
-                            company: "ABB Limited, Nashik",
-                            students:
-                              "Siddheshwar Amle, Sakshi Soni, Shivratani Kothe",
-                            ctc: "8.5 LPA",
-                          },
-                          {
-                            company:
-                              "Micromatic Machine Tools Private Limited Bangalore",
-                            students: "Nishant More, Roshan Mhasal",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            company:
-                              "Anant Defence Systems Pvt. Ltd., Satara-Pune",
-                            students:
-                              "Jitesh Nagarkar, Kunal Pawar, Nivrrutti Sambare, Om Deshmukh, Prasad Wankar",
-                            ctc: "3.29 LPA",
-                          },
-                          {
-                            company: "Faurecia India Pvt. Ltd., Pune",
-                            students: "Sakshi Dalvi",
-                            ctc: "3.00 LPA",
-                          },
-                          {
-                            company: "QH TALBROS Pvt.Ltd., Satara",
-                            students:
-                              "Ajay Kalpande, Akshay Jawale, Gaurav Wasu, Nikhil Mankar, Prasanna Merkar, Pratik Deotale, Shiivraj Vijekar, Shubham Pivallakar, Sujay Pakhare, Vaibhav Nagre",
-                            ctc: "2.16 LPA",
-                          },
-                          {
-                            company: "Hyosung T&D India, Pune",
-                            students:
-                              "Chaitanya Parsulkar, Pratik Bombarkar, Karan Jadhav",
-                            ctc: "3.60 LPA",
-                          },
-                          {
-                            company:
-                              "Daikin Airconditioning India Pvt. Ltd., Pune",
-                            students:
-                              "Om Helge, Rushikesh Amulkar, Yuvraj Rajput",
-                            ctc: "5 & 7 LPA",
-                          },
-                          {
-                            company: "FORVIA Faurecia, Pune",
-                            students: "Gauri Raut",
-                            ctc: "5.50 LPA",
-                          },
-                          {
-                            company: "Joshi Jampala, Satara",
-                            students: "Gaurav Vasu",
-                            ctc: "3 LPA",
-                          },
-                          {
-                            company: "Mahindra & Mahindra Ltd., Nagpur",
-                            students: "Shivranjan Kolhe",
-                            ctc: "4.20 LPA",
-                          },
-                          {
-                            company: "L&T Technology Services, Bengaluru",
-                            students: "Jayashri Shelke",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            company: "KT-Tech Pvt. Ltd., Hyderabad",
-                            students: "Vaibhav Nagre",
-                            ctc: "6.20 LPA",
-                          },
-                          {
-                            company: "INNOVA Rubbers, Nashik",
-                            students:
-                              "Amol Kulat, Bhavana Sawale, Gaurav Wasu, Jayashri Shelke, Om Kokatre",
-                            ctc: "2.52 LPA",
-                          },
-                          {
-                            company: "Senmmeter",
-                            students: "Punit Raut",
-                            ctc: "3.00 LPA",
-                          },
-                        ].map((row, i) => (
-                          <tr
-                            key={i}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-6 py-4 text-center font-mono text-gray-400 text-xs">
-                              {i + 1}
-                            </td>
-                            <td className="px-6 py-4 font-bold text-gray-800">
-                              {row.company}
-                            </td>
-                            <td className="px-6 py-4 text-gray-600">
-                              {row.students}
-                            </td>
-                            <td className="px-6 py-4 text-right font-bold text-green-600 bg-green-50/50">
-                              {row.ctc}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="p-4 text-xs text-gray-500 bg-gray-50 border-t border-gray-100">
-                    <p className="font-semibold mb-2">Summary:</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <p>
-                        • Total Students Placed (Offers):{" "}
-                        <span className="font-bold text-gray-800">44</span>
-                      </p>
-                      <p>
-                        • Total Students Placed (Head Counts):{" "}
-                        <span className="font-bold text-gray-800">39</span>
-                      </p>
-                    </div>
-                  </div>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              ) : (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-8 text-center">
-                  <p className="text-gray-500 italic">
-                    Detailed placement data will be added soon for{" "}
-                    {placementYear}.
-                  </p>
-                </div>
-              )}
+                {(!t(
+                  `placements.details.${placementYear}`,
+                  defaultPlacements.details[placementYear] || [],
+                ).length ||
+                  t(
+                    `placements.details.${placementYear}`,
+                    defaultPlacements.details[placementYear] || [],
+                  ).length === 0) && (
+                  <div className="p-8 text-center text-gray-400">
+                    <p>Detailed placement data will be updated soon.</p>
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -1454,410 +3497,874 @@ const Mechanical = () => {
 
     activities: (
       <div className="space-y-8">
-        <div className="text-center mb-8">
-          <h3 className="text-3xl font-bold text-gray-800 mb-3">
-            Curricular Activities
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+            <EditableText
+              value={t("activitiesTitle", "Curricular Activities")}
+              onSave={(val) => updateData("activitiesTitle", val)}
+            />
           </h3>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Department regularly organizes various workshops, seminars, FDPs,
-            and training programs for overall development
-          </p>
+          <span className="hidden sm:inline-block text-sm text-gray-500 bg-gray-100 px-4 py-1.5 rounded-full">
+            {t("activities", defaultActivities).length} Activities
+          </span>
         </div>
 
-        <div className="space-y-6">
-          {/* Placeholder for activities - data will be added */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-50 rounded-full mb-4">
-                <FaCalendarAlt className="text-4xl text-ssgmce-blue" />
-              </div>
-              <h4 className="text-xl font-bold text-gray-800 mb-2">
-                Activities & Events
-              </h4>
-              <p className="text-gray-600 mb-6">
-                The department actively organizes various technical and
-                non-technical events throughout the year
-              </p>
-
-              <div className="grid md:grid-cols-3 gap-6 text-left">
-                <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-lg border border-blue-100">
-                  <div className="text-ssgmce-blue text-2xl mb-3">📚</div>
-                  <h5 className="font-bold text-gray-900 mb-2">
-                    Workshops & Training
-                  </h5>
-                  <p className="text-sm text-gray-600">
-                    Regular technical workshops and hands-on training programs
-                    for students
-                  </p>
-                </div>
-
-                <div className="bg-gradient-to-br from-green-50 to-white p-6 rounded-lg border border-green-100">
-                  <div className="text-green-600 text-2xl mb-3">🎓</div>
-                  <h5 className="font-bold text-gray-900 mb-2">FDP & STTP</h5>
-                  <p className="text-sm text-gray-600">
-                    Faculty Development Programs and Short Term Training
-                    Programs
-                  </p>
-                </div>
-
-                <div className="bg-gradient-to-br from-orange-50 to-white p-6 rounded-lg border border-orange-100">
-                  <div className="text-orange-600 text-2xl mb-3">🎤</div>
-                  <h5 className="font-bold text-gray-900 mb-2">
-                    Seminars & Lectures
-                  </h5>
-                  <p className="text-sm text-gray-600">
-                    Expert lectures and seminars by industry professionals
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-8 p-6 bg-yellow-50 rounded-lg border border-yellow-200">
-                <p className="text-sm text-gray-700 italic">
-                  <strong>Note:</strong> Detailed activity data and event
-                  listings will be updated soon. Please check back for
-                  comprehensive information on workshops, seminars, and training
-                  programs organized by the department.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Student Chapters & Clubs */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-[#003366] to-ssgmce-dark-blue px-6 py-4">
-              <h4 className="text-xl font-bold text-white">
-                Student Chapters & Technical Clubs
-              </h4>
-            </div>
-            <div className="p-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  {
-                    name: "SAE India",
-                    icon: "🏎️",
-                    desc: "Society of Automotive Engineers",
-                  },
-                  {
-                    name: "ISTE Chapter",
-                    icon: "🔧",
-                    desc: "Indian Society for Technical Education",
-                  },
-                  {
-                    name: "IEI Chapter",
-                    icon: "⚙️",
-                    desc: "Institution of Engineers India",
-                  },
-                  {
-                    name: "IEEE Chapter",
-                    icon: "⚡",
-                    desc: "Institute of Electrical and Electronics Engineers",
-                  },
-                ].map((club, i) => (
+        {/* Activity List */}
+        <div className="space-y-5">
+          {t("activities", defaultActivities)
+            .slice(0, activitiesVisible)
+            .map((activity, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.03, duration: 0.35 }}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden"
+              >
+                <div className="flex flex-col sm:flex-row">
+                  {/* Image */}
                   <div
-                    key={i}
-                    className="bg-gray-50 p-4 rounded-lg hover:shadow-md transition-shadow border border-gray-200"
+                    className="sm:w-72 flex-shrink-0 cursor-pointer"
+                    onClick={() => setLightboxActivity(idx)}
                   >
-                    <div className="text-3xl mb-2">{club.icon}</div>
-                    <h5 className="font-bold text-gray-900 text-sm mb-1">
-                      {club.name}
-                    </h5>
-                    <p className="text-xs text-gray-600">{club.desc}</p>
+                    {activity.image ? (
+                      <img
+                        src={activity.image}
+                        alt={activity.title}
+                        className="w-full h-48 sm:h-full object-contain bg-gray-50"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-48 sm:h-full flex items-center justify-center bg-gray-50">
+                        <FaCalendarAlt className="text-4xl text-gray-300" />
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
+
+                  {/* Details */}
+                  <div className="flex-1 p-5 sm:p-6">
+                    {/* Date */}
+                    <span className="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded mb-3">
+                      <EditableText
+                        value={activity.date}
+                        onSave={(val) => updateActivity(idx, "date", val)}
+                      />
+                    </span>
+
+                    {/* Title */}
+                    <h4 className="text-lg font-bold text-gray-800 mb-4 leading-snug">
+                      <EditableText
+                        value={activity.title}
+                        onSave={(val) => updateActivity(idx, "title", val)}
+                        multiline
+                      />
+                    </h4>
+
+                    {/* Meta Info */}
+                    <div className="space-y-2.5 text-sm text-gray-600">
+                      <div className="flex items-start gap-2.5">
+                        <FaUsers className="text-blue-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="font-medium text-gray-700">
+                            Participants:{" "}
+                          </span>
+                          <EditableText
+                            value={activity.participants}
+                            onSave={(val) =>
+                              updateActivity(idx, "participants", val)
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2.5">
+                        <FaUserGraduate className="text-orange-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="font-medium text-gray-700">
+                            Organized by:{" "}
+                          </span>
+                          <EditableText
+                            value={activity.organizer}
+                            onSave={(val) =>
+                              updateActivity(idx, "organizer", val)
+                            }
+                            multiline
+                          />
+                        </div>
+                      </div>
+
+                      {(activity.resource || isEditing) && (
+                        <div className="flex items-start gap-2.5">
+                          <FaChalkboardTeacher className="text-green-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="font-medium text-gray-700">
+                              Resource Person:{" "}
+                            </span>
+                            <EditableText
+                              value={
+                                activity.resource ||
+                                (isEditing ? "Add Resource Person" : "")
+                              }
+                              onSave={(val) =>
+                                updateActivity(idx, "resource", val)
+                              }
+                              multiline
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Edit: image URL + delete */}
+                    {isEditing && (
+                      <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-gray-500">Image URL:</span>
+                          <EditableText
+                            value={activity.image || "Add image URL"}
+                            onSave={(val) => updateActivity(idx, "image", val)}
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            const arr = [...t("activities", defaultActivities)];
+                            arr.splice(idx, 1);
+                            updateData("activities", arr);
+                          }}
+                          className="text-xs text-red-500 hover:text-red-700"
+                        >
+                          Remove Activity
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+        </div>
+
+        {/* Show More / Show Less */}
+        {t("activities", defaultActivities).length > 6 && (
+          <div className="text-center pt-2">
+            <button
+              onClick={() =>
+                setActivitiesVisible((prev) =>
+                  prev >= t("activities", defaultActivities).length
+                    ? 6
+                    : prev + 6,
+                )
+              }
+              className="px-8 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
+            >
+              {activitiesVisible >= t("activities", defaultActivities).length
+                ? "Show Less"
+                : `Show More (${t("activities", defaultActivities).length - activitiesVisible} remaining)`}
+            </button>
+          </div>
+        )}
+
+        {/* Add Activity button (editing mode) */}
+        {isEditing && (
+          <div className="text-center">
+            <button
+              onClick={() => {
+                const updated = [
+                  ...t("activities", defaultActivities),
+                  {
+                    title: "New Activity",
+                    date: "Date",
+                    participants: "Participants",
+                    organizer: "Organizer",
+                    resource: "",
+                    image: "",
+                  },
+                ];
+                updateData("activities", updated);
+              }}
+              className="px-6 py-2.5 bg-ssgmce-blue text-white rounded-lg hover:bg-ssgmce-dark-blue transition-colors text-sm font-medium"
+            >
+              + Add Activity
+            </button>
+          </div>
+        )}
+
+        {/* Lightbox */}
+        <AnimatePresence>
+          {lightboxActivity !== null && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+              onClick={() => setLightboxActivity(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                className="relative max-w-4xl w-full max-h-[90vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  className="absolute -top-10 right-0 text-white text-2xl hover:text-gray-300 z-10"
+                  onClick={() => setLightboxActivity(null)}
+                >
+                  <FaTimes />
+                </button>
+
+                <img
+                  src={
+                    t("activities", defaultActivities)[lightboxActivity]?.image
+                  }
+                  alt={
+                    t("activities", defaultActivities)[lightboxActivity]?.title
+                  }
+                  className="w-full max-h-[80vh] object-contain rounded-lg"
+                />
+
+                <div className="text-white text-center mt-3 text-sm">
+                  {t("activities", defaultActivities)[lightboxActivity]?.title}
+                </div>
+
+                {/* Nav arrows */}
+                {lightboxActivity > 0 && (
+                  <button
+                    className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-3xl bg-black/40 rounded-full p-2 hover:bg-black/60"
+                    onClick={() =>
+                      setLightboxActivity((p) => Math.max(0, p - 1))
+                    }
+                  >
+                    <FaChevronLeft />
+                  </button>
+                )}
+                {lightboxActivity <
+                  t("activities", defaultActivities).length - 1 && (
+                  <button
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-white text-3xl bg-black/40 rounded-full p-2 hover:bg-black/60"
+                    onClick={() =>
+                      setLightboxActivity((p) =>
+                        Math.min(
+                          t("activities", defaultActivities).length - 1,
+                          p + 1,
+                        ),
+                      )
+                    }
+                  >
+                    <FaChevronRight />
+                  </button>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Student Chapters & Clubs */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-[#003366] to-ssgmce-dark-blue px-6 py-4">
+            <h4 className="text-xl font-bold text-white">
+              Student Chapters & Technical Clubs
+            </h4>
+          </div>
+          <div className="p-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                {
+                  name: "SAE India",
+                  icon: "🏎️",
+                  desc: "Society of Automotive Engineers",
+                },
+                {
+                  name: "ISTE Chapter",
+                  icon: "🔧",
+                  desc: "Indian Society for Technical Education",
+                },
+                {
+                  name: "IEI Chapter",
+                  icon: "⚙️",
+                  desc: "Institution of Engineers India",
+                },
+                {
+                  name: "IEEE Chapter",
+                  icon: "⚡",
+                  desc: "Institute of Electrical and Electronics Engineers",
+                },
+              ].map((club, i) => (
+                <div
+                  key={i}
+                  className="bg-gray-50 p-4 rounded-lg hover:shadow-md transition-shadow border border-gray-200"
+                >
+                  <div className="text-3xl mb-2">{club.icon}</div>
+                  <h5 className="font-bold text-gray-900 text-sm mb-1">
+                    {club.name}
+                  </h5>
+                  <p className="text-xs text-gray-600">{club.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
+        </div>
+      </div>
+    ),
 
-          {/* Recent Events Placeholder */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-              <h4 className="text-lg font-bold text-gray-800">
-                Recent Events & Activities
-              </h4>
-            </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                {[
-                  {
-                    type: "Workshop",
-                    title: "Advanced CAD/CAM Techniques",
-                    status: "Coming Soon",
-                  },
-                  {
-                    type: "Seminar",
-                    title: "Industry 4.0 and Smart Manufacturing",
-                    status: "Coming Soon",
-                  },
-                  {
-                    type: "FDP",
-                    title: "Faculty Development Program on CFD",
-                    status: "Coming Soon",
-                  },
-                  {
-                    type: "Guest Lecture",
-                    title: "Innovations in Thermal Engineering",
-                    status: "Coming Soon",
-                  },
-                ].map((event, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
-                  >
+    achievements: (() => {
+      const facultyAchievements = t(
+        "achievements.faculty",
+        defaultAchievements.faculty || [],
+      );
+      const studentAchievements = t(
+        "achievements.students",
+        defaultAchievements.students || [],
+      );
+
+      const handleViewCertificate = (item) => {
+        if (!item.image) return;
+        const isPdf = item.image.toLowerCase().endsWith(".pdf");
+        if (isPdf) {
+          window.open(item.image, "_blank");
+        } else {
+          setCertificateLightbox(item);
+        }
+      };
+
+      return (
+        <div className="space-y-8">
+          {/* Certificate Lightbox Modal */}
+          <AnimatePresence>
+            {certificateLightbox && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                onClick={() => setCertificateLightbox(null)}
+              >
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  className="relative max-w-4xl max-h-[90vh] w-full bg-white rounded-2xl overflow-hidden shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
                     <div>
-                      <span className="inline-block px-3 py-1 bg-blue-100 text-ssgmce-blue text-xs font-semibold rounded-full mb-2">
-                        {event.type}
-                      </span>
-                      <p className="font-semibold text-gray-900">
-                        {event.title}
+                      <h3 className="text-white font-bold text-lg">
+                        {certificateLightbox.name}
+                      </h3>
+                      <p className="text-blue-200 text-sm">
+                        {certificateLightbox.achievement}
                       </p>
                     </div>
-                    <span className="text-sm text-orange-600 font-medium">
-                      {event.status}
-                    </span>
+                    <button
+                      onClick={() => setCertificateLightbox(null)}
+                      className="text-white hover:text-orange-300 transition-colors"
+                    >
+                      <FaTimes className="text-xl" />
+                    </button>
                   </div>
-                ))}
-              </div>
+                  <div className="p-4 flex items-center justify-center bg-gray-50 max-h-[75vh] overflow-auto">
+                    <img
+                      src={certificateLightbox.image}
+                      alt={certificateLightbox.achievement}
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                      className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                    />
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Header */}
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-gray-900">Achievements</h2>
+            <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
+            <p className="text-gray-600 mt-3">
+              Department of Mechanical Engineering
+            </p>
+          </div>
+
+          {/* Tab Menu: Faculty | Student toggle */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex rounded-lg bg-gray-100 p-1">
+              <button
+                onClick={() => setAchievementTab("faculty")}
+                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  achievementTab === "faculty"
+                    ? "bg-[#003366] text-white shadow-md"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                }`}
+              >
+                <FaChalkboardTeacher className="text-lg" />
+                Faculty Achievements
+              </button>
+              <button
+                onClick={() => setAchievementTab("student")}
+                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  achievementTab === "student"
+                    ? "bg-[#003366] text-white shadow-md"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                }`}
+              >
+                <FaUserGraduate className="text-lg" />
+                Student Achievements
+              </button>
             </div>
           </div>
-        </div>
-      </div>
-    ),
 
-    achievements: (
-      <div className="space-y-8">
-        <div className="text-center mb-8">
-          <h3 className="text-3xl font-bold text-gray-800 mb-3">
-            Achievements & Recognition
-          </h3>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Department faculty and students have achieved remarkable success in
-            various competitions, conferences, and research initiatives
-          </p>
-        </div>
+          {/* Faculty Achievements */}
+          {achievementTab === "faculty" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {facultyAchievements.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <FaTrophy className="mr-3 text-yellow-300" />
+                      {item.name}
+                    </h3>
+                    <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
+                      {item.category}
+                    </span>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-[#003366] mb-2">
+                          {item.achievement}
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                      {item.image && (
+                        <button
+                          onClick={() => handleViewCertificate(item)}
+                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                          <FaAward className="text-yellow-300" />
+                          View Certificate
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+              {facultyAchievements.length === 0 && (
+                <p className="text-center text-gray-400 py-8 text-sm">
+                  No faculty achievements recorded yet.
+                </p>
+              )}
+            </motion.div>
+          )}
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-gradient-to-r from-[#003366] to-ssgmce-dark-blue text-white">
-                <tr>
-                  <th className="px-6 py-4 font-bold text-sm">
-                    Name of Event / Achievement
-                  </th>
-                  <th className="px-6 py-4 font-bold text-sm">
-                    Participant / Role
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {[
-                  {
-                    event: "2nd Runner-Up",
-                    desc: "Team X-Treme – Dept. of Mechanical Engineering, SSGMCE secured remarkable success as 2nd Runner-Up among all participating teams across the nation, at the prestigious National Level Hindustan Formula Karting Championship (HFKC), held at IES University, Bhopal, from 01-04 October 2025",
-                  },
-                  {
-                    event: "Best Innovation Ambassador Award",
-                    desc: "Dr. Piyush A. Dalke was awarded the Best Innovation Ambassador at the IIC Regional Meet 2025 on 28th November 2025 at Yashwantrao Chavan College of Engineering, Nagpur. The award was presented by the Innovation Cell, AICTE – Ministry of Education.",
-                  },
-                  {
-                    event: "Best Paper Award",
-                    desc: "Dr. V K Thute received second Best paper awards for paper, during 5th international conference on machine learning and big data analytics ICS Global, held at Kerala, India",
-                  },
-                  {
-                    event: "Best Paper Award",
-                    desc: "Prof. M B Bhambere Received best paper award during international conference on AI driven Engineering & Technology AIDCon_2025, Dec 2025",
-                  },
-                  {
-                    event: "AVISHKAR 2024 for Health Innovation",
-                    desc: "Dr. Piyush Dalke, and Mr. Vinit S. Atkare bagged 3rd place for Non-contact Glucose Detection Using Optical and Analytical Techniques.",
-                  },
-                  {
-                    event: "Bagged 3rd position in International Conference",
-                    desc: "Mr. Atharv Bochare, bagged 3rd position in International Conference on Emerging Trends in Physical Sciences held on 12th March 2025. Department of Physics at Shankarlal Khandelwal Arts, Science, and Commerce College, Akola",
-                  },
-                  {
-                    event: "Collaboration Journey 2024 ABB Ltd. Nashik",
-                    desc: "Abhijeet Nanotkar and Team winning the consolation prize at ABB Limited Nashik's event Collaboration Journey 2024.",
-                  },
-                  {
-                    event: "Best Innovator Award",
-                    desc: "Prof. Piyush Dalke was awarded the Best Innovator Award by IIT Ropar & SPPU Research Park in the presence of Shri Amitabh Nag(CEO Bhashini MeiTY Govt. of India) Dr Parag Kalkar (Pro-Vice-Chancellor of Savitribai Phule Pune University, Pune).",
-                  },
-                  {
-                    event: "Secures 3rd Prize",
-                    desc: "ELYSIUM 2K-23 Team for securing third prize in Auto-Mech event organised by VPKBIET, Baramati",
-                  },
-                  {
-                    event: "Secures Second Winner",
-                    desc: "Secures second winner in Medical device hackathon held during 20-27 May 2023 at BETIC GHRCE Nagpur & IIT Bombay",
-                  },
-                  {
-                    event: "YUKTI-NIR 2023",
-                    desc: "Prof. Piyush Dalke Appreciated at YUKTI-NIR, Ministry of Education, Innovation cell-AICTE. GOI. by Prof. Rajendra Kakade and Mr. Dipan Sahu",
-                  },
-                  {
-                    event: "Int. Conference, HISTE 2024",
-                    desc: "Prof. Piyush Dalke and Student of Mechanical Dept. received first prize for poster presentation at KVVDM, Karad",
-                  },
-                  {
-                    event: "DRONATHON GCOE, Jalgaon 2024",
-                    desc: "Mr. Deep Goje with Tejas Kale student of SSGMCE received Second prize in National Drone racing competition at Govt. college Jalgaon",
-                  },
-                  {
-                    event: "INNOVA 2024",
-                    desc: "Mr. Amol Kulat & Gaurav Wasu won first prize for outstanding innovation national level Hackathon at SSGMCE",
-                  },
-                  {
-                    event: "TechFest 2K24",
-                    desc: "Prof. Piyush Dalke with students won the first prize at Siddhivinak Tech Campus for project",
-                  },
-                  {
-                    event: "IMPPACT CONCLAVE 3",
-                    desc: "Prof. Piyush Dalke with students won the second prize at IIT Ropar for Technical project",
-                  },
-                  {
-                    event: "TechKriti 24",
-                    desc: "Deep Goje and student of SSGMCE bagged second prize at IIT Kanpur in drone competition",
-                  },
-                  {
-                    event: "Received RGST grant for research projects",
-                    desc: "Dr. S P Trikal, Dr. N H Khandare and Prof. N B Borkar received RGST grant for the research projects",
-                  },
-                  {
-                    event: "Received Second prize for the project",
-                    desc: "Prof. K D Gadgil and 4M Students receive Second prize for the project: Optimization of Heat transfer rate in Honeycomb heat exchanger",
-                  },
-                  {
-                    event: "Honored with best start-up project",
-                    desc: "Prof. Piyush Dalke honored with best start-up project under SBGAU, Consolation industrial LOI",
-                  },
-                  {
-                    event: "Received the accolades",
-                    desc: "Department and Faculties supported the ideas of students and received the accolades by delegates at IMPAC Conclave 2.0 at Pune University Campus Hosted and Conceptualized By Krishna Institute of Medical Science and Government Ecosystem of Maharashtra state innovation society on 07/10/2022",
-                  },
-                  {
-                    event: "Received the Best Ergonomic Device Award",
-                    desc: "Prof. Piyush Dalke Dept of Mechanical Engg has received the Best Ergonomic Device for Xerostomia Estimator Device at MEDIC 2022 held by IIT Mumbai, on 01/10/2022",
-                  },
-                  {
-                    event: "Received First prize for the project",
-                    desc: "Prof. N H Khandare and 4M student receives First prize for the project Prevention of acceleration hazards in EVs",
-                  },
-                  {
-                    event: "Third prize for the project",
-                    desc: "Prof. N H Khandare and 4M student receives Third prize for the project: Design and Fabrication of vandal proof air valve",
-                  },
-                ].map((item, i) => (
-                  <tr key={i} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-gray-900 mb-1">
-                        {item.event}
+          {/* Student Achievements */}
+          {achievementTab === "student" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {studentAchievements.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <FaAward className="mr-3 text-yellow-300" />
+                      {item.name}
+                    </h3>
+                    <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
+                      {item.category}
+                    </span>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-[#003366] mb-2">
+                          {item.achievement}
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {item.description}
+                        </p>
                       </div>
-                      <div className="text-sm text-gray-600 leading-relaxed">
-                        {item.desc}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <FaTrophy className="text-yellow-500 text-2xl mx-auto" />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      {item.image && (
+                        <button
+                          onClick={() => handleViewCertificate(item)}
+                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                          <FaAward className="text-yellow-300" />
+                          View Certificate
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+              {studentAchievements.length === 0 && (
+                <p className="text-center text-gray-400 py-8 text-sm">
+                  No student achievements recorded yet.
+                </p>
+              )}
+            </motion.div>
+          )}
         </div>
-      </div>
-    ),
+      );
+    })(),
 
     newsletter: (
-      <div className="space-y-12">
+      <div className="space-y-8">
         {/* Newsletter Header */}
         <div className="text-center">
           <div className="w-16 h-16 bg-blue-50 text-ssgmce-blue rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
             <FaBullseye />
           </div>
           <h3 className="text-3xl font-bold text-gray-800 mb-4">
-            Department Newsletters
+            <EditableText
+              value={t("newsletterTitle", "Department Newsletters")}
+              onSave={(val) => updateData("newsletterTitle", val)}
+            />
           </h3>
-          <p className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
-            Stay updated with the latest happenings, student achievements,
-            faculty contributions, and department events through our periodic
-            newsletters.
-          </p>
-        </div>
-
-        {/* Current Issue - Featured */}
-        <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 rounded-bl-full -mr-8 -mt-8 opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
-
-          <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-            {/* Thumbnail Placeholder */}
-            <div className="w-full md:w-1/3 aspect-[3/4] bg-gray-100 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-gray-300 group-hover:border-orange-300 transition-colors">
-              <FaAward className="text-5xl text-gray-300 mb-4 group-hover:text-orange-400 transition-colors" />
-              <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">
-                Cover Page
-              </span>
-            </div>
-
-            <div className="flex-1 text-center md:text-left">
-              <span className="inline-block px-3 py-1 bg-blue-100 text-ssgmce-blue font-bold text-xs uppercase tracking-wider rounded-full mb-4">
-                Latest Release
-              </span>
-              <h4 className="text-2xl font-bold text-gray-800 mb-2">
-                Volume I: 2025-26 (Term I)
-              </h4>
-              <p className="text-gray-500 mb-6">
-                Highlights: Faculty achievements, Student projects, Industry
-                collaborations, and research publications.
-              </p>
-
-              <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                <a
-                  href="/documents/mech-newsletter-25-26-I.pdf"
-                  className="flex items-center px-6 py-3 bg-ssgmce-blue text-white font-bold rounded-xl shadow-lg shadow-blue-200 hover:bg-ssgmce-dark-blue hover:shadow-xl transition-all"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <FaDownload className="mr-2" /> Download Newsletter
-                </a>
-                <button className="flex items-center px-6 py-3 bg-white text-gray-700 font-bold rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
-                  Read Online
-                </button>
-              </div>
-            </div>
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <EditableText
+              value={t(
+                "newsletterDescription",
+                "Stay updated with the latest happenings, student achievements, faculty contributions, and department events through our periodic newsletters.",
+              )}
+              onSave={(val) => updateData("newsletterDescription", val)}
+              multiline
+            />
           </div>
         </div>
 
-        {/* Archives */}
+        {/* Newsletter Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-8 py-5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-wide">Newsletter</h3>
+              <p className="text-sm text-gray-300 mt-1">
+                Department of Mechanical Engineering
+              </p>
+            </div>
+            <FaDownload className="text-4xl text-blue-200 opacity-40" />
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th className="px-6 py-4 font-bold text-center w-20">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 font-bold">Publishing Date</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    More Details
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {/* Latest Issue Row */}
+                <tr className="hover:bg-blue-50/30 transition-colors bg-blue-50/10">
+                  <td className="px-6 py-4 text-center font-mono text-gray-400">
+                    1
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded-full">
+                        Latest
+                      </span>
+                      <span className="font-bold text-gray-800">
+                        <EditableText
+                          value={
+                            t("newsletters_latest", defaultNewsletters.latest)
+                              .title || "Newsletter 2025-26 (Autumn)"
+                          }
+                          onSave={(val) =>
+                            updateNewsletter("latest", 0, "title", val)
+                          }
+                        />
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <a
+                      href={
+                        t("newsletters_latest", defaultNewsletters.latest)
+                          .link || "#"
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                    >
+                      <FaDownload className="text-xs" /> Click for Details
+                    </a>
+                  </td>
+                </tr>
+
+                {/* Archive Rows */}
+                {(
+                  t("newsletters_archives", defaultNewsletters.archives) || []
+                ).map((issue, i) => (
+                  <tr key={i} className="hover:bg-blue-50/30 transition-colors">
+                    <td className="px-6 py-4 text-center font-mono text-gray-400">
+                      {i + 2}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-bold text-gray-700">
+                        <EditableText
+                          value={issue.vol}
+                          onSave={(val) =>
+                            updateNewsletter("archives", i, "vol", val)
+                          }
+                        />
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <a
+                        href={issue.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                      >
+                        <FaDownload className="text-xs" /> Click for Details
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+            Click on "Click for Details" to view/download the newsletter PDF.
+          </div>
+        </motion.div>
+      </div>
+    ),
+
+    "learning-resources": (
+      <div className="space-y-8">
+        {/* Learning Resources Header */}
+        <div className="text-center">
+          <div className="w-16 h-16 bg-orange-50 text-ssgmce-orange rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
+            <FaChalkboardTeacher />
+          </div>
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
+            <EditableText
+              value={t("learningResources.title", "Learning Resources")}
+              onSave={(val) => updateData("learningResources.title", val)}
+            />
+          </h3>
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <EditableText
+              value={t(
+                "learningResources.description",
+                "Access comprehensive learning resources, lecture notes, assignments, and study materials for all semesters.",
+              )}
+              onSave={(val) => updateData("learningResources.description", val)}
+              multiline
+            />
+          </div>
+        </div>
+
+        {/* Learning Resources Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white px-8 py-5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-wide">
+                Learning Resources
+              </h3>
+              <p className="text-sm text-orange-100 mt-1">
+                Department of Mechanical Engineering
+              </p>
+            </div>
+            <FaChalkboardTeacher className="text-4xl text-orange-200 opacity-40" />
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th className="px-6 py-4 font-bold text-center w-20">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 font-bold">Year / Class</th>
+                  <th className="px-6 py-4 font-bold text-center">Syllabus</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    Access Materials
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {(t("learningResources", defaultLearningResources) || []).map(
+                  (material, i) => (
+                    <tr
+                      key={i}
+                      className="hover:bg-orange-50/30 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-center font-mono text-gray-400">
+                        {i + 1}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-gray-800">
+                          <EditableText
+                            value={material.title}
+                            onSave={(val) =>
+                              updateArrayString(
+                                "learningResources",
+                                defaultLearningResources,
+                                i,
+                                { ...material, title: val },
+                              )
+                            }
+                          />
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <a
+                          href={material.syllabusLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                        >
+                          <FaDownload className="text-xs" /> Syllabus
+                        </a>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <a
+                          href={material.resourceLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-ssgmce-orange hover:text-orange-700 font-medium text-xs border border-gray-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
+                        >
+                          <FaDownload className="text-xs" /> Access Resources
+                        </a>
+                      </td>
+                    </tr>
+                  ),
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+            Click on "Access Resources" to view and download learning materials
+            from the respective year's shared folder.
+          </div>
+        </motion.div>
+      </div>
+    ),
+
+    "nba-resources": (
+      <div className="space-y-8">
+        {/* NBA Resource Material Header */}
+        <div className="text-center">
+          <div className="w-16 h-16 bg-orange-50 text-ssgmce-orange rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
+            <FaAward />
+          </div>
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
+            <EditableText
+              value={t("nbaResources.title", "NBA Resource Material")}
+              onSave={(val) => updateData("nbaResources.title", val)}
+            />
+          </h3>
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <EditableText
+              value={t(
+                "nbaResources.description",
+                "Access NBA accreditation resources, documentation, and informational videos for the Mechanical Engineering department.",
+              )}
+              onSave={(val) => updateData("nbaResources.description", val)}
+              multiline
+            />
+          </div>
+        </div>
+
+        {/* Google Drive Link Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl shadow-md border border-orange-200 p-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-ssgmce-orange text-xl">
+              <FaFileAlt />
+            </div>
+            <div>
+              <h4 className="font-bold text-gray-800 text-lg">
+                NBA Department Details
+              </h4>
+              <p className="text-sm text-gray-500 mt-0.5">
+                Complete NBA accreditation documentation and resources
+              </p>
+            </div>
+          </div>
+          <a
+            href={t("nbaResources.driveLink", defaultNBAResources.driveLink)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-ssgmce-orange hover:bg-orange-700 text-white font-semibold px-6 py-3 rounded-full transition-all shadow-md hover:shadow-lg"
+          >
+            <FaExternalLinkAlt className="text-sm" />
+            {t("nbaResources.driveLinkText", defaultNBAResources.driveLinkText)}
+          </a>
+        </motion.div>
+
+        {/* NBA Videos Grid */}
         <div>
-          <h4 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
-            <span className="w-8 h-1 bg-gray-800 rounded-full mr-3"></span>
-            Archives
+          <h4 className="text-xl font-bold text-gray-800 mb-5 flex items-center gap-2">
+            <span className="w-1.5 h-6 bg-ssgmce-orange rounded-full"></span>
+            NBA Resource Videos
           </h4>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { vol: "Vol II: 2024-25", term: "Term II", date: "May 2025" },
-              { vol: "Vol I: 2024-25", term: "Term I", date: "Dec 2024" },
-              { vol: "Vol II: 2023-24", term: "Term II", date: "May 2024" },
-            ].map((issue, i) => (
-              <div
-                key={i}
-                className="bg-white p-6 rounded-xl border border-gray-200 hover:border-gray-200 hover:shadow-md transition-all group"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 group-hover:bg-blue-50 group-hover:text-ssgmce-orange transition-colors">
-                    <FaAngleRight />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {(t("nbaResources.videos", defaultNBAResources.videos) || []).map(
+              (video, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-shadow"
+                >
+                  <div className="aspect-video">
+                    <iframe
+                      src={video.embedUrl}
+                      title={video.title || `NBA Video ${i + 1}`}
+                      className="w-full h-full"
+                      allowFullScreen
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    />
                   </div>
-                  <span className="text-xs font-mono text-gray-400">
-                    {issue.date}
-                  </span>
-                </div>
-                <h5 className="font-bold text-gray-800 mb-1">{issue.vol}</h5>
-                <p className="text-sm text-gray-500 mb-4">{issue.term}</p>
-                <button className="text-sm font-bold text-ssgmce-blue hover:underline flex items-center">
-                  Download <FaDownload className="ml-2 text-xs" />
-                </button>
-              </div>
-            ))}
+                  <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
+                    <p className="text-sm font-medium text-gray-600">
+                      {video.title || `NBA Resource Video ${i + 1}`}
+                    </p>
+                  </div>
+                </motion.div>
+              ),
+            )}
           </div>
         </div>
       </div>
@@ -1896,10 +4403,12 @@ const Mechanical = () => {
 
               <div className="p-5 flex-1 flex flex-col justify-center">
                 <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
-                  <EditableText
-                    value={fac.name}
-                    onSave={(val) => updateFacultyMember(i, "name", val)}
-                  />
+                  <Link to={`/faculty/${fac.id}`} className="hover:underline">
+                    <EditableText
+                      value={fac.name}
+                      onSave={(val) => updateFacultyMember(i, "name", val)}
+                    />
+                  </Link>
                 </h4>
                 <p className="text-ssgmce-blue font-medium text-sm mb-3 uppercase tracking-wide text-[11px]">
                   <EditableText
@@ -1953,14 +4462,22 @@ const Mechanical = () => {
                     )}
                   </div>
 
-                  {!fac.isIndustry && (
+                  {fac.vidwanId && (
                     <a
-                      href="#"
-                      className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-2 hover:underline uppercase tracking-wide"
+                      href={`https://vidwan.inflibnet.ac.in/profile/${fac.vidwanId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-[10px] font-bold text-emerald-600 mt-2 hover:underline uppercase tracking-wide"
                     >
-                      View Profile <FaAngleRight className="ml-1" />
+                      Vidwan Profile <FaAngleRight className="ml-1" />
                     </a>
                   )}
+                  <Link
+                    to={`/faculty/${fac.id}`}
+                    className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
+                  >
+                    View Profile <FaAngleRight className="ml-1" />
+                  </Link>
                 </div>
               </div>
             </motion.div>
@@ -2439,104 +4956,1192 @@ const Mechanical = () => {
     ),
 
     mous: (
-      <div className="space-y-6">
-        <div className="border-b border-gray-100 pb-4">
-          <h3 className="text-2xl font-bold text-gray-800 flex items-center">
-            <FaIndustry className="text-orange-500 mr-3" />
-            Memorandum of Understanding (MoUs)
-          </h3>
-          <p className="text-gray-600 mt-2">
-            Industry partnerships and academic collaborations for knowledge
-            exchange and student development
+      <div className="space-y-8">
+        <div className="text-center mb-8">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">MoUs</h3>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Strategic partnerships with industry leaders and academic
+            institutions to enhance learning outcomes and provide students with
+            real-world exposure.
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        {/* Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gradient-to-r from-[#003366] to-ssgmce-dark-blue text-white">
+              <thead className="bg-ssgmce-blue text-white">
                 <tr>
-                  <th className="px-6 py-4 text-left font-bold text-xs uppercase tracking-wider w-16">
-                    SN
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    Sr. No.
                   </th>
-                  <th className="px-6 py-4 text-left font-bold text-xs uppercase tracking-wider">
-                    Name of Company
+                  <th className="px-6 py-4 text-left font-bold">
+                    Name of the Organization
                   </th>
-                  <th className="px-6 py-4 text-center font-bold text-xs uppercase tracking-wider w-32">
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
                     MOU Signing Date
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    MOU Copy / Report
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-200">
                 {[
                   {
-                    sn: 1,
-                    company: "Joshi Jampala Engineering Pvt. Ltd. Satara",
+                    no: "1.",
+                    org: "Joshi Jampala Engineering Pvt. Ltd., Satara",
                     date: "05/03/2025",
+                    report:
+                      "/uploads/documents/mech_mous/MOU_Joshi_Jampala_2025.pdf",
                   },
                   {
-                    sn: 2,
-                    company: "Endress Hauser, Chat. Sambhajinagar",
+                    no: "2.",
+                    org: "Endress Hauser, Chat. Sambhajinagar",
                     date: "05/03/2025",
+                    report:
+                      "/uploads/documents/mech_mous/MOU_Endress_Hauser_2025.pdf",
                   },
-                  { sn: 3, company: "SW System, Pune", date: "05/03/2025" },
                   {
-                    sn: 4,
-                    company: "Tejas Polymer Engineers, Pune",
+                    no: "3.",
+                    org: "SW System, Pune",
                     date: "05/03/2025",
+                    report:
+                      "/uploads/documents/mech_mous/MOU_SW_System_2025.pdf",
                   },
                   {
-                    sn: 5,
-                    company: "Sharv Polyplast Pvt. Ltd.Pune",
+                    no: "4.",
+                    org: "Tejas Polymer Engineers, Pune",
                     date: "05/03/2025",
+                    report:
+                      "/uploads/documents/mech_mous/MOU_Tejas_Polymer_2025.pdf",
                   },
                   {
-                    sn: 6,
-                    company:
-                      'Krishan Vishwa Vidyapeeth "Deemed to be University", Karad, Maharashtra',
-                    date: "16.01.2024",
+                    no: "5.",
+                    org: "Sharv Polyplast Pvt. Ltd., Pune",
+                    date: "05/03/2025",
+                    report:
+                      "/uploads/documents/mech_mous/MOU_Sharv_Polyplast_2025.pdf",
                   },
                   {
-                    sn: 7,
-                    company: "Endress Hauser,Sambhaji Nagar (Aurangabad)",
-                    date: "31.03.2022",
+                    no: "6.",
+                    org: 'Krishna Vishwa Vidyapeeth "Deemed to be University", Karad, Maharashtra',
+                    date: "16/01/2024",
+                    report:
+                      "/uploads/documents/mech_mous/MOU_KVV_Karad_2024.pdf",
                   },
                   {
-                    sn: 8,
-                    company:
-                      "Tool Tech Toolings Kirdak Auto Com Pvt. Ltd. Sambhaji Nagar (Aurangabad)",
-                    date: "27.07.2022",
+                    no: "7.",
+                    org: "Endress Hauser, Sambhaji Nagar (Aurangabad)",
+                    date: "31/03/2022",
+                    report:
+                      "/uploads/documents/mech_mous/MOU_Endress_Hauser_2022.pdf",
                   },
                   {
-                    sn: 9,
-                    company: "Vinodral Engg Pvt Ltd.,MIDC, Jalana",
-                    date: "16.03.2019",
+                    no: "8.",
+                    org: "Tool Tech Toolings Kirdak Auto Com Pvt. Ltd., Sambhaji Nagar (Aurangabad)",
+                    date: "27/07/2022",
+                    report:
+                      "/uploads/documents/mech_mous/MOU_Tool_Tech_Toolings_2022.pdf",
                   },
                   {
-                    sn: 10,
-                    company: "Mechatol Engg Solutions Pvt ltd,Kothrud, Pune",
-                    date: "19.01.2019",
+                    no: "9.",
+                    org: "Vinodrai Engg Pvt Ltd., MIDC, Jalna",
+                    date: "16/03/2019",
+                    report:
+                      "/uploads/documents/mech_mous/MOU_Vinodrai_Engg_2019.pdf",
                   },
                   {
-                    sn: 11,
-                    company: "Kala Group of Companies,MIDC Chakan, Pune",
-                    date: "19.01.2019",
+                    no: "10.",
+                    org: "Mechatol Engg Solutions Pvt Ltd., Kothrud, Pune",
+                    date: "19/01/2019",
+                    report:
+                      "/uploads/documents/mech_mous/MOU_Mechatol_Engg_2019.pdf",
                   },
                   {
-                    sn: 12,
-                    company: "Wadhokar Group of Companies,MIDC Chakan, Pune",
-                    date: "19.01.2019",
+                    no: "11.",
+                    org: "Kala Group of Companies, MIDC Chakan, Pune",
+                    date: "19/01/2019",
+                    report:
+                      "/uploads/documents/mech_mous/MOU_Kala_Group_2019.pdf",
                   },
-                ].map((mou, i) => (
-                  <tr key={i} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-center font-mono text-gray-500 font-bold">
-                      {mou.sn}
+                  {
+                    no: "12.",
+                    org: "Wadhokar Group of Companies, MIDC Chakan, Pune",
+                    date: "19/01/2019",
+                    report:
+                      "/uploads/documents/mech_mous/MOU_Wadhokar_Group_2019.pdf",
+                  },
+                ].map((mou, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-900">
+                      {mou.no}
                     </td>
-                    <td className="px-6 py-4 text-gray-800 font-medium">
-                      {mou.company}
-                    </td>
-                    <td className="px-6 py-4 text-center text-gray-600 font-medium">
+                    <td className="px-6 py-4 text-gray-700">{mou.org}</td>
+                    <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
                       {mou.date}
+                    </td>
+                    <td className="px-6 py-4">
+                      <a
+                        href={mou.report}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-orange font-semibold text-sm transition-colors"
+                      >
+                        <FaFileAlt className="mr-1.5" />
+                        View Document
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    ),
+    practices: (
+      <div className="space-y-8">
+        <div className="max-w-3xl">
+          <h3 className="text-3xl font-bold text-gray-800 mb-4 border-l-4 border-orange-500 pl-4">
+            Innovative Practice
+          </h3>
+        </div>
+
+        {/* Innovative Practice Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead
+                style={{ backgroundColor: "#003366" }}
+                className="text-white"
+              >
+                <tr>
+                  <th className="px-6 py-4 text-center font-semibold whitespace-nowrap text-sm">
+                    S.N.
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Name of The Faculty
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Subject
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Innovative Practice
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Link
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {t("innovativePractices", defaultInnovativePractices).map(
+                  (item, idx) => (
+                    <tr
+                      key={idx}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-center font-medium text-gray-900">
+                        {item.sn}
+                      </td>
+                      <td
+                        className="px-6 py-4 text-center whitespace-nowrap"
+                        style={{ color: "#003366" }}
+                      >
+                        <span className="font-medium">{item.faculty}</span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {item.subject}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {item.practice}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {item.link && (
+                          <a
+                            href={item.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                          >
+                            <FaExternalLinkAlt className="text-xs" />
+                            Link
+                          </a>
+                        )}
+                      </td>
+                    </tr>
+                  ),
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    ),
+
+    visits: (() => {
+      const industrialVisitPhotos = [
+        {
+          image: ivSanjeevVertex2024,
+          caption:
+            "Visit to Sanjeev Techno Product & Vertex Engineering, Sambhaji Nagar and Nashik on 28 March 2024",
+          location: "Sambhaji Nagar & Nashik",
+          date: "28 March 2024",
+        },
+        {
+          image: ivTooltech2023,
+          caption: "Visit to ToolTech, Sambhaji Nagar on 05 April 2023",
+          location: "Sambhaji Nagar",
+          date: "05 April 2023",
+        },
+        {
+          image: ivParasThermal2022,
+          caption: "Visit to Paras Thermal Power Plant on 07 April 2022",
+          location: "Paras",
+          date: "07 April 2022",
+        },
+        {
+          image: ivHindustanHardy2020,
+          caption: "Visit to Hindustan Hardy Ltd, Nashik on 20 January 2020",
+          location: "Nashik",
+          date: "20 January 2020",
+        },
+        {
+          image: ivBosch2020,
+          caption: "Visit to BOSCH, Nashik on 20 January 2020",
+          location: "Nashik",
+          date: "20 January 2020",
+        },
+        {
+          image: ivGreavesCotton2019,
+          caption: "Industry visit at Greaves Cotton, Aurangabad in 2018-19",
+          location: "Aurangabad",
+          date: "2018-19",
+        },
+        {
+          image: ivAutoexpo2018,
+          caption: "Visit to AutoExpo 2018, Aurangabad",
+          location: "Aurangabad",
+          date: "2018",
+        },
+        {
+          image: ivYantra2019,
+          caption:
+            "Industry Visit at Yantra LLP Division, Aurangabad in 2018-19",
+          location: "Aurangabad",
+          date: "2018-19",
+        },
+        {
+          image: ivVinodrai2018,
+          caption:
+            "Faculty Visit at Vinodrai Engineers Ltd, Aurangabad in 2017-18",
+          location: "Aurangabad",
+          date: "2017-18",
+        },
+        {
+          image: ivSiemens2018,
+          caption: "Industry visit at Siemens, Aurangabad in 2017-18",
+          location: "Aurangabad",
+          date: "2017-18",
+        },
+        {
+          image: ivFlowtech2018,
+          caption: "Visit to FlowTech, Aurangabad",
+          location: "Aurangabad",
+          date: "2017-18",
+        },
+        {
+          image: ivGreavesCotton2018,
+          caption: "Industry visit at Greaves Cotton, Aurangabad in 2017-18",
+          location: "Aurangabad",
+          date: "2017-18",
+        },
+      ];
+
+      const industrialVisitTable = [
+        {
+          sn: 1,
+          industry:
+            "Sanjeev Techno Product & Vertex Engineering, Sambhaji Nagar and Nashik",
+          class: "--",
+          date: "28/03/2024",
+          students: "--",
+        },
+        {
+          sn: 2,
+          industry: "ToolTech, Sambhaji Nagar",
+          class: "--",
+          date: "05/04/2023",
+          students: "--",
+        },
+        {
+          sn: 3,
+          industry: "Paras Thermal Power Plant",
+          class: "--",
+          date: "07/04/2022",
+          students: "--",
+        },
+        {
+          sn: 4,
+          industry: "Hindustan Hardy Ltd, Nashik",
+          class: "--",
+          date: "20/01/2020",
+          students: "--",
+        },
+        {
+          sn: 5,
+          industry: "BOSCH, Nashik",
+          class: "--",
+          date: "20/01/2020",
+          students: "--",
+        },
+        {
+          sn: 6,
+          industry: "Greaves Cotton, Aurangabad",
+          class: "--",
+          date: "2018-19",
+          students: "--",
+        },
+        {
+          sn: 7,
+          industry: "AutoExpo 2018, Aurangabad",
+          class: "--",
+          date: "2018",
+          students: "--",
+        },
+        {
+          sn: 8,
+          industry: "Yantra LLP Division, Aurangabad",
+          class: "--",
+          date: "2018-19",
+          students: "--",
+        },
+        {
+          sn: 9,
+          industry: "Vinodrai Engineers Ltd, Aurangabad (Faculty Visit)",
+          class: "--",
+          date: "2017-18",
+          students: "--",
+        },
+        {
+          sn: 10,
+          industry: "Siemens, Aurangabad",
+          class: "--",
+          date: "2017-18",
+          students: "--",
+        },
+        {
+          sn: 11,
+          industry: "FlowTech, Aurangabad",
+          class: "--",
+          date: "2017-18",
+          students: "--",
+        },
+        {
+          sn: 12,
+          industry: "Greaves Cotton, Aurangabad",
+          class: "--",
+          date: "2017-18",
+          students: "--",
+        },
+      ];
+
+      return (
+        <div className="space-y-10">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h3 className="text-3xl font-bold text-gray-800 mb-3">
+              Industrial Visits
+            </h3>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Hands-on exposure to industry practices, technologies, and work
+              culture through structured visits to leading manufacturing and
+              engineering organizations.
+            </p>
+          </div>
+
+          {/* Photo Gallery Section */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 mb-4">
+              <FaImages className="text-2xl text-ssgmce-blue" />
+              <h4 className="text-xl font-bold text-gray-800">Visit Gallery</h4>
+              <span className="text-sm font-medium text-ssgmce-blue bg-blue-50 px-3 py-1 rounded-full">
+                {industrialVisitPhotos.length} Photos
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {industrialVisitPhotos.map((photo, idx) => (
+                <motion.div
+                  key={idx}
+                  whileHover={{ y: -4 }}
+                  className="group relative bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setIvLightbox(idx)}
+                >
+                  <div className="aspect-[4/3] overflow-hidden bg-gray-100">
+                    <img
+                      src={photo.image}
+                      alt={photo.caption}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                      <FaSearchPlus className="absolute top-3 right-3 text-white text-lg drop-shadow" />
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-sm text-gray-700 leading-relaxed line-clamp-2">
+                      {photo.caption}
+                    </p>
+                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <FaMapMarkerAlt className="text-red-400" />
+                        {photo.location}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <FaCalendarAlt className="text-blue-400" />
+                        {photo.date}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Lightbox */}
+          <AnimatePresence>
+            {ivLightbox !== null && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4"
+                onClick={() => setIvLightbox(null)}
+              >
+                <button
+                  className="absolute top-4 right-4 text-white/80 hover:text-white text-3xl z-10"
+                  onClick={() => setIvLightbox(null)}
+                >
+                  <FaTimes />
+                </button>
+
+                {/* Previous */}
+                <button
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-3xl bg-black/30 hover:bg-black/50 rounded-full w-12 h-12 flex items-center justify-center transition-colors z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIvLightbox((prev) =>
+                      prev === 0 ? industrialVisitPhotos.length - 1 : prev - 1,
+                    );
+                  }}
+                >
+                  <FaChevronLeft />
+                </button>
+
+                {/* Image */}
+                <motion.div
+                  key={ivLightbox}
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  className="max-w-5xl max-h-[85vh] flex flex-col items-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img
+                    src={industrialVisitPhotos[ivLightbox].image}
+                    alt={industrialVisitPhotos[ivLightbox].caption}
+                    className="max-h-[70vh] max-w-full object-contain rounded-lg shadow-2xl"
+                  />
+                  <div className="mt-4 text-center max-w-2xl">
+                    <p className="text-white/90 text-sm leading-relaxed">
+                      {industrialVisitPhotos[ivLightbox].caption}
+                    </p>
+                    <div className="flex items-center justify-center gap-4 mt-2 text-white/60 text-xs">
+                      <span className="flex items-center gap-1">
+                        <FaMapMarkerAlt className="text-red-400" />
+                        {industrialVisitPhotos[ivLightbox].location}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <FaCalendarAlt className="text-blue-400" />
+                        {industrialVisitPhotos[ivLightbox].date}
+                      </span>
+                      <span className="text-white/40">
+                        {ivLightbox + 1} / {industrialVisitPhotos.length}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Next */}
+                <button
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-3xl bg-black/30 hover:bg-black/50 rounded-full w-12 h-12 flex items-center justify-center transition-colors z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIvLightbox((prev) =>
+                      prev === industrialVisitPhotos.length - 1 ? 0 : prev + 1,
+                    );
+                  }}
+                >
+                  <FaChevronRight />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Table Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-4">
+              <FaIndustry className="text-2xl text-ssgmce-blue" />
+              <h4 className="text-xl font-bold text-gray-800">Visit Details</h4>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-ssgmce-blue text-white">
+                    <tr>
+                      <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                        S.N.
+                      </th>
+                      <th className="px-6 py-4 text-left font-bold">
+                        Name of Industry Visited
+                      </th>
+                      <th className="px-6 py-4 text-left font-bold">Class</th>
+                      <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                        Date
+                      </th>
+                      <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                        No of Students
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {industrialVisitTable.map((visit, idx) => (
+                      <tr
+                        key={idx}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 font-medium text-gray-900">
+                          {String(visit.sn).padStart(2, "0")}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">
+                          {visit.industry}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">
+                          {visit.class}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                          {visit.date}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700 text-center font-medium">
+                          {visit.students}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    })(),
+    patents: (
+      <div className="space-y-8">
+        <div className="flex flex-wrap space-x-1 bg-gray-100 p-1 rounded-lg w-fit mb-6">
+          {["patents", "publications", "copyrights"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setResearchTab(tab)}
+              className={`px-4 py-2 text-sm font-bold rounded-md transition-all capitalize ${researchTab === tab ? "bg-white text-ssgmce-blue shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              {tab === "copyrights"
+                ? "Copyrights"
+                : tab === "patents"
+                  ? "Patents"
+                  : "Publications"}
+            </button>
+          ))}
+        </div>
+
+        <AnimatePresence mode="wait">
+          {researchTab === "patents" ? (
+            <motion.div
+              key="patents"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaLightbulb className="text-yellow-500 mr-2" />
+                  <EditableText
+                    value={t("patentsTitle", "Patents Granted & Published")}
+                    onSave={(val) => updateData("patentsTitle", val)}
+                  />
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(
+                t(
+                  `research.patents.${researchYear}`,
+                  defaultMechPatents[researchYear],
+                ) || []
+              ).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No patents recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider w-1/3">
+                            Title of Invention
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Application No.
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Inventors
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(
+                          t(
+                            `research.patents.${researchYear}`,
+                            defaultMechPatents[researchYear],
+                          ) || []
+                        ).map((pat, i) => (
+                          <tr
+                            key={i}
+                            className="hover:bg-green-50/30 transition-colors group"
+                          >
+                            <td className="px-6 py-4 text-center font-mono text-xs text-gray-400 group-hover:text-green-600">
+                              {i + 1}
+                            </td>
+                            <td className="px-6 py-4 font-medium text-gray-800">
+                              <EditableText
+                                value={pat.title}
+                                onSave={(val) =>
+                                  updatePatent(researchYear, i, "title", val)
+                                }
+                                multiline
+                              />
+                              <span
+                                className={`ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${pat.status === "Given" || pat.status === "Granted" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}
+                              >
+                                <EditableText
+                                  value={
+                                    pat.status === "Given"
+                                      ? "Granted"
+                                      : pat.status
+                                  }
+                                  onSave={(val) =>
+                                    updatePatent(researchYear, i, "status", val)
+                                  }
+                                />
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 font-mono text-xs text-gray-500 whitespace-nowrap text-right">
+                              <EditableText
+                                value={pat.id}
+                                onSave={(val) =>
+                                  updatePatent(researchYear, i, "id", val)
+                                }
+                              />
+                            </td>
+                            <td className="px-6 py-4 text-gray-500 italic text-right">
+                              <EditableText
+                                value={pat.inventors}
+                                onSave={(val) =>
+                                  updatePatent(
+                                    researchYear,
+                                    i,
+                                    "inventors",
+                                    val,
+                                  )
+                                }
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Institute-Level Patents */}
+              <div className="mt-8">
+                <h4 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                  <FaLightbulb className="text-orange-500 mr-2" />
+                  Institute-Level Patent Applications
+                </h4>
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Invention
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Application No. / Patent No.
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Date of Filing
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {defaultMechInstitutePatents.map((pat, i) => (
+                          <tr
+                            key={i}
+                            className="hover:bg-green-50/30 transition-colors group"
+                          >
+                            <td className="px-6 py-4 text-center font-mono text-xs text-gray-400 group-hover:text-green-600">
+                              {i + 1}
+                            </td>
+                            <td className="px-6 py-4 font-medium text-gray-800">
+                              {pat.title}
+                            </td>
+                            <td className="px-6 py-4 font-mono text-xs text-gray-500 whitespace-nowrap text-right">
+                              {pat.id}
+                            </td>
+                            <td className="px-6 py-4 text-xs text-gray-500 text-right">
+                              {pat.filingDate}
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${pat.status.toLowerCase().includes("granted") ? "bg-green-100 text-green-700" : pat.status.toLowerCase().includes("published") ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-600"}`}
+                              >
+                                {pat.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ) : researchTab === "publications" ? (
+            <motion.div
+              key="publications"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaChartLine className="text-ssgmce-orange mr-2" />
+                  <EditableText
+                    value={t("publicationsTitle", "Research Publications")}
+                    onSave={(val) => updateData("publicationsTitle", val)}
+                  />
+                </h3>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar mr-4">
+                    {researchYears.map((year) => (
+                      <button
+                        key={year}
+                        onClick={() => setResearchYear(year)}
+                        className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                          researchYear === year
+                            ? "bg-ssgmce-blue text-white shadow-md"
+                            : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                        }`}
+                      >
+                        {year}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Detail Report PDF Link */}
+              <div className="flex items-center gap-3 mb-2">
+                <a
+                  href={`/uploads/documents/mech_publications/MECH_publication_${researchYear}.pdf`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-ssgmce-blue font-bold rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors text-sm"
+                >
+                  <FaExternalLinkAlt className="text-xs" />
+                  View Full Detail Report PDF ({researchYear})
+                </a>
+              </div>
+
+              {(
+                t(
+                  `research.publications.${researchYear}`,
+                  defaultMechPublications[researchYear],
+                ) || []
+              ).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No publications recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Paper
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Authors
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Journal/Conference
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Link
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(
+                          t(
+                            `research.publications.${researchYear}`,
+                            defaultMechPublications[researchYear],
+                          ) || []
+                        ).map((pub, i) => (
+                          <tr
+                            key={i}
+                            className="hover:bg-indigo-50/30 transition-colors"
+                          >
+                            <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                              {i + 1}
+                            </td>
+                            <td className="px-6 py-4 font-medium text-gray-800">
+                              <EditableText
+                                value={pub.title}
+                                onSave={(val) =>
+                                  updatePublication(
+                                    researchYear,
+                                    i,
+                                    "title",
+                                    val,
+                                  )
+                                }
+                                multiline
+                              />
+                            </td>
+                            <td className="px-6 py-4 text-gray-600">
+                              <EditableText
+                                value={pub.authors}
+                                onSave={(val) =>
+                                  updatePublication(
+                                    researchYear,
+                                    i,
+                                    "authors",
+                                    val,
+                                  )
+                                }
+                              />
+                            </td>
+                            <td className="px-6 py-4 text-gray-500 italic text-xs">
+                              <EditableText
+                                value={pub.journal}
+                                onSave={(val) =>
+                                  updatePublication(
+                                    researchYear,
+                                    i,
+                                    "journal",
+                                    val,
+                                  )
+                                }
+                                multiline
+                              />
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              {pub.link ? (
+                                <div className="flex flex-col items-end gap-1">
+                                  <EditableText
+                                    value={pub.link}
+                                    onSave={(val) =>
+                                      updatePublication(
+                                        researchYear,
+                                        i,
+                                        "link",
+                                        val,
+                                      )
+                                    }
+                                    className="text-[10px] text-blue-500 underline truncate max-w-[100px]"
+                                  />
+                                  <a
+                                    href={pub.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-dark-blue font-bold px-3 py-1 bg-blue-50 rounded-lg transition-colors border border-blue-100"
+                                  >
+                                    View{" "}
+                                    <FaExternalLinkAlt className="ml-2 text-[10px]" />
+                                  </a>
+                                </div>
+                              ) : (
+                                <span className="text-gray-400 text-xs">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : researchTab === "copyrights" ? (
+            <motion.div
+              key="copyrights"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaAward className="text-purple-500 mr-2" />
+                  Copyrights
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultMechCopyrights[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No copyrights recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Name of Faculty
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Work
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultMechCopyrights[researchYear] || []).map(
+                          (cr, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-purple-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {cr.name}
+                              </td>
+                              <td className="px-6 py-4 text-gray-700">
+                                {cr.title}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700">
+                                  {cr.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </div>
+    ),
+
+    internships: (
+      <div className="space-y-8">
+        <div className="text-center mb-8">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">
+            <EditableText
+              value={t("internshipsTitle", "Internship and Training Record")}
+              onSave={(val) => updateField("internshipsTitle", val)}
+            />
+          </h3>
+          <div className="text-gray-600 max-w-2xl mx-auto">
+            <EditableText
+              value={t(
+                "internshipsSubtitle",
+                "Comprehensive internship and industrial training records providing students with hands-on industry experience and professional development.",
+              )}
+              onSave={(val) => updateField("internshipsSubtitle", val)}
+              multiline
+            />
+          </div>
+        </div>
+
+        {/* Year Filter */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex bg-gray-100 rounded-lg p-1 shadow-sm">
+            <button
+              onClick={() => setInternshipYear("2023-24")}
+              className={`px-6 py-2 text-sm font-bold rounded-md transition-all ${
+                internshipYear === "2023-24"
+                  ? "bg-white text-ssgmce-blue shadow-md"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Session: 2023-24
+            </button>
+            <button
+              onClick={() => setInternshipYear("2022-23")}
+              className={`px-6 py-2 text-sm font-bold rounded-md transition-all ${
+                internshipYear === "2022-23"
+                  ? "bg-white text-ssgmce-blue shadow-md"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Session: 2022-23
+            </button>
+          </div>
+        </div>
+
+        {/* Detail Report Download */}
+        <div className="flex justify-center mb-4">
+          <a
+            href={
+              internshipYear === "2023-24"
+                ? "/uploads/documents/mech_internships/Mech_Internship_2023-24.pdf"
+                : "/uploads/documents/mech_internships/Mech_Internship_2022-23.pdf"
+            }
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-ssgmce-blue text-white rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium text-sm"
+          >
+            <FaDownload className="text-sm" />
+            Download Detail Report ({internshipYear})
+          </a>
+        </div>
+
+        {/* Internship Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-ssgmce-blue text-white">
+                <tr>
+                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                    Sr. No.
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                    SIS ID
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold">
+                    Name of Student
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold">
+                    Name of Company
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold">Class</th>
+                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                    Start Date
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                    End Date
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                    Paid (Y/N)
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {(
+                  t(
+                    `internships.${internshipYear}`,
+                    defaultMechInternships[internshipYear],
+                  ) || []
+                ).map((intern, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-3 py-3 font-medium text-gray-900">
+                      {intern.no}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700">{intern.sis}</td>
+                    <td className="px-3 py-3 text-gray-700">{intern.name}</td>
+                    <td className="px-3 py-3 text-gray-700 text-xs">
+                      {intern.org}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700 text-center whitespace-nowrap">
+                      {intern.class}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
+                      {intern.startDate}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
+                      {intern.endDate}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
+                      {intern.paid}
                     </td>
                   </tr>
                 ))}
@@ -2545,12 +6150,18 @@ const Mechanical = () => {
           </div>
         </div>
 
-        <div className="bg-blue-50 border-l-4 border-ssgmce-orange p-4 rounded-r-lg">
-          <p className="text-sm text-gray-700">
-            <span className="font-bold text-ssgmce-blue">Note:</span> These MoUs
-            facilitate industry exposure, internships, guest lectures, joint
-            research projects, and placement opportunities for students.
-          </p>
+        {/* Summary */}
+        <div className="text-center text-sm text-gray-500 mt-4">
+          Total Records:{" "}
+          {
+            (
+              t(
+                `internships.${internshipYear}`,
+                defaultMechInternships[internshipYear],
+              ) || []
+            ).length
+          }{" "}
+          students
         </div>
       </div>
     ),

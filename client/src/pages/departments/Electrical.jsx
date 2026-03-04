@@ -1,10 +1,28 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import GenericPage from "../../components/GenericPage";
 import { useDepartmentData } from "../../hooks/useDepartmentData";
 import EditableText from "../../components/admin/EditableText";
 import EditableImage from "../../components/admin/EditableImage";
 import electricalBanner from "../../assets/images/departments/electrical/Electrical Banner.png";
 import hodPhoto from "../../assets/images/departments/electrical/HOD_ELECTRICAL.jpg";
+
+// Industrial Visit Photos
+import ivAdaniDahanu2025 from "../../assets/images/departments/electrical/industrial-visits/adani_dahanu_2025.png";
+import ivApatapaAkola2025 from "../../assets/images/departments/electrical/industrial-visits/apatapa_akola_2025.png";
+import ivAvaadaSolar2025 from "../../assets/images/departments/electrical/industrial-visits/avaada_solar_2025.png";
+import ivTataPowerShahad2024 from "../../assets/images/departments/electrical/industrial-visits/tata_power_shahad_2024.png";
+import ivAdaniDahanu2024 from "../../assets/images/departments/electrical/industrial-visits/adani_dahanu_2024.png";
+import ivTataPowerMumbai2023 from "../../assets/images/departments/electrical/industrial-visits/tata_power_mumbai_2023.png";
+import ivThermalParas2023 from "../../assets/images/departments/electrical/industrial-visits/thermal_paras_2023.png";
+import ivAdaniPowerMumbai from "../../assets/images/departments/electrical/industrial-visits/adani_power_mumbai.png";
+import ivThermalParas2022 from "../../assets/images/departments/electrical/industrial-visits/thermal_paras_2022.png";
+import ivAbbNashik2018 from "../../assets/images/departments/electrical/industrial-visits/abb_nashik_2018.jpg";
+import ivPowerinstNashik2018 from "../../assets/images/departments/electrical/industrial-visits/powerinst_nashik_2018.jpg";
+import ivLegrandNashik2018 from "../../assets/images/departments/electrical/industrial-visits/legrand_nashik_2018.jpg";
+import ivParasThermal2018 from "../../assets/images/departments/electrical/industrial-visits/paras_thermal_2018.jpg";
+import ivVishwajeetNashik from "../../assets/images/departments/electrical/industrial-visits/vishwajeet_nashik.jpg";
+import ivAdaniMundra2016 from "../../assets/images/departments/electrical/industrial-visits/adani_mundra_2016.jpg";
 import srpPhoto from "../../assets/images/departments/electrical/faculty/SRP.jpg";
 import uajPhoto from "../../assets/images/departments/electrical/faculty/UAJ.jpg";
 import aujPhoto from "../../assets/images/departments/electrical/faculty/AUJ.jpg";
@@ -19,6 +37,18 @@ import bsrPhoto from "../../assets/images/departments/electrical/faculty/BSRakho
 import prdPhoto from "../../assets/images/departments/electrical/faculty/PratikDhabe.jpg";
 import vanPhoto from "../../assets/images/departments/electrical/faculty/vanagpure.png";
 import gdkPhoto from "../../assets/images/departments/electrical/faculty/GDKhadsane.jpg";
+import {
+  defaultFaculty as ELECTRICAL_DEFAULT_FACULTY,
+  defaultActivities,
+  defaultNewsletters,
+  defaultAchievements,
+  defaultElectricalPatents,
+  defaultElectricalPublications,
+  defaultElectricalCopyrights,
+  defaultElectricalBooks,
+} from "../../data/electricalDefaults";
+import { defaultPlacements } from "../../data/electricalPlacements";
+import { defaultElectricalInternships } from "../../data/electricalInternships";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   FaLaptopCode,
@@ -37,6 +67,17 @@ import {
   FaProjectDiagram,
   FaCalendarAlt,
   FaDownload,
+  FaUsers,
+  FaUserGraduate,
+  FaChalkboardTeacher,
+  FaTimes,
+  FaChevronLeft,
+  FaChevronRight,
+  FaExternalLinkAlt,
+  FaMapMarkerAlt,
+  FaSearchPlus,
+  FaImages,
+  FaFileAlt,
 } from "react-icons/fa";
 
 const Electrical = () => {
@@ -49,6 +90,15 @@ const Electrical = () => {
     t: tBase,
   } = useDepartmentData("departments-electrical");
   const [activeTab, setActiveTab] = useState("overview");
+  const [achievementTab, setAchievementTab] = useState("faculty");
+  const [certificateLightbox, setCertificateLightbox] = useState(null);
+
+  // State for Curricular Activities section
+  const [activitiesVisible, setActivitiesVisible] = useState(6);
+  const [lightboxActivity, setLightboxActivity] = useState(null);
+
+  // State for Industrial Visit photo lightbox
+  const [ivLightbox, setIvLightbox] = useState(null);
 
   // Helper to access data safely
   const t = (key, defaultVal) => {
@@ -69,6 +119,28 @@ const Electrical = () => {
     const newData = JSON.parse(JSON.stringify(current));
     newData[rowIndex][colIndex] = val;
     updateField(key, newData);
+  };
+
+  const updateActivity = (idx, field, value) => {
+    const arr = JSON.parse(JSON.stringify(t("activities", defaultActivities)));
+    arr[idx][field] = value;
+    updateField("activities", arr);
+  };
+
+  const updateNewsletter = (type, index, field, value) => {
+    if (type === "latest") {
+      const latest = JSON.parse(
+        JSON.stringify(t("newsletters_latest", defaultNewsletters.latest)),
+      );
+      latest[field] = value;
+      updateField("newsletters_latest", latest);
+    } else {
+      const archives = JSON.parse(
+        JSON.stringify(t("newsletters_archives", defaultNewsletters.archives)),
+      );
+      archives[index][field] = value;
+      updateField("newsletters_archives", archives);
+    }
   };
 
   const defaultBeDetails = [
@@ -189,131 +261,29 @@ const Electrical = () => {
     },
   ];
 
-  const defaultFacultyData = [
-    {
-      name: "Dr. S. R. Paraskar",
-      role: "Professor & Head Electrical Engineering",
-      area: [
-        "Digital Protection of Transformer",
-        "Facts & Power Quality",
-        "Digital Signal Processing",
-      ],
-      email: "hod_elpo@ssgmce.ac.in",
-      email2: "srparaskar@ssgmce.ac.in",
-      photo: srpPhoto,
-    },
-    {
-      name: "Mr. U. A. Jawadekar",
-      role: "Associate Professor",
-      area: ["Electrical Power System"],
-      email: "uajawadekar@ssgmce.ac.in",
-      phone: "+917020681041",
-      photo: uajPhoto,
-    },
-    {
-      name: "Dr. Mrs. A.U. Jawadekar",
-      role: "Associate Professor",
-      area: ["Electrical Engineering", "Control System"],
-      email: "aujawadekar@ssgmce.ac.in",
-      phone: "+919766824978",
-      photo: aujPhoto,
-    },
-    {
-      name: "Dr. S. S. Jadhao",
-      role: "Associate Professor",
-      area: [
-        "Power Quality and Custom Power Devices",
-        "AI Applications in Power System",
-      ],
-      email: "ssjadhao@ssgmce.ac.in",
-      phone: "+919423056082",
-      photo: ssjPhoto,
-    },
-    {
-      name: "Mr. P. R. Bharambe",
-      role: "Assistant Professor",
-      area: ["Electrical Machines", "Power System Protection"],
-      email: "prbharambe@ssgmce.ac.in",
-      phone: "+917020852595",
-      photo: prbPhoto,
-    },
-    {
-      name: "Dr. R. S. Kankale",
-      role: "Assistant Professor",
-      area: [
-        "Power Quality",
-        "Distributed Generation",
-        "Power System Protection & High Voltage Engineering",
-      ],
-      email: "rskankale@ssgmce.ac.in",
-      phone: "+918275589413",
-      photo: rskPhoto,
-    },
-    {
-      name: "Mr. M. R. Chavan",
-      role: "Assistant Professor",
-      area: ["Electrical Power System", "Renewable Energy", "Energy Auditing"],
-      email: "mrchavan@ssgmce.ac.in",
-      phone: "+918983442243",
-      photo: mrcPhoto,
-    },
-    {
-      name: "Mr. R. K. Mankar",
-      role: "Assistant Professor",
-      area: ["Electrical Power System"],
-      email: "rkmankar@ssgmce.ac.in",
-      phone: "+917385718749",
-      photo: rkmPhoto,
-    },
-    {
-      name: "Dr. G. N. Bonde",
-      role: "Assistant Professor",
-      area: ["Electrical Power System", "Power Quality"],
-      email: "gnbonde@ssgmce.ac.in",
-      phone: "+918021218447",
-      photo: gnbPhoto,
-    },
-    {
-      name: "Mr. V. S. Karale",
-      role: "Assistant Professor",
-      area: ["Electrical Power System"],
-      email: "vskarale@ssgmce.ac.in",
-      phone: "+919028324050",
-      photo: vskPhoto,
-    },
-    {
-      name: "Mr. B. S. Rakhonde",
-      role: "Assistant Professor",
-      area: ["Electrical Machines", "Electric Vehicle"],
-      email: "bsrakhonde@ssgmce.ac.in",
-      phone: "+918956730992",
-      photo: bsrPhoto,
-    },
-    {
-      name: "Mr. Pratik Dhabe",
-      role: "Assistant Professor",
-      area: ["Electrical Power System"],
-      email: "pratikdhabe@ssgmce.ac.in",
-      phone: "+918956527788",
-      photo: prdPhoto,
-    },
-    {
-      name: "Mr. S. M. Vanagpure",
-      role: "Assistant Professor",
-      area: ["Electrical Power System"],
-      email: "smvanagpure@ssgmce.ac.in",
-      phone: "+919423797074",
-      photo: vanPhoto,
-    },
-    {
-      name: "Mr. G. D. Khadsane",
-      role: "Assistant Professor",
-      area: ["Electrical Power System"],
-      email: "gdkhadsane@ssgmce.ac.in",
-      phone: "+919370346868",
-      photo: gdkPhoto,
-    },
-  ];
+  // Photo map to resolve string keys from electricalDefaults to actual imports
+  const electricalPhotoMap = {
+    SRP: srpPhoto,
+    UAJ: uajPhoto,
+    AUJ: aujPhoto,
+    SSJ: ssjPhoto,
+    PRB: prbPhoto,
+    RSK: rskPhoto,
+    MRC: mrcPhoto,
+    RKM: rkmPhoto,
+    GNB: gnbPhoto,
+    VSK: vskPhoto,
+    BSR: bsrPhoto,
+    PRD: prdPhoto,
+    VAN: vanPhoto,
+    GDK: gdkPhoto,
+  };
+
+  // Resolve photos and build the faculty data from defaults
+  const defaultFacultyData = ELECTRICAL_DEFAULT_FACULTY.map((fac) => ({
+    ...fac,
+    photo: electricalPhotoMap[fac.photo] || fac.photo,
+  }));
 
   const defaultPrideToppers = [
     { year: "2025", name: "Vaishnavi Keshav Pesode", rank: "II", cgpa: "9.28" },
@@ -668,30 +638,6 @@ const Electrical = () => {
     },
   ];
 
-  const defaultPlacementStats = [
-    {
-      year: "2023-24",
-      placed: "120+",
-      highest: "12 LPA",
-      average: "4.5 LPA",
-      recruiters: "TCS, Infosys, Adani",
-    },
-    {
-      year: "2022-23",
-      placed: "115",
-      highest: "10 LPA",
-      average: "4.2 LPA",
-      recruiters: "TCS, Capgemini, Wipro",
-    },
-    {
-      year: "2021-22",
-      placed: "100",
-      highest: "9 LPA",
-      average: "4.0 LPA",
-      recruiters: "TCS, Cognizant",
-    },
-  ];
-
   const defaultPeos = [
     "Expertise and use it for problem solving in analysis & design of electrical system.",
     "Commitment in the engineering profession or other professional careers with high human values.",
@@ -756,61 +702,166 @@ const Electrical = () => {
     },
   ];
 
-  const defaultActivities = [
-    {
-      title: "Guest Lecture on Power Systems",
-      date: "2024-02-15",
-      description: "Expert lecture delivered by Dr. XYZ from IIT Bombay.",
-    },
-    {
-      title: "Industrial Visit to Thermal Power Plant",
-      date: "2023-11-20",
-      description:
-        "Third year students visited the Paras Thermal Power Station.",
-    },
-  ];
+  // defaultNewsletters is now imported from electricalDefaults.js
 
-  const defaultNewsletters = [
-    {
-      title: "Electrical Department Newsletter - Vol 1",
-      date: "June 2024",
-      link: "#",
-    },
-    {
-      title: "Electrical Department Newsletter - Vol 2",
-      date: "Jan 2024",
-      link: "#",
-    },
-  ];
-
-  const defaultAchievements = [
-    {
-      title: "Best Student Chapter Award",
-      description:
-        "IEI Student Chapter received the best chapter award in the region.",
-    },
-    {
-      title: "Research Grant",
-      description:
-        "Department received a research grant of 5 Lakhs for renewable energy project.",
-    },
-  ];
+  // defaultAchievements is now imported from electricalDefaults.js
 
   const defaultCourseMaterials = [
-    { subject: "Electrical Machines - I", link: "#" },
-    { subject: "Power Systems - I", link: "#" },
+    {
+      year: "First Year",
+      title: "BE First Year",
+      link: "https://drive.google.com/drive/folders/13DXjK9HfR3NiKSrnqADVzx4uhPBIcS_5",
+    },
+    {
+      year: "Second Year",
+      title: "Third Semester",
+      link: "https://drive.google.com/drive/folders/1KzKYf4waSbd062bLD8I2Xo8-mtoK87Dn",
+    },
+    {
+      year: "Second Year",
+      title: "Fourth Semester",
+      link: "https://drive.google.com/drive/folders/1zCpp_E_N3lODX7aUGIQKmgzkZaSGSIqh",
+    },
+    {
+      year: "Third Year",
+      title: "Fifth Semester",
+      link: "https://drive.google.com/drive/folders/1cOhiB-ghs-XL4qsCO4yIhDzAczg2oHSl",
+    },
+    {
+      year: "Third Year",
+      title: "Sixth Semester",
+      link: "https://drive.google.com/drive/folders/11-t6MRGXfGu11Ty6AFi-rgtlDO_hEwmP",
+    },
+    {
+      year: "Final Year",
+      title: "Seventh Semester",
+      link: "https://drive.google.com/drive/folders/1SR-mGfxTKHc2oZnCs26mt9bboLGL6eA8",
+    },
+    {
+      year: "Final Year",
+      title: "Eighth Semester",
+      link: "https://drive.google.com/drive/folders/1OR5lp0rL3J6FVbULbcvjn-AB2XD_Iwwf",
+    },
   ];
 
   const defaultInnovativePractices = [
     {
-      title: "Project Based Learning",
-      description:
-        "Students are encouraged to take up mini-projects in each semester to apply theoretical knowledge.",
+      sn: "01",
+      faculty: "Dr. S. R. Paraskar",
+      subject: "Power System II",
+      practice: "Simulation-Based Learning (Matlab)",
+      link: "/uploads/documents/electrical_innovative/SRP_PowerSystemII_Simulation.pdf",
     },
     {
-      title: "Flip Classroom",
-      description:
-        "Video lectures are shared before class, and class time is used for discussions and problem solving.",
+      sn: "02",
+      faculty: "Dr. A. U. Jawadekar",
+      subject: "Signals & Systems",
+      practice: "Mindmap",
+      link: "/uploads/documents/electrical_innovative/AUJ_Signals_Systems_Mindmap.pdf",
+    },
+    {
+      sn: "",
+      faculty: "",
+      subject: "Advanced Control System",
+      practice: "MATLAB Simulation",
+      link: "/uploads/documents/electrical_innovative/AUJ_Advanced_Control_System_Matlab.pdf",
+      rowSpanParent: false,
+    },
+    {
+      sn: "",
+      faculty: "",
+      subject: "Electromagnetic Field",
+      practice: "Think Pair and Share",
+      link: "/uploads/documents/electrical_innovative/AUJ_Electromagnetic_Field_ThinkPairShare.pdf",
+      rowSpanParent: false,
+    },
+    {
+      sn: "04",
+      faculty: "Prof. P. R. Bharambe",
+      subject: "Power System Protection",
+      practice: "You Tube Videos",
+      link: "/uploads/documents/electrical_innovative/PRB_PowerSystemProtection_YouTube.pdf",
+    },
+    {
+      sn: "",
+      faculty: "",
+      subject: "Computer Aided Machine Design",
+      practice: "You Tube Videos",
+      link: "/uploads/documents/electrical_innovative/PRB_ComputerAidedMachineDesign_YouTube.pdf",
+      rowSpanParent: false,
+    },
+    {
+      sn: "05",
+      faculty: "Dr. R. S. Kankale",
+      subject: "High Voltages- Part-1",
+      practice: "You Tube Videos",
+      link: "/uploads/documents/electrical_innovative/RSK_HighVoltages_YouTube.pdf",
+    },
+    {
+      sn: "06",
+      faculty: "Prof. M.R.Chavan",
+      subject: "Energy Resources and Generation",
+      practice: "Industrial Visits/Field Work",
+      link: "/uploads/documents/electrical_innovative/MRC_EnergyResources_IndustrialVisit.pdf",
+    },
+    {
+      sn: "07",
+      faculty: "Prof. R. K. Mankar",
+      subject: "Computer Methods in Power System Analysis",
+      practice: "Simulation-Based Learning",
+      link: "/uploads/documents/electrical_innovative/RKM_ComputerMethods_Simulation.pdf",
+    },
+    {
+      sn: "08",
+      faculty: "Prof. G. N. Bonde",
+      subject: "Control System",
+      practice: "You Tube Videos",
+      link: "/uploads/documents/electrical_innovative/GNB_ControlSystem_YouTube.pdf",
+    },
+    {
+      sn: "",
+      faculty: "",
+      subject: "Electronic Devices & Circuit",
+      practice: "Virtual Lab",
+      link: "/uploads/documents/electrical_innovative/GNB_ElectronicDevices_VirtualLab.pdf",
+      rowSpanParent: false,
+    },
+    {
+      sn: "09",
+      faculty: "Prof. B. S. Rakhonde",
+      subject: "Electrical Machine-I",
+      practice: "You Tube Videos",
+      link: "/uploads/documents/electrical_innovative/BSR_ElectricalMachineI_YouTube.pdf",
+    },
+    {
+      sn: "10",
+      faculty: "Prof. V.S.Karale",
+      subject: "Electric Circuit Analysis",
+      practice: "Virtual Lab",
+      link: "/uploads/documents/electrical_innovative/VSK_ElectricCircuitAnalysis_VirtualLab.pdf",
+    },
+    {
+      sn: "",
+      faculty: "",
+      subject: "Power Electronics",
+      practice: "Simulation-Based Learning (Matlab)",
+      link: "/uploads/documents/electrical_innovative/VSK_PowerElectronics_Simulation.pdf",
+      rowSpanParent: false,
+    },
+    {
+      sn: "11",
+      faculty: "Prof. P. R. Dhabe",
+      subject: "Digital Signal Processing",
+      practice: "You Tube Videos",
+      link: "/uploads/documents/electrical_innovative/PRD_DigitalSignalProcessing_YouTube.pdf",
+    },
+    {
+      sn: "",
+      faculty: "",
+      subject: "Power System",
+      practice: "You Tube Videos",
+      link: "/uploads/documents/electrical_innovative/PRD_PowerSystem_YouTube.pdf",
+      rowSpanParent: false,
     },
   ];
 
@@ -924,6 +975,17 @@ const Electrical = () => {
   const [researchTab, setResearchTab] = useState("toppers");
   const [projectYear, setProjectYear] = useState("2024-25");
   const [researchYear, setResearchYear] = useState("2024-25");
+  const [patentsTab, setPatentsTab] = useState("patents");
+  const [patentsYear, setPatentsYear] = useState("2024-25");
+  const patentsYears = [
+    "2024-25",
+    "2023-24",
+    "2022-23",
+    "2021-22",
+    "2020-21",
+    "2019-20",
+    "2018-19",
+  ];
   const [placementYear, setPlacementYear] = useState(null);
   const [expandedSemester, setExpandedSemester] = useState(null);
   const [internshipYear, setInternshipYear] = useState("2024-25");
@@ -953,7 +1015,7 @@ const Electrical = () => {
     { id: "industrial-visits", label: "Industrial Visits" },
     { id: "mous", label: "MoUs & Collaborations" },
     { id: "patents", label: "Patents & Publications" },
-    { id: "internships", label: "Internship Programs" },
+    { id: "internships", label: "Internship and Training" },
   ];
 
   const industryLinks = t("industryLinks", defaultIndustryLinks);
@@ -1691,7 +1753,7 @@ const Electrical = () => {
               <EditableText
                 value={t(
                   "hodMessage",
-                  "The Department of Electrical Engineering offers a vibrant environment for undergraduate and post graduate education and research in Electrical Engineering. The Department is committed to the advancement of the frontiers of knowledge in electrical engineering and to provide the students with a stimulating and rewarding learning experience.\n\nThe department admits students for 4 years B.E. Electrical (Electronics & Power) Programme and 2 years M.E. (Electrical Power System) programme. The academic activities are supported by eight well equipped laboratories. All Laboratories are recognized for research work by Sant Gadge Baba Amravati University, Amravati.\n\nThe department has strong industry interaction and has been involved in development of State of art products for Industry and consultancy projects.",
+                  "The Department of Electrical Engineering offers a vibrant environment for undergraduate and post graduate education and research in Electrical Engineering. The Department is committed to the advancement of the frontiers of knowledge in electrical engineering and to provide the students with a stimulating and rewarding learning experience.\n\nThe department admits students for 4 years B.E. Electrical (Electronics & Power) Programme and 2 years M.E. (Electrical Power System) programme. The academic activities are supported by eight well equipped laboratories. All Laboratories are recognized for research work by Sant Gadge Baba Amravati University, Amravati.\n\nThe department admits students for 4 years B.E. Electrical (Electronics & Power) Programme and 2 years M.E. (Electrical Power System) programme. The academic activities are supported by eight well equipped laboratories. All Laboratories are recognized for research work by Sant Gadge Baba Amravati University, Amravati.\n\nThe department has strong industry interaction and has been involved in development of State of art products for Industry, and consultancy projects.\n\nThe department is strong with senior faculty members and experts in various fields of electrical engineering. The broad area of expertise includes Power system restructuring & reforms, Digital Signal Processing, Application of Artificial Intelligence in Electrical Engineering, Power System Deregulation, Power System Transients, Distribution Automation, High Voltage Engineering Power Quality and FACTS devices, condition monitoring of electrical equipment.",
                 )}
                 onSave={(val) => updateField("hodMessage", val)}
                 multiline
@@ -2572,12 +2634,22 @@ const Electrical = () => {
                     )}
                   </div>
 
-                  <a
-                    href="#"
-                    className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-2 hover:underline uppercase tracking-wide"
+                  {fac.vidwanId && (
+                    <a
+                      href={`https://vidwan.inflibnet.ac.in/profile/${fac.vidwanId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-[10px] font-bold text-emerald-600 mt-1 hover:underline uppercase tracking-wide"
+                    >
+                      Vidwan Profile <FaAngleRight className="ml-1" />
+                    </a>
+                  )}
+                  <Link
+                    to={`/faculty/${fac.id}`}
+                    className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
                   >
                     View Profile <FaAngleRight className="ml-1" />
-                  </a>
+                  </Link>
                 </div>
               </div>
             </motion.div>
@@ -3323,442 +3395,904 @@ const Electrical = () => {
     ),
     placements: (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
-          <EditableText
-            value={t("placementTitle", "Placement Statistics")}
-            onSave={(val) => updateField("placementTitle", val)}
-          />
-        </h3>
+        <AnimatePresence mode="wait">
+          {!placementYear ? (
+            <motion.div
+              key="summary"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+            >
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    Placement Statistics
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Year-wise breakdown of student placements
+                  </p>
+                </div>
+                <FaChartLine className="text-4xl text-blue-100" />
+              </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <div className="mb-4 text-gray-700">
-              <EditableText
-                value={t(
-                  "placementDesc",
-                  "Our students are placed in reputed companies with good packages. The Training and Placement Cell works dedicatedly to provide opportunities to students.",
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                      <th className="px-6 py-4 font-bold text-center w-20">
+                        Sr. No.
+                      </th>
+                      <th className="px-6 py-4 font-bold text-center">
+                        Academic Year
+                      </th>
+                      <th className="px-6 py-4 font-bold text-center">
+                        No. of Students Placed
+                      </th>
+                      <th className="px-6 py-4 font-bold text-center">
+                        Details Report
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 text-sm">
+                    {t("placements.summary", defaultPlacements.summary).map(
+                      (row, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-blue-50/30 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-center font-mono text-gray-400">
+                            {index + 1}
+                          </td>
+                          <td className="px-6 py-4 text-center font-bold text-gray-700">
+                            {row.year}
+                          </td>
+                          <td className="px-6 py-4 text-center font-bold text-ssgmce-blue text-lg">
+                            {row.count}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <button
+                              onClick={() => setPlacementYear(row.id)}
+                              className="text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                            >
+                              View Details
+                            </button>
+                          </td>
+                        </tr>
+                      ),
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+                * Placements still in progress for the current academic year.
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="detail"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <button
+                  onClick={() => setPlacementYear(null)}
+                  className="flex items-center text-gray-600 hover:text-ssgmce-blue font-medium transition-colors"
+                >
+                  <span className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-2 text-sm group-hover:bg-blue-100">
+                    <FaAngleRight className="transform rotate-180" />
+                  </span>
+                  Back to Statistics
+                </button>
+                <div className="text-right">
+                  <h3 className="text-xl font-bold text-gray-800">
+                    Placement Record
+                  </h3>
+                  <p className="text-sm text-ssgmce-blue font-bold">
+                    Session: {placementYear}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
+                      <tr>
+                        <th className="px-6 py-4 font-bold text-center w-16">
+                          Sr. No.
+                        </th>
+                        <th className="px-6 py-4 font-bold">Name of Student</th>
+                        <th className="px-6 py-4 font-bold">Company Name</th>
+                        <th className="px-6 py-4 font-bold text-right">CTC</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {t(
+                        `placements.details.${placementYear}`,
+                        defaultPlacements.details[placementYear] || [],
+                      ).map((student, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-center font-mono text-gray-400">
+                            {index + 1}
+                          </td>
+                          <td className="px-6 py-4 font-medium text-gray-800">
+                            {student.name}
+                          </td>
+                          <td className="px-6 py-4 text-gray-600">
+                            {student.company}
+                          </td>
+                          <td className="px-6 py-4 text-right font-bold text-ssgmce-blue">
+                            {student.ctc}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {(!t(
+                  `placements.details.${placementYear}`,
+                  defaultPlacements.details[placementYear] || [],
+                ).length ||
+                  t(
+                    `placements.details.${placementYear}`,
+                    defaultPlacements.details[placementYear] || [],
+                  ).length === 0) && (
+                  <div className="p-8 text-center text-gray-400">
+                    <p>Detailed placement data will be updated soon.</p>
+                  </div>
                 )}
-                onSave={(val) => updateField("placementDesc", val)}
-                multiline
-              />
-            </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    ),
+    activities: (
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+            <EditableText
+              value={t("activitiesTitle", "Curricular Activities")}
+              onSave={(val) => updateField("activitiesTitle", val)}
+            />
+          </h3>
+          <span className="hidden sm:inline-block text-sm text-gray-500 bg-gray-100 px-4 py-1.5 rounded-full">
+            {t("activities", defaultActivities).length} Activities
+          </span>
+        </div>
+
+        {/* Activity List */}
+        <div className="space-y-5">
+          {t("activities", defaultActivities)
+            .slice(0, activitiesVisible)
+            .map((activity, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.03, duration: 0.35 }}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden"
+              >
+                <div className="flex flex-col sm:flex-row">
+                  {/* Image */}
+                  <div
+                    className="sm:w-72 flex-shrink-0 cursor-pointer"
+                    onClick={() => setLightboxActivity(idx)}
+                  >
+                    {activity.image ? (
+                      <img
+                        src={activity.image}
+                        alt={activity.title}
+                        className="w-full h-48 sm:h-full object-contain bg-gray-50"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-48 sm:h-full flex items-center justify-center bg-gray-50">
+                        <FaCalendarAlt className="text-4xl text-gray-300" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Details */}
+                  <div className="flex-1 p-5 sm:p-6">
+                    {/* Date */}
+                    <span className="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded mb-3">
+                      <EditableText
+                        value={activity.date}
+                        onSave={(val) => updateActivity(idx, "date", val)}
+                      />
+                    </span>
+
+                    {/* Title */}
+                    <h4 className="text-lg font-bold text-gray-800 mb-4 leading-snug">
+                      <EditableText
+                        value={activity.title}
+                        onSave={(val) => updateActivity(idx, "title", val)}
+                        multiline
+                      />
+                    </h4>
+
+                    {/* Meta Info */}
+                    <div className="space-y-2.5 text-sm text-gray-600">
+                      <div className="flex items-start gap-2.5">
+                        <FaUsers className="text-blue-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="font-medium text-gray-700">
+                            Participants:{" "}
+                          </span>
+                          <EditableText
+                            value={activity.participants}
+                            onSave={(val) =>
+                              updateActivity(idx, "participants", val)
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2.5">
+                        <FaUserGraduate className="text-orange-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="font-medium text-gray-700">
+                            Organized by:{" "}
+                          </span>
+                          <EditableText
+                            value={activity.organizer}
+                            onSave={(val) =>
+                              updateActivity(idx, "organizer", val)
+                            }
+                            multiline
+                          />
+                        </div>
+                      </div>
+
+                      {(activity.resource || isEditing) && (
+                        <div className="flex items-start gap-2.5">
+                          <FaChalkboardTeacher className="text-green-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="font-medium text-gray-700">
+                              Resource Person:{" "}
+                            </span>
+                            <EditableText
+                              value={
+                                activity.resource ||
+                                (isEditing ? "Add Resource Person" : "")
+                              }
+                              onSave={(val) =>
+                                updateActivity(idx, "resource", val)
+                              }
+                              multiline
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Edit: image URL + delete */}
+                    {isEditing && (
+                      <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-gray-500">Image URL:</span>
+                          <EditableText
+                            value={activity.image || "Add image URL"}
+                            onSave={(val) => updateActivity(idx, "image", val)}
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            const arr = [...t("activities", defaultActivities)];
+                            arr.splice(idx, 1);
+                            updateField("activities", arr);
+                          }}
+                          className="text-xs text-red-500 hover:text-red-700"
+                        >
+                          Remove Activity
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+        </div>
+
+        {/* Show More / Show Less */}
+        {t("activities", defaultActivities).length > 6 && (
+          <div className="text-center pt-2">
+            <button
+              onClick={() =>
+                setActivitiesVisible((prev) =>
+                  prev >= t("activities", defaultActivities).length
+                    ? 6
+                    : prev + 6,
+                )
+              }
+              className="px-8 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
+            >
+              {activitiesVisible >= t("activities", defaultActivities).length
+                ? "Show Less"
+                : `Show More (${t("activities", defaultActivities).length - activitiesVisible} remaining)`}
+            </button>
           </div>
+        )}
+
+        {/* Add Activity button (editing mode) */}
+        {isEditing && (
+          <div className="text-center">
+            <button
+              onClick={() => {
+                const updated = [
+                  ...t("activities", defaultActivities),
+                  {
+                    title: "New Activity",
+                    date: "Date",
+                    participants: "Participants",
+                    organizer: "Organizer",
+                    resource: "",
+                    image: "",
+                  },
+                ];
+                updateField("activities", updated);
+              }}
+              className="px-6 py-2.5 bg-ssgmce-blue text-white rounded-lg hover:bg-ssgmce-dark-blue transition-colors text-sm font-medium"
+            >
+              + Add Activity
+            </button>
+          </div>
+        )}
+
+        {/* Lightbox */}
+        <AnimatePresence>
+          {lightboxActivity !== null && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+              onClick={() => setLightboxActivity(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                className="relative max-w-4xl w-full max-h-[90vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  className="absolute -top-10 right-0 text-white text-2xl hover:text-gray-300 z-10"
+                  onClick={() => setLightboxActivity(null)}
+                >
+                  <FaTimes />
+                </button>
+
+                <img
+                  src={
+                    t("activities", defaultActivities)[lightboxActivity]?.image
+                  }
+                  alt={
+                    t("activities", defaultActivities)[lightboxActivity]?.title
+                  }
+                  className="w-full max-h-[80vh] object-contain rounded-lg"
+                />
+
+                <div className="text-white text-center mt-3 text-sm">
+                  {t("activities", defaultActivities)[lightboxActivity]?.title}
+                </div>
+
+                {/* Nav arrows */}
+                {lightboxActivity > 0 && (
+                  <button
+                    className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-3xl bg-black/40 rounded-full p-2 hover:bg-black/60"
+                    onClick={() =>
+                      setLightboxActivity((p) => Math.max(0, p - 1))
+                    }
+                  >
+                    <FaChevronLeft />
+                  </button>
+                )}
+                {lightboxActivity <
+                  t("activities", defaultActivities).length - 1 && (
+                  <button
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-white text-3xl bg-black/40 rounded-full p-2 hover:bg-black/60"
+                    onClick={() =>
+                      setLightboxActivity((p) =>
+                        Math.min(
+                          t("activities", defaultActivities).length - 1,
+                          p + 1,
+                        ),
+                      )
+                    }
+                  >
+                    <FaChevronRight />
+                  </button>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    ),
+    newsletter: (
+      <div className="space-y-8">
+        {/* Newsletter Header */}
+        <div className="text-center">
+          <div className="w-16 h-16 bg-blue-50 text-ssgmce-blue rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
+            <FaBullseye />
+          </div>
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
+            <EditableText
+              value={t("newsletterTitle", "Department Newsletters")}
+              onSave={(val) => updateField("newsletterTitle", val)}
+            />
+          </h3>
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <EditableText
+              value={t(
+                "newsletterDescription",
+                "Stay updated with the latest happenings, student achievements, faculty contributions, and department events through our periodic newsletters.",
+              )}
+              onSave={(val) => updateField("newsletterDescription", val)}
+              multiline
+            />
+          </div>
+        </div>
+
+        {/* Newsletter Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-8 py-5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-wide">Newsletter</h3>
+              <p className="text-sm text-gray-300 mt-1">
+                Department of Electrical Engineering (Electronics &amp; Power)
+              </p>
+            </div>
+            <FaDownload className="text-4xl text-blue-200 opacity-40" />
+          </div>
+
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-ssgmce-blue">
-                    Year
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th className="px-6 py-4 font-bold text-center w-20">
+                    Sr. No.
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-ssgmce-blue">
-                    Total Placed
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-ssgmce-blue">
-                    Highest Package
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-ssgmce-blue">
-                    Average Package
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-ssgmce-blue">
-                    Key Recruiters
+                  <th className="px-6 py-4 font-bold">Publishing Date</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    More Details
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
-                {t("placementStats", defaultPlacementStats).map((stat, i) => (
-                  <tr key={i} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">
-                      <EditableText
-                        value={stat.year}
-                        onSave={(val) => {
-                          const updated = [
-                            ...t("placementStats", defaultPlacementStats),
-                          ];
-                          updated[i].year = val;
-                          updateField("placementStats", updated);
-                        }}
-                      />
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {/* Latest Issue Row */}
+                <tr className="hover:bg-blue-50/30 transition-colors bg-blue-50/10">
+                  <td className="px-6 py-4 text-center font-mono text-gray-400">
+                    1
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded-full">
+                        Latest
+                      </span>
+                      <span className="font-bold text-gray-800">
+                        <EditableText
+                          value={
+                            t("newsletters_latest", defaultNewsletters.latest)
+                              .title || "News Letter 2024-25 (Spring Semester)"
+                          }
+                          onSave={(val) =>
+                            updateNewsletter("latest", 0, "title", val)
+                          }
+                        />
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <a
+                      href={
+                        t("newsletters_latest", defaultNewsletters.latest)
+                          .link || "#"
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                    >
+                      <FaDownload className="text-xs" /> Click for Details
+                    </a>
+                  </td>
+                </tr>
+
+                {/* Archive Rows */}
+                {(
+                  t("newsletters_archives", defaultNewsletters.archives) || []
+                ).map((issue, i) => (
+                  <tr key={i} className="hover:bg-blue-50/30 transition-colors">
+                    <td className="px-6 py-4 text-center font-mono text-gray-400">
+                      {i + 2}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      <EditableText
-                        value={stat.placed}
-                        onSave={(val) => {
-                          const updated = [
-                            ...t("placementStats", defaultPlacementStats),
-                          ];
-                          updated[i].placed = val;
-                          updateField("placementStats", updated);
-                        }}
-                      />
+                    <td className="px-6 py-4">
+                      <span className="font-bold text-gray-700">
+                        <EditableText
+                          value={issue.vol}
+                          onSave={(val) =>
+                            updateNewsletter("archives", i, "vol", val)
+                          }
+                        />
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      <EditableText
-                        value={stat.highest}
-                        onSave={(val) => {
-                          const updated = [
-                            ...t("placementStats", defaultPlacementStats),
-                          ];
-                          updated[i].highest = val;
-                          updateField("placementStats", updated);
-                        }}
-                      />
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      <EditableText
-                        value={stat.average}
-                        onSave={(val) => {
-                          const updated = [
-                            ...t("placementStats", defaultPlacementStats),
-                          ];
-                          updated[i].average = val;
-                          updateField("placementStats", updated);
-                        }}
-                      />
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      <EditableText
-                        value={stat.recruiters}
-                        onSave={(val) => {
-                          const updated = [
-                            ...t("placementStats", defaultPlacementStats),
-                          ];
-                          updated[i].recruiters = val;
-                          updateField("placementStats", updated);
-                        }}
-                        multiline
-                      />
+                    <td className="px-6 py-4 text-center">
+                      <a
+                        href={issue.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                      >
+                        <FaDownload className="text-xs" /> Click for Details
+                      </a>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {isEditing && (
-              <div className="p-4 bg-gray-50 border-t border-gray-200">
-                <button
-                  onClick={() => {
-                    const updated = [
-                      ...t("placementStats", defaultPlacementStats),
-                      {
-                        year: "2020-21",
-                        placed: "0",
-                        highest: "0 LPA",
-                        average: "0 LPA",
-                        recruiters: "Recruiters",
-                      },
-                    ];
-                    updateField("placementStats", updated);
-                  }}
-                  className="w-full py-2 bg-ssgmce-blue text-white rounded hover:bg-ssgmce-dark-blue transition-colors text-sm"
-                >
-                  + Add New Statistic
-                </button>
-              </div>
-            )}
           </div>
-        </div>
+          <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+            Click on "Click for Details" to view/download the newsletter PDF.
+          </div>
+        </motion.div>
       </div>
     ),
-    activities: (
-      <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
-          <EditableText
-            value={t("activitiesTitle", "Curricular Activities")}
-            onSave={(val) => updateField("activitiesTitle", val)}
-          />
-        </h3>
+    achievements: (() => {
+      const facultyAchievements = t(
+        "achievements.faculty",
+        defaultAchievements.faculty || [],
+      );
+      const studentAchievements = t(
+        "achievements.students",
+        defaultAchievements.students || [],
+      );
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-6">
-          <div className="space-y-6">
-            {t("activities", defaultActivities).map((activity, i) => (
-              <div
-                key={i}
-                className="border-b border-gray-100 last:border-0 pb-6 last:pb-0 group relative pr-8"
+      const handleViewCertificate = (item) => {
+        if (!item.image) return;
+        const isPdf = item.image.toLowerCase().endsWith(".pdf");
+        if (isPdf) {
+          window.open(item.image, "_blank");
+        } else {
+          setCertificateLightbox(item);
+        }
+      };
+
+      return (
+        <div className="space-y-8">
+          {/* Certificate Lightbox Modal */}
+          <AnimatePresence>
+            {certificateLightbox && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                onClick={() => setCertificateLightbox(null)}
               >
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="md:w-1/4">
-                    <div className="text-sm text-gray-500 font-semibold uppercase tracking-wider">
-                      <EditableText
-                        value={activity.date}
-                        onSave={(val) => {
-                          const updated = [
-                            ...t("activities", defaultActivities),
-                          ];
-                          updated[i].date = val;
-                          updateField("activities", updated);
-                        }}
-                      />
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  className="relative max-w-4xl max-h-[90vh] w-full bg-white rounded-2xl overflow-hidden shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-white font-bold text-lg">
+                        {certificateLightbox.name}
+                      </h3>
+                      <p className="text-blue-200 text-sm">
+                        {certificateLightbox.achievement}
+                      </p>
                     </div>
+                    <button
+                      onClick={() => setCertificateLightbox(null)}
+                      className="text-white hover:text-orange-300 transition-colors"
+                    >
+                      <FaTimes className="text-xl" />
+                    </button>
                   </div>
-                  <div className="md:w-3/4 space-y-2">
-                    <h4 className="text-lg font-bold text-gray-800">
-                      <EditableText
-                        value={activity.title}
-                        onSave={(val) => {
-                          const updated = [
-                            ...t("activities", defaultActivities),
-                          ];
-                          updated[i].title = val;
-                          updateField("activities", updated);
-                        }}
-                      />
-                    </h4>
-                    <div className="text-gray-600 leading-relaxed">
-                      <EditableText
-                        value={activity.description}
-                        onSave={(val) => {
-                          const updated = [
-                            ...t("activities", defaultActivities),
-                          ];
-                          updated[i].description = val;
-                          updateField("activities", updated);
-                        }}
-                        multiline
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          {isEditing && (
-            <div className="mt-6 pt-4 border-t border-gray-100">
-              <button
-                onClick={() => {
-                  const updated = [
-                    ...t("activities", defaultActivities),
-                    {
-                      title: "New Activity",
-                      date: "YYYY-MM-DD",
-                      description: "Activity Description",
-                    },
-                  ];
-                  updateField("activities", updated);
-                }}
-                className="px-4 py-2 bg-ssgmce-blue text-white rounded hover:bg-ssgmce-dark-blue transition-colors text-sm"
-              >
-                + Add Activity
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    ),
-    newsletter: (
-      <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
-          <EditableText
-            value={t("newsletterTitle", "Department Newsletter")}
-            onSave={(val) => updateField("newsletterTitle", val)}
-          />
-        </h3>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-6">
-          <div className="space-y-4">
-            {t("newsletters", defaultNewsletters).map((newsletter, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg group relative"
-              >
-                <div className="flex-1">
-                  <h4 className="text-lg font-bold text-gray-800">
-                    <EditableText
-                      value={newsletter.title}
-                      onSave={(val) => {
-                        const updated = [
-                          ...t("newsletters", defaultNewsletters),
-                        ];
-                        updated[i].title = val;
-                        updateField("newsletters", updated);
-                      }}
-                    />
-                  </h4>
-                  <div className="text-sm text-gray-600">
-                    <EditableText
-                      value={newsletter.date}
-                      onSave={(val) => {
-                        const updated = [
-                          ...t("newsletters", defaultNewsletters),
-                        ];
-                        updated[i].date = val;
-                        updateField("newsletters", updated);
-                      }}
+                  <div className="p-4 flex items-center justify-center bg-gray-50 max-h-[75vh] overflow-auto">
+                    <img
+                      src={certificateLightbox.image}
+                      alt={certificateLightbox.achievement}
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                      className="max-w-full max-h-[70vh] object-contain rounded-lg"
                     />
                   </div>
-                  {isEditing && (
-                    <div className="text-xs text-blue-500 mt-1">
-                      Link:{" "}
-                      <EditableText
-                        value={newsletter.link}
-                        onSave={(val) => {
-                          const updated = [
-                            ...t("newsletters", defaultNewsletters),
-                          ];
-                          updated[i].link = val;
-                          updateField("newsletters", updated);
-                        }}
-                      />
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Header */}
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-gray-900">Achievements</h2>
+            <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
+            <p className="text-gray-600 mt-3">
+              Department of Electrical Engineering
+            </p>
+          </div>
+
+          {/* Tab Menu: Faculty | Student toggle */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex rounded-lg bg-gray-100 p-1">
+              <button
+                onClick={() => setAchievementTab("faculty")}
+                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  achievementTab === "faculty"
+                    ? "bg-[#003366] text-white shadow-md"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                }`}
+              >
+                <FaChalkboardTeacher className="text-lg" />
+                Faculty Achievements
+              </button>
+              <button
+                onClick={() => setAchievementTab("student")}
+                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  achievementTab === "student"
+                    ? "bg-[#003366] text-white shadow-md"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                }`}
+              >
+                <FaUserGraduate className="text-lg" />
+                Student Achievements
+              </button>
+            </div>
+          </div>
+
+          {/* Faculty Achievements */}
+          {achievementTab === "faculty" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {facultyAchievements.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <FaTrophy className="mr-3 text-yellow-300" />
+                      {item.name}
+                    </h3>
+                    <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
+                      {item.category}
+                    </span>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-[#003366] mb-2">
+                          {item.achievement}
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                      {item.image && (
+                        <button
+                          onClick={() => handleViewCertificate(item)}
+                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                          <FaAward className="text-yellow-300" />
+                          View Certificate
+                        </button>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-4">
-                  <a
-                    href={newsletter.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-ssgmce-blue hover:text-ssgmce-orange text-2xl"
-                    title="Download/View"
-                  >
-                    <FaDownload />
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-          {isEditing && (
-            <div className="mt-6 pt-4 border-t border-gray-100">
-              <button
-                onClick={() => {
-                  const updated = [
-                    ...t("newsletters", defaultNewsletters),
-                    { title: "New Newsletter", date: "Date", link: "#" },
-                  ];
-                  updateField("newsletters", updated);
-                }}
-                className="px-4 py-2 bg-ssgmce-blue text-white rounded hover:bg-ssgmce-dark-blue transition-colors text-sm"
-              >
-                + Add Newsletter
-              </button>
-            </div>
+                  </div>
+                </motion.div>
+              ))}
+              {facultyAchievements.length === 0 && (
+                <p className="text-center text-gray-400 py-8 text-sm">
+                  No faculty achievements recorded yet.
+                </p>
+              )}
+            </motion.div>
+          )}
+
+          {/* Student Achievements */}
+          {achievementTab === "student" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {studentAchievements.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <FaAward className="mr-3 text-yellow-300" />
+                      {item.name}
+                    </h3>
+                    <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
+                      {item.category}
+                    </span>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-[#003366] mb-2">
+                          {item.achievement}
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                      {item.image && (
+                        <button
+                          onClick={() => handleViewCertificate(item)}
+                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                          <FaAward className="text-yellow-300" />
+                          View Certificate
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+              {studentAchievements.length === 0 && (
+                <p className="text-center text-gray-400 py-8 text-sm">
+                  No student achievements recorded yet.
+                </p>
+              )}
+            </motion.div>
           )}
         </div>
-      </div>
-    ),
-    achievements: (
-      <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
-          <EditableText
-            value={t("achievementsTitle", "Achievements")}
-            onSave={(val) => updateField("achievementsTitle", val)}
-          />
-        </h3>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-6">
-          <div className="space-y-6">
-            {t("achievements", defaultAchievements).map((achievement, i) => (
-              <div
-                key={i}
-                className="border-l-4 border-ssgmce-blue pl-4 py-2 group relative"
-              >
-                <h4 className="text-lg font-bold text-gray-800 mb-1">
-                  <EditableText
-                    value={achievement.title}
-                    onSave={(val) => {
-                      const updated = [
-                        ...t("achievements", defaultAchievements),
-                      ];
-                      updated[i].title = val;
-                      updateField("achievements", updated);
-                    }}
-                  />
-                </h4>
-                <div className="text-gray-600 leading-relaxed">
-                  <EditableText
-                    value={achievement.description}
-                    onSave={(val) => {
-                      const updated = [
-                        ...t("achievements", defaultAchievements),
-                      ];
-                      updated[i].description = val;
-                      updateField("achievements", updated);
-                    }}
-                    multiline
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-          {isEditing && (
-            <div className="mt-6 pt-4 border-t border-gray-100">
-              <button
-                onClick={() => {
-                  const updated = [
-                    ...t("achievements", defaultAchievements),
-                    { title: "New Achievement", description: "Description" },
-                  ];
-                  updateField("achievements", updated);
-                }}
-                className="px-4 py-2 bg-ssgmce-blue text-white rounded hover:bg-ssgmce-dark-blue transition-colors text-sm"
-              >
-                + Add Achievement
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    ),
+      );
+    })(),
     "course-material": (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
-          <EditableText
-            value={t("courseMaterialTitle", "Course Material")}
-            onSave={(val) => updateField("courseMaterialTitle", val)}
-          />
-        </h3>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-6">
-          <div className="space-y-4">
-            {t("courseMaterials", defaultCourseMaterials).map((material, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg group relative"
-              >
-                <div className="flex-1">
-                  <h4 className="text-lg font-bold text-gray-800">
-                    <EditableText
-                      value={material.subject}
-                      onSave={(val) => {
-                        const updated = [
-                          ...t("courseMaterials", defaultCourseMaterials),
-                        ];
-                        updated[i].subject = val;
-                        updateField("courseMaterials", updated);
-                      }}
-                    />
-                  </h4>
-                  {isEditing && (
-                    <div className="text-xs text-blue-500 mt-1">
-                      Link:{" "}
-                      <EditableText
-                        value={material.link}
-                        onSave={(val) => {
-                          const updated = [
-                            ...t("courseMaterials", defaultCourseMaterials),
-                          ];
-                          updated[i].link = val;
-                          updateField("courseMaterials", updated);
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-4">
-                  <a
-                    href={material.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-ssgmce-blue hover:text-ssgmce-orange text-2xl"
-                    title="Download Material"
-                  >
-                    <FaDownload />
-                  </a>
-                </div>
-              </div>
-            ))}
+        <div className="text-center">
+          <div className="w-16 h-16 bg-orange-50 text-ssgmce-orange rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
+            <FaChalkboardTeacher />
+          </div>
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
+            <EditableText
+              value={t("courseMaterialTitle", "Course Material")}
+              onSave={(val) => updateField("courseMaterialTitle", val)}
+            />
+          </h3>
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <EditableText
+              value={t(
+                "courseMaterialDescription",
+                "Access comprehensive course materials, lecture notes, assignments, and study resources for all semesters.",
+              )}
+              onSave={(val) => updateField("courseMaterialDescription", val)}
+              multiline
+            />
+          </div>
+        </div>
+
+        {/* Course Material Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white px-8 py-5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-wide">
+                Course Material
+              </h3>
+              <p className="text-sm text-orange-100 mt-1">
+                Department of Electrical Engineering
+              </p>
+            </div>
+            <FaChalkboardTeacher className="text-4xl text-orange-200 opacity-40" />
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th className="px-6 py-4 font-bold text-center w-20">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 font-bold">Year / Semester</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    Access Materials
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {(t("courseMaterials", defaultCourseMaterials) || []).map(
+                  (material, i) => (
+                    <tr
+                      key={i}
+                      className="hover:bg-orange-50/30 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-center font-mono text-gray-400">
+                        {i + 1}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-gray-800">
+                          <EditableText
+                            value={material.title}
+                            onSave={(val) => {
+                              const updated = [
+                                ...t("courseMaterials", defaultCourseMaterials),
+                              ];
+                              updated[i] = { ...updated[i], title: val };
+                              updateField("courseMaterials", updated);
+                            }}
+                          />
+                        </span>
+                        {isEditing && (
+                          <div className="text-xs text-blue-500 mt-1">
+                            Link:{" "}
+                            <EditableText
+                              value={material.link}
+                              onSave={(val) => {
+                                const updated = [
+                                  ...t(
+                                    "courseMaterials",
+                                    defaultCourseMaterials,
+                                  ),
+                                ];
+                                updated[i] = { ...updated[i], link: val };
+                                updateField("courseMaterials", updated);
+                              }}
+                            />
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <a
+                          href={material.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-ssgmce-orange hover:text-orange-700 font-medium text-xs border border-gray-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
+                        >
+                          <FaDownload className="text-xs" /> Access Drive
+                        </a>
+                      </td>
+                    </tr>
+                  ),
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+            Click on "Access Drive" to view and download course materials from
+            the respective semester's shared folder.
           </div>
           {isEditing && (
-            <div className="mt-6 pt-4 border-t border-gray-100">
+            <div className="p-4 border-t border-gray-100">
               <button
                 onClick={() => {
                   const updated = [
                     ...t("courseMaterials", defaultCourseMaterials),
-                    { subject: "New Subject", link: "#" },
+                    { year: "New Year", title: "New Semester", link: "#" },
                   ];
                   updateField("courseMaterials", updated);
                 }}
@@ -3768,79 +4302,1224 @@ const Electrical = () => {
               </button>
             </div>
           )}
+        </motion.div>
+      </div>
+    ),
+    practices: (
+      <div className="space-y-8">
+        <div className="max-w-3xl">
+          <h3 className="text-3xl font-bold text-gray-800 mb-4 border-l-4 border-orange-500 pl-4">
+            Innovative Practice
+          </h3>
+        </div>
+
+        {/* Innovative Practice Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead
+                style={{ backgroundColor: "#003366" }}
+                className="text-white"
+              >
+                <tr>
+                  <th className="px-6 py-4 text-center font-semibold whitespace-nowrap text-sm">
+                    S.N.
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Name of The Faculty
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Subject
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Innovative Practice
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Link
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {t("innovativePractices", defaultInnovativePractices).map(
+                  (item, idx) => (
+                    <tr
+                      key={idx}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      {item.rowSpanParent !== false && (
+                        <td
+                          className="px-6 py-4 text-center font-medium text-gray-900"
+                          rowSpan={
+                            // Calculate rowspan: count consecutive items after this one with rowSpanParent === false
+                            (() => {
+                              if (!item.sn) return undefined;
+                              const practices = t(
+                                "innovativePractices",
+                                defaultInnovativePractices,
+                              );
+                              let span = 1;
+                              for (let j = idx + 1; j < practices.length; j++) {
+                                if (practices[j].rowSpanParent === false)
+                                  span++;
+                                else break;
+                              }
+                              return span > 1 ? span : undefined;
+                            })()
+                          }
+                        >
+                          {item.sn}
+                        </td>
+                      )}
+                      {item.rowSpanParent !== false && (
+                        <td
+                          className="px-6 py-4 text-center whitespace-nowrap"
+                          style={{ color: "#003366" }}
+                          rowSpan={(() => {
+                            if (!item.faculty) return undefined;
+                            const practices = t(
+                              "innovativePractices",
+                              defaultInnovativePractices,
+                            );
+                            let span = 1;
+                            for (let j = idx + 1; j < practices.length; j++) {
+                              if (practices[j].rowSpanParent === false) span++;
+                              else break;
+                            }
+                            return span > 1 ? span : undefined;
+                          })()}
+                        >
+                          <span className="font-medium">{item.faculty}</span>
+                        </td>
+                      )}
+                      <td className="px-6 py-4 text-gray-700">
+                        {item.subject}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {item.practice}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {item.link && (
+                          <a
+                            href={item.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                          >
+                            <FaExternalLinkAlt className="text-xs" />
+                            Link
+                          </a>
+                        )}
+                      </td>
+                    </tr>
+                  ),
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     ),
-    "innovative-practice": (
-      <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
-          <EditableText
-            value={t(
-              "innovativePracticeTitle",
-              "Innovative Teaching & Learning Practice",
-            )}
-            onSave={(val) => updateField("innovativePracticeTitle", val)}
-          />
-        </h3>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-6">
+    "industrial-visits": (() => {
+      const industrialVisitPhotos = [
+        {
+          image: ivAdaniDahanu2025,
+          caption:
+            "Third year BE Electrical Engineering students along with faculty members visited Adani Dahanu Thermal Power Station, Mumbai on 26 June 2025",
+          location: "Mumbai",
+          date: "26 June 2025",
+        },
+        {
+          image: ivApatapaAkola2025,
+          caption:
+            "Third Year BE Electrical Engineering students along with faculty members visited 400 KV Transmission Station at APATAPA Akola on 27 March 2025",
+          location: "Akola",
+          date: "27 March 2025",
+        },
+        {
+          image: ivAvaadaSolar2025,
+          caption:
+            "Third Year BE Electrical Engineering students along with faculty members visited Avaada Energy 100 MW Solar Power Plant Near Balapur on 27 March 2025",
+          location: "Balapur",
+          date: "27 March 2025",
+        },
+        {
+          image: ivTataPowerShahad2024,
+          caption:
+            "Second Year BE Electrical Engineering students along with faculty members visited TATA Power Shahad, Mumbai on 27 November 2024",
+          location: "Mumbai",
+          date: "27 November 2024",
+        },
+        {
+          image: ivAdaniDahanu2024,
+          caption:
+            "Third year BE Electrical Engineering students along with faculty members visited Adani Dahanu Thermal Power Station, Mumbai on 8 June 2024",
+          location: "Mumbai",
+          date: "8 June 2024",
+        },
+        {
+          image: ivTataPowerMumbai2023,
+          caption:
+            "Third Year BE Electrical Engineering students along with faculty members visited TATA Power, Mumbai on 11 December 2023",
+          location: "Mumbai",
+          date: "11 December 2023",
+        },
+        {
+          image: ivThermalParas2023,
+          caption:
+            "Second Year BE Electrical Engineering students along with faculty members visited Thermal Power Station, Paras on 26th October 2023",
+          location: "Paras",
+          date: "26 October 2023",
+        },
+        {
+          image: ivAdaniPowerMumbai,
+          caption:
+            "Third Year BE Electrical Engineering students along with faculty members visited Adani Power Station, Mumbai",
+          location: "Mumbai",
+          date: "2022-23",
+        },
+        {
+          image: ivThermalParas2022,
+          caption:
+            "Second Year BE Electrical Engineering students along with faculty members visited Thermal Power Station, Paras on 28th November 2022",
+          location: "Paras",
+          date: "28 November 2022",
+        },
+        {
+          image: ivAbbNashik2018,
+          caption:
+            "Third Year BE Electrical Engineering students along with faculty members visited M/s. ABB Ltd. Nashik on 27th August 2018",
+          location: "Nashik",
+          date: "27 August 2018",
+        },
+        {
+          image: ivPowerinstNashik2018,
+          caption:
+            "Third Year BE Electrical Engineering students along with faculty members visited M/s. Powerinst Pvt. Ltd. Nashik on 27th August 2018",
+          location: "Nashik",
+          date: "27 August 2018",
+        },
+        {
+          image: ivLegrandNashik2018,
+          caption:
+            "Third Year BE Electrical Engineering students along with faculty members visited M/s Legrand (India) Pvt. Ltd. Nashik on 28th August 2018",
+          location: "Nashik",
+          date: "28 August 2018",
+        },
+        {
+          image: ivParasThermal2018,
+          caption:
+            "Second Year BE Electrical Engineering students visited Thermal Power Station Paras on 12th September 2018",
+          location: "Paras",
+          date: "12 September 2018",
+        },
+        {
+          image: ivVishwajeetNashik,
+          caption:
+            "Discussion with Expert from Industries during visit at Vishwajeet Capacitors Pvt Ltd. Nashik",
+          location: "Nashik",
+          date: "2017-18",
+        },
+        {
+          image: ivAdaniMundra2016,
+          caption:
+            "Industrial visit at Adani Power Plant, Mundra Gujarat on 4-6 March 2016",
+          location: "Mundra, Gujarat",
+          date: "4-6 March 2016",
+        },
+      ];
+
+      const industrialVisitTable = [
+        {
+          sn: 1,
+          industry: "Adani Dahanu Thermal Power Station, Mumbai",
+          class: "Third Year",
+          date: "26/06/2025",
+          students: "-",
+        },
+        {
+          sn: 2,
+          industry: "400 KV Transmission Station, APATAPA Akola",
+          class: "Third Year",
+          date: "27/03/2025",
+          students: "-",
+        },
+        {
+          sn: 3,
+          industry: "Avaada Energy 100 MW Solar Power Plant, Balapur",
+          class: "Third Year",
+          date: "27/03/2025",
+          students: "-",
+        },
+        {
+          sn: 4,
+          industry: "TATA Power Shahad, Mumbai",
+          class: "Second Year",
+          date: "27/11/2024",
+          students: "-",
+        },
+        {
+          sn: 5,
+          industry: "Adani Dahanu Thermal Power Station, Mumbai",
+          class: "Third Year",
+          date: "08/06/2024",
+          students: "-",
+        },
+        {
+          sn: 6,
+          industry: "TATA Power, Mumbai",
+          class: "Third Year",
+          date: "11/12/2023",
+          students: "-",
+        },
+        {
+          sn: 7,
+          industry: "Thermal Power Station, Paras",
+          class: "Second Year",
+          date: "26/10/2023",
+          students: "-",
+        },
+        {
+          sn: 8,
+          industry: "Adani Power Station, Mumbai",
+          class: "Third Year",
+          date: "2022-23",
+          students: "-",
+        },
+        {
+          sn: 9,
+          industry: "Thermal Power Station, Paras",
+          class: "Second Year",
+          date: "28/11/2022",
+          students: "-",
+        },
+        {
+          sn: 10,
+          industry: "M/s. ABB Ltd., Nashik",
+          class: "Third Year",
+          date: "27/08/2018",
+          students: "-",
+        },
+        {
+          sn: 11,
+          industry: "M/s. Powerinst Pvt. Ltd., Nashik",
+          class: "Third Year",
+          date: "27/08/2018",
+          students: "-",
+        },
+        {
+          sn: 12,
+          industry: "M/s Legrand (India) Pvt. Ltd., Nashik",
+          class: "Third Year",
+          date: "28/08/2018",
+          students: "-",
+        },
+        {
+          sn: 13,
+          industry: "Thermal Power Station, Paras",
+          class: "Second Year",
+          date: "12/09/2018",
+          students: "-",
+        },
+        {
+          sn: 14,
+          industry: "Vishwajeet Capacitors Pvt Ltd., Nashik",
+          class: "Third Year",
+          date: "2017-18",
+          students: "-",
+        },
+        {
+          sn: 15,
+          industry: "Adani Power Plant, Mundra, Gujarat",
+          class: "Third Year",
+          date: "04-06/03/2016",
+          students: "-",
+        },
+      ];
+
+      return (
+        <div className="space-y-10">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h3 className="text-3xl font-bold text-gray-800 mb-3">
+              Industrial Visits
+            </h3>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Hands-on exposure to industry practices, technologies, and work
+              culture through structured visits to leading power sector
+              organizations and industries.
+            </p>
+          </div>
+
+          {/* Photo Gallery Section */}
           <div className="space-y-6">
-            {t("innovativePractices", defaultInnovativePractices).map(
-              (practice, i) => (
-                <div
-                  key={i}
-                  className="border-l-4 border-ssgmce-blue pl-4 py-2 group relative"
+            <div className="flex items-center gap-3 mb-4">
+              <FaImages className="text-2xl text-ssgmce-blue" />
+              <h4 className="text-xl font-bold text-gray-800">Visit Gallery</h4>
+              <span className="text-sm font-medium text-ssgmce-blue bg-blue-50 px-3 py-1 rounded-full">
+                {industrialVisitPhotos.length} Photos
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {industrialVisitPhotos.map((photo, idx) => (
+                <motion.div
+                  key={idx}
+                  whileHover={{ y: -4 }}
+                  className="group relative bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setIvLightbox(idx)}
                 >
-                  <h4 className="text-lg font-bold text-gray-800 mb-1">
-                    <EditableText
-                      value={practice.title}
-                      onSave={(val) => {
-                        const updated = [
-                          ...t(
-                            "innovativePractices",
-                            defaultInnovativePractices,
-                          ),
-                        ];
-                        updated[i].title = val;
-                        updateField("innovativePractices", updated);
-                      }}
+                  <div className="aspect-[4/3] overflow-hidden bg-gray-100">
+                    <img
+                      src={photo.image}
+                      alt={photo.caption}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
                     />
-                  </h4>
-                  <div className="text-gray-600 leading-relaxed">
-                    <EditableText
-                      value={practice.description}
-                      onSave={(val) => {
-                        const updated = [
-                          ...t(
-                            "innovativePractices",
-                            defaultInnovativePractices,
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                      <FaSearchPlus className="absolute top-3 right-3 text-white text-lg drop-shadow" />
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-sm text-gray-700 leading-relaxed line-clamp-2">
+                      {photo.caption}
+                    </p>
+                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <FaMapMarkerAlt className="text-red-400" />
+                        {photo.location}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <FaCalendarAlt className="text-blue-400" />
+                        {photo.date}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Lightbox */}
+          <AnimatePresence>
+            {ivLightbox !== null && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4"
+                onClick={() => setIvLightbox(null)}
+              >
+                <button
+                  className="absolute top-4 right-4 text-white/80 hover:text-white text-3xl z-10"
+                  onClick={() => setIvLightbox(null)}
+                >
+                  <FaTimes />
+                </button>
+
+                {/* Previous */}
+                <button
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-3xl bg-black/30 hover:bg-black/50 rounded-full w-12 h-12 flex items-center justify-center transition-colors z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIvLightbox((prev) =>
+                      prev === 0 ? industrialVisitPhotos.length - 1 : prev - 1,
+                    );
+                  }}
+                >
+                  <FaChevronLeft />
+                </button>
+
+                {/* Image */}
+                <motion.div
+                  key={ivLightbox}
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  className="max-w-5xl max-h-[85vh] flex flex-col items-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img
+                    src={industrialVisitPhotos[ivLightbox].image}
+                    alt={industrialVisitPhotos[ivLightbox].caption}
+                    className="max-h-[70vh] max-w-full object-contain rounded-lg shadow-2xl"
+                  />
+                  <div className="mt-4 text-center max-w-2xl">
+                    <p className="text-white/90 text-sm leading-relaxed">
+                      {industrialVisitPhotos[ivLightbox].caption}
+                    </p>
+                    <div className="flex items-center justify-center gap-4 mt-2 text-white/60 text-xs">
+                      <span className="flex items-center gap-1">
+                        <FaMapMarkerAlt className="text-red-400" />
+                        {industrialVisitPhotos[ivLightbox].location}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <FaCalendarAlt className="text-blue-400" />
+                        {industrialVisitPhotos[ivLightbox].date}
+                      </span>
+                      <span className="text-white/40">
+                        {ivLightbox + 1} / {industrialVisitPhotos.length}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Next */}
+                <button
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-3xl bg-black/30 hover:bg-black/50 rounded-full w-12 h-12 flex items-center justify-center transition-colors z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIvLightbox((prev) =>
+                      prev === industrialVisitPhotos.length - 1 ? 0 : prev + 1,
+                    );
+                  }}
+                >
+                  <FaChevronRight />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Table Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-4">
+              <FaIndustry className="text-2xl text-ssgmce-blue" />
+              <h4 className="text-xl font-bold text-gray-800">Visit Details</h4>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-ssgmce-blue text-white">
+                    <tr>
+                      <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                        S.N.
+                      </th>
+                      <th className="px-6 py-4 text-left font-bold">
+                        Name of Industry Visited
+                      </th>
+                      <th className="px-6 py-4 text-left font-bold">Class</th>
+                      <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                        Date
+                      </th>
+                      <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                        No of Students
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {industrialVisitTable.map((visit, idx) => (
+                      <tr
+                        key={idx}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 font-medium text-gray-900">
+                          {String(visit.sn).padStart(2, "0")}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">
+                          {visit.industry}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">
+                          {visit.class}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                          {visit.date}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700 text-center font-medium">
+                          {visit.students}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    })(),
+    mous: (
+      <div className="space-y-8">
+        <div className="text-center mb-8">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">MoUs</h3>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Strategic partnerships with industry leaders to enhance learning
+            outcomes and provide students with real-world exposure.
+          </p>
+        </div>
+
+        {/* Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-ssgmce-blue text-white">
+                <tr>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold">
+                    Name of the Organization
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    MOU Signing Date
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    MOU Copy / Report
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {[
+                  {
+                    no: "1.",
+                    org: "I Robots Innovative Solutions, Pune",
+                    date: "05-Apr-2025",
+                    report:
+                      "/uploads/documents/electrical_mous/MOU_IRobots_Innovative_2025.pdf",
+                  },
+                  {
+                    no: "2.",
+                    org: "TATA Power Skill Development Institute (TPSDI), Shahad Mumbai",
+                    date: "21-Jun-2024",
+                    report:
+                      "/uploads/documents/electrical_mous/MOU_TPSDI_Mumbai_2024.pdf",
+                  },
+                  {
+                    no: "3.",
+                    org: "Adani Electricity Mumbai Limited, ADTPS, Dahanu",
+                    date: "01-Jun-2024",
+                    report:
+                      "/uploads/documents/electrical_mous/MOU_Adani_ADTPS_Dahanu_2024.pdf",
+                  },
+                  {
+                    no: "4.",
+                    org: "Mew Technology, Bengaluru",
+                    date: "04-Mar-2024",
+                    report:
+                      "/uploads/documents/electrical_mous/MOU_Mew_Technology_Bengaluru_2024.pdf",
+                  },
+                  {
+                    no: "5.",
+                    org: "Samarthan System Private Limited, Pune",
+                    date: "10-Jan-2024",
+                    report:
+                      "/uploads/documents/electrical_mous/MOU_Samarthan_System_Pune_2024.pdf",
+                  },
+                  {
+                    no: "6.",
+                    org: "SCR Elektronics, Mumbai",
+                    date: "08-Feb-2023",
+                    report:
+                      "/uploads/documents/electrical_mous/MOU_SCR_Elektronics_Mumbai_2023.pdf",
+                  },
+                  {
+                    no: "7.",
+                    org: "Mitsubishi Electric India Private Limited",
+                    date: "06-Jan-2023",
+                    report:
+                      "/uploads/documents/electrical_mous/MOU_Mitsubishi_Electric_2023.pdf",
+                  },
+                  {
+                    no: "8.",
+                    org: "Adani Electricity Mumbai Limited, ADTPS, Dahanu",
+                    date: "12-Feb-2022",
+                    report:
+                      "/uploads/documents/electrical_mous/MOU_Adani_ADTPS_Dahanu_2022.pdf",
+                  },
+                  {
+                    no: "9.",
+                    org: "ISIE INDIA, Noida",
+                    date: "18-Jan-2022",
+                    report:
+                      "/uploads/documents/electrical_mous/MOU_ISIE_India_Noida_2022.pdf",
+                  },
+                  {
+                    no: "10.",
+                    org: "VI Solutions, Bangalore",
+                    date: "28-Jan-2021",
+                    report:
+                      "/uploads/documents/electrical_mous/MOU_VI_Solutions_Bangalore_2021.pdf",
+                  },
+                  {
+                    no: "11.",
+                    org: "SCR Elektronics, Mumbai",
+                    date: "08-Feb-2020",
+                    report:
+                      "/uploads/documents/electrical_mous/MOU_SCR_Elektronics_Mumbai_2020.pdf",
+                  },
+                  {
+                    no: "12.",
+                    org: "TPSDI, Shahad Mumbai",
+                    date: "08-Sep-2018",
+                    report:
+                      "/uploads/documents/electrical_mous/MOU_TPSDI_Mumbai_2018.pdf",
+                  },
+                ].map((mou, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-900">
+                      {mou.no}
+                    </td>
+                    <td className="px-6 py-4 text-gray-700">{mou.org}</td>
+                    <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                      {mou.date}
+                    </td>
+                    <td className="px-6 py-4">
+                      <a
+                        href={mou.report}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-orange font-semibold text-sm transition-colors"
+                      >
+                        <FaFileAlt className="mr-1.5" />
+                        View Document
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    ),
+
+    patents: (
+      <div className="space-y-8">
+        <div className="flex flex-wrap space-x-1 bg-gray-100 p-1 rounded-lg w-fit mb-6">
+          {["patents", "publications", "copyrights", "books"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setPatentsTab(tab)}
+              className={`px-4 py-2 text-sm font-bold rounded-md transition-all capitalize ${patentsTab === tab ? "bg-white text-ssgmce-blue shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              {tab === "copyrights"
+                ? "Copyrights"
+                : tab === "books"
+                  ? "Books"
+                  : tab === "patents"
+                    ? "Patents"
+                    : "Publications"}
+            </button>
+          ))}
+        </div>
+
+        <AnimatePresence mode="wait">
+          {patentsTab === "patents" ? (
+            <motion.div
+              key="patents"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaLightbulb className="text-yellow-500 mr-2" />
+                  Patents Granted &amp; Published
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {patentsYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setPatentsYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        patentsYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultElectricalPatents[patentsYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No patents recorded for {patentsYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider w-1/3">
+                            Title of Invention
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Application No.
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Inventors
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultElectricalPatents[patentsYear] || []).map(
+                          (pat, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-green-50/30 transition-colors group"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400 group-hover:text-green-600">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {pat.title}
+                                <span
+                                  className={`ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${pat.status === "Granted" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}
+                                >
+                                  {pat.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 font-mono text-xs text-gray-500 whitespace-nowrap text-right">
+                                {pat.id}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 italic text-right">
+                                {pat.inventors}
+                              </td>
+                            </tr>
                           ),
-                        ];
-                        updated[i].description = val;
-                        updateField("innovativePractices", updated);
-                      }}
-                      multiline
-                    />
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-              ),
-            )}
+              )}
+            </motion.div>
+          ) : patentsTab === "publications" ? (
+            <motion.div
+              key="publications"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaChartLine className="text-ssgmce-orange mr-2" />
+                  Research Publications
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {patentsYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setPatentsYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        patentsYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultElectricalPublications[patentsYear] || []).length ===
+              0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No publications recorded for {patentsYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Paper
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Authors
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Journal/Conference
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Link
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultElectricalPublications[patentsYear] || []).map(
+                          (pub, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-indigo-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {pub.title}
+                              </td>
+                              <td className="px-6 py-4 text-gray-600">
+                                {pub.authors}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 italic text-xs">
+                                {pub.journal}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                {pub.link ? (
+                                  <a
+                                    href={pub.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-dark-blue font-bold px-3 py-1 bg-blue-50 rounded-lg transition-colors border border-blue-100"
+                                  >
+                                    View{" "}
+                                    <FaExternalLinkAlt className="ml-2 text-[10px]" />
+                                  </a>
+                                ) : (
+                                  <span className="text-gray-400 text-xs">
+                                    —
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : patentsTab === "copyrights" ? (
+            <motion.div
+              key="copyrights"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaAward className="text-purple-500 mr-2" />
+                  Copyrights
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {patentsYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setPatentsYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        patentsYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultElectricalCopyrights[patentsYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No copyrights recorded for {patentsYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Name of Faculty
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Work
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultElectricalCopyrights[patentsYear] || []).map(
+                          (cr, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-purple-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {cr.name}
+                              </td>
+                              <td className="px-6 py-4 text-gray-700">
+                                {cr.title}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700">
+                                  {cr.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : patentsTab === "books" ? (
+            <motion.div
+              key="books"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaProjectDiagram className="text-teal-500 mr-2" />
+                  Books &amp; Book Chapters Published
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {patentsYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setPatentsYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        patentsYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultElectricalBooks[patentsYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No books published for {patentsYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Author(s)
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Publisher
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            ISBN
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultElectricalBooks[patentsYear] || []).map(
+                          (book, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-teal-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {book.name}
+                                {book.coAuthors ? `, ${book.coAuthors}` : ""}
+                              </td>
+                              <td className="px-6 py-4 text-gray-700">
+                                {book.title}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 italic text-xs">
+                                {book.details}
+                              </td>
+                              <td className="px-6 py-4 font-mono text-xs text-gray-500 text-right">
+                                {book.isbn || "—"}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </div>
+    ),
+    internships: (
+      <div className="space-y-8">
+        <div className="text-center mb-8">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">
+            <EditableText
+              value={t("internshipsTitle", "Internship and Training Record")}
+              onSave={(val) => updateField("internshipsTitle", val)}
+            />
+          </h3>
+          <div className="text-gray-600 max-w-2xl mx-auto">
+            <EditableText
+              value={t(
+                "internshipsSubtitle",
+                "Comprehensive internship and industrial training records providing students with hands-on industry experience and professional development.",
+              )}
+              onSave={(val) => updateField("internshipsSubtitle", val)}
+              multiline
+            />
           </div>
-          {isEditing && (
-            <div className="mt-6 pt-4 border-t border-gray-100">
-              <button
-                onClick={() => {
-                  const updated = [
-                    ...t("innovativePractices", defaultInnovativePractices),
-                    { title: "New Practice", description: "Description" },
-                  ];
-                  updateField("innovativePractices", updated);
-                }}
-                className="px-4 py-2 bg-ssgmce-blue text-white rounded hover:bg-ssgmce-dark-blue transition-colors text-sm"
-              >
-                + Add Practice
-              </button>
-            </div>
-          )}
+        </div>
+
+        {/* Year Filter */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex bg-gray-100 rounded-lg p-1 shadow-sm">
+            <button
+              onClick={() => setInternshipYear("2024-25")}
+              className={`px-6 py-2 text-sm font-bold rounded-md transition-all ${
+                internshipYear === "2024-25"
+                  ? "bg-white text-ssgmce-blue shadow-md"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Session: 2024-25
+            </button>
+            <button
+              onClick={() => setInternshipYear("2023-24")}
+              className={`px-6 py-2 text-sm font-bold rounded-md transition-all ${
+                internshipYear === "2023-24"
+                  ? "bg-white text-ssgmce-blue shadow-md"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Session: 2023-24
+            </button>
+          </div>
+        </div>
+
+        {/* Detail Report Download */}
+        <div className="flex justify-center mb-4">
+          <a
+            href={
+              internshipYear === "2024-25"
+                ? "/uploads/documents/electrical_internships/Electrical_Internship_2024-25.pdf"
+                : "/uploads/documents/electrical_internships/Electrical_Internship_2023-24.pdf"
+            }
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-ssgmce-blue text-white rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium text-sm"
+          >
+            <FaDownload className="text-sm" />
+            Download Detail Report ({internshipYear})
+          </a>
+        </div>
+
+        {/* Internship Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-ssgmce-blue text-white">
+                <tr>
+                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                    Sr. No.
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                    SIS ID
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold">
+                    Name of Student
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold">Class</th>
+                  <th className="px-3 py-4 text-left font-bold">
+                    Training / Internship
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold">
+                    Name of Company
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold">Duration</th>
+                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                    Start Date
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                    End Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {(
+                  t(
+                    `internships.${internshipYear}`,
+                    defaultElectricalInternships[internshipYear],
+                  ) || []
+                ).map((intern, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-3 py-3 font-medium text-gray-900">
+                      {intern.no}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700">{intern.sis}</td>
+                    <td className="px-3 py-3 text-gray-700">{intern.name}</td>
+                    <td className="px-3 py-3 text-gray-700 text-center whitespace-nowrap">
+                      {intern.class}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700 text-xs">
+                      {intern.training}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700 text-xs">
+                      {intern.org}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
+                      {intern.duration}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
+                      {intern.startDate}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
+                      {intern.endDate}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Summary */}
+        <div className="text-center text-sm text-gray-500 mt-4">
+          Total Records:{" "}
+          {
+            (
+              t(
+                `internships.${internshipYear}`,
+                defaultElectricalInternships[internshipYear],
+              ) || []
+            ).length
+          }{" "}
+          students
         </div>
       </div>
     ),
