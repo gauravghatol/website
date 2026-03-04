@@ -5536,23 +5536,6 @@ const IT = () => {
           </div>
         </div>
 
-        {/* Detail Report Download */}
-        <div className="flex justify-center mb-4">
-          <a
-            href={
-              internshipYear === "2024-25"
-                ? "/uploads/documents/it_internships/IT_Internship_2024-25.pdf"
-                : "/uploads/documents/it_internships/IT_Internship_2023-24.pdf"
-            }
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-ssgmce-blue text-white rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium text-sm"
-          >
-            <FaDownload className="text-sm" />
-            Download Detail Report ({internshipYear})
-          </a>
-        </div>
-
         {/* Internship Table */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
