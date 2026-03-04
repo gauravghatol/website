@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import GenericPage from "../../components/GenericPage";
 import { useDepartmentData } from "../../hooks/useDepartmentData";
 import EditableText from "../../components/admin/EditableText";
@@ -23,6 +24,13 @@ import {
   FaProjectDiagram,
   FaCalendarAlt,
   FaDownload,
+  FaUsers,
+  FaUserGraduate,
+  FaChalkboardTeacher,
+  FaTimes,
+  FaChevronLeft,
+  FaChevronRight,
+  FaExternalLinkAlt,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -49,6 +57,8 @@ import {
   defaultFaculty,
   defaultPatents,
   defaultPublications,
+  defaultCopyrights,
+  defaultBooks,
   defaultNewsletters,
   defaultCourseMaterials,
   defaultInnovativePractices,
@@ -104,11 +114,16 @@ const CSE = () => {
   const [showAllPos, setShowAllPos] = useState(false);
   const [expandedSemester, setExpandedSemester] = useState(null);
   const [researchTab, setResearchTab] = useState("patents");
+  const researchYears = ["2024-25", "2023-24", "2022-23", "2021-22", "2020-21", "2019-20", "2018-19"];
   const [projectYear, setProjectYear] = useState("2024-25");
   const [researchYear, setResearchYear] = useState("2024-25");
   const [placementYear, setPlacementYear] = useState(null);
   const [internshipYear, setInternshipYear] = useState("2024-25");
   const [prideTab, setPrideTab] = useState("gate");
+
+  // State for Curricular Activities section
+  const [activitiesVisible, setActivitiesVisible] = useState(6);
+  const [lightboxActivity, setLightboxActivity] = useState(null);
 
   // Load department data (works in both edit and public view modes)
   const {
@@ -122,18 +137,6 @@ const CSE = () => {
   // Helper for array updates
   const updateField = (path, value) => {
     updateData(path, value);
-  };
-
-  const updateLab = (index, field, value) => {
-    const newLabs = JSON.parse(JSON.stringify(t("laboratories", defaultLabs)));
-    newLabs[index][field] = value;
-    updateData("laboratories", newLabs);
-  };
-
-  const updateLabSystem = (labIndex, sysIndex, field, value) => {
-    const newLabs = JSON.parse(JSON.stringify(t("laboratories", defaultLabs)));
-    newLabs[labIndex].systems[sysIndex][field] = value;
-    updateData("laboratories", newLabs);
   };
 
   const updateArrayString = (key, defaultArr, index, value) => {
@@ -242,6 +245,10 @@ const CSE = () => {
     if (activeTab === "student-projects") {
       window.scrollTo(0, 0);
       setProjectYear("2024-25");
+    }
+    if (activeTab === "activities") {
+      setActivitiesVisible(6);
+      setLightboxActivity(null);
     }
   }, [activeTab]);
 
@@ -935,182 +942,144 @@ const CSE = () => {
     ),
     laboratories: (
       <div className="space-y-8">
-        <div className="text-center max-w-3xl mx-auto mb-10">
-          <h3 className="text-3xl font-bold text-gray-800 mb-6">
-            Infrastructure and Laboratories
-          </h3>
-          <p className="text-gray-600">
-            Our well-equipped laboratories feature high-end configurations to
-            support advanced curriculum requirements and research initiatives.
-          </p>
-        </div>
+        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+          Infrastructure and Laboratories
+        </h3>
 
-        <div className="space-y-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          {/* Lab Entries */}
           {t("laboratories", defaultLabs).map((lab, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all"
+              className="grid md:grid-cols-12 border-b border-gray-200 last:border-b-0 relative"
             >
-              <div className="grid md:grid-cols-[350px,1fr] gap-0">
-                {/* Laboratory Photo */}
-                <div className="bg-gray-100 flex items-center justify-center p-8 border-r border-gray-200">
-                  <div className="text-center w-full">
-                    {/* Editable Image */}
-                    <div className="mb-4">
-                      <EditableImage
-                        src={lab.photo}
-                        onSave={(url) => updateLab(index, "photo", url)}
-                        alt={lab.name}
-                        className="w-full h-auto rounded"
+              {/* Delete Button */}
+              {isEditing && (
+                <button
+                  onClick={() => {
+                    const updated = t("laboratories", defaultLabs).filter(
+                      (_, i) => i !== index,
+                    );
+                    updateField("laboratories", updated);
+                  }}
+                  className="absolute top-2 right-2 z-10 bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md hover:bg-red-600 transition-colors"
+                  title="Delete laboratory"
+                >
+                  Delete Lab
+                </button>
+              )}
+
+              {/* Lab Photo Column */}
+              <div className="md:col-span-5 bg-gray-50 p-6 border-r border-gray-100">
+                {lab.image ? (
+                  <EditableImage
+                    src={lab.image}
+                    onSave={(url) => {
+                      const updated = [...t("laboratories", defaultLabs)];
+                      updated[index].image = url;
+                      updateField("laboratories", updated);
+                    }}
+                    className="aspect-video w-full object-cover rounded-lg"
+                  />
+                ) : (
+                  <div
+                    className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:from-gray-300 hover:to-gray-400 transition-colors"
+                    onClick={() => {
+                      if (isEditing) {
+                        const url = prompt("Enter image URL:");
+                        if (url) {
+                          const updated = [...t("laboratories", defaultLabs)];
+                          updated[index].image = url;
+                          updateField("laboratories", updated);
+                        }
+                      }
+                    }}
+                  >
+                    <span className="text-6xl">🖥️</span>
+                    {isEditing && (
+                      <span className="absolute text-xs text-gray-600 mt-20">
+                        Click to add image
+                      </span>
+                    )}
+                  </div>
+                )}
+                <h4 className="font-bold text-gray-800 text-center mt-4">
+                  <EditableText
+                    value={lab.name}
+                    onSave={(val) => {
+                      const updated = [...t("laboratories", defaultLabs)];
+                      updated[index].name = val;
+                      updateField("laboratories", updated);
+                    }}
+                  />
+                </h4>
+              </div>
+
+              {/* Lab Details Column */}
+              <div className="md:col-span-7 p-6">
+                <div className="space-y-4">
+                  <div>
+                    <h5 className="font-semibold text-red-600 text-sm mb-2">
+                      Computer Systems / Configuration:
+                    </h5>
+                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                      <EditableText
+                        value={lab.resources}
+                        onSave={(val) => {
+                          const updated = [...t("laboratories", defaultLabs)];
+                          updated[index].resources = val;
+                          updateField("laboratories", updated);
+                        }}
+                        multiline
                       />
                     </div>
-                    {/* Placeholder Logic if needed, but EditableImage handles src="" */}
-                    {(!lab.photo || lab.photo === "" || lab.photo === "??") && (
-                      <div className="text-8xl mb-4 text-gray-300">??</div>
-                    )}
-                    <div className="text-sm font-semibold text-gray-600">
-                      Laboratory Photo
-                    </div>
                   </div>
-                </div>
-
-                {/* Laboratory Details */}
-                <div className="p-6 md:p-8">
-                  <h4 className="text-xl font-bold text-red-600 mb-4">
-                    <EditableText
-                      value={lab.name}
-                      onSave={(v) => updateLab(index, "name", v)}
-                    />
-                  </h4>
-
-                  <div className="space-y-4">
-                    {/* Computer Systems */}
+                  {(lab.facilities || isEditing) && (
                     <div>
-                      <p className="font-bold text-gray-900 mb-2 flex gap-2">
-                        COMPUTER SYSTEMS: Quantity-
+                      <h5 className="font-semibold text-red-600 text-sm mb-2">
+                        Other Resources / UPS:
+                      </h5>
+                      <div className="text-gray-700 text-sm leading-relaxed">
                         <EditableText
-                          value={lab.quantity}
-                          onSave={(v) => updateLab(index, "quantity", v)}
-                          className="w-16 inline-block border-b border-gray-300"
-                        />
-                      </p>
-                      <div className="space-y-3">
-                        {lab.systems &&
-                          lab.systems.map((sys, idx) => (
-                            <div
-                              key={idx}
-                              className="text-sm text-gray-700 leading-relaxed border-l-2 border-gray-200 pl-2"
-                            >
-                              <span className="font-semibold block text-xs uppercase text-gray-500 mb-1">
-                                System {idx + 1}
-                              </span>
-                              <div className="mb-1">
-                                <span className="font-semibold">Config: </span>
-                                <EditableText
-                                  value={sys.config || ""}
-                                  onSave={(v) =>
-                                    updateLabSystem(index, idx, "config", v)
-                                  }
-                                  multiline
-                                />
-                              </div>
-                              {sys.cores && (
-                                <div className="mb-1">
-                                  <span className="font-semibold">Cores: </span>
-                                  <EditableText
-                                    value={sys.cores}
-                                    onSave={(v) =>
-                                      updateLabSystem(index, idx, "cores", v)
-                                    }
-                                  />
-                                </div>
-                              )}
-                              {sys.specs && (
-                                <div>
-                                  <span className="font-semibold">Specs: </span>
-                                  <EditableText
-                                    value={sys.specs}
-                                    onSave={(v) =>
-                                      updateLabSystem(index, idx, "specs", v)
-                                    }
-                                    multiline
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          ))}
-
-                        {lab.systemConfig2 && (
-                          <div className="text-sm text-gray-700 leading-relaxed mt-2 pt-2 border-t border-gray-100">
-                            <span className="font-semibold">
-                              Additional Config:{" "}
-                            </span>
-                            <EditableText
-                              value={lab.systemConfig2}
-                              onSave={(v) =>
-                                updateLab(index, "systemConfig2", v)
-                              }
-                              multiline
-                            />
-                          </div>
-                        )}
-                        {lab.quantity2 && (
-                          <p className="text-sm text-gray-700 mt-1">
-                            <span className="font-semibold">
-                              Additional Quantity:
-                            </span>{" "}
-                            <EditableText
-                              value={lab.quantity2}
-                              onSave={(v) => updateLab(index, "quantity2", v)}
-                              className="w-16 inline-block"
-                            />
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Other Resources */}
-                    <div>
-                      <p className="font-bold text-gray-900 mb-1">
-                        Other Resources:
-                      </p>
-                      <div className="text-sm text-gray-700 leading-relaxed">
-                        <EditableText
-                          value={lab.otherResources}
-                          onSave={(v) => updateLab(index, "otherResources", v)}
+                          value={lab.facilities || "Additional facilities..."}
+                          onSave={(val) => {
+                            const updated = [...t("laboratories", defaultLabs)];
+                            updated[index].facilities = val;
+                            updateField("laboratories", updated);
+                          }}
                           multiline
                         />
                       </div>
-                      {lab.kits && (
-                        <div className="text-sm text-gray-700 leading-relaxed mt-2">
-                          <span className="font-bold">Kits: </span>
-                          <EditableText
-                            value={lab.kits}
-                            onSave={(v) => updateLab(index, "kits", v)}
-                            multiline
-                          />
-                        </div>
-                      )}
                     </div>
-
-                    {/* UPS */}
-                    {lab.ups && (
-                      <div>
-                        <div className="font-bold text-gray-900 mb-1">UPS:</div>
-                        <EditableText
-                          value={lab.ups}
-                          onSave={(v) => updateLab(index, "ups", v)}
-                        />
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
+
+          {/* Add New Lab Button */}
+          {isEditing && (
+            <div className="p-6 bg-gray-50 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  const updated = [
+                    ...t("laboratories", defaultLabs),
+                    {
+                      name: "New Laboratory",
+                      image: "",
+                      resources:
+                        "Computer systems and configuration details...",
+                      facilities: "Other resources and UPS details...",
+                    },
+                  ];
+                  updateField("laboratories", updated);
+                }}
+                className="w-full py-3 px-4 bg-ssgmce-blue text-white rounded-lg hover:bg-ssgmce-dark-blue transition-colors font-medium"
+              >
+                + Add New Laboratory
+              </button>
+            </div>
+          )}
         </div>
       </div>
     ),
@@ -1571,157 +1540,392 @@ const CSE = () => {
 
     activities: (
       <div className="space-y-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="flex items-center gap-3 mb-8">
-            <FaCalendarAlt className="text-4xl text-ssgmce-blue" />
-            <h3 className="text-3xl font-bold text-gray-800">
-              <EditableText
-                value={t("activitiesTitle", "Curricular Activities")}
-                onSave={(val) => updateData("activitiesTitle", val)}
-              />
-            </h3>
-          </div>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+            <EditableText
+              value={t("activitiesTitle", "Curricular Activities")}
+              onSave={(val) => updateData("activitiesTitle", val)}
+            />
+          </h3>
+          <span className="hidden sm:inline-block text-sm text-gray-500 bg-gray-100 px-4 py-1.5 rounded-full">
+            {t("activities", defaultActivities).length} Activities
+          </span>
+        </div>
 
-          <div className="space-y-6">
-            {t("activities", defaultActivities).map((activity, idx) => (
+        {/* Activity List */}
+        <div className="space-y-5">
+          {t("activities", defaultActivities)
+            .slice(0, activitiesVisible)
+            .map((activity, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border-l-4 border-ssgmce-orange"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.03, duration: 0.35 }}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden"
               >
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="bg-blue-100 rounded-full p-3">
-                      <FaCalendarAlt className="text-ssgmce-blue text-xl" />
-                    </div>
+                <div className="flex flex-col sm:flex-row">
+                  {/* Image */}
+                  <div
+                    className="sm:w-72 flex-shrink-0 cursor-pointer"
+                    onClick={() => setLightboxActivity(idx)}
+                  >
+                    {activity.image ? (
+                      <img
+                        src={activity.image}
+                        alt={activity.title}
+                        className="w-full h-48 sm:h-full object-contain bg-gray-50"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-48 sm:h-full flex items-center justify-center bg-gray-50">
+                        <FaCalendarAlt className="text-4xl text-gray-300" />
+                      </div>
+                    )}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full text-center">
-                        <EditableText
-                          value={activity.date}
-                          onSave={(val) => updateActivity(idx, "date", val)}
-                        />
-                      </span>
-                    </div>
-                    <h4 className="text-lg font-bold text-gray-800 mb-2">
+
+                  {/* Details */}
+                  <div className="flex-1 p-5 sm:p-6">
+                    {/* Date */}
+                    <span className="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded mb-3">
+                      <EditableText
+                        value={activity.date}
+                        onSave={(val) => updateActivity(idx, "date", val)}
+                      />
+                    </span>
+
+                    {/* Title */}
+                    <h4 className="text-lg font-bold text-gray-800 mb-4 leading-snug">
                       <EditableText
                         value={activity.title}
                         onSave={(val) => updateActivity(idx, "title", val)}
                         multiline
                       />
                     </h4>
-                    <div className="space-y-2 text-sm text-gray-600">
-                      <p>
-                        <span className="font-semibold text-gray-700">
-                          Participants:
-                        </span>{" "}
-                        <EditableText
-                          value={activity.participants}
-                          onSave={(val) =>
-                            updateActivity(idx, "participants", val)
-                          }
-                        />
-                      </p>
-                      <p>
-                        <span className="font-semibold text-gray-700">
-                          Organized by:
-                        </span>{" "}
-                        <EditableText
-                          value={activity.organizer}
-                          onSave={(val) =>
-                            updateActivity(idx, "organizer", val)
-                          }
-                          multiline
-                        />
-                      </p>
-                      {(activity.resource || isEditing) && (
-                        <p>
-                          <span className="font-semibold text-gray-700">
-                            Resource Person:
-                          </span>{" "}
+
+                    {/* Meta Info */}
+                    <div className="space-y-2.5 text-sm text-gray-600">
+                      <div className="flex items-start gap-2.5">
+                        <FaUsers className="text-blue-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="font-medium text-gray-700">
+                            Participants:{" "}
+                          </span>
                           <EditableText
-                            value={
-                              activity.resource ||
-                              (isEditing ? "Add Resource Person" : "")
-                            }
+                            value={activity.participants}
                             onSave={(val) =>
-                              updateActivity(idx, "resource", val)
+                              updateActivity(idx, "participants", val)
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2.5">
+                        <FaUserGraduate className="text-orange-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="font-medium text-gray-700">
+                            Organized by:{" "}
+                          </span>
+                          <EditableText
+                            value={activity.organizer}
+                            onSave={(val) =>
+                              updateActivity(idx, "organizer", val)
                             }
                             multiline
                           />
-                        </p>
+                        </div>
+                      </div>
+
+                      {(activity.resource || isEditing) && (
+                        <div className="flex items-start gap-2.5">
+                          <FaChalkboardTeacher className="text-green-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="font-medium text-gray-700">
+                              Resource Person:{" "}
+                            </span>
+                            <EditableText
+                              value={
+                                activity.resource ||
+                                (isEditing ? "Add Resource Person" : "")
+                              }
+                              onSave={(val) =>
+                                updateActivity(idx, "resource", val)
+                              }
+                              multiline
+                            />
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
               </motion.div>
             ))}
+        </div>
+
+        {/* Load More / Show Less */}
+        {t("activities", defaultActivities).length > 6 && (
+          <div className="flex justify-center pt-2">
+            <button
+              onClick={() =>
+                setActivitiesVisible((prev) =>
+                  prev >= t("activities", defaultActivities).length
+                    ? 6
+                    : Math.min(
+                        prev + 6,
+                        t("activities", defaultActivities).length,
+                      ),
+                )
+              }
+              className="px-6 py-2.5 border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-600 hover:text-white transition-colors duration-200 text-sm"
+            >
+              {activitiesVisible >= t("activities", defaultActivities).length
+                ? "Show Less"
+                : `Load More (${t("activities", defaultActivities).length - activitiesVisible} more)`}
+            </button>
           </div>
-        </motion.div>
+        )}
+
+        {/* Lightbox Modal */}
+        <AnimatePresence>
+          {lightboxActivity !== null &&
+            (() => {
+              const activity = t("activities", defaultActivities)[
+                lightboxActivity
+              ];
+              if (!activity) return null;
+              return (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+                  onClick={() => setLightboxActivity(null)}
+                >
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Modal Top Bar */}
+                    <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-gray-50">
+                      <span className="text-sm text-gray-500">
+                        {lightboxActivity + 1} /{" "}
+                        {t("activities", defaultActivities).length}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() =>
+                            setLightboxActivity((prev) =>
+                              prev > 0
+                                ? prev - 1
+                                : t("activities", defaultActivities).length - 1,
+                            )
+                          }
+                          className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
+                        >
+                          <FaChevronLeft className="text-gray-500 text-sm" />
+                        </button>
+                        <button
+                          onClick={() =>
+                            setLightboxActivity((prev) =>
+                              prev <
+                              t("activities", defaultActivities).length - 1
+                                ? prev + 1
+                                : 0,
+                            )
+                          }
+                          className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
+                        >
+                          <FaChevronRight className="text-gray-500 text-sm" />
+                        </button>
+                        <button
+                          onClick={() => setLightboxActivity(null)}
+                          className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors ml-1"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Modal Image */}
+                    {activity.image ? (
+                      <div className="bg-gray-100">
+                        <img
+                          src={activity.image}
+                          alt={activity.title}
+                          className="w-full max-h-[50vh] object-contain mx-auto"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-48 bg-gray-50 flex items-center justify-center">
+                        <FaCalendarAlt className="text-5xl text-gray-300" />
+                      </div>
+                    )}
+
+                    {/* Modal Details */}
+                    <div className="p-6 space-y-4 overflow-y-auto max-h-[35vh]">
+                      <div>
+                        <span className="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded mb-2">
+                          {activity.date}
+                        </span>
+                        <h3 className="text-xl font-bold text-gray-800 leading-snug">
+                          {activity.title}
+                        </h3>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                        <div className="flex items-start gap-2.5 p-3 bg-blue-50 rounded-lg">
+                          <FaUsers className="text-blue-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-xs font-semibold text-blue-600 uppercase">
+                              Participants
+                            </p>
+                            <p className="text-gray-700 mt-0.5">
+                              {activity.participants}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2.5 p-3 bg-orange-50 rounded-lg">
+                          <FaUserGraduate className="text-orange-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-xs font-semibold text-orange-600 uppercase">
+                              Organized by
+                            </p>
+                            <p className="text-gray-700 mt-0.5">
+                              {activity.organizer}
+                            </p>
+                          </div>
+                        </div>
+                        {activity.resource && (
+                          <div className="flex items-start gap-2.5 p-3 bg-green-50 rounded-lg sm:col-span-2">
+                            <FaChalkboardTeacher className="text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="text-xs font-semibold text-green-600 uppercase">
+                                Resource Person
+                              </p>
+                              <p className="text-gray-700 mt-0.5">
+                                {activity.resource}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              );
+            })()}
+        </AnimatePresence>
       </div>
     ),
 
     "course-material": (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
-          <EditableText
-            value={t("courseMaterial.title", "Course Material")}
-            onSave={(val) => updateData("courseMaterial.title", val)}
-          />
-        </h3>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-6">
-          <div className="space-y-4">
-            {t("courseMaterials", defaultCourseMaterials).map((material, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors group"
-              >
-                <div className="flex-1">
-                  <span className="font-bold text-gray-700 block">
-                    <EditableText
-                      value={material.subject}
-                      onSave={(val) =>
-                        updateArrayString(
-                          "courseMaterials",
-                          defaultCourseMaterials,
-                          i,
-                          { ...material, subject: val },
-                        )
-                      }
-                    />
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <EditableText
-                    value={material.link}
-                    onSave={(val) =>
-                      updateArrayString(
-                        "courseMaterials",
-                        defaultCourseMaterials,
-                        i,
-                        { ...material, link: val },
-                      )
-                    }
-                    className="text-xs text-blue-500 underline truncate max-w-[100px]"
-                  />
-                  <a
-                    href={material.link}
-                    className="text-ssgmce-blue hover:text-ssgmce-dark-blue p-2"
-                  >
-                    <FaDownload />
-                  </a>
-                </div>
-              </div>
-            ))}
+        {/* Course Material Header */}
+        <div className="text-center">
+          <div className="w-16 h-16 bg-orange-50 text-ssgmce-orange rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
+            <FaChalkboardTeacher />
+          </div>
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
+            <EditableText
+              value={t("courseMaterial.title", "Course Material")}
+              onSave={(val) => updateData("courseMaterial.title", val)}
+            />
+          </h3>
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <EditableText
+              value={t(
+                "courseMaterial.description",
+                "Access comprehensive course materials, lecture notes, assignments, and study resources for all semesters.",
+              )}
+              onSave={(val) => updateData("courseMaterial.description", val)}
+              multiline
+            />
           </div>
         </div>
+
+        {/* Course Material Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white px-8 py-5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-wide">
+                Course Material
+              </h3>
+              <p className="text-sm text-orange-100 mt-1">
+                Department of Computer Science & Engineering
+              </p>
+            </div>
+            <FaChalkboardTeacher className="text-4xl text-orange-200 opacity-40" />
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th className="px-6 py-4 font-bold text-center w-20">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 font-bold">Year / Class</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    Access Materials
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {(t("courseMaterials", defaultCourseMaterials) || []).map(
+                  (material, i) => (
+                    <tr
+                      key={i}
+                      className="hover:bg-orange-50/30 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-center font-mono text-gray-400">
+                        {i + 1}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-gray-800">
+                          <EditableText
+                            value={material.title}
+                            onSave={(val) =>
+                              updateArrayString(
+                                "courseMaterials",
+                                defaultCourseMaterials,
+                                i,
+                                { ...material, title: val },
+                              )
+                            }
+                          />
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <a
+                          href={material.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-ssgmce-orange hover:text-orange-700 font-medium text-xs border border-gray-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
+                        >
+                          <FaDownload className="text-xs" /> Access OneDrive
+                        </a>
+                      </td>
+                    </tr>
+                  ),
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+            Click on "Access OneDrive" to view and download course materials
+            from the respective year's shared folder.
+          </div>
+        </motion.div>
       </div>
     ),
 
@@ -1871,23 +2075,26 @@ const CSE = () => {
               className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex"
             >
               {/* Image Area - Fixed Width */}
-              <div className="w-32 sm:w-40 bg-gray-50 flex-shrink-0 relative overflow-hidden border-r border-gray-100">
+              <div className="w-36 sm:w-44 min-h-[200px] bg-gray-50 flex-shrink-0 relative overflow-hidden border-r border-gray-100 flex items-center justify-center">
                 <EditableImage
                   src={photoMap[fac.photo] || fac.photo}
                   onSave={(val) => updateFaculty(i, "photo", val)}
                   alt={fac.name}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+                  className="w-full h-full object-contain transition-transform group-hover:scale-105 duration-500"
                 />
               </div>
 
               {/* Content Area */}
               <div className="p-5 flex-1 flex flex-col justify-center">
-                <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
+                <Link
+                  to={`/faculty/${fac.id}`}
+                  className="text-lg font-bold text-gray-900 hover:text-ssgmce-blue transition-colors cursor-pointer"
+                >
                   <EditableText
                     value={fac.name}
                     onSave={(val) => updateFaculty(i, "name", val)}
                   />
-                </h4>
+                </Link>
                 <div className="text-ssgmce-blue font-medium text-sm mb-3 uppercase tracking-wide text-[11px]">
                   <EditableText
                     value={fac.role}
@@ -1901,7 +2108,11 @@ const CSE = () => {
                     <div className="text-xs">
                       <span className="font-bold text-gray-700">Area: </span>
                       <EditableText
-                        value={fac.area.join(", ")}
+                        value={
+                          Array.isArray(fac.area)
+                            ? fac.area.join(", ")
+                            : fac.area
+                        }
                         onSave={(val) =>
                           updateFaculty(
                             i,
@@ -1914,6 +2125,22 @@ const CSE = () => {
                   )}
 
                   <div className="pt-2 flex flex-col gap-1">
+                    {fac.vidwanId && (
+                      <span className="flex items-center text-xs">
+                        <FaUserTie className="mr-2 text-gray-400" />
+                        <span className="font-semibold text-gray-700">
+                          Vidwan ID:{" "}
+                        </span>
+                        <a
+                          href={`https://vidwan.inflibnet.ac.in/profile/${fac.vidwanId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-ssgmce-blue hover:underline ml-1"
+                        >
+                          {fac.vidwanId}
+                        </a>
+                      </span>
+                    )}
                     {fac.email && (
                       <div className="flex items-center hover:text-ssgmce-blue transition-colors truncate text-xs">
                         <FaEnvelope className="mr-2 text-gray-400" />{" "}
@@ -1935,12 +2162,12 @@ const CSE = () => {
                   </div>
 
                   {!fac.isIndustry && (
-                    <a
-                      href="#"
+                    <Link
+                      to={`/faculty/${fac.id}`}
                       className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-2 hover:underline uppercase tracking-wide"
                     >
                       View Profile <FaAngleRight className="ml-1" />
-                    </a>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -7808,19 +8035,16 @@ const CSE = () => {
     ),
     patents: (
       <div className="space-y-8">
-        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit mb-6">
-          <button
-            onClick={() => setResearchTab("patents")}
-            className={`px-4 py-2 text-sm font-bold rounded-md transition-all ${researchTab === "patents" ? "bg-white text-ssgmce-blue shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            Patents
-          </button>
-          <button
-            onClick={() => setResearchTab("publications")}
-            className={`px-4 py-2 text-sm font-bold rounded-md transition-all ${researchTab === "publications" ? "bg-white text-ssgmce-blue shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            Publications
-          </button>
+        <div className="flex flex-wrap space-x-1 bg-gray-100 p-1 rounded-lg w-fit mb-6">
+          {["patents", "publications", "copyrights", "books"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setResearchTab(tab)}
+              className={`px-4 py-2 text-sm font-bold rounded-md transition-all capitalize ${researchTab === tab ? "bg-white text-ssgmce-blue shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              {tab === "copyrights" ? "Copyrights" : tab === "books" ? "Books" : tab === "patents" ? "Patents" : "Publications"}
+            </button>
+          ))}
         </div>
 
         <AnimatePresence mode="wait">
@@ -7841,7 +8065,7 @@ const CSE = () => {
                   />
                 </h3>
                 <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
-                  {["2024-25", "2023-24"].map((year) => (
+                  {researchYears.map((year) => (
                     <button
                       key={year}
                       onClick={() => setResearchYear(year)}
@@ -7856,6 +8080,11 @@ const CSE = () => {
                   ))}
                 </div>
               </div>
+              {(t(`research.patents.${researchYear}`, defaultPatents[researchYear]) || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">No patents recorded for {researchYear}.</p>
+                </div>
+              ) : (
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left text-gray-600">
@@ -7934,8 +8163,9 @@ const CSE = () => {
                   </table>
                 </div>
               </div>
+              )}
             </motion.div>
-          ) : (
+          ) : researchTab === "publications" ? (
             <motion.div
               key="publications"
               initial={{ opacity: 0, y: 10 }}
@@ -7953,7 +8183,7 @@ const CSE = () => {
                 </h3>
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar mr-4">
-                    {["2024-25", "2023-24"].map((year) => (
+                    {researchYears.map((year) => (
                       <button
                         key={year}
                         onClick={() => setResearchYear(year)}
@@ -8090,7 +8320,133 @@ const CSE = () => {
                 </div>
               </div>
             </motion.div>
-          )}
+          ) : researchTab === "copyrights" ? (
+            <motion.div
+              key="copyrights"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaAward className="text-purple-500 mr-2" />
+                  Copyrights
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultCopyrights[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">No copyrights recorded for {researchYear}.</p>
+                </div>
+              ) : (
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left text-gray-600">
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-4 font-black tracking-wider w-12 text-center">#</th>
+                        <th className="px-6 py-4 font-black tracking-wider">Name of Faculty</th>
+                        <th className="px-6 py-4 font-black tracking-wider">Title of Work</th>
+                        <th className="px-6 py-4 font-black tracking-wider text-right">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {(defaultCopyrights[researchYear] || []).map((cr, i) => (
+                        <tr key={i} className="hover:bg-purple-50/30 transition-colors">
+                          <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">{i + 1}</td>
+                          <td className="px-6 py-4 font-medium text-gray-800">{cr.name}</td>
+                          <td className="px-6 py-4 text-gray-700">{cr.title}</td>
+                          <td className="px-6 py-4 text-right">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700">
+                              {cr.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              )}
+            </motion.div>
+          ) : researchTab === "books" ? (
+            <motion.div
+              key="books"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaProjectDiagram className="text-teal-500 mr-2" />
+                  Books Published
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultBooks[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">No books published for {researchYear}.</p>
+                </div>
+              ) : (
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left text-gray-600">
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-4 font-black tracking-wider w-12 text-center">#</th>
+                        <th className="px-6 py-4 font-black tracking-wider">Author(s)</th>
+                        <th className="px-6 py-4 font-black tracking-wider">Title</th>
+                        <th className="px-6 py-4 font-black tracking-wider">Publisher</th>
+                        <th className="px-6 py-4 font-black tracking-wider text-right">ISBN</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {(defaultBooks[researchYear] || []).map((book, i) => (
+                        <tr key={i} className="hover:bg-teal-50/30 transition-colors">
+                          <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">{i + 1}</td>
+                          <td className="px-6 py-4 font-medium text-gray-800">{book.name}{book.coAuthors ? `, ${book.coAuthors}` : ""}</td>
+                          <td className="px-6 py-4 text-gray-700">{book.title}</td>
+                          <td className="px-6 py-4 text-gray-500 italic text-xs">{book.details}</td>
+                          <td className="px-6 py-4 font-mono text-xs text-gray-500 text-right">{book.isbn}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              )}
+            </motion.div>
+          ) : null}
         </AnimatePresence>
       </div>
     ),
@@ -8238,7 +8594,7 @@ const CSE = () => {
       </div>
     ),
     newsletter: (
-      <div className="space-y-12">
+      <div className="space-y-8">
         {/* Newsletter Header */}
         <div className="text-center">
           <div className="w-16 h-16 bg-blue-50 text-ssgmce-blue rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
@@ -8250,7 +8606,7 @@ const CSE = () => {
               onSave={(val) => updateData("newsletters.title", val)}
             />
           </h3>
-          <p className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
             <EditableText
               value={t(
                 "newsletters.description",
@@ -8259,146 +8615,115 @@ const CSE = () => {
               onSave={(val) => updateData("newsletters.description", val)}
               multiline
             />
-          </p>
-        </div>
-
-        {/* Current Issue - Featured */}
-        <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 rounded-bl-full -mr-8 -mt-8 opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
-
-          <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-            {/* Thumbnail Placeholder */}
-            <div className="w-full md:w-1/3 aspect-[3/4] bg-gray-100 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-gray-300 group-hover:border-orange-300 transition-colors">
-              <FaAward className="text-5xl text-gray-300 mb-4 group-hover:text-orange-400 transition-colors" />
-              <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">
-                Cover Page
-              </span>
-            </div>
-
-            <div className="flex-1 text-center md:text-left">
-              <span className="inline-block px-3 py-1 bg-blue-100 text-ssgmce-blue font-bold text-xs uppercase tracking-wider rounded-full mb-4">
-                Latest Release
-              </span>
-              <h4 className="text-2xl font-bold text-gray-800 mb-2">
-                <EditableText
-                  value={t(
-                    "newsletters.latest.title",
-                    "Volume I: 2025-26 (Term I)",
-                  )}
-                  onSave={(val) => updateNewsletter("latest", 0, "title", val)}
-                />
-              </h4>
-              <div className="text-gray-500 mb-6">
-                <EditableText
-                  value={t(
-                    "newsletters.latest.description",
-                    "Highlights: New faculty inductions, Hackathon winners, Industry visits to TCS & ISRO, and research grants received.",
-                  )}
-                  onSave={(val) =>
-                    updateNewsletter("latest", 0, "description", val)
-                  }
-                  multiline
-                />
-              </div>
-
-              <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                <div className="flex flex-col gap-1 w-full max-w-xs">
-                  <span className="text-xs font-bold text-ssgmce-blue">
-                    Download Link:
-                  </span>
-                  <EditableText
-                    value={t(
-                      "newsletters.latest.link",
-                      "/documents/news-letter-25-26-I.pdf",
-                    )}
-                    onSave={(val) => updateNewsletter("latest", 0, "link", val)}
-                    className="text-xs text-blue-600 underline mb-2"
-                  />
-                  <a
-                    href={t(
-                      "newsletters.latest.link",
-                      "/documents/news-letter-25-26-I.pdf",
-                    )}
-                    className="flex items-center px-6 py-3 bg-ssgmce-blue text-white font-bold rounded-xl shadow-lg shadow-blue-200 hover:bg-ssgmce-dark-blue hover:shadow-xl transition-all"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <FaDownload className="mr-2" /> Download Newsletter
-                  </a>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
-        {/* Archives */}
-        <div>
-          <h4 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
-            <span className="w-8 h-1 bg-gray-800 rounded-full mr-3"></span>
-            Archives
-          </h4>
-          <div className="grid md:grid-cols-3 gap-6">
-            {t("newsletters.archives", defaultNewsletters.archives).map(
-              (issue, i) => (
-                <div
-                  key={i}
-                  className="bg-white p-6 rounded-xl border border-gray-200 hover:border-gray-200 hover:shadow-md transition-all group overflow-hidden"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 group-hover:bg-blue-50 group-hover:text-ssgmce-orange transition-colors">
-                      <FaAngleRight />
-                    </div>
-                    <span className="text-xs font-mono text-gray-400 text-right">
-                      <EditableText
-                        value={issue.date}
-                        onSave={(val) =>
-                          updateNewsletter("archives", i, "date", val)
-                        }
-                      />
-                    </span>
-                  </div>
-                  <h5 className="font-bold text-gray-800 mb-1">
-                    <EditableText
-                      value={issue.vol}
-                      onSave={(val) =>
-                        updateNewsletter("archives", i, "vol", val)
-                      }
-                    />
-                  </h5>
-                  <div className="text-sm text-gray-500 mb-4">
-                    <EditableText
-                      value={issue.term}
-                      onSave={(val) =>
-                        updateNewsletter("archives", i, "term", val)
-                      }
-                    />
-                  </div>
+        {/* Newsletter Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-8 py-5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-wide">Newsletter</h3>
+              <p className="text-sm text-gray-300 mt-1">
+                Department of Computer Science & Engineering
+              </p>
+            </div>
+            <FaDownload className="text-4xl text-blue-200 opacity-40" />
+          </div>
 
-                  <div className="flex flex-col gap-1 border-t border-gray-50 pt-3">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase">
-                      File Link:
-                    </span>
-                    <EditableText
-                      value={issue.link}
-                      onSave={(val) =>
-                        updateNewsletter("archives", i, "link", val)
-                      }
-                      className="text-[10px] text-blue-500 underline truncate mb-2 block"
-                    />
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th className="px-6 py-4 font-bold text-center w-20">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 font-bold">Publishing Date</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    More Details
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {/* Latest Issue Row */}
+                <tr className="hover:bg-blue-50/30 transition-colors bg-blue-50/10">
+                  <td className="px-6 py-4 text-center font-mono text-gray-400">
+                    1
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded-full">
+                        Latest
+                      </span>
+                      <span className="font-bold text-gray-800">
+                        <EditableText
+                          value={t(
+                            "newsletters.latest.title",
+                            defaultNewsletters.latest.title ||
+                              "News Letter 2025-26 (Volume I)",
+                          )}
+                          onSave={(val) =>
+                            updateNewsletter("latest", 0, "title", val)
+                          }
+                        />
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
                     <a
-                      href={issue.link}
+                      href={t(
+                        "newsletters.latest.link",
+                        defaultNewsletters.latest.link || "#",
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-bold text-ssgmce-blue hover:underline flex items-center"
+                      className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
                     >
-                      Download <FaDownload className="ml-2 text-xs" />
+                      <FaDownload className="text-xs" /> Click for Details
                     </a>
-                  </div>
-                </div>
-              ),
-            )}
+                  </td>
+                </tr>
+
+                {/* Archive Rows */}
+                {(
+                  t("newsletters.archives", defaultNewsletters.archives) || []
+                ).map((issue, i) => (
+                  <tr key={i} className="hover:bg-blue-50/30 transition-colors">
+                    <td className="px-6 py-4 text-center font-mono text-gray-400">
+                      {i + 2}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-bold text-gray-700">
+                        <EditableText
+                          value={issue.vol}
+                          onSave={(val) =>
+                            updateNewsletter("archives", i, "vol", val)
+                          }
+                        />
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <a
+                        href={issue.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                      >
+                        <FaDownload className="text-xs" /> Click for Details
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
+          <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+            Click on "Click for Details" to view/download the newsletter PDF.
+          </div>
+        </motion.div>
       </div>
     ),
   };

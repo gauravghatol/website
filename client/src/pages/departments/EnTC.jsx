@@ -22,6 +22,13 @@ import {
   FaProjectDiagram,
   FaCalendarAlt,
   FaDownload,
+  FaDesktop,
+  FaFileAlt,
+  FaExternalLinkAlt,
+  FaTools,
+  FaBook,
+  FaStar,
+  FaMedal,
 } from "react-icons/fa";
 
 // Faculty Photos
@@ -59,7 +66,8 @@ import {
   defaultPo,
   defaultHodMessage,
   defaultLabs,
-  defaultPrideToppers,
+  defaultPrideToppersBE,
+  defaultPrideToppersME,
   defaultPrideAlumni,
   defaultPrideGate,
   defaultActivities,
@@ -71,6 +79,10 @@ import {
   defaultPlacements,
   defaultOverview,
   defaultNewsletters,
+  defaultDepartmentalCommittee,
+  defaultServicesExtended,
+  defaultUgProjects,
+  defaultSchemeAndSyllabus,
 } from "../../data/entcDefaults";
 
 const EnTC = () => {
@@ -81,9 +93,10 @@ const EnTC = () => {
   const [researchTab, setResearchTab] = useState("projects");
   const [projectYear, setProjectYear] = useState("2024-25");
   const [researchYear, setResearchYear] = useState("2023-24");
-  const [placementYear, setPlacementYear] = useState("2023-24");
+  const [placementYear, setPlacementYear] = useState(null);
   const [expandedSemester, setExpandedSemester] = useState(null);
-  const [prideTab, setPrideTab] = useState("toppers");
+  const [prideTab, setPrideTab] = useState("gate");
+  const [ugProjectYear, setUgProjectYear] = useState("2024-25");
 
   // Load department data (works in both edit and public view modes)
   const {
@@ -131,6 +144,34 @@ const EnTC = () => {
   };
 
   const getFacultyList = () => t("templateData.faculty.list", defaultFaculty);
+
+  // Pride section helper functions
+  const updatePrideGate = (yearIdx, studentIdx, cellIdx, val) => {
+    const newGate = JSON.parse(
+      JSON.stringify(t("pride.gate", defaultPrideGate)),
+    );
+    newGate[yearIdx].students[studentIdx][cellIdx] = val;
+    updateData("pride.gate", newGate);
+  };
+
+  const updatePrideToppers = (key, yearIdx, recordIdx, field, val) => {
+    const newData = JSON.parse(
+      JSON.stringify(
+        t(
+          `pride.toppers.${key}`,
+          key === "be" ? defaultPrideToppersBE : defaultPrideToppersME,
+        ),
+      ),
+    );
+    newData[yearIdx].records[recordIdx][field] = val;
+    updateData(`pride.toppers.${key}`, newData);
+  };
+
+  const updateOverviewTable = (path, defaultArr, rowIdx, cellIdx, val) => {
+    const newData = JSON.parse(JSON.stringify(t(path, defaultArr)));
+    newData[rowIdx][cellIdx] = val;
+    updateData(path, newData);
+  };
   const updateFacultyList = (updater) => {
     const current = JSON.parse(JSON.stringify(getFacultyList()));
     const updated = typeof updater === "function" ? updater(current) : updater;
@@ -614,283 +655,293 @@ const EnTC = () => {
     ),
 
     curriculum: (
-      <div className="space-y-4">
-        <h3 className="text-3xl font-bold text-gray-800 mb-6 border-l-4 border-ssgmce-orange pl-4">
+      <div className="space-y-8">
+        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
           <EditableText
-            value={t("curriculumTitle", "Curriculum & Syllabus")}
+            value={t("curriculumTitle", "Scheme and Syllabus")}
             onSave={(val) => updateField("curriculumTitle", val)}
           />
         </h3>
+
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gray-50 border-b border-gray-200 p-4">
-            <h3 className="text-xl font-bold text-gray-800 flex items-center">
-              Courses @ Department
-            </h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 border-collapse">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    Course
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    Course Details
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {/* BE */}
-                <tr className="bg-white">
-                  <td
-                    colSpan="2"
-                    className="px-6 py-3 font-bold text-ssgmce-blue text-base border border-gray-200"
-                  >
+          {t("schemeAndSyllabus", defaultSchemeAndSyllabus).map(
+            (section, si) => (
+              <div
+                key={si}
+                className={`grid md:grid-cols-12 ${si > 0 ? "border-t border-gray-200 bg-gray-50/30" : ""}`}
+              >
+                <div className="md:col-span-4 bg-gray-50/50 p-6 flex items-center border-r border-gray-100">
+                  <h4 className="font-bold text-lg text-gray-800">
                     <EditableText
-                      value={t(
-                        "overview.degrees.be.title",
-                        "UG: B.E. Electronics and Telecommunication Engineering",
-                      )}
-                      onSave={(val) =>
-                        updateData("overview.degrees.be.title", val)
-                      }
+                      value={section.course}
+                      onSave={(val) => {
+                        const updated = [
+                          ...t("schemeAndSyllabus", defaultSchemeAndSyllabus),
+                        ];
+                        updated[si] = { ...updated[si], course: val };
+                        updateData("schemeAndSyllabus", updated);
+                      }}
                     />
-                  </td>
-                </tr>
-                {["degree", "duration", "intake", "establishment", "nba"].map(
-                  (key, i) =>
-                    t(
-                      `overview.degrees.be.${key}`,
-                      defaultOverview.degrees.be[key],
-                    ) && (
-                      <tr
-                        key={i}
-                        className="hover:bg-gray-50/50 transition-colors"
+                  </h4>
+                </div>
+                <div className="md:col-span-8 p-6">
+                  <ul className="space-y-4">
+                    {section.items.map((item, ii) => (
+                      <li
+                        key={ii}
+                        className="flex items-start gap-3 group relative"
                       >
-                        <td className="px-6 py-3 text-sm font-bold text-gray-500 w-1/3 border border-gray-200 bg-gray-50/30 capitalize">
-                          {key}
-                        </td>
-                        <td className="px-6 py-3 text-sm text-gray-700 font-medium border border-gray-200">
-                          <EditableText
-                            value={t(
-                              `overview.degrees.be.${key}`,
-                              defaultOverview.degrees.be[key],
-                            )}
-                            onSave={(val) =>
-                              updateData(`overview.degrees.be.${key}`, val)
-                            }
-                          />
-                        </td>
-                      </tr>
-                    ),
-                )}
-
-                {/* ME */}
-                <tr className="bg-white">
-                  <td
-                    colSpan="2"
-                    className="px-6 py-3 font-bold text-ssgmce-blue text-base border border-gray-200 mt-4"
-                  >
-                    <EditableText
-                      value={t(
-                        "overview.degrees.me.title",
-                        "PG: M.E. Digital Electronics",
-                      )}
-                      onSave={(val) =>
-                        updateData("overview.degrees.me.title", val)
-                      }
-                    />
-                  </td>
-                </tr>
-                {["degree", "duration", "intake", "establishment"].map(
-                  (key, i) =>
-                    t(
-                      `overview.degrees.me.${key}`,
-                      defaultOverview.degrees.me[key],
-                    ) && (
-                      <tr
-                        key={i}
-                        className="hover:bg-gray-50/50 transition-colors"
+                        <span className="w-2 h-2 rounded-full bg-ssgmce-orange mt-2 block group-hover:bg-ssgmce-blue transition-colors"></span>
+                        <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-50 pb-2">
+                          <span className="text-gray-700 text-sm font-medium">
+                            <EditableText
+                              value={item.label}
+                              onSave={(val) => {
+                                const updated = [
+                                  ...t(
+                                    "schemeAndSyllabus",
+                                    defaultSchemeAndSyllabus,
+                                  ),
+                                ];
+                                const newItems = [...updated[si].items];
+                                newItems[ii] = { ...newItems[ii], label: val };
+                                updated[si] = {
+                                  ...updated[si],
+                                  items: newItems,
+                                };
+                                updateData("schemeAndSyllabus", updated);
+                              }}
+                            />
+                          </span>
+                          {item.link && (
+                            <a
+                              href={item.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-bold text-ssgmce-blue hover:text-ssgmce-orange hover:underline uppercase tracking-wide shrink-0"
+                            >
+                              Download
+                            </a>
+                          )}
+                          {!item.link && (
+                            <button className="text-xs font-bold text-ssgmce-blue hover:text-ssgmce-orange hover:underline uppercase tracking-wide shrink-0">
+                              Download
+                            </button>
+                          )}
+                        </div>
+                        {isEditing && (
+                          <button
+                            onClick={() => {
+                              const updated = [
+                                ...t(
+                                  "schemeAndSyllabus",
+                                  defaultSchemeAndSyllabus,
+                                ),
+                              ];
+                              const newItems = updated[si].items.filter(
+                                (_, idx) => idx !== ii,
+                              );
+                              updated[si] = { ...updated[si], items: newItems };
+                              updateData("schemeAndSyllabus", updated);
+                            }}
+                            className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
+                            title="Remove item"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                    {isEditing && (
+                      <button
+                        onClick={() => {
+                          const updated = [
+                            ...t("schemeAndSyllabus", defaultSchemeAndSyllabus),
+                          ];
+                          const newItems = [
+                            ...updated[si].items,
+                            { label: "New Item", link: "" },
+                          ];
+                          updated[si] = { ...updated[si], items: newItems };
+                          updateData("schemeAndSyllabus", updated);
+                        }}
+                        className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 cursor-pointer text-center text-sm"
                       >
-                        <td className="px-6 py-3 text-sm font-bold text-gray-500 w-1/3 border border-gray-200 bg-gray-50/30 capitalize">
-                          {key}
-                        </td>
-                        <td className="px-6 py-3 text-sm text-gray-700 font-medium border border-gray-200">
-                          <EditableText
-                            value={t(
-                              `overview.degrees.me.${key}`,
-                              defaultOverview.degrees.me[key],
-                            )}
-                            onSave={(val) =>
-                              updateData(`overview.degrees.me.${key}`, val)
-                            }
-                          />
-                        </td>
-                      </tr>
-                    ),
-                )}
-
-                {/* PhD */}
-                <tr className="bg-white">
-                  <td
-                    colSpan="2"
-                    className="px-6 py-3 font-bold text-ssgmce-blue text-base border border-gray-200"
-                  >
-                    <EditableText
-                      value={t(
-                        "overview.degrees.phd.title",
-                        "Ph. D Electronics and Telecommunication Engg.",
-                      )}
-                      onSave={(val) =>
-                        updateData("overview.degrees.phd.title", val)
-                      }
-                    />
-                  </td>
-                </tr>
-                {["duration", "intake", "establishment"].map(
-                  (key, i) =>
-                    t(
-                      `overview.degrees.phd.${key}`,
-                      defaultOverview.degrees.phd[key],
-                    ) && (
-                      <tr
-                        key={i}
-                        className="hover:bg-gray-50/50 transition-colors"
-                      >
-                        <td className="px-6 py-3 text-sm font-bold text-gray-500 w-1/3 border border-gray-200 bg-gray-50/30 capitalize">
-                          {key}
-                        </td>
-                        <td className="px-6 py-3 text-sm text-gray-700 font-medium border border-gray-200">
-                          <EditableText
-                            value={t(
-                              `overview.degrees.phd.${key}`,
-                              defaultOverview.degrees.phd[key],
-                            )}
-                            onSave={(val) =>
-                              updateData(`overview.degrees.phd.${key}`, val)
-                            }
-                          />
-                        </td>
-                      </tr>
-                    ),
-                )}
-              </tbody>
-            </table>
-          </div>
+                        + Add Item
+                      </button>
+                    )}
+                  </ul>
+                </div>
+              </div>
+            ),
+          )}
         </div>
       </div>
     ),
 
     hod: (
       <div className="space-y-8">
-        <h3 className="text-3xl font-bold text-gray-800 mb-6 border-l-4 border-ssgmce-orange pl-4">
-          HOD's Message
-        </h3>
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-          <div className="flex flex-col md:flex-row gap-8 items-start">
-            <div className="w-full md:w-1/3 text-center">
-              <div className="relative inline-block group">
-                <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-gray-100 shadow-md mx-auto relative z-10">
-                  {isEditing ? (
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">
+            Words from HOD
+          </h2>
+          <div className="w-24 h-1 bg-orange-500 mx-auto"></div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden max-w-5xl mx-auto">
+          {/* Profile Section - Horizontal Layout */}
+          <div className="bg-gradient-to-r from-blue-50 via-white to-blue-50 p-8 border-b border-gray-100">
+            <div className="flex flex-col md:flex-row gap-8 items-center">
+              <div className="flex-shrink-0">
+                <div className="relative">
+                  <div className="absolute -inset-2 bg-gradient-to-r from-ssgmce-blue to-ssgmce-orange rounded-2xl blur opacity-25"></div>
+                  <div className="relative rounded-xl overflow-hidden shadow-2xl border-4 border-white group w-72 md:w-80 lg:w-96">
                     <EditableImage
                       src={t("hod.photo", hodPhoto)}
-                      alt="HOD"
-                      onSave={(val) => updateData("hod.photo", val)}
-                      className="w-full h-full object-cover"
+                      onSave={(url) => updateData("hod.photo", url)}
+                      alt="HOD EnTC"
+                      className="w-full h-auto group-hover:scale-105 transition-transform duration-500"
                     />
-                  ) : (
-                    <img
-                      src={t("hod.photo", hodPhoto)}
-                      alt="HOD"
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  )}
+                  </div>
                 </div>
-                {/* Decorative Pattern */}
-                <div className="absolute -inset-4 bg-gradient-to-tr from-ssgmce-orange/20 to-transparent rounded-full blur-xl -z-0 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </div>
-              <div className="mt-4">
-                <h4 className="text-xl font-bold text-gray-900">
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold text-gray-900">
                   <EditableText
                     value={t("hod.name", defaultHodMessage.name)}
                     onSave={(val) => updateData("hod.name", val)}
                   />
-                </h4>
-                <p className="text-ssgmce-blue font-medium text-sm">
+                </h3>
+                <p className="text-ssgmce-blue font-bold text-sm mt-1 uppercase tracking-wide">
                   <EditableText
-                    value={t("hod.role", defaultHodMessage.role)}
-                    onSave={(val) => updateData("hod.role", val)}
+                    value={t("hod.designation", defaultHodMessage.designation)}
+                    onSave={(val) => updateData("hod.designation", val)}
                   />
                 </p>
-                <div className="mt-3 text-sm text-gray-500 space-y-1">
-                  {t("hod.email", defaultHodMessage.email) && (
-                    <p className="flex items-center justify-center gap-2">
-                      <FaEnvelope className="text-ssgmce-orange" />
-                      <EditableText
-                        value={t("hod.email", defaultHodMessage.email)}
-                        onSave={(val) => updateData("hod.email", val)}
-                      />
-                    </p>
-                  )}
-                  {t("hod.phone", defaultHodMessage.phone) && (
-                    <p className="flex items-center justify-center gap-2">
-                      <FaPhone className="text-ssgmce-orange" />
-                      <EditableText
-                        value={t("hod.phone", defaultHodMessage.phone)}
-                        onSave={(val) => updateData("hod.phone", val)}
-                      />
-                    </p>
-                  )}
+                <p className="text-gray-600 text-sm mt-1">
+                  <EditableText
+                    value={t("hod.department", defaultHodMessage.department)}
+                    onSave={(val) => updateData("hod.department", val)}
+                  />
+                </p>
+
+                <div className="mt-4 flex items-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center">
+                    <FaEnvelope className="mr-2 text-ssgmce-orange" />
+                    <EditableText
+                      value={t("hod.email", defaultHodMessage.email)}
+                      onSave={(val) => updateData("hod.email", val)}
+                    />
+                  </div>
+                  <span className="text-gray-300">|</span>
+                  <div className="flex items-center">
+                    <FaPhone className="mr-2 text-ssgmce-orange" />
+                    <EditableText
+                      value={t("hod.phone", defaultHodMessage.phone)}
+                      onSave={(val) => updateData("hod.phone", val)}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4 flex gap-2">
+                  <span className="px-3 py-1 bg-blue-100 text-ssgmce-blue rounded-full text-xs font-bold">
+                    <EditableText
+                      value={t(
+                        "hod.specialization",
+                        defaultHodMessage.specialization,
+                      )}
+                      onSave={(val) => updateData("hod.specialization", val)}
+                    />
+                  </span>
+                  <span className="px-3 py-1 bg-blue-100 text-ssgmce-blue rounded-full text-xs font-bold">
+                    <EditableText
+                      value={t(
+                        "hod.qualification",
+                        defaultHodMessage.qualification,
+                      )}
+                      onSave={(val) => updateData("hod.qualification", val)}
+                    />
+                  </span>
                 </div>
               </div>
             </div>
-            <div className="w-full md:w-2/3">
-              <div className="relative bg-gray-50/50 p-6 rounded-lg border-l-4 border-ssgmce-blue italic text-gray-700 leading-relaxed text-lg">
-                <FaQuoteLeft className="text-4xl text-gray-200 absolute top-4 left-4 -z-10" />
-                {t("hod.message", defaultHodMessage.message).map((msg, i) => (
-                  <p key={i} className="mb-4 last:mb-0">
+          </div>
+
+          {/* Message Section */}
+          <div className="p-8 md:p-10">
+            <div className="relative">
+              <FaQuoteLeft className="absolute -top-2 right-0 text-4xl text-blue-100" />
+
+              <div className="space-y-4 text-gray-700 leading-relaxed max-w-5xl mx-auto">
+                <div className="text-base">
+                  <EditableText
+                    value={t("hod.message1", defaultHodMessage.message1)}
+                    onSave={(val) => updateData("hod.message1", val)}
+                    multiline={true}
+                    className="w-full"
+                  />
+                </div>
+
+                <div className="text-base">
+                  <EditableText
+                    value={t("hod.message2", defaultHodMessage.message2)}
+                    onSave={(val) => updateData("hod.message2", val)}
+                    multiline={true}
+                    className="w-full"
+                  />
+                </div>
+
+                <div className="text-base">
+                  <EditableText
+                    value={t("hod.message3", defaultHodMessage.message3)}
+                    onSave={(val) => updateData("hod.message3", val)}
+                    multiline={true}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-gray-200 flex justify-between items-center">
+                <div>
+                  <p className="font-bold text-gray-900 text-lg">
                     <EditableText
-                      value={msg}
-                      onSave={(val) =>
-                        updateArrayString(
-                          "hod.message",
-                          defaultHodMessage.message,
-                          i,
-                          val,
-                        )
-                      }
-                      multiline
+                      value={t(
+                        "hod.signatureName",
+                        defaultHodMessage.signatureName,
+                      )}
+                      onSave={(val) => updateData("hod.signatureName", val)}
                     />
-                    {isEditing && (
-                      <button
-                        onClick={() => {
-                          const newMsg = t(
-                            "hod.message",
-                            defaultHodMessage.message,
-                          ).filter((_, idx) => idx !== i);
-                          updateData("hod.message", newMsg);
-                        }}
-                        className="text-red-500 text-xs mt-1 block"
-                      >
-                        Delete Paragraph
-                      </button>
-                    )}
                   </p>
-                ))}
-                {isEditing && (
-                  <button
-                    onClick={() => {
-                      const newMsg = [
-                        ...t("hod.message", defaultHodMessage.message),
-                        "New Paragraph",
-                      ];
-                      updateData("hod.message", newMsg);
-                    }}
-                    className="px-3 py-1 bg-green-500 text-white rounded text-sm mt-2"
-                  >
-                    Add Paragraph
-                  </button>
-                )}
+                  <p className="text-sm text-gray-600">
+                    <EditableText
+                      value={t(
+                        "hod.signatureTitle",
+                        defaultHodMessage.signatureTitle,
+                      )}
+                      onSave={(val) => updateData("hod.signatureTitle", val)}
+                    />
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-500 italic">
+                    <EditableText
+                      value={t(
+                        "hod.collegeNameLine1",
+                        defaultHodMessage.collegeNameLine1,
+                      )}
+                      onSave={(val) => updateData("hod.collegeNameLine1", val)}
+                    />
+                  </p>
+                  <p className="text-sm text-gray-500 italic">
+                    <EditableText
+                      value={t(
+                        "hod.collegeNameLine2",
+                        defaultHodMessage.collegeNameLine2,
+                      )}
+                      onSave={(val) => updateData("hod.collegeNameLine2", val)}
+                    />
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -900,111 +951,141 @@ const EnTC = () => {
 
     laboratories: (
       <div className="space-y-8">
-        <h3 className="text-3xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
-          Laboratories
+        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+          Infrastructure and Laboratories
         </h3>
-        <div className="grid md:grid-cols-2 gap-6">
-          {t("laboratories", defaultLabs).map((lab, i) => (
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          {/* Lab Entries */}
+          {t("laboratories", defaultLabs).map((lab, index) => (
             <div
-              key={i}
-              className="bg-white rounded-xl shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow overflow-hidden group relative"
+              key={index}
+              className="grid md:grid-cols-12 border-b border-gray-200 last:border-b-0 relative"
             >
-              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <FaDesktop className="text-6xl text-ssgmce-blue" />
-              </div>
-              <div className="flex items-start gap-4 mb-4">
-                <div className="p-3 bg-blue-100 text-ssgmce-blue rounded-lg">
-                  <FaDesktop className="text-2xl" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
-                    <EditableText
-                      value={lab.name}
-                      onSave={(val) => {
-                        const newLabs = [...t("laboratories", defaultLabs)];
-                        newLabs[i] = { ...newLabs[i], name: val };
-                        updateData("laboratories", newLabs);
-                      }}
-                    />
-                  </h4>
-                  <p className="text-sm text-gray-500">
-                    <span className="font-semibold">Area:</span>{" "}
-                    <EditableText
-                      value={lab.area}
-                      onSave={(val) => {
-                        const newLabs = [...t("laboratories", defaultLabs)];
-                        newLabs[i] = { ...newLabs[i], area: val };
-                        updateData("laboratories", newLabs);
-                      }}
-                    />
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                  <p className="text-xs font-bold text-gray-500 uppercase mb-1">
-                    Major Equipment
-                  </p>
-                  <p className="text-sm text-gray-700 line-clamp-3 group-hover:line-clamp-none transition-all">
-                    <EditableText
-                      value={lab.resources}
-                      onSave={(val) => {
-                        const newLabs = [...t("laboratories", defaultLabs)];
-                        newLabs[i] = { ...newLabs[i], resources: val };
-                        updateData("laboratories", newLabs);
-                      }}
-                      multiline
-                    />
-                  </p>
-                </div>
-                {lab.systems && (
-                  <div className="flex items-center text-xs text-gray-500 bg-blue-50 px-3 py-1 rounded-full w-fit">
-                    <FaLaptopCode className="mr-2 text-ssgmce-blue" />
-                    <span>
-                      Systems:{" "}
-                      <EditableText
-                        value={lab.systems}
-                        onSave={(val) => {
-                          const newLabs = [...t("laboratories", defaultLabs)];
-                          newLabs[i] = { ...newLabs[i], systems: val };
-                          updateData("laboratories", newLabs);
-                        }}
-                      />
-                    </span>
-                  </div>
-                )}
-              </div>
+              {/* Delete Button */}
               {isEditing && (
                 <button
                   onClick={() => {
-                    const newLabs = t("laboratories", defaultLabs).filter(
-                      (_, idx) => idx !== i,
+                    const updated = t("laboratories", defaultLabs).filter(
+                      (_, i) => i !== index,
                     );
-                    updateData("laboratories", newLabs);
+                    updateData("laboratories", updated);
                   }}
-                  className="mt-4 text-red-500 text-xs font-bold hover:underline"
+                  className="absolute top-2 right-2 z-10 bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md hover:bg-red-600 transition-colors"
+                  title="Delete laboratory"
                 >
                   Delete Lab
                 </button>
               )}
+
+              {/* Lab Photo Column */}
+              <div className="md:col-span-5 bg-gray-50 p-6 border-r border-gray-100">
+                {lab.image ? (
+                  <EditableImage
+                    src={lab.image}
+                    onSave={(url) => {
+                      const updated = [...t("laboratories", defaultLabs)];
+                      updated[index].image = url;
+                      updateData("laboratories", updated);
+                    }}
+                    className="aspect-video w-full object-cover rounded-lg"
+                  />
+                ) : (
+                  <div
+                    className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:from-gray-300 hover:to-gray-400 transition-colors"
+                    onClick={() => {
+                      if (isEditing) {
+                        const url = prompt("Enter image URL:");
+                        if (url) {
+                          const updated = [...t("laboratories", defaultLabs)];
+                          updated[index].image = url;
+                          updateData("laboratories", updated);
+                        }
+                      }
+                    }}
+                  >
+                    <span className="text-6xl">🖥️</span>
+                    {isEditing && (
+                      <span className="absolute text-xs text-gray-600 mt-20">
+                        Click to add image
+                      </span>
+                    )}
+                  </div>
+                )}
+                <h4 className="font-bold text-gray-800 text-center mt-4">
+                  <EditableText
+                    value={lab.name}
+                    onSave={(val) => {
+                      const updated = [...t("laboratories", defaultLabs)];
+                      updated[index].name = val;
+                      updateData("laboratories", updated);
+                    }}
+                  />
+                </h4>
+              </div>
+
+              {/* Lab Details Column */}
+              <div className="md:col-span-7 p-6">
+                <div className="space-y-4">
+                  <div>
+                    <h5 className="font-semibold text-red-600 text-sm mb-2">
+                      Computer Systems / Configuration:
+                    </h5>
+                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                      <EditableText
+                        value={lab.resources}
+                        onSave={(val) => {
+                          const updated = [...t("laboratories", defaultLabs)];
+                          updated[index].resources = val;
+                          updateData("laboratories", updated);
+                        }}
+                        multiline
+                      />
+                    </div>
+                  </div>
+                  {(lab.facilities || isEditing) && (
+                    <div>
+                      <h5 className="font-semibold text-red-600 text-sm mb-2">
+                        Other Resources / UPS:
+                      </h5>
+                      <div className="text-gray-700 text-sm leading-relaxed">
+                        <EditableText
+                          value={lab.facilities || "Additional facilities..."}
+                          onSave={(val) => {
+                            const updated = [...t("laboratories", defaultLabs)];
+                            updated[index].facilities = val;
+                            updateData("laboratories", updated);
+                          }}
+                          multiline
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           ))}
+
+          {/* Add New Lab Button */}
           {isEditing && (
-            <div className="col-span-full flex justify-center mt-4">
+            <div className="p-6 bg-gray-50 border-t border-gray-200">
               <button
                 onClick={() => {
-                  const newLab = {
-                    name: "New Lab",
-                    area: "100 sqm",
-                    systems: "10 PC",
-                    resources: "Equipment list",
-                  };
-                  const newLabs = [...t("laboratories", defaultLabs), newLab];
-                  updateData("laboratories", newLabs);
+                  const updated = [
+                    ...t("laboratories", defaultLabs),
+                    {
+                      name: "New Laboratory",
+                      image: "",
+                      resources:
+                        "Computer systems and configuration details...",
+                      facilities: "Other resources and UPS details...",
+                    },
+                  ];
+                  updateData("laboratories", updated);
                 }}
-                className="px-6 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600 transition-colors"
+                className="w-full py-3 px-4 bg-ssgmce-blue text-white rounded-lg hover:bg-ssgmce-dark-blue transition-colors font-medium"
               >
-                Add Laboratory
+                + Add New Laboratory
               </button>
             </div>
           )}
@@ -1022,7 +1103,7 @@ const EnTC = () => {
             />
           </h2>
           <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
-          <p className="text-gray-600 mt-3">
+          <div className="text-gray-600 mt-3">
             <EditableText
               value={t(
                 "courseOutcomes.subtitle",
@@ -1030,7 +1111,7 @@ const EnTC = () => {
               )}
               onSave={(val) => updateField("courseOutcomes.subtitle", val)}
             />
-          </p>
+          </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -1160,372 +1241,514 @@ const EnTC = () => {
 
     pride: (
       <div className="space-y-8">
-        <h3 className="text-3xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
-          Pride of the Department
-        </h3>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex items-center gap-3 mb-8">
+            <FaTrophy className="text-4xl text-yellow-500" />
+            <h3 className="text-3xl font-bold text-gray-800">
+              Pride of the Department
+            </h3>
+          </div>
 
-        {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-4">
-          {[
-            { id: "toppers", label: "University Toppers" },
-            { id: "alumni", label: "Top Alumnis of Department" },
-            { id: "gate", label: "GATE Qualified" },
-          ].map((tab) => (
+          {/* Tabs for different sections */}
+          <div className="flex gap-2 mb-6 border-b">
             <button
-              key={tab.id}
-              onClick={() => setPrideTab(tab.id)}
-              className={`px-6 py-2.5 rounded-lg font-medium transition-all text-sm ${
-                prideTab === tab.id
-                  ? "bg-[#003366] text-white shadow-md"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              onClick={() => setPrideTab("gate")}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                prideTab === "gate"
+                  ? "border-b-4 border-ssgmce-orange text-ssgmce-blue"
+                  : "text-gray-600 hover:text-ssgmce-blue"
               }`}
             >
-              {tab.label}
+              GATE Qualified
             </button>
-          ))}
-        </div>
-
-        {/* University Toppers */}
-        {prideTab === "toppers" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    {[
-                      "Year",
-                      "Name of the Student",
-                      "Univ. Topper Rank",
-                      "Percentage/CGPA",
-                    ].map((head, i) => (
-                      <th
-                        key={i}
-                        className="px-6 py-4 text-left text-sm font-bold text-gray-700"
-                      >
-                        {head}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {t("pride.toppers", defaultPrideToppers).map((student, i) => (
-                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-700 w-24">
-                        <EditableText
-                          value={student.year}
-                          onSave={(val) => {
-                            const newArr = [
-                              ...t("pride.toppers", defaultPrideToppers),
-                            ];
-                            newArr[i] = { ...newArr[i], year: val };
-                            updateData("pride.toppers", newArr);
-                          }}
-                        />
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                        <EditableText
-                          value={student.name}
-                          onSave={(val) => {
-                            const newArr = [
-                              ...t("pride.toppers", defaultPrideToppers),
-                            ];
-                            newArr[i] = { ...newArr[i], name: val };
-                            updateData("pride.toppers", newArr);
-                          }}
-                        />
-                      </td>
-                      <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                        <EditableText
-                          value={student.rank}
-                          onSave={(val) => {
-                            const newArr = [
-                              ...t("pride.toppers", defaultPrideToppers),
-                            ];
-                            newArr[i] = { ...newArr[i], rank: val };
-                            updateData("pride.toppers", newArr);
-                          }}
-                        />
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
-                        <EditableText
-                          value={student.cgpa}
-                          onSave={(val) => {
-                            const newArr = [
-                              ...t("pride.toppers", defaultPrideToppers),
-                            ];
-                            newArr[i] = { ...newArr[i], cgpa: val };
-                            updateData("pride.toppers", newArr);
-                          }}
-                        />
-                      </td>
-                      {isEditing && (
-                        <td
-                          className="px-6 py-4 text-sm text-red-500 cursor-pointer"
-                          onClick={() => {
-                            const newArr = t(
-                              "pride.toppers",
-                              defaultPrideToppers,
-                            ).filter((_, idx) => idx !== i);
-                            updateData("pride.toppers", newArr);
-                          }}
-                        >
-                          Delete
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {isEditing && (
-              <button
-                onClick={() => {
-                  const newItem = {
-                    year: "2024",
-                    name: "New Student",
-                    rank: "I",
-                    cgpa: "9.5",
-                  };
-                  updateData("pride.toppers", [
-                    ...t("pride.toppers", defaultPrideToppers),
-                    newItem,
-                  ]);
-                }}
-                className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
-              >
-                Add Topper
-              </button>
-            )}
+            <button
+              onClick={() => setPrideTab("toppers")}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                prideTab === "toppers"
+                  ? "border-b-4 border-ssgmce-orange text-ssgmce-blue"
+                  : "text-gray-600 hover:text-ssgmce-blue"
+              }`}
+            >
+              University Toppers
+            </button>
+            <button
+              onClick={() => setPrideTab("alumni")}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                prideTab === "alumni"
+                  ? "border-b-4 border-ssgmce-orange text-ssgmce-blue"
+                  : "text-gray-600 hover:text-ssgmce-blue"
+              }`}
+            >
+              Top Alumnis of Department
+            </button>
           </div>
-        )}
 
-        {/* Top Alumnis */}
-        {prideTab === "alumni" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    {[
-                      "Names of Alumni",
-                      "Position",
-                      "Names of Organisation",
-                    ].map((head, i) => (
-                      <th
-                        key={i}
-                        className="px-6 py-4 text-left text-sm font-bold text-gray-700"
-                      >
-                        {head}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {t("pride.alumni", defaultPrideAlumni).map((alumni, i) => (
-                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                        <EditableText
-                          value={alumni.name}
-                          onSave={(val) => {
-                            const newArr = [
-                              ...t("pride.alumni", defaultPrideAlumni),
-                            ];
-                            newArr[i] = { ...newArr[i], name: val };
-                            updateData("pride.alumni", newArr);
-                          }}
-                        />
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
-                        <EditableText
-                          value={alumni.position}
-                          onSave={(val) => {
-                            const newArr = [
-                              ...t("pride.alumni", defaultPrideAlumni),
-                            ];
-                            newArr[i] = { ...newArr[i], position: val };
-                            updateData("pride.alumni", newArr);
-                          }}
-                        />
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
-                        <EditableText
-                          value={alumni.org}
-                          onSave={(val) => {
-                            const newArr = [
-                              ...t("pride.alumni", defaultPrideAlumni),
-                            ];
-                            newArr[i] = { ...newArr[i], org: val };
-                            updateData("pride.alumni", newArr);
-                          }}
-                        />
-                      </td>
-                      {isEditing && (
-                        <td
-                          className="px-6 py-4 text-sm text-red-500 cursor-pointer"
-                          onClick={() => {
-                            const newArr = t(
-                              "pride.alumni",
-                              defaultPrideAlumni,
-                            ).filter((_, idx) => idx !== i);
-                            updateData("pride.alumni", newArr);
-                          }}
-                        >
-                          Delete
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {isEditing && (
-              <button
-                onClick={() => {
-                  const newItem = {
-                    name: "New Alumni",
-                    position: "Role",
-                    org: "Company",
-                  };
-                  updateData("pride.alumni", [
-                    ...t("pride.alumni", defaultPrideAlumni),
-                    newItem,
-                  ]);
-                }}
-                className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
-              >
-                Add Alumni
-              </button>
-            )}
-          </div>
-        )}
+          {/* GATE Qualified Students */}
+          {prideTab === "gate" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              {t("pride.gate", defaultPrideGate).map((gateYear, yearIdx) => (
+                <div
+                  key={yearIdx}
+                  className="bg-white rounded-lg shadow-md overflow-hidden"
+                >
+                  <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
+                    <h4 className="text-xl font-bold">
+                      <EditableText
+                        value={
+                          gateYear.title ||
+                          `GATE Qualified Students ${gateYear.year}`
+                        }
+                        onSave={(val) => {
+                          const newGate = JSON.parse(
+                            JSON.stringify(t("pride.gate", defaultPrideGate)),
+                          );
+                          newGate[yearIdx].title = val;
+                          updateData("pride.gate", newGate);
+                        }}
+                      />
+                    </h4>
+                  </div>
+                  {gateYear.students.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            {[
+                              "Sr. No.",
+                              "Name of Student",
+                              "Class",
+                              "Valid Score",
+                              "Category",
+                            ].map((h, i) => (
+                              <th
+                                key={i}
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              >
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {gateYear.students.map((student, studentIdx) => (
+                            <tr key={studentIdx} className="hover:bg-gray-50">
+                              {student.map((cell, cellIdx) => (
+                                <td
+                                  key={cellIdx}
+                                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                >
+                                  <EditableText
+                                    value={cell}
+                                    onSave={(val) =>
+                                      updatePrideGate(
+                                        yearIdx,
+                                        studentIdx,
+                                        cellIdx,
+                                        val,
+                                      )
+                                    }
+                                  />
+                                </td>
+                              ))}
+                              {isEditing && (
+                                <td
+                                  className="px-6 py-4 text-sm text-red-500 cursor-pointer"
+                                  onClick={() => {
+                                    const newGate = JSON.parse(
+                                      JSON.stringify(
+                                        t("pride.gate", defaultPrideGate),
+                                      ),
+                                    );
+                                    newGate[yearIdx].students = newGate[
+                                      yearIdx
+                                    ].students.filter(
+                                      (_, idx) => idx !== studentIdx,
+                                    );
+                                    updateData("pride.gate", newGate);
+                                  }}
+                                >
+                                  Delete
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="px-6 py-8 text-center text-gray-400 italic">
+                      No GATE qualified students for this year.
+                    </div>
+                  )}
+                  {isEditing && (
+                    <button
+                      onClick={() => {
+                        const newGate = JSON.parse(
+                          JSON.stringify(t("pride.gate", defaultPrideGate)),
+                        );
+                        const nextSr = String(gateYear.students.length + 1);
+                        newGate[yearIdx].students.push([
+                          nextSr,
+                          "New Student",
+                          "4U",
+                          "0",
+                          "OPEN",
+                        ]);
+                        updateData("pride.gate", newGate);
+                      }}
+                      className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                    >
+                      Add Student
+                    </button>
+                  )}
+                </div>
+              ))}
+              {isEditing && (
+                <button
+                  onClick={() => {
+                    const newGate = JSON.parse(
+                      JSON.stringify(t("pride.gate", defaultPrideGate)),
+                    );
+                    newGate.push({
+                      year: "2025",
+                      title: "GATE Qualified Students 2025",
+                      students: [],
+                    });
+                    updateData("pride.gate", newGate);
+                  }}
+                  className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                >
+                  Add Year
+                </button>
+              )}
+            </motion.div>
+          )}
 
-        {/* GATE Qualified */}
-        {prideTab === "gate" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    {[
-                      "Year",
-                      "Sr.No",
-                      "Name of student",
-                      "Valid Score",
-                      "Category",
-                    ].map((head, i) => (
-                      <th
-                        key={i}
-                        className="px-6 py-4 text-left text-sm font-bold text-gray-700"
-                      >
-                        {head}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {t("pride.gate", defaultPrideGate).map((student, i) => (
-                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-700 w-24">
-                        <EditableText
-                          value={student.year}
-                          onSave={(val) => {
-                            const newArr = [
-                              ...t("pride.gate", defaultPrideGate),
-                            ];
-                            newArr[i] = { ...newArr[i], year: val };
-                            updateData("pride.gate", newArr);
-                          }}
-                        />
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700 w-16">
-                        <EditableText
-                          value={student.sr}
-                          onSave={(val) => {
-                            const newArr = [
-                              ...t("pride.gate", defaultPrideGate),
-                            ];
-                            newArr[i] = { ...newArr[i], sr: val };
-                            updateData("pride.gate", newArr);
-                          }}
-                        />
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                        <EditableText
-                          value={student.name}
-                          onSave={(val) => {
-                            const newArr = [
-                              ...t("pride.gate", defaultPrideGate),
-                            ];
-                            newArr[i] = { ...newArr[i], name: val };
-                            updateData("pride.gate", newArr);
-                          }}
-                        />
-                      </td>
-                      <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                        <EditableText
-                          value={student.score}
-                          onSave={(val) => {
-                            const newArr = [
-                              ...t("pride.gate", defaultPrideGate),
-                            ];
-                            newArr[i] = { ...newArr[i], score: val };
-                            updateData("pride.gate", newArr);
-                          }}
-                        />
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700 w-24">
-                        <EditableText
-                          value={student.category}
-                          onSave={(val) => {
-                            const newArr = [
-                              ...t("pride.gate", defaultPrideGate),
-                            ];
-                            newArr[i] = { ...newArr[i], category: val };
-                            updateData("pride.gate", newArr);
-                          }}
-                        />
-                      </td>
-                      {isEditing && (
-                        <td
-                          className="px-6 py-4 text-sm text-red-500 cursor-pointer"
-                          onClick={() => {
-                            const newArr = t(
-                              "pride.gate",
-                              defaultPrideGate,
-                            ).filter((_, idx) => idx !== i);
-                            updateData("pride.gate", newArr);
-                          }}
+          {/* University Toppers */}
+          {prideTab === "toppers" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              {[
+                {
+                  label: "B.E. UNIVERSITY RANK HOLDERS",
+                  key: "be",
+                  default: defaultPrideToppersBE,
+                },
+                {
+                  label: "M.E. UNIVERSITY RANK HOLDERS",
+                  key: "me",
+                  default: defaultPrideToppersME,
+                },
+              ].map((category) => (
+                <div
+                  key={category.key}
+                  className="bg-white rounded-lg shadow-md overflow-hidden"
+                >
+                  <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
+                    <h4 className="text-xl font-bold">{category.label}</h4>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          {[
+                            "Year",
+                            "Name of the Student",
+                            "University Rank",
+                            "CGPA/Percentage",
+                          ].map((h, i) => (
+                            <th
+                              key={i}
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {t(`pride.toppers.${category.key}`, category.default)
+                          .length > 0 ? (
+                          t(
+                            `pride.toppers.${category.key}`,
+                            category.default,
+                          ).map((yearGroup, yearIdx) => (
+                            <React.Fragment key={yearIdx}>
+                              {yearGroup.records.map((record, recordIdx) => (
+                                <tr
+                                  key={recordIdx}
+                                  className="hover:bg-gray-50"
+                                >
+                                  {recordIdx === 0 && (
+                                    <td
+                                      className="px-6 py-4 text-sm font-medium text-gray-900"
+                                      rowSpan={yearGroup.records.length}
+                                    >
+                                      <EditableText
+                                        value={yearGroup.year}
+                                        onSave={(val) => {
+                                          const newData = JSON.parse(
+                                            JSON.stringify(
+                                              t(
+                                                `pride.toppers.${category.key}`,
+                                                category.default,
+                                              ),
+                                            ),
+                                          );
+                                          newData[yearIdx].year = val;
+                                          updateData(
+                                            `pride.toppers.${category.key}`,
+                                            newData,
+                                          );
+                                        }}
+                                      />
+                                    </td>
+                                  )}
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <EditableText
+                                      value={record.name}
+                                      onSave={(val) =>
+                                        updatePrideToppers(
+                                          category.key,
+                                          yearIdx,
+                                          recordIdx,
+                                          "name",
+                                          val,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <EditableText
+                                      value={record.rank}
+                                      onSave={(val) =>
+                                        updatePrideToppers(
+                                          category.key,
+                                          yearIdx,
+                                          recordIdx,
+                                          "rank",
+                                          val,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <EditableText
+                                      value={record.score}
+                                      onSave={(val) =>
+                                        updatePrideToppers(
+                                          category.key,
+                                          yearIdx,
+                                          recordIdx,
+                                          "score",
+                                          val,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  {isEditing && (
+                                    <td
+                                      className="px-6 py-4 text-sm text-red-500 cursor-pointer"
+                                      onClick={() => {
+                                        const newData = JSON.parse(
+                                          JSON.stringify(
+                                            t(
+                                              `pride.toppers.${category.key}`,
+                                              category.default,
+                                            ),
+                                          ),
+                                        );
+                                        newData[yearIdx].records = newData[
+                                          yearIdx
+                                        ].records.filter(
+                                          (_, idx) => idx !== recordIdx,
+                                        );
+                                        if (
+                                          newData[yearIdx].records.length === 0
+                                        ) {
+                                          newData.splice(yearIdx, 1);
+                                        }
+                                        updateData(
+                                          `pride.toppers.${category.key}`,
+                                          newData,
+                                        );
+                                      }}
+                                    >
+                                      Delete
+                                    </td>
+                                  )}
+                                </tr>
+                              ))}
+                            </React.Fragment>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={4}
+                              className="px-6 py-8 text-center text-gray-400 italic"
+                            >
+                              No data available yet.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  {isEditing && (
+                    <button
+                      onClick={() => {
+                        const newData = JSON.parse(
+                          JSON.stringify(
+                            t(
+                              `pride.toppers.${category.key}`,
+                              category.default,
+                            ),
+                          ),
+                        );
+                        newData.push({
+                          year: "2024-25",
+                          records: [
+                            {
+                              name: "New Student",
+                              rank: "1st",
+                              score: "9.5 CGPA",
+                            },
+                          ],
+                        });
+                        updateData(`pride.toppers.${category.key}`, newData);
+                      }}
+                      className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                    >
+                      Add Year Group
+                    </button>
+                  )}
+                </div>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Top Alumni */}
+          {prideTab === "alumni" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-lg shadow-md overflow-hidden"
+            >
+              <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
+                <h4 className="text-xl font-bold">
+                  <EditableText
+                    value={t("pride.alumniTitle", "Top Alumnis of Department")}
+                    onSave={(val) => updateData("pride.alumniTitle", val)}
+                  />
+                </h4>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      {[
+                        "S. N.",
+                        "Names of Alumni",
+                        "Position",
+                        "Names of Organisation",
+                      ].map((h, i) => (
+                        <th
+                          key={i}
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
-                          Delete
-                        </td>
-                      )}
+                          {h}
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {isEditing && (
-              <button
-                onClick={() => {
-                  const newItem = {
-                    year: "2024",
-                    sr: "1",
-                    name: "New Student",
-                    score: "40.00",
-                    category: "OPEN",
-                  };
-                  updateData("pride.gate", [
-                    ...t("pride.gate", defaultPrideGate),
-                    newItem,
-                  ]);
-                }}
-                className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
-              >
-                Add GATE Qualified
-              </button>
-            )}
-          </div>
-        )}
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {t("pride.alumni", defaultPrideAlumni).length > 0 ? (
+                      t("pride.alumni", defaultPrideAlumni).map(
+                        (alumnus, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                              {idx + 1}.
+                            </td>
+                            {alumnus.map((cell, cellIdx) => (
+                              <td
+                                key={cellIdx}
+                                className="px-6 py-4 text-sm text-gray-900"
+                              >
+                                <EditableText
+                                  value={cell}
+                                  onSave={(val) =>
+                                    updateOverviewTable(
+                                      "pride.alumni",
+                                      defaultPrideAlumni,
+                                      idx,
+                                      cellIdx,
+                                      val,
+                                    )
+                                  }
+                                />
+                              </td>
+                            ))}
+                            {isEditing && (
+                              <td
+                                className="px-6 py-4 text-sm text-red-500 cursor-pointer"
+                                onClick={() => {
+                                  const newArr = t(
+                                    "pride.alumni",
+                                    defaultPrideAlumni,
+                                  ).filter((_, i) => i !== idx);
+                                  updateData("pride.alumni", newArr);
+                                }}
+                              >
+                                Delete
+                              </td>
+                            )}
+                          </tr>
+                        ),
+                      )
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-6 py-8 text-center text-gray-400 italic"
+                        >
+                          No alumni data available yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {isEditing && (
+                <button
+                  onClick={() => {
+                    const newArr = [
+                      ...t("pride.alumni", defaultPrideAlumni),
+                      ["New Alumni", "Position", "Organisation"],
+                    ];
+                    updateData("pride.alumni", newArr);
+                  }}
+                  className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                >
+                  Add Alumni
+                </button>
+              )}
+            </motion.div>
+          )}
+        </motion.div>
       </div>
     ),
 
@@ -1539,7 +1762,7 @@ const EnTC = () => {
             />
           </h2>
           <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
-          <p className="text-gray-600 mt-3">
+          <div className="text-gray-600 mt-3">
             <EditableText
               value={t(
                 "projects.subtitle",
@@ -1547,7 +1770,7 @@ const EnTC = () => {
               )}
               onSave={(val) => updateField("projects.subtitle", val)}
             />
-          </p>
+          </div>
         </div>
 
         <div className="flex justify-center mb-6">
@@ -1701,172 +1924,235 @@ const EnTC = () => {
 
     activities: (
       <div className="space-y-8">
-        <div className="flex justify-between items-center border-l-4 border-ssgmce-orange pl-4 mb-6">
-          <h3 className="text-3xl font-bold text-gray-800">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
             <EditableText
               value={t("activities.title", "Co-Curricular Activities")}
               onSave={(val) => updateField("activities.title", val)}
             />
           </h3>
-          {isEditing && (
-            <button
-              onClick={() => {
-                const newItem = {
-                  title: "New Activity",
-                  date: "Date",
-                  department: "EXTC Department",
-                };
-                updateData("activities.list", [
-                  newItem,
-                  ...t("activities.list", defaultActivities || []),
-                ]);
-              }}
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 font-bold text-sm"
-            >
-              + Add Activity
-            </button>
-          )}
+          <span className="hidden sm:inline-block text-sm text-gray-500 bg-gray-100 px-4 py-1.5 rounded-full">
+            {t("activities.list", defaultActivities).length} Activities
+          </span>
         </div>
 
-        <div className="space-y-6">
-          {t("activities.list", defaultActivities || []).map((activity, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow relative"
-            >
-              {isEditing && (
-                <button
-                  onClick={() => {
-                    const newActivities = t(
-                      "activities.list",
-                      defaultActivities,
-                    ).filter((_, idx) => idx !== i);
-                    updateData("activities.list", newActivities);
-                  }}
-                  className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md transition-colors z-10"
-                  title="Delete Activity"
-                >
-                  Delete
-                </button>
-              )}
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <FaProjectDiagram className="text-ssgmce-blue text-xl" />
-                </div>
-                <div className="flex-1 pr-8">
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">
-                    <EditableText
-                      value={activity.title}
-                      onSave={(val) => {
-                        const newActivities = [
-                          ...t("activities.list", defaultActivities),
-                        ];
-                        newActivities[i] = { ...newActivities[i], title: val };
-                        updateData("activities.list", newActivities);
-                      }}
-                      multiline
-                    />
-                  </h4>
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <p className="flex items-center">
-                      <span className="font-semibold text-ssgmce-blue mr-2">
-                        Date:
-                      </span>
+        {/* Activity List */}
+        <div className="space-y-5">
+          {t("activities.list", defaultActivities || []).map(
+            (activity, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.03, duration: 0.35 }}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden"
+              >
+                <div className="flex flex-col sm:flex-row">
+                  {/* Image */}
+                  <div className="sm:w-72 flex-shrink-0 flex items-center justify-center bg-gray-50 border-r border-gray-100">
+                    {activity.image ? (
+                      <img
+                        src={activity.image}
+                        alt={activity.title}
+                        className="w-full h-48 sm:h-full object-contain bg-gray-50"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-48 sm:h-full flex items-center justify-center bg-gray-50">
+                        <FaCalendarAlt className="text-4xl text-gray-300" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Details */}
+                  <div className="flex-1 p-5 sm:p-6">
+                    {/* Date */}
+                    <span className="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded mb-3">
                       <EditableText
                         value={activity.date}
                         onSave={(val) => {
                           const newActivities = [
                             ...t("activities.list", defaultActivities),
                           ];
-                          newActivities[i] = { ...newActivities[i], date: val };
-                          updateData("activities.list", newActivities);
-                        }}
-                      />
-                    </p>
-                    {activity.participants && (
-                      <p className="flex items-center">
-                        <span className="font-semibold text-gray-700 mr-2">
-                          Participants:
-                        </span>
-                        <EditableText
-                          value={activity.participants}
-                          onSave={(val) => {
-                            const newActivities = [
-                              ...t("activities.list", defaultActivities),
-                            ];
-                            newActivities[i] = {
-                              ...newActivities[i],
-                              participants: val,
-                            };
-                            updateData("activities.list", newActivities);
-                          }}
-                        />
-                      </p>
-                    )}
-                    {activity.resource && (
-                      <p className="flex items-center">
-                        <span className="font-semibold text-gray-700 mr-2">
-                          Resource Person:
-                        </span>
-                        <EditableText
-                          value={activity.resource}
-                          onSave={(val) => {
-                            const newActivities = [
-                              ...t("activities.list", defaultActivities),
-                            ];
-                            newActivities[i] = {
-                              ...newActivities[i],
-                              resource: val,
-                            };
-                            updateData("activities.list", newActivities);
-                          }}
-                        />
-                      </p>
-                    )}
-                    {activity.coordinator && (
-                      <p className="flex items-center">
-                        <span className="font-semibold text-gray-700 mr-2">
-                          Coordinator:
-                        </span>
-                        <EditableText
-                          value={activity.coordinator}
-                          onSave={(val) => {
-                            const newActivities = [
-                              ...t("activities.list", defaultActivities),
-                            ];
-                            newActivities[i] = {
-                              ...newActivities[i],
-                              coordinator: val,
-                            };
-                            updateData("activities.list", newActivities);
-                          }}
-                        />
-                      </p>
-                    )}
-                    <p className="text-gray-500 italic mt-2">
-                      <EditableText
-                        value={activity.department}
-                        onSave={(val) => {
-                          const newActivities = [
-                            ...t("activities.list", defaultActivities),
-                          ];
-                          newActivities[i] = {
-                            ...newActivities[i],
-                            department: val,
+                          newActivities[idx] = {
+                            ...newActivities[idx],
+                            date: val,
                           };
                           updateData("activities.list", newActivities);
                         }}
                       />
-                    </p>
+                    </span>
+
+                    {/* Title */}
+                    <h4 className="text-lg font-bold text-gray-800 mb-4 leading-snug">
+                      <EditableText
+                        value={activity.title}
+                        onSave={(val) => {
+                          const newActivities = [
+                            ...t("activities.list", defaultActivities),
+                          ];
+                          newActivities[idx] = {
+                            ...newActivities[idx],
+                            title: val,
+                          };
+                          updateData("activities.list", newActivities);
+                        }}
+                        multiline
+                      />
+                    </h4>
+
+                    {/* Meta Info */}
+                    <div className="space-y-2.5 text-sm text-gray-600">
+                      {(activity.participants || isEditing) && (
+                        <div className="flex items-start gap-2.5">
+                          <FaUserTie className="text-blue-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="font-medium text-gray-700">
+                              Participants:{" "}
+                            </span>
+                            <EditableText
+                              value={
+                                activity.participants ||
+                                (isEditing ? "Add Participants" : "")
+                              }
+                              onSave={(val) => {
+                                const newActivities = [
+                                  ...t("activities.list", defaultActivities),
+                                ];
+                                newActivities[idx] = {
+                                  ...newActivities[idx],
+                                  participants: val,
+                                };
+                                updateData("activities.list", newActivities);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-start gap-2.5">
+                        <FaIndustry className="text-orange-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="font-medium text-gray-700">
+                            Organized by:{" "}
+                          </span>
+                          <EditableText
+                            value={activity.organizer}
+                            onSave={(val) => {
+                              const newActivities = [
+                                ...t("activities.list", defaultActivities),
+                              ];
+                              newActivities[idx] = {
+                                ...newActivities[idx],
+                                organizer: val,
+                              };
+                              updateData("activities.list", newActivities);
+                            }}
+                            multiline
+                          />
+                        </div>
+                      </div>
+
+                      {(activity.resource || isEditing) && (
+                        <div className="flex items-start gap-2.5">
+                          <FaUserTie className="text-green-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="font-medium text-gray-700">
+                              Resource Person:{" "}
+                            </span>
+                            <EditableText
+                              value={
+                                activity.resource ||
+                                (isEditing ? "Add Resource Person" : "")
+                              }
+                              onSave={(val) => {
+                                const newActivities = [
+                                  ...t("activities.list", defaultActivities),
+                                ];
+                                newActivities[idx] = {
+                                  ...newActivities[idx],
+                                  resource: val,
+                                };
+                                updateData("activities.list", newActivities);
+                              }}
+                              multiline
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {isEditing && (
+                        <div className="mt-3 pt-3 border-t border-gray-100">
+                          <label className="text-xs text-gray-500 font-medium">
+                            Image URL:
+                          </label>
+                          <EditableText
+                            value={activity.image || ""}
+                            onSave={(val) => {
+                              const newActivities = [
+                                ...t("activities.list", defaultActivities),
+                              ];
+                              newActivities[idx] = {
+                                ...newActivities[idx],
+                                image: val,
+                              };
+                              updateData("activities.list", newActivities);
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+
+                {/* Delete button for editing mode */}
+                {isEditing && (
+                  <div className="p-4 bg-gray-50 border-t border-gray-200">
+                    <button
+                      onClick={() => {
+                        const newActivities = t(
+                          "activities.list",
+                          defaultActivities,
+                        ).filter((_, i) => i !== idx);
+                        updateData("activities.list", newActivities);
+                      }}
+                      className="text-red-600 hover:text-red-700 text-sm font-medium"
+                    >
+                      Delete Activity
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            ),
+          )}
         </div>
+
+        {/* Add Activity Button */}
+        {isEditing && (
+          <div className="flex justify-center pt-4">
+            <button
+              onClick={() => {
+                const newActivity = {
+                  title: "New Activity",
+                  date: "Date",
+                  participants: "",
+                  organizer: "EXTC Department, SSGMCE",
+                  resource: "",
+                  image: "",
+                };
+                updateData("activities.list", [
+                  newActivity,
+                  ...t("activities.list", defaultActivities || []),
+                ]);
+              }}
+              className="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all"
+            >
+              <FaCalendarAlt className="mr-2" />
+              Add New Activity
+            </button>
+          </div>
+        )}
       </div>
     ),
 
@@ -1892,7 +2178,7 @@ const EnTC = () => {
                 }
               />
             </h4>
-            <p className="text-gray-600">
+            <div className="text-gray-600">
               <EditableText
                 value={t(
                   "achievements.departmentSubtitle",
@@ -1902,7 +2188,7 @@ const EnTC = () => {
                   updateField("achievements.departmentSubtitle", val)
                 }
               />
-            </p>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2134,7 +2420,7 @@ const EnTC = () => {
               onSave={(val) => updateField("templateData.faculty.title", val)}
             />
           </h3>
-          <p className="text-gray-500 mt-2">
+          <div className="text-gray-500 mt-2">
             <EditableText
               value={t(
                 "templateData.faculty.subtitle",
@@ -2144,7 +2430,7 @@ const EnTC = () => {
                 updateField("templateData.faculty.subtitle", val)
               }
             />
-          </p>
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -2445,7 +2731,7 @@ const EnTC = () => {
                     }}
                   />
                 </h4>
-                <p className="text-gray-600">
+                <div className="text-gray-600">
                   <EditableText
                     value={item.description}
                     onSave={(val) => {
@@ -2457,7 +2743,7 @@ const EnTC = () => {
                     }}
                     multiline
                   />
-                </p>
+                </div>
               </div>
             ),
           )}
@@ -2484,250 +2770,571 @@ const EnTC = () => {
 
     placements: (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
-          Placements
-        </h3>
-        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-          {Object.entries(t("placements", defaultPlacements)).map(
-            ([year, data], i) => (
-              <div key={i} className="mb-8 last:mb-0">
-                <h4 className="text-xl font-bold text-ssgmce-blue mb-4">
-                  Batch {year}
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <div className="text-2xl font-bold text-gray-900">
-                      <EditableText
-                        value={data.placed.toString()}
-                        onSave={(val) =>
-                          updateField(`placements.${year}.placed`, val)
-                        }
-                      />
-                    </div>
-                    <div className="text-sm text-gray-500">Placed</div>
-                  </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <div className="text-2xl font-bold text-gray-900">
-                      <EditableText
-                        value={data.offers.toString()}
-                        onSave={(val) =>
-                          updateField(`placements.${year}.offers`, val)
-                        }
-                      />
-                    </div>
-                    <div className="text-sm text-gray-500">Offers</div>
-                  </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <div className="text-2xl font-bold text-gray-900">
-                      <EditableText
-                        value={data.highestPackage}
-                        onSave={(val) =>
-                          updateField(`placements.${year}.highestPackage`, val)
-                        }
-                      />
-                    </div>
-                    <div className="text-sm text-gray-500">Highest Pkg</div>
-                  </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <div className="text-2xl font-bold text-gray-900">
-                      <EditableText
-                        value={data.averagePackage}
-                        onSave={(val) =>
-                          updateField(`placements.${year}.averagePackage`, val)
-                        }
-                      />
-                    </div>
-                    <div className="text-sm text-gray-500">Avg Pkg</div>
-                  </div>
-                </div>
+        <AnimatePresence mode="wait">
+          {!placementYear ? (
+            <motion.div
+              key="summary"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+            >
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                 <div>
-                  <h5 className="font-bold text-gray-700 mb-2">
-                    Top Recruiters:
-                  </h5>
-                  <div className="flex flex-wrap gap-2">
-                    {data.topRecruiters.map((rec, rIdx) => (
-                      <span
-                        key={rIdx}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-2"
-                      >
-                        <EditableText
-                          value={rec}
-                          onSave={(val) => {
-                            const newRecs = [...data.topRecruiters];
-                            newRecs[rIdx] = val;
-                            updateData(
-                              `placements.${year}.topRecruiters`,
-                              newRecs,
-                            );
-                          }}
-                        />
-                        {isEditing && (
-                          <button
-                            onClick={() => {
-                              const newRecs = data.topRecruiters.filter(
-                                (_, idx) => idx !== rIdx,
-                              );
-                              updateData(
-                                `placements.${year}.topRecruiters`,
-                                newRecs,
-                              );
-                            }}
-                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition-colors ml-2"
-                            title="Remove recruiter"
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </span>
-                    ))}
-                    {isEditing && (
-                      <button
-                        onClick={() => {
-                          updateData(`placements.${year}.topRecruiters`, [
-                            ...data.topRecruiters,
-                            "New Recruiter",
-                          ]);
-                        }}
-                        className="px-3 py-1 bg-gray-100 text-gray-500 rounded-full text-sm hover:bg-gray-200"
-                      >
-                        + Add
-                      </button>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    Placement Statistics
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Year-wise breakdown of student placements
+                  </p>
+                </div>
+                <FaChartLine className="text-4xl text-blue-100" />
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                      <th className="px-6 py-4 font-bold text-center w-20">
+                        Sr. No.
+                      </th>
+                      <th className="px-6 py-4 font-bold text-center">
+                        Academic Year
+                      </th>
+                      <th className="px-6 py-4 font-bold text-center">
+                        No. of Students Placed
+                      </th>
+                      <th className="px-6 py-4 font-bold text-center">
+                        Details Report
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 text-sm">
+                    {t("placements.summary", defaultPlacements.summary).map(
+                      (row, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-blue-50/30 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-center font-mono text-gray-400">
+                            {index + 1}
+                          </td>
+                          <td className="px-6 py-4 text-center font-bold text-gray-700">
+                            {row.year}
+                          </td>
+                          <td className="px-6 py-4 text-center font-bold text-ssgmce-blue text-lg">
+                            {row.count}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <button
+                              onClick={() => setPlacementYear(row.id)}
+                              className="text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                            >
+                              View Details
+                            </button>
+                          </td>
+                        </tr>
+                      ),
                     )}
-                  </div>
+                  </tbody>
+                </table>
+              </div>
+              <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+                * Placements still in progress for the current academic year.
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="detail"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <button
+                  onClick={() => setPlacementYear(null)}
+                  className="flex items-center text-gray-600 hover:text-ssgmce-blue font-medium transition-colors"
+                >
+                  <span className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-2 text-sm group-hover:bg-blue-100">
+                    <FaAngleRight className="transform rotate-180" />
+                  </span>
+                  Back to Statistics
+                </button>
+                <div className="text-right">
+                  <h3 className="text-xl font-bold text-gray-800">
+                    Placement Record
+                  </h3>
+                  <p className="text-sm text-ssgmce-blue font-bold">
+                    Session: {placementYear}
+                  </p>
                 </div>
               </div>
-            ),
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
+                      <tr>
+                        <th className="px-6 py-4 font-bold text-center w-16">
+                          Sr. No.
+                        </th>
+                        <th className="px-6 py-4 font-bold">Name of Student</th>
+                        <th className="px-6 py-4 font-bold">Company Name</th>
+                        <th className="px-6 py-4 font-bold text-right">CTC</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {t(
+                        `placements.details.${placementYear}`,
+                        defaultPlacements.details[placementYear] || [],
+                      ).map((student, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-center font-mono text-gray-400">
+                            {index + 1}
+                          </td>
+                          <td className="px-6 py-4 font-medium text-gray-800">
+                            {student.name}
+                          </td>
+                          <td className="px-6 py-4 text-gray-600">
+                            {student.company}
+                          </td>
+                          <td className="px-6 py-4 text-right font-bold text-ssgmce-blue">
+                            {student.ctc}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {(!t(
+                  `placements.details.${placementYear}`,
+                  defaultPlacements.details[placementYear] || [],
+                ).length ||
+                  t(
+                    `placements.details.${placementYear}`,
+                    defaultPlacements.details[placementYear] || [],
+                  ).length === 0) && (
+                  <div className="p-8 text-center text-gray-400">
+                    <p>Detailed placement data will be updated soon.</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       </div>
     ),
 
     newsletter: (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
-          Newsletters
-        </h3>
-        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-          <div className="mb-8">
-            <h4 className="text-xl font-bold text-gray-900 mb-4">
-              Latest Issue
-            </h4>
-            <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-              <h5 className="text-lg font-bold text-ssgmce-blue mb-2">
-                <EditableText
-                  value={t(
-                    "newsletters.latest.vol",
-                    defaultNewsletters.latest.vol,
-                  )}
-                  onSave={(val) => updateField("newsletters.latest.vol", val)}
-                />
-              </h5>
-              <p className="text-gray-700 mb-4">
-                <EditableText
-                  value={t(
-                    "newsletters.latest.highlights",
-                    defaultNewsletters.latest.highlights,
-                  )}
-                  onSave={(val) =>
-                    updateField("newsletters.latest.highlights", val)
-                  }
-                  multiline
-                />
-              </p>
-              <a
-                href="#"
-                className="inline-flex items-center px-4 py-2 bg-ssgmce-blue text-white rounded hover:bg-ssgmce-dark-blue transition-colors"
-              >
-                <FaDownload className="mr-2" /> Download PDF
-              </a>
-            </div>
+        {/* Newsletter Header */}
+        <div className="text-center">
+          <div className="w-16 h-16 bg-blue-50 text-ssgmce-blue rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
+            <FaBullseye />
           </div>
-          <div>
-            <h4 className="text-xl font-bold text-gray-900 mb-4">Archives</h4>
-            <div className="space-y-3">
-              {t("newsletters.archives", defaultNewsletters.archives).map(
-                (arch, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors relative"
-                  >
-                    <div>
-                      <div className="font-bold text-gray-800">
-                        <EditableText
-                          value={arch.vol}
-                          onSave={(val) => {
-                            const newArch = [
-                              ...t(
-                                "newsletters.archives",
-                                defaultNewsletters.archives,
-                              ),
-                            ];
-                            newArch[i] = { ...newArch[i], vol: val };
-                            updateData("newsletters.archives", newArch);
-                          }}
-                        />
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        <EditableText
-                          value={arch.date}
-                          onSave={(val) => {
-                            const newArch = [
-                              ...t(
-                                "newsletters.archives",
-                                defaultNewsletters.archives,
-                              ),
-                            ];
-                            newArch[i] = { ...newArch[i], date: val };
-                            updateData("newsletters.archives", newArch);
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <a
-                      href="#"
-                      className="text-ssgmce-blue hover:text-ssgmce-dark-blue"
-                    >
-                      <FaDownload />
-                    </a>
-                    {isEditing && (
-                      <button
-                        onClick={() => {
-                          const newArch = t(
-                            "newsletters.archives",
-                            defaultNewsletters.archives,
-                          ).filter((_, idx) => idx !== i);
-                          updateData("newsletters.archives", newArch);
-                        }}
-                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md transition-colors"
-                        title="Remove newsletter"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                ),
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
+            <EditableText
+              value={t("newsletters.title", "Department Newsletters")}
+              onSave={(val) => updateData("newsletters.title", val)}
+            />
+          </h3>
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <EditableText
+              value={t(
+                "newsletters.description",
+                "Stay updated with the latest happenings, student achievements, faculty contributions, and department events through our periodic newsletters.",
               )}
+              onSave={(val) => updateData("newsletters.description", val)}
+              multiline
+            />
+          </div>
+        </div>
+
+        {/* Newsletter Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-8 py-5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-wide">Newsletter</h3>
+              <p className="text-sm text-gray-300 mt-1">
+                Department of Electronics & Telecommunication Engineering
+              </p>
+            </div>
+            <FaDownload className="text-4xl text-blue-200 opacity-40" />
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th className="px-6 py-4 font-bold text-center w-20">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 font-bold">Publishing Date</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    More Details
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {/* Latest Issue Row */}
+                <tr className="hover:bg-blue-50/30 transition-colors bg-blue-50/10">
+                  <td className="px-6 py-4 text-center font-mono text-gray-400">
+                    1
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded-full">
+                        Latest
+                      </span>
+                      <span className="font-bold text-gray-800">
+                        <EditableText
+                          value={t(
+                            "newsletters.latest.title",
+                            defaultNewsletters.latest.title ||
+                              "News Letter 2024-25 (Volume II)",
+                          )}
+                          onSave={(val) =>
+                            updateNewsletter("latest", 0, "title", val)
+                          }
+                        />
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <a
+                      href={t(
+                        "newsletters.latest.link",
+                        defaultNewsletters.latest.link || "#",
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                    >
+                      <FaDownload className="text-xs" /> Click for Details
+                    </a>
+                  </td>
+                </tr>
+
+                {/* Archive Rows */}
+                {(
+                  t("newsletters.archives", defaultNewsletters.archives) || []
+                ).map((issue, i) => (
+                  <tr key={i} className="hover:bg-blue-50/30 transition-colors">
+                    <td className="px-6 py-4 text-center font-mono text-gray-400">
+                      {i + 2}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-bold text-gray-700">
+                        <EditableText
+                          value={issue.vol}
+                          onSave={(val) =>
+                            updateNewsletter("archives", i, "vol", val)
+                          }
+                        />
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <a
+                        href={issue.link || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                      >
+                        <FaDownload className="text-xs" /> Click for Details
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+            Click on "Click for Details" to view/download the newsletter PDF.
+          </div>
+        </motion.div>
+      </div>
+    ),
+
+    committee: (
+      <div className="space-y-8">
+        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
+          <EditableText
+            value={t("committeeTitle", "Departmental Committee")}
+            onSave={(val) => updateField("committeeTitle", val)}
+          />
+        </h3>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {t("departmentalCommittee", defaultDepartmentalCommittee).map(
+            (item, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow p-6 relative"
+              >
+                {isEditing && (
+                  <button
+                    onClick={() => {
+                      const updated = t(
+                        "departmentalCommittee",
+                        defaultDepartmentalCommittee,
+                      ).filter((_, idx) => idx !== i);
+                      updateData("departmentalCommittee", updated);
+                    }}
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
+                    title="Remove"
+                  >
+                    ✕
+                  </button>
+                )}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                    <FaFileAlt className="text-xl text-ssgmce-blue" />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900">
+                    <EditableText
+                      value={item.name}
+                      onSave={(val) => {
+                        const updated = [
+                          ...t(
+                            "departmentalCommittee",
+                            defaultDepartmentalCommittee,
+                          ),
+                        ];
+                        updated[i] = { ...updated[i], name: val };
+                        updateData("departmentalCommittee", updated);
+                      }}
+                    />
+                  </h4>
+                </div>
+                {item.link && (
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-ssgmce-blue hover:text-ssgmce-orange transition-colors"
+                  >
+                    <FaDownload className="text-xs" />
+                    Download PDF
+                  </a>
+                )}
+              </div>
+            ),
+          )}
+        </div>
+
+        {isEditing && (
+          <button
+            onClick={() => {
+              const updated = [
+                ...t("departmentalCommittee", defaultDepartmentalCommittee),
+                { name: "New Committee", link: "" },
+              ];
+              updateData("departmentalCommittee", updated);
+            }}
+            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 cursor-pointer text-center"
+          >
+            + Add Committee
+          </button>
+        )}
+      </div>
+    ),
+
+    services: (
+      <div className="space-y-8">
+        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
+          <EditableText
+            value={t(
+              "servicesTitle",
+              "Services Extended to Society / Community",
+            )}
+            onSave={(val) => updateField("servicesTitle", val)}
+          />
+        </h3>
+
+        <div className="space-y-6">
+          {t("servicesExtended", defaultServicesExtended).map((item, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden relative"
+            >
               {isEditing && (
                 <button
                   onClick={() => {
-                    const newItem = {
-                      vol: "Vol X",
-                      term: "Term X",
-                      date: "Date",
-                    };
-                    updateData("newsletters.archives", [
-                      ...t("newsletters.archives", defaultNewsletters.archives),
-                      newItem,
-                    ]);
+                    const updated = t(
+                      "servicesExtended",
+                      defaultServicesExtended,
+                    ).filter((_, idx) => idx !== i);
+                    updateData("servicesExtended", updated);
                   }}
-                  className="w-full py-2 bg-gray-100 text-gray-500 rounded hover:bg-gray-200"
+                  className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs z-10"
+                  title="Remove"
                 >
-                  + Archive
+                  ✕
                 </button>
               )}
+              <div className="flex items-stretch">
+                <div className="w-2 bg-ssgmce-blue shrink-0"></div>
+                <div className="p-6 flex-1">
+                  <div className="flex items-center gap-3 mb-3">
+                    <FaTools className="text-xl text-ssgmce-orange" />
+                    <h4 className="text-lg font-bold text-gray-900">
+                      <EditableText
+                        value={item.facility}
+                        onSave={(val) => {
+                          const updated = [
+                            ...t("servicesExtended", defaultServicesExtended),
+                          ];
+                          updated[i] = { ...updated[i], facility: val };
+                          updateData("servicesExtended", updated);
+                        }}
+                      />
+                    </h4>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed">
+                    <EditableText
+                      value={item.details}
+                      onSave={(val) => {
+                        const updated = [
+                          ...t("servicesExtended", defaultServicesExtended),
+                        ];
+                        updated[i] = { ...updated[i], details: val };
+                        updateData("servicesExtended", updated);
+                      }}
+                      multiline
+                    />
+                  </p>
+                </div>
+              </div>
             </div>
+          ))}
+        </div>
+
+        {isEditing && (
+          <button
+            onClick={() => {
+              const updated = [
+                ...t("servicesExtended", defaultServicesExtended),
+                {
+                  facility: "New Facility",
+                  details: "Description of services",
+                },
+              ];
+              updateData("servicesExtended", updated);
+            }}
+            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 cursor-pointer text-center"
+          >
+            + Add Service
+          </button>
+        )}
+      </div>
+    ),
+
+    projects: (
+      <div className="space-y-8">
+        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
+          <EditableText
+            value={t("ugProjectsTitle", "UG Projects")}
+            onSave={(val) => updateField("ugProjectsTitle", val)}
+          />
+        </h3>
+
+        {/* Year Tabs */}
+        <div className="flex flex-wrap gap-2">
+          {Object.keys(t("ugProjects", defaultUgProjects)).map((year) => (
+            <button
+              key={year}
+              onClick={() => setUgProjectYear(year)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                ugProjectYear === year
+                  ? "bg-ssgmce-blue text-white shadow-md"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              {year}
+            </button>
+          ))}
+        </div>
+
+        {/* Project Table */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white p-4">
+            <h4 className="text-lg font-bold flex items-center gap-2">
+              <FaBook className="text-ssgmce-orange" />
+              UG Projects – {ugProjectYear}
+            </h4>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border border-gray-200 w-16">
+                    Sr. No.
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border border-gray-200">
+                    Project Title
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {(t("ugProjects", defaultUgProjects)[ugProjectYear] || []).map(
+                  (project, i) => (
+                    <tr
+                      key={i}
+                      className="hover:bg-blue-50/30 transition-colors"
+                    >
+                      <td className="px-4 py-3 text-sm text-gray-500 font-medium border border-gray-200 text-center">
+                        {project.id || i + 1}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border border-gray-200">
+                        <EditableText
+                          value={project.title}
+                          onSave={(val) => {
+                            const updated = {
+                              ...t("ugProjects", defaultUgProjects),
+                            };
+                            const yearProjects = [...updated[ugProjectYear]];
+                            yearProjects[i] = {
+                              ...yearProjects[i],
+                              title: val,
+                            };
+                            updated[ugProjectYear] = yearProjects;
+                            updateData("ugProjects", updated);
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  ),
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
+
+        {isEditing && (
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                const updated = { ...t("ugProjects", defaultUgProjects) };
+                const yearProjects = updated[ugProjectYear] || [];
+                updated[ugProjectYear] = [
+                  ...yearProjects,
+                  { id: yearProjects.length + 1, title: "New Project Title" },
+                ];
+                updateData("ugProjects", updated);
+              }}
+              className="flex-1 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 cursor-pointer text-center"
+            >
+              + Add Project to {ugProjectYear}
+            </button>
+          </div>
+        )}
       </div>
     ),
   };
