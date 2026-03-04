@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import GenericPage from "../../components/GenericPage";
 import { useDepartmentData } from "../../hooks/useDepartmentData";
 import EditableText from "../../components/admin/EditableText";
@@ -51,71 +52,216 @@ import glbPhoto from "../../assets/images/departments/applied-sciences/faculty/G
 
 const APPLIED_DEFAULT_FACULTY = [
   {
-    name: "Dr. A. S. Tate",
+    id: "ast",
+    name: "Dr. A. S. Tale",
     role: "HOD & Associate Professor",
     area: ["Solid State Physics"],
     email: "astale@ssgmce.ac.in",
     phone: "+91 9960593094",
     photo: astPhoto,
+    vidwanId: "499514",
+    qualification: "Ph.D., M.Sc",
+    experience: "Teaching: 14 Years",
+    coursesTaught: ["Engineering Physics"],
+    scholarIds:
+      "VIDWAN ID: 499514 | Google Scholar: https://scholar.google.com/citations?user=jWp06xsAAAAJ&hl=en",
+    membership: [],
+    publications: [
+      "Effect of Sn2+ Doping on optical properties of thiourea capped ZnS nanoparticles - Chalcogenide Letters (Vol.No.7, Feb 2010)",
+      "Effect of Sn doping on structural properties of Cobalt oxide nanoparticles synthesized by sol gel method - IJAEMS",
+      "Synthesis by sol gel method and characterization of Co3O4 Nanoparticles - IJREAS (Vol.7, Issue 8, August-2017, pp1-6, Impact Factor: 7.196)",
+      "Effect of method of preparation on H2 sensing property of SnO2 nanoparticles (Communicated)",
+      "Modified sol-gel method assisted synthesis of SnO2 nanostructures for H2 Gas sensor (Communicated)",
+      "Effect of annealing temperature on hydrogen gas sensitivity of nanocrystalline SnO2 thin films (Communicated)",
+    ],
+    research:
+      "Ph.D Topic - Study of Nanoscaled Metal Oxide Based Semiconductor for Hydrogen Sensing (SGBAU/Ph.D/PHY./5324/2012 w.e.f. 15.01.2012). Patents Published: 01 - Exploring Superconducting Devices For Efficient Quantum Information Processing And Storage (Application No.202341069399 A, Publication Date: 24/11/2023). Research papers Published: 10, Poster Presented: 03",
+    fdp: "One Week Faculty Development Programs: 12, Workshops Organized: 01, Workshops Attended: 05, Training Attended: 01",
+    fellowship: [],
+    achievements: [
+      "Color coat holder of S.G.B. Amravati University in Cultural Youth Festival in 2006-07",
+      "Third rank in state level youth festival conducted by Sports department of Maharashtra State & Amravati Divisional sports office",
+      "First rank in Poster competition organized by Vidyarthi Kalyan Vibhag Amravati during session 2005-06",
+      "Third rank in Poster competition organized by Pravin Khodke Memorial Trust Amravati on 11th of Feb 2006",
+    ],
   },
   {
+    id: "avp",
     name: "Mr. A. V. Patil",
     role: "Associate Professor and Registrar",
     area: ["Organic Chemistry", "Environmental Chemistry"],
     email: "avpatil@ssgmce.ac.in",
     phone: "+91 7020904900",
     photo: avpPhoto,
+    vidwanId: "499732",
+    qualification: "M. Phil., P.G.D.I.P.M., M. Sc.",
+    experience: "Teaching: 25 Years, Industry: 2 Years",
+    coursesTaught: ["Engineering Chemistry", "Environmental Chemistry"],
+    scholarIds: "",
+    membership: ["02"],
+    publications: ["National Journals: 01", "National Conference: 02"],
+    research: "Heterocyclic Chemistry, Environmental Chemistry",
+    fdp: "",
+    fellowship: [],
+    achievements: [],
   },
   {
+    id: "rmk",
     name: "Dr. R. M. Kharate",
     role: "Associate Professor",
     area: ["Synthetic Organic Chemistry", "Environmental Chemistry"],
     email: "rmkharate@ssgmce.ac.in",
-    phone: "+91 9194234822",
+    phone: "+91 9423445822",
     photo: rmkPhoto,
+    vidwanId: "499769",
+    qualification: "Ph.D., B.Ed, M.Sc.",
+    experience: "Teaching: 17 Years, Research: 08 Years",
+    coursesTaught: ["Engineering Chemistry", "Environmental Studies"],
+    scholarIds: "VIDWAN ID: 499769",
+    membership: [
+      "Life Member of The Indian Society for Technical Education (ISTE), from 2004, Membership No. LM 43203",
+      "Life Member of Amravati University Chemistry Teachers Association (AUCTA)",
+      "Life Member of TREE, Team to Restore Entire Environment",
+    ],
+    publications: [
+      "International Journals: 07",
+      "International Conference: 01",
+      "National Conference: 03",
+    ],
+    research: "",
+    fdp: "One Week Faculty Development Programs: 05, Workshops Organized: 01, Workshops Attended: 05, Training Attended: 01",
+    fellowship: [
+      "Award for excellence in teaching in 2012 by parent organization",
+    ],
+    achievements: [
+      "Book Published: Engineering Chemistry, First Edition: Feb. 2016 Published by DnyanPath Publication Amravati, ISBN13: 978-81931863-5-0",
+      "Recognized supervisor for Ph.D. (SGBAU) 2023",
+    ],
   },
   {
-    name: "Mr N. S. Thakare",
+    id: "nst",
+    name: "Mr. N. S. Thakare",
     role: "Asst. Professor",
     area: ["Integral Transform"],
     email: "nsthakare@ssgmce.ac.in",
-    phone: "+91 9198815284",
+    phone: "+91 9881528424",
     photo: nstPhoto,
+    vidwanId: "499693",
+    qualification: "M.Phil., M.Sc., B.Ed",
+    experience: "Teaching: 25 Years",
+    coursesTaught: [
+      "Engineering Mathematics I, II, III & IV",
+      "Numerical Methods",
+      "Optimization Techniques",
+      "Statistical Methods",
+      "Operation Research",
+      "Qualitative Techniques",
+    ],
+    scholarIds: "VIDWAN ID: 499693",
+    membership: [
+      "Indian Society for Technical Education (Life Member: LM79534)",
+    ],
+    publications: [],
+    research:
+      "Fourier Transform, Wavelet Transform, Fast Fourier Transform, Fast Wavelet Transform, Fuzzy Mathematics",
+    fdp: "One Week Faculty Development Programs: 03, Workshops Organized: 01, Workshops Attended: 16, Training Organized: 01, Training Attended: 01",
+    fellowship: ["NSS BEST PO - SGBAU, Amravati"],
+    achievements: [],
   },
   {
+    id: "asa",
     name: "Mr. A. S. Alane",
     role: "Asst. Professor",
     area: ["Chemistry"],
     email: "asalane@ssgmce.ac.in",
-    phone: "+91 9195036309",
+    phone: "+91 9503630972",
     photo: asaPhoto,
+    vidwanId: "499688",
+    qualification: "M.Sc., B.Ed., Ph.D (Pursuing)",
+    experience: "Teaching: 15 Years",
+    coursesTaught: ["Engineering Chemistry", "Environmental Studies"],
+    scholarIds: "VIDWAN ID: 499688",
+    membership: [
+      "Indian Society for Technical Education (Life Member: LM-79535)",
+    ],
+    publications: [],
+    research: "",
+    fdp: "Workshops Attended: 10, Training Attended: 10",
+    fellowship: [],
+    achievements: [],
   },
   {
+    id: "hsp",
     name: "Mrs. H.S. Patil",
-    role: "SGBAU Certified Soft Skills Trainer",
+    role: "SGBAU Certified Soft Skills Trainer, Assistant Professor (Communication Skills)",
     area: [
-      "Assistant Professor (Communication Skills)",
       "Anchoring Formal/Informal Event",
-      "English Communication Skills, HR & Marketing, IMQC",
+      "English Communication Skills",
+      "HR & Marketing",
+      "IMQC",
     ],
     email: "hspatil@ssgmce.ac.in",
     phone: "+91 7038027303",
     photo: hspPhoto,
+    vidwanId: "501085",
+    qualification:
+      "B.Ed., M.A., M.B.A, PGDECS, Ph.D. (Registered), SGBAU-certified Soft Skills Trainer",
+    experience: "Teaching: 14 Years, Industry: 02 Years",
+    coursesTaught: [
+      "Communication Skills",
+      "Industrial Management and Quality Control (IMQC)",
+      "Human Resource Development & Marketing Management",
+      "Personality Development Courses",
+      "Soft Skills",
+    ],
+    scholarIds: "Vidwan-ID: 501085",
+    membership: [],
+    publications: [],
+    research: "Research Paper published: 01, Research Paper presented: 01",
+    fdp: "One Week Faculty Development Programs: 05, Workshops Attended: 05, Training Organized: 01",
+    fellowship: [
+      "Best Teacher Award (2012, SSGMCE Shegaon)",
+      "Sant Gadge Baba Amravati University Certified Soft Skills Trainer (2020)",
+      "Achieved Silver & Gold Certificate in NPTEL Soft Skills Courses (8 Courses Completed)",
+    ],
+    achievements: [
+      "TOT (Train The Trainer Workshop By SGBAU, 2019)",
+      "Leadscape Scholar Warrior FDP (2021)",
+      "AICTE ATAL FDP on Consulting: Building A Vibrant Industry-Academia Ecosystem (2021)",
+      "AICTE ATAL FDP on Critical Design Thinking In Engineering (2021)",
+      "Completed AICTE approved courses: Effective Technical Writing (Gold), Employment Communication (Silver), Body Language: Key To Professional Success (Gold), Interpersonal Skills (Silver)",
+    ],
   },
   {
+    id: "kpd",
     name: "Ms. K.P. Deshmukh",
     role: "Asst. Professor",
     area: ["Pure Mathematics"],
     email: "kpdeshmukh@ssgmce.ac.in",
-    phone: "+91 9186050771",
+    phone: "+91 8605077173",
     photo: kpdPhoto,
+    vidwanId: "499820",
+    qualification: "M.Sc., B.Ed",
+    experience: "Teaching: 13 Years",
+    coursesTaught: [
+      "Engineering Mathematics I, II, III",
+      "Numerical Methods & Operation Research Techniques",
+    ],
+    scholarIds: "VIDWAN ID: 499820",
+    membership: [],
+    publications: [],
+    research: "",
+    fdp: "One Week Faculty Development Programs: 08, Workshops Attended: 08, Training Attended: 05",
+    fellowship: [],
+    achievements: [],
   },
   {
+    id: "svb",
     name: "Mr. S. V. Bhagat",
     role: "Asst. Professor",
     area: [
       "English Language",
-      "English Litereture",
+      "English Literature",
       "Soft Skills",
       "Business Communication",
       "Communication Skills",
@@ -123,24 +269,82 @@ const APPLIED_DEFAULT_FACULTY = [
     email: "sachinvbhagat@ssgmce.ac.in",
     phone: "+91 9922127385",
     photo: svbPhoto,
+    vidwanId: "260276",
+    qualification:
+      "PhD (Pursuing), M. Phil, M.A. (English), Diploma in Mass Media",
+    experience: "Teaching: 11 Years, Research: 2 Years",
+    coursesTaught: [
+      "Communication Skills",
+      "Social Science and Engineering Economics",
+      "Professional Ethics",
+      "Soft Skills",
+    ],
+    scholarIds: "Vidwan-ID: 260276",
+    membership: [],
+    publications: [],
+    research: "",
+    fdp: "One Week Faculty Development Programs: 08, Workshops Attended: 09, Training Attended: 01",
+    fellowship: [
+      "NPTEL Topper (5% Category) Technical English for Engineers (2019)",
+    ],
+    achievements: [
+      "Translated 10 Video Lectures of NPTEL, IIT Kharagpur (English to Marathi)",
+    ],
   },
   {
+    id: "rr",
     name: "Ms. Rutika Raut",
     role: "Asst. Professor",
     area: ["Material Science"],
     email: "rgraut@ssgmce.ac.in",
     phone: "+91 9407347770",
     photo: rutikaPhoto,
+    vidwanId: "509196",
+    qualification: "M.Sc. (Physics)",
+    experience: "Teaching: 02 Years",
+    coursesTaught: ["Engineering Physics"],
+    scholarIds: "",
+    membership: [
+      "Member of Institute Management Committee of Govt ITI, Shegaon",
+      "Member of Marathwada Association of Small Scale Industries and Agriculture (MASSIA)",
+      "Member of Vidharbha Industrial Association",
+    ],
+    publications: [],
+    research: "",
+    fdp: "",
+    fellowship: [],
+    achievements: [],
   },
   {
+    id: "msp",
     name: "Dr. Mrs. M. S. Pande",
     role: "Asst. Professor",
     area: ["X-Rays", "Solid state Physics"],
     email: "mspande@ssgmce.ac.in",
     phone: "+91 9890850530",
     photo: mspandePhoto,
+    vidwanId: "499683",
+    qualification: "M. Sc. (Physics), B.Ed., Ph.D.",
+    experience: "Teaching: 15 Years, Research: 05 Years",
+    coursesTaught: ["Engineering Physics"],
+    scholarIds: "VIDWAN ID: 499683",
+    membership: [
+      "Indian Society for Technical Education (ISTE), from 2012 (Life Member No.: LM 85743)",
+    ],
+    publications: [
+      'M.S. Pande, Dr. V. D. Kapse, "Synthesis of nanosized perovskite type materials CdSnO3 for gas sensor applications", IJRITCC, 4(7) July 2016',
+      'M.S. Pande, Dr. V. D. Kapse, "Synthesis of nanosized perovskite type materials CdSnO3 for gas sensor applications", NC-ITSE 16, Mauli Group of Institution',
+      'M.S. Pande, Dr. V. D. Kapse, "Synthesis of nanosized perovskite type materials of pure & modified MSnO3 (M=Cd & Zn) for gas sensor applications", ICMBSAT',
+    ],
+    research: "",
+    fdp: "One Week Faculty Development Programs: 04, Workshops Attended: 01, Training Attended: 02",
+    fellowship: [
+      'Awarded NPTEL Certificate for the course "Newtonian Mechanics with examples" (Aug-Oct 2023, 8 week course)',
+    ],
+    achievements: [],
   },
   {
+    id: "jsg",
     name: "Dr. J. S. Gawande",
     role: "Asst. Professor",
     area: [
@@ -152,6 +356,69 @@ const APPLIED_DEFAULT_FACULTY = [
     email: "jsgawande@ssgmce.ac.in",
     phone: "+91 7798378604",
     photo: jsgPhoto,
+    vidwanId: "499566",
+    qualification: "Ph.D (Mathematics), M.Sc (Mathematics)",
+    experience: "Teaching: 09 Years",
+    coursesTaught: [
+      "Engineering Mathematics I, II, III, IV",
+      "Combinatorial Theory",
+    ],
+    scholarIds: "VIDWAN ID: 499566",
+    membership: [],
+    publications: [],
+    research: "",
+    fdp: "One Week Faculty Development Programs: 03, Training Attended: 01",
+    fellowship: [
+      "Secured first position as a university topper in RTMNU Nagpur University with four Gold Medals",
+    ],
+    achievements: [],
+  },
+  {
+    id: "glb",
+    name: "Mr. G. L. Bayaskar",
+    role: "Asst. Professor",
+    area: ["Physical Education"],
+    email: "glbayaskar@ssgmce.ac.in",
+    phone: "",
+    photo: glbPhoto,
+    vidwanId: "",
+    qualification: "M.A., M.P.Ed",
+    experience: "",
+    coursesTaught: [],
+    scholarIds: "",
+    membership: [],
+    publications: [],
+    research: "",
+    fdp: "",
+    fellowship: [],
+    achievements: [],
+  },
+];
+
+const APPLIED_DEFAULT_LABS = [
+  {
+    name: "Engineering Physics Laboratory",
+    image: "",
+    resources:
+      "Cathode Ray Oscilloscope, Function Generator, Hall effect setup, Newton's Ring apparatus, Laser, Sonometer, Spectrometer, Optical Bench, Polarimeter, Diffraction Grating apparatus, Photo Electric Effect setup, Semiconductor Diode characteristics setup, Zener Diode characteristics setup, Thermistor characteristics setup, Digital Multimeter, Power Supply.",
+    facilities:
+      "Area: 80 Sq.Mtrs | Systems: 05 PC | Lab Benches: 15 | UPS: 5 KVA",
+  },
+  {
+    name: "Engineering Chemistry Laboratory",
+    image: "",
+    resources:
+      "Digital Oven, Furnace, Redwood Viscometer, Pensky's Martin Flash point apparatus, Freeze, Microwave Oven, pH Meter, Conductivity Meter, Colorimeter, Potentiometer, Burettes, Pipettes, Conical Flasks, Beakers, Measuring Cylinders, Reagent Bottles, Chemical Balances, Hot Plates, Magnetic Stirrers.",
+    facilities:
+      "Area: 85 Sq.Mtrs | Systems: 05 PC | Lab Benches: 20 | Fume Hood | UPS: 5 KVA",
+  },
+  {
+    name: "Language Laboratory / Communication Skills Lab",
+    image: "",
+    resources:
+      "International Linguaphone Kit, ETNL Software, Lenovo Think Centre Desktop Computer System (30 Nos.), Headphone with microphone (30 Nos.), DVD Writer, Cable Switch J.E. 0064, CISCO LINK Sport Switch, Server System with Teacher Console, LCD Projector, Interactive White Board, Language Learning Software Packages.",
+    facilities:
+      "Area: 100 Sq.Mtrs | Systems: 30 PC + 1 Server | Seating Capacity: 30 Students | UPS: 10 KVA (Two in number)",
   },
 ];
 
@@ -1041,79 +1308,171 @@ const AppliedSciences = () => {
 
     laboratories: (
       <div className="space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">
-            Infrastructure and Labs
-          </h2>
-          <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
-        </div>
+        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+          Infrastructure and Laboratories
+        </h3>
 
-        {/* Labs Grid */}
-        <div className="space-y-8">
-          {[
-            {
-              name: "Engineering Physics Lab",
-              color: "blue",
-              photo: "Physics Lab Photo",
-              resources:
-                "Cathode Ray Oscilloscope, Function Generator, Hall effect setup, Newton's Ring apparatus, Laser",
-            },
-            {
-              name: "Engineering Chemistry Lab",
-              color: "green",
-              photo: "Chemistry Lab Photo",
-              resources:
-                "Digital Oven, Furnace, Redwood Viscometer, Pensky's Martin Flash point apparatus, Freeze, Microwave Oven",
-            },
-            {
-              name: "Language Lab",
-              color: "purple",
-              photo: "Language Lab Photo",
-              resources:
-                "Equipped with :International Lingua-phone Kit, ETNL Software, Lenovo Think Centre Desktop Computer System, Headphone with mike, DVD Writer, Cable Switch J.E. 0064, CISCO LINK Sport Switch, UPS: 5 KVA WITH BATTERIES (Two in number)",
-            },
-          ].map((lab, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
-            >
-              <div className="grid md:grid-cols-5 gap-6">
-                {/* Photo Section */}
-                <div className="md:col-span-2 bg-gradient-to-br from-gray-100 to-gray-50 p-6 flex items-center justify-center">
-                  <div className="text-center">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          {/* Lab Entries */}
+          {t("templateData.laboratories", APPLIED_DEFAULT_LABS).map(
+            (lab, index) => (
+              <div
+                key={index}
+                className="grid md:grid-cols-12 border-b border-gray-200 last:border-b-0 relative"
+              >
+                {/* Delete Button */}
+                {isEditing && (
+                  <button
+                    onClick={() => {
+                      const updated = t(
+                        "templateData.laboratories",
+                        APPLIED_DEFAULT_LABS,
+                      ).filter((_, i) => i !== index);
+                      updateField("templateData.laboratories", updated);
+                    }}
+                    className="absolute top-2 right-2 z-10 bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md hover:bg-red-600 transition-colors"
+                    title="Delete laboratory"
+                  >
+                    Delete Lab
+                  </button>
+                )}
+
+                {/* Lab Photo Column */}
+                <div className="md:col-span-5 bg-gray-50 p-6 border-r border-gray-100">
+                  {lab.image ? (
+                    <EditableImage
+                      src={lab.image}
+                      onSave={(url) => {
+                        const updated = [
+                          ...t(
+                            "templateData.laboratories",
+                            APPLIED_DEFAULT_LABS,
+                          ),
+                        ];
+                        updated[index].image = url;
+                        updateField("templateData.laboratories", updated);
+                      }}
+                      className="aspect-video w-full object-cover rounded-lg"
+                    />
+                  ) : (
                     <div
-                      className={`w-32 h-32 mx-auto bg-${lab.color}-100 rounded-full flex items-center justify-center mb-4`}
+                      className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:from-gray-300 hover:to-gray-400 transition-colors"
+                      onClick={() => {
+                        if (isEditing) {
+                          const url = prompt("Enter image URL:");
+                          if (url) {
+                            const updated = [
+                              ...t(
+                                "templateData.laboratories",
+                                APPLIED_DEFAULT_LABS,
+                              ),
+                            ];
+                            updated[index].image = url;
+                            updateField("templateData.laboratories", updated);
+                          }
+                        }
+                      }}
                     >
-                      <FaLaptopCode
-                        className={`text-6xl text-${lab.color}-600`}
-                      />
+                      <span className="text-6xl">🖥️</span>
+                      {isEditing && (
+                        <span className="absolute text-xs text-gray-600 mt-20">
+                          Click to add image
+                        </span>
+                      )}
                     </div>
-                    <p className="text-sm text-gray-600 font-semibold">
-                      Laboratory Photo
-                    </p>
-                  </div>
+                  )}
+                  <h4 className="font-bold text-gray-800 text-center mt-4">
+                    <EditableText
+                      value={lab.name}
+                      onSave={(val) => {
+                        const updated = [
+                          ...t(
+                            "templateData.laboratories",
+                            APPLIED_DEFAULT_LABS,
+                          ),
+                        ];
+                        updated[index].name = val;
+                        updateField("templateData.laboratories", updated);
+                      }}
+                    />
+                  </h4>
                 </div>
 
-                {/* Details Section */}
-                <div className="md:col-span-3 p-6">
-                  <h3
-                    className={`text-2xl font-bold text-${lab.color}-700 mb-4 pb-2 border-b-2 border-${lab.color}-200`}
-                  >
-                    {lab.name}
-                  </h3>
-                  <div>
-                    <p className="text-gray-700 leading-relaxed">
-                      {lab.resources}
-                    </p>
+                {/* Lab Details Column */}
+                <div className="md:col-span-7 p-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h5 className="font-semibold text-red-600 text-sm mb-2">
+                        Lab Equipment / Resources:
+                      </h5>
+                      <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                        <EditableText
+                          value={lab.resources}
+                          onSave={(val) => {
+                            const updated = [
+                              ...t(
+                                "templateData.laboratories",
+                                APPLIED_DEFAULT_LABS,
+                              ),
+                            ];
+                            updated[index].resources = val;
+                            updateField("templateData.laboratories", updated);
+                          }}
+                          multiline
+                        />
+                      </div>
+                    </div>
+                    {(lab.facilities || isEditing) && (
+                      <div>
+                        <h5 className="font-semibold text-red-600 text-sm mb-2">
+                          Facilities / Infrastructure:
+                        </h5>
+                        <div className="text-gray-700 text-sm leading-relaxed">
+                          <EditableText
+                            value={lab.facilities || "Additional facilities..."}
+                            onSave={(val) => {
+                              const updated = [
+                                ...t(
+                                  "templateData.laboratories",
+                                  APPLIED_DEFAULT_LABS,
+                                ),
+                              ];
+                              updated[index].facilities = val;
+                              updateField("templateData.laboratories", updated);
+                            }}
+                            multiline
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            </motion.div>
-          ))}
+            ),
+          )}
+
+          {/* Add New Lab Button */}
+          {isEditing && (
+            <div className="p-6 bg-gray-50 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  const updated = [
+                    ...t("templateData.laboratories", APPLIED_DEFAULT_LABS),
+                    {
+                      name: "New Laboratory",
+                      image: "",
+                      resources: "Lab equipment and resources details...",
+                      facilities: "Facilities and infrastructure details...",
+                    },
+                  ];
+                  updateField("templateData.laboratories", updated);
+                }}
+                className="w-full py-3 px-4 bg-ssgmce-blue text-white rounded-lg hover:bg-ssgmce-dark-blue transition-colors font-medium"
+              >
+                + Add New Laboratory
+              </button>
+            </div>
+          )}
         </div>
       </div>
     ),
@@ -1137,13 +1496,13 @@ const AppliedSciences = () => {
               className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex"
             >
               {/* Image Area - Fixed Width */}
-              <div className="w-32 sm:w-40 bg-gray-50 flex-shrink-0 relative overflow-hidden border-r border-gray-100">
+              <div className="w-36 sm:w-44 min-h-[200px] bg-gray-50 flex-shrink-0 relative overflow-hidden border-r border-gray-100 flex items-center justify-center">
                 {fac.photo ? (
                   <EditableImage
                     src={fac.photo}
                     onSave={(val) => updateFacultyMember(i, "photo", val)}
                     alt={fac.name || "Faculty"}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+                    className="w-full h-full object-contain transition-transform group-hover:scale-105 duration-500"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
@@ -1154,12 +1513,15 @@ const AppliedSciences = () => {
 
               {/* Content Area */}
               <div className="p-5 flex-1 flex flex-col justify-center">
-                <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
+                <Link
+                  to={`/faculty/${fac.id}`}
+                  className="text-lg font-bold text-gray-900 hover:text-ssgmce-blue transition-colors cursor-pointer"
+                >
                   <EditableText
                     value={fac.name}
                     onSave={(val) => updateFacultyMember(i, "name", val)}
                   />
-                </h4>
+                </Link>
                 <p className="text-ssgmce-blue font-medium text-sm mb-3 uppercase tracking-wide text-[11px]">
                   <EditableText
                     value={fac.role}
@@ -1193,6 +1555,22 @@ const AppliedSciences = () => {
                   )}
 
                   <div className="pt-2 flex flex-col gap-1">
+                    {fac.vidwanId && (
+                      <span className="flex items-center text-xs">
+                        <FaUserTie className="mr-2 text-gray-400" />
+                        <span className="font-semibold text-gray-700">
+                          Vidwan ID:{" "}
+                        </span>
+                        <a
+                          href={`https://vidwan.inflibnet.ac.in/profile/${fac.vidwanId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-ssgmce-blue hover:underline ml-1"
+                        >
+                          {fac.vidwanId}
+                        </a>
+                      </span>
+                    )}
                     {fac.email && (
                       <span className="flex items-center hover:text-ssgmce-blue transition-colors truncate text-xs">
                         <FaEnvelope className="mr-2 text-gray-400" />
@@ -3166,4 +3544,5 @@ const AppliedSciences = () => {
   );
 };
 
+export { APPLIED_DEFAULT_FACULTY };
 export default AppliedSciences;
