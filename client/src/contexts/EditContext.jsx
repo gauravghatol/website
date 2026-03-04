@@ -46,6 +46,8 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
         const key = keys[i];
         if (!current[key] || typeof current[key] !== "object") {
           current[key] = {};
+        } else if (Array.isArray(current[key])) {
+          current[key] = [...current[key]]; // preserve array type
         } else {
           current[key] = { ...current[key] };
         }
@@ -68,9 +70,25 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
     }
 
     try {
-      const response = await axios.put(`/api/pages/${pageId}`, {
-        data: data,
-      });
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        console.error("No authentication token found");
+        return { 
+          success: false, 
+          error: "Not authenticated. Please login again." 
+        };
+      }
+
+      const response = await axios.put(
+        `/api/pages/${pageId}`,
+        data,  // send the full data object directly so the server can merge top-level fields
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}` 
+          } 
+        }
+      );
 
       if (response.data.success) {
         setHasChanges(false);
@@ -99,5 +117,3 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
 
   return <EditContext.Provider value={value}>{children}</EditContext.Provider>;
 };
-
-export default EditContext;
