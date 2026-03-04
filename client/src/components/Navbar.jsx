@@ -152,7 +152,19 @@ const Navbar = () => {
         { name: 'e-Content Facility', path: '/iqac/econtent-facility' },
       ]
     },
-    { name: 'NIRF Ranking', path: '/nirf' },
+    {
+      name: 'NIRF Ranking',
+      path: '/nirf',
+      megaMenuImage: 'https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=800&h=600&fit=crop',
+      megaMenuTitle: 'NIRF Rankings',
+      dropdown: [
+        { name: 'NIRF 2025-26', path: '/nirf?year=2025-26' },
+        { name: 'NIRF 2024-25', path: '/nirf?year=2024-25' },
+        { name: 'NIRF 2023-24', path: '/nirf?year=2023-24' },
+        { name: 'NIRF 2022-23', path: '/nirf?year=2022-23' },
+        { name: 'NIRF 2021-22', path: '/nirf?year=2021-22' },
+      ]
+    },
     {
       name: 'Documents',
       path: '/documents',

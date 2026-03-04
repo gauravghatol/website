@@ -6,6 +6,7 @@ import About from "./pages/About";
 import Departments from "./pages/Departments";
 import Admissions from "./pages/Admissions";
 import Faculty from "./pages/Faculty";
+import FacultyDetail from "./pages/FacultyDetail";
 import Placements from "./pages/Placements";
 import Research from "./pages/Research";
 import Events from "./pages/Events";
@@ -76,6 +77,7 @@ import NAAC from "./pages/documents/NAAC";
 import NBA from "./pages/documents/NBA";
 import Newsletter from "./pages/documents/Newsletter";
 import NIRF from "./pages/documents/NIRF";
+import NIRFRanking from "./pages/NIRFRanking";
 import StudentForms from "./pages/documents/StudentForms";
 import Policies from "./pages/documents/Policies";
 import Tattwadarshi from "./pages/documents/Tattwadarshi";
@@ -260,6 +262,14 @@ function App() {
             element={
               <Layout>
                 <Faculty />
+              </Layout>
+            }
+          />
+          <Route
+            path="/faculty/:facultyId"
+            element={
+              <Layout>
+                <FacultyDetail />
               </Layout>
             }
           />
@@ -813,6 +823,14 @@ function App() {
             element={
               <Layout>
                 <Newsletter />
+              </Layout>
+            }
+          />
+          <Route
+            path="/nirf"
+            element={
+              <Layout>
+                <NIRFRanking />
               </Layout>
             }
           />

@@ -1,9 +1,38 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import GenericPage from "../../components/GenericPage";
 import { useDepartmentData } from "../../hooks/useDepartmentData";
 import EditableText from "../../components/admin/EditableText";
 import EditableImage from "../../components/admin/EditableImage";
+import {
+  defaultFaculty as IT_DEFAULTS,
+  defaultActivities,
+  defaultPrideGate,
+  defaultPrideToppersBE,
+  defaultPrideAlumni,
+  defaultNewsletters,
+  defaultAchievements,
+  defaultInnovativePractices,
+  defaultItPatents,
+  defaultItPublications,
+  defaultItConferences,
+  defaultItBooks,
+  defaultItCopyrights,
+  defaultItUgProjects,
+} from "../../data/itDefaults";
+import { defaultPlacements } from "../../data/itPlacements";
+import { defaultItInternships } from "../../data/itInternships";
 import itBanner from "../../assets/images/departments/it/IT banner.png";
+
+// Industrial Visit Photos
+import ivValueMomentum2025 from "../../assets/images/departments/it/industrial-visits/valuemomentum_pune_2025.png";
+import ivHcltech2024 from "../../assets/images/departments/it/industrial-visits/hcltech_nagpur_2024.png";
+import ivSaama2024 from "../../assets/images/departments/it/industrial-visits/saama_technologies_pune_2024.png";
+import ivValueMomentum2024 from "../../assets/images/departments/it/industrial-visits/valuemomentum_pune_2024.png";
+import ivMindscripts2020 from "../../assets/images/departments/it/industrial-visits/mindscripts_pune_2020.jpg";
+import ivJadeGlobal2020 from "../../assets/images/departments/it/industrial-visits/jade_global_pune_2020.jpg";
+import ivEzest2018 from "../../assets/images/departments/it/industrial-visits/ezest_pune_2018.jpg";
+import ivRamakrishna2018 from "../../assets/images/departments/it/industrial-visits/ramakrishna_it_pune_2018.jpg";
 
 // HOD Photo
 import hodPhoto from "../../assets/images/departments/it/faculty/SDPadiya.jpg";
@@ -19,6 +48,27 @@ import snkPhoto from "../../assets/images/departments/it/faculty/SNK.jpg";
 import nngPhoto from "../../assets/images/departments/it/faculty/NNG.jpg";
 import palPhoto from "../../assets/images/departments/it/faculty/PALod.jpeg";
 import kpPhoto from "../../assets/images/departments/it/faculty/KP.jpeg";
+
+// Photo map for resolving IT faculty photo string references
+const itPhotoMap = {
+  SDP: hodPhoto,
+  ASM: asmPhoto,
+  PVK: pvkPhoto,
+  AGS: agsPhoto,
+  FIK: fikPhoto,
+  SSM: ssmPhoto,
+  PPB: ppbPhoto,
+  SNK: snkPhoto,
+  NNG: nngPhoto,
+  PAL: palPhoto,
+  KP: kpPhoto,
+};
+
+// Resolve IT faculty photos from string references to actual imports
+const IT_DEFAULT_FACULTY = IT_DEFAULTS.map((f) => ({
+  ...f,
+  photo: itPhotoMap[f.photo] || f.photo,
+}));
 
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -38,115 +88,21 @@ import {
   FaProjectDiagram,
   FaCalendarAlt,
   FaDownload,
+  FaUsers,
+  FaUserGraduate,
+  FaChalkboardTeacher,
+  FaTimes,
+  FaChevronLeft,
+  FaChevronRight,
+  FaExternalLinkAlt,
+  FaFileAlt,
+  FaImages,
+  FaSearchPlus,
+  FaMapMarkerAlt,
+  FaBook,
 } from "react-icons/fa";
 
-const IT_DEFAULT_FACULTY = [
-  {
-    name: "Dr. S. D. Padiya",
-    role: "Associate Professor & Head",
-    area: [
-      "Bluetooth Low Energy",
-      "Wireless Sensor Network",
-      "Protocol Design",
-      "IoT",
-      "Embedded System Programming",
-    ],
-    email: "sdpadiya@ssgmce.ac.in",
-    phone: "+91 7588501506",
-    photo: hodPhoto,
-  },
-  {
-    name: "Dr. A. S. Manekar",
-    role: "Associate Professor (On Lien)",
-    area: [
-      "Data Mining",
-      "Big Data Analytics",
-      "Internet Security",
-      "Cloud Computing",
-    ],
-    email: "asmanekar@ssgmce.ac.in",
-    phone: "+91 9028288008",
-    photo: asmPhoto,
-  },
-  {
-    name: "Ms. P. V. Kale",
-    role: "Assistant Professor",
-    area: ["Machine Learning"],
-    email: "pvkale@ssgmce.ac.in",
-    phone: "+91 9975647169",
-    photo: pvkPhoto,
-  },
-  {
-    name: "Mr. A. G. Sharma",
-    role: "Assistant Professor",
-    area: ["Data Science", "Machine Learning", "NLP"],
-    email: "agsharma@ssgmce.ac.in",
-    phone: "+91 9096454872",
-    photo: agsPhoto,
-  },
-  {
-    name: "Mr. F. I. Khandwani",
-    role: "Assistant Professor",
-    area: ["Database Management System"],
-    email: "mfkhandwani@ssgmce.ac.in",
-    phone: "+91 9970936786",
-    photo: fikPhoto,
-  },
-  {
-    name: "Mr. S. S. Muddalkar",
-    role: "Assistant Professor",
-    area: ["Discrete Structure", "Cloud Computing"],
-    email: "ssmuddalkar@ssgmce.ac.in",
-    phone: "+91 9655840821",
-    photo: ssmPhoto,
-  },
-  {
-    name: "Ms. P. P. Bute",
-    role: "Assistant Professor",
-    area: ["Network Security", "Digital Image Processing"],
-    email: "ppbute@ssgmce.ac.in",
-    phone: "",
-    photo: ppbPhoto,
-  },
-  {
-    name: "Mrs. S. N. Khandare",
-    role: "Assistant Professor",
-    area: [
-      "Data Science",
-      "Data Analytics",
-      "Big Data Computing",
-      "Applied AI",
-    ],
-    email: "snkhandare@ssgmce.ac.in",
-    phone: "",
-    photo: snkPhoto,
-  },
-  {
-    name: "Ms. N. N. Ghuikar",
-    role: "Assistant Professor",
-    area: ["Programming and Software Testing"],
-    email: "nnghuikar@ssgmce.ac.in",
-    phone: "+91 7499340477",
-    photo: nngPhoto,
-  },
-  {
-    name: "Mr. P. A. Lod",
-    role: "Assistant Professor",
-    area: ["Business Intelligence"],
-    email: "palod@ssgmce.ac.in",
-    phone: "+91 9775797555",
-    photo: palPhoto,
-  },
-  {
-    name: "Mr. Ketan Pachpade",
-    role: "Professor of Practice",
-    area: ["Owner and Product Architect", "Gigasoft Technologies, Pune"],
-    email: "",
-    phone: "",
-    photo: kpPhoto,
-    isIndustry: true,
-  },
-];
+// IT_DEFAULT_FACULTY is now imported and resolved above via itDefaults.js + itPhotoMap
 
 const IT = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -157,8 +113,36 @@ const IT = () => {
   const [prideTab, setPrideTab] = useState("gate");
   const [researchTab, setResearchTab] = useState("projects");
   const [projectYear, setProjectYear] = useState("2024-25");
-  const [researchYear, setResearchYear] = useState("2023-24");
+  const [ugProjectYear, setUgProjectYear] = useState("2024-25");
+  const [researchYear, setResearchYear] = useState("2024-25");
   const [placementYear, setPlacementYear] = useState(null);
+  const [patentSubTab, setPatentSubTab] = useState("patents");
+  const [internshipYear, setInternshipYear] = useState("2024-25");
+  const researchYears = [
+    "2024-25",
+    "2023-24",
+    "2022-23",
+    "2021-22",
+    "2020-21",
+    "2019-20",
+  ];
+
+  const updateInternship = (year, index, field, value) => {
+    const dataObj = JSON.parse(
+      JSON.stringify(t("internships", defaultItInternships)),
+    );
+    dataObj[year][index][field] = value;
+    updateData("internships", dataObj);
+  };
+
+  // State for Industrial Visit lightbox
+  const [ivLightbox, setIvLightbox] = useState(null);
+
+  // State for Curricular Activities section
+  const [activitiesVisible, setActivitiesVisible] = useState(6);
+  const [lightboxActivity, setLightboxActivity] = useState(null);
+  const [achievementTab, setAchievementTab] = useState("faculty");
+  const [certificateLightbox, setCertificateLightbox] = useState(null);
 
   // Load department data (works in both edit and public view modes)
   const {
@@ -172,6 +156,51 @@ const IT = () => {
   // Helper for array updates
   const updateField = (path, value) => {
     updateData(path, value);
+  };
+
+  // Pride section helper functions
+  const updatePrideGate = (yearIdx, studentIdx, cellIdx, val) => {
+    const newGate = JSON.parse(
+      JSON.stringify(t("pride.gate", defaultPrideGate)),
+    );
+    newGate[yearIdx].students[studentIdx][cellIdx] = val;
+    updateData("pride.gate", newGate);
+  };
+
+  const updatePrideToppers = (key, yearIdx, recordIdx, field, val) => {
+    const newData = JSON.parse(
+      JSON.stringify(t(`pride.toppers.${key}`, defaultPrideToppersBE)),
+    );
+    newData[yearIdx].records[recordIdx][field] = val;
+    updateData(`pride.toppers.${key}`, newData);
+  };
+
+  const updateOverviewTable = (path, defaultArr, rowIdx, cellIdx, val) => {
+    const newData = JSON.parse(JSON.stringify(t(path, defaultArr)));
+    newData[rowIdx][cellIdx] = val;
+    updateData(path, newData);
+  };
+
+  const updateActivity = (idx, field, value) => {
+    const arr = JSON.parse(JSON.stringify(t("activities", defaultActivities)));
+    arr[idx][field] = value;
+    updateData("activities", arr);
+  };
+
+  const updateNewsletter = (type, index, field, value) => {
+    if (type === "latest") {
+      const latest = JSON.parse(
+        JSON.stringify(t("newsletters_latest", defaultNewsletters.latest)),
+      );
+      latest[field] = value;
+      updateData("newsletters_latest", latest);
+    } else {
+      const archives = JSON.parse(
+        JSON.stringify(t("newsletters_archives", defaultNewsletters.archives)),
+      );
+      archives[index][field] = value;
+      updateData("newsletters_archives", archives);
+    }
   };
 
   const updateFacultyMember = (index, field, value) => {
@@ -350,8 +379,9 @@ const IT = () => {
               <div className="relative">
                 <div className="absolute -inset-2 bg-gradient-to-r from-ssgmce-blue to-ssgmce-orange rounded-2xl blur opacity-25"></div>
                 <div className="relative rounded-xl overflow-hidden shadow-2xl border-4 border-white group w-72 md:w-80 lg:w-96">
-                  <img
-                    src={hodPhoto}
+                  <EditableImage
+                    src={t("hodPhoto", hodPhoto)}
+                    onSave={(url) => updateField("hodPhoto", url)}
                     alt="Dr. S. D. Padiya - HOD IT"
                     className="w-full h-auto group-hover:scale-105 transition-transform duration-500"
                   />
@@ -360,33 +390,61 @@ const IT = () => {
             </div>
             <div className="flex-1">
               <h3 className="text-2xl font-bold text-gray-900">
-                Dr. S. D. Padiya
+                <EditableText
+                  value={t("hodName", "Dr. S. D. Padiya")}
+                  onSave={(val) => updateField("hodName", val)}
+                />
               </h3>
-              <p className="text-ssgmce-blue font-bold text-sm mt-1 uppercase tracking-wide">
-                Head of Department
-              </p>
+              <div className="text-ssgmce-blue font-bold text-sm mt-1 uppercase tracking-wide">
+                <EditableText
+                  value={t("hodDesignation", "Head of Department")}
+                  onSave={(val) => updateField("hodDesignation", val)}
+                />
+              </div>
               <p className="text-gray-600 text-sm mt-1">
-                Information Technology
+                <EditableText
+                  value={t(
+                    "hodDepartmentTitle",
+                    "Department of Information Technology",
+                  )}
+                  onSave={(val) => updateField("hodDepartmentTitle", val)}
+                />
               </p>
 
               <div className="mt-4 flex items-center gap-4 text-sm text-gray-600">
                 <div className="flex items-center">
                   <FaEnvelope className="mr-2 text-ssgmce-orange" />
-                  <span>sdpadiya@ssgmce.ac.in</span>
+                  <span>
+                    <EditableText
+                      value={t("hodEmail1", "sdpadiya@ssgmce.ac.in")}
+                      onSave={(val) => updateField("hodEmail1", val)}
+                    />
+                  </span>
                 </div>
                 <span className="text-gray-300">|</span>
                 <div className="flex items-center">
                   <FaPhone className="mr-2 text-ssgmce-orange" />
-                  <span>+91 7588501506</span>
+                  <span>
+                    <EditableText
+                      value={t("hodEmail2", "+91 7588501506")}
+                      onSave={(val) => updateField("hodEmail2", val)}
+                    />
+                  </span>
                 </div>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
                 <span className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-semibold text-ssgmce-blue">
-                  Associate Professor
+                  <EditableText
+                    value={t("hodBadge1", "Associate Professor")}
+                    onSave={(val) => updateField("hodBadge1", val)}
+                  />
                 </span>
                 <span className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-semibold text-ssgmce-blue">
-                  BLE, WSN, IoT
+                  <EditableText
+                    value={t("hodBadge2", "BLE, WSN, IoT")}
+                    onSave={(val) => updateField("hodBadge2", val)}
+                  />
                 </span>
               </div>
             </div>
@@ -400,71 +458,63 @@ const IT = () => {
           <div className="relative z-10 max-w-5xl mx-auto">
             <div className="mb-6 text-center">
               <h3 className="text-2xl font-bold text-gray-800">
-                Message from the HOD
+                <EditableText
+                  value={t("hodMessageTitle", "Message from the HOD")}
+                  onSave={(val) => updateField("hodMessageTitle", val)}
+                />
               </h3>
-              <div className="h-1 w-20 bg-ssgmce-blue mt-2 rounded-full mx-auto"></div>
+              <div className="h-1 w-20 bg-ssgmce-orange mt-2 rounded-full mx-auto"></div>
             </div>
 
             <div className="space-y-4 text-gray-700 text-base leading-relaxed text-justify">
-              <p className="text-gray-800 font-semibold">Dear Friends,</p>
-              <p>
-                Information Technology is one of the emerging computing
-                disciplines. Nowadays Computers became essential work tools at
-                every level of most organizations, and networked computer
-                systems became the information backbone of organizations.
-              </p>
-              <p>
-                Information technology refers to undergraduate degree programs
-                that prepare students to meet the computer technology needs of
-                business, government, healthcare, schools, and other kinds of
-                organizations.
-              </p>
-              <p>
-                IT is a new and rapidly growing field that started as a
-                grassroots response to the practical, everyday needs of business
-                and other organizations. Today, organizations of every kind are
-                dependent on information technology. They need to have
-                appropriate systems in place. These systems must work properly,
-                be secure, and upgraded, maintained, and replaced as
-                appropriate. Employees throughout an organization require
-                support from IT staff that understand computer systems and their
-                software and are committed to solving whatever computer-related
-                problems they might have. Graduates of information technology
-                programs address these needs.
-              </p>
-              <p>
-                Degree programs in information technology arose because degree
-                programs in the other computing disciplines were not producing
-                an adequate supply of graduates capable of handling these very
-                real needs. IT programs exist to produce graduates who possess
-                the right combination of knowledge and practical, hands-on
-                expertise to take care of both an organization's information
-                technology infrastructure and the people who use it. IT
-                specialists assume responsibility for selecting hardware and
-                software products appropriate for an organization, integrating
-                those products with organizational needs and infrastructure, and
-                installing, customizing, and maintaining those applications for
-                the organization's computer users.
-              </p>
-              <p>
-                Information technology professionals should be able to work
-                effectively at planning, implementation, configuration, and
-                maintenance of an organization's computing infrastructure.
-              </p>
+              <EditableText
+                value={t(
+                  "hodMessage",
+                  "Dear Friends,\n\nInformation Technology is one of the emerging computing disciplines. Nowadays Computers became essential work tools at every level of most organizations, and networked computer systems became the information backbone of organizations.\n\nInformation technology refers to undergraduate degree programs that prepare students to meet the computer technology needs of business, government, healthcare, schools, and other kinds of organizations.\n\nIT is a new and rapidly growing field that started as a grassroots response to the practical, everyday needs of business and other organizations. Today, organizations of every kind are dependent on information technology. They need to have appropriate systems in place. These systems must work properly, be secure, and upgraded, maintained, and replaced as appropriate. Employees throughout an organization require support from IT staff that understand computer systems and their software and are committed to solving whatever computer-related problems they might have. Graduates of information technology programs address these needs.\n\nDegree programs in information technology arose because degree programs in the other computing disciplines were not producing an adequate supply of graduates capable of handling these very real needs. IT programs exist to produce graduates who possess the right combination of knowledge and practical, hands-on expertise to take care of both an organization's information technology infrastructure and the people who use it. IT specialists assume responsibility for selecting hardware and software products appropriate for an organization, integrating those products with organizational needs and infrastructure, and installing, customizing, and maintaining those applications for the organization's computer users.\n\nInformation technology professionals should be able to work effectively at planning, implementation, configuration, and maintenance of an organization's computing infrastructure.",
+                )}
+                onSave={(val) => updateField("hodMessage", val)}
+                multiline
+                className="whitespace-pre-wrap"
+              />
             </div>
 
             <div className="mt-8 pt-6 border-t border-gray-100 flex justify-between items-center">
               <div>
-                <p className="font-dancing text-2xl text-ssgmce-blue">
-                  Dr. S. D. Padiya
-                </p>
-                <p className="text-sm text-gray-500">
-                  Head, Department of Information Technology
-                </p>
+                <div className="font-dancing text-2xl text-ssgmce-blue">
+                  <EditableText
+                    value={t("hodName", "Dr. S. D. Padiya")}
+                    onSave={(val) => updateField("hodName", val)}
+                  />
+                </div>
+                <div className="text-sm text-gray-500">
+                  <EditableText
+                    value={t(
+                      "hodDesignation",
+                      "Head, Department of Information Technology",
+                    )}
+                    onSave={(val) => updateField("hodDesignation", val)}
+                  />
+                </div>
               </div>
               <div className="text-right text-sm text-gray-400">
-                <p>Shri Sant Gajanan Maharaj</p>
-                <p>College of Engineering, Shegaon</p>
+                <p>
+                  <EditableText
+                    value={t(
+                      "signatureCollegeName1",
+                      "Shri Sant Gajanan Maharaj",
+                    )}
+                    onSave={(val) => updateField("signatureCollegeName1", val)}
+                  />
+                </p>
+                <p>
+                  <EditableText
+                    value={t(
+                      "signatureCollegeName2",
+                      "College of Engineering, Shegaon",
+                    )}
+                    onSave={(val) => updateField("signatureCollegeName2", val)}
+                  />
+                </p>
               </div>
             </div>
           </div>
@@ -705,29 +755,31 @@ const IT = () => {
         {/* B.E. Course Outcomes */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-[#003366] px-6 py-4 text-center">
-            <h3 className="text-xl font-bold text-white">Course Outcomes</h3>
+            <h3 className="text-xl font-bold text-white">
+              B.E. Information Technology - Course Outcomes
+            </h3>
           </div>
 
           <div className="p-6 space-y-2">
-            {/* B.E. Semester I */}
+            {/* B.E. Semester-III */}
             <div className="border-b border-gray-200 pb-2">
               <button
                 onClick={() =>
                   setExpandedSemester(
-                    expandedSemester === "be-sem1" ? null : "be-sem1",
+                    expandedSemester === "be-sem3" ? null : "be-sem3",
                   )
                 }
                 className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
               >
                 <span className="font-medium text-gray-700">
-                  B.E. Semester-I
+                  B.E. Semester-III
                 </span>
                 <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "be-sem1" ? "Hide" : "View"}
+                  {expandedSemester === "be-sem3" ? "Hide" : "View"}
                 </span>
               </button>
               <AnimatePresence>
-                {expandedSemester === "be-sem1" && (
+                {expandedSemester === "be-sem3" && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
@@ -737,93 +789,200 @@ const IT = () => {
                     <div className="px-4 py-4 bg-gray-50 space-y-6">
                       <div>
                         <h4 className="font-bold text-gray-800 mb-2">
-                          1A1 ENGINEERING MATHEMATICS - I
+                          3IT200PC Discrete Structure and Graph Theory
                         </h4>
                         <p className="text-sm text-gray-600 mb-2">
-                          After completing this course, student will be able to
+                          After successful completion of the course, students
+                          will be able to:
                         </p>
                         <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
                           <li>
-                            Apply concepts of differential calculus to solve
-                            engineering problems
+                            Demonstrate the basic terminologies of mathematical
+                            logic, theory of inference and set theory
                           </li>
                           <li>
-                            Understand and apply partial differentiation and
-                            maxima-minima concepts
+                            Apply mathematical logic, inference theory and set
+                            theory, to solve engineering problems
                           </li>
                           <li>
-                            Solve differential equations using various methods
+                            Apply algebraic structures, grammar, polish
+                            expressions and lattices to solve the mathematics
+                            expressions
+                          </li>
+                          <li>
+                            Apply the lattices for partially ordered relations
+                            and Boolean algebraic simplification methods to
+                            minimize the Boolean functions
+                          </li>
+                          <li>
+                            Analyze graphs based on various parameters for graph
+                            manipulation and storage representation
                           </li>
                         </ol>
                       </div>
 
                       <div>
                         <h4 className="font-bold text-gray-800 mb-2">
-                          1A2 ENGINEERING PHYSICS
+                          3IT201PC Object Oriented Programming
                         </h4>
                         <p className="text-sm text-gray-600 mb-2">
-                          After completing this course, student will be able to
+                          After successful completion of the course, students
+                          will be able to:
                         </p>
                         <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
                           <li>
-                            Apply the principles of quantum mechanics and
-                            solid-state physics
+                            Apply Java syntax and constructs to implement
+                            functional programs
                           </li>
                           <li>
-                            Understand optical phenomena including interference,
-                            diffraction, and polarization
+                            Apply the concepts of inheritance, aggregation,
+                            method overriding, abstract classes, interfaces, and
+                            packages to develop Java programs
                           </li>
                           <li>
-                            Apply concepts of fiber optics and laser technology
-                            in IT applications
+                            Apply the concepts of exception handling and file
+                            handling to develop robust Java programs
+                          </li>
+                          <li>
+                            Apply the concepts of Java applets to develop
+                            interactive graphical programs
+                          </li>
+                          <li>
+                            Apply event-handling concepts to develop interactive
+                            Java applications
                           </li>
                         </ol>
                       </div>
 
                       <div>
                         <h4 className="font-bold text-gray-800 mb-2">
-                          1A3 ENGINEERING MECHANICS
+                          3IT202PC Analog and Digital Electronics
                         </h4>
                         <p className="text-sm text-gray-600 mb-2">
-                          After completing this course, student will be able to
+                          After successful completion of the course, students
+                          will be able to:
                         </p>
                         <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
                           <li>
-                            Analyze force systems and determine resultants
+                            Apply the basic concepts of analog electronics while
+                            choosing a transistor as per application
                           </li>
                           <li>
-                            Apply principles of friction and calculate moment of
-                            inertia
+                            Categorize different applications of the operational
+                            amplifier
                           </li>
                           <li>
-                            Solve problems involving kinematics and kinetics of
-                            particles
+                            Discriminate the working of sinusoidal and
+                            non-sinusoidal waveform generators
+                          </li>
+                          <li>
+                            Apply the basic concepts of digital electronics and
+                            K-map to simplify logic expressions
+                          </li>
+                          <li>
+                            Analyze combinational and sequential circuits for
+                            different applications
                           </li>
                         </ol>
                       </div>
 
                       <div>
                         <h4 className="font-bold text-gray-800 mb-2">
-                          1A4 COMPUTER PROGRAMMING
+                          3IT205MD Introduction to Data Structures
                         </h4>
                         <p className="text-sm text-gray-600 mb-2">
-                          After completing this course, student will be able to
+                          After successful completion of the course, students
+                          will be able to:
                         </p>
                         <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
                           <li>
-                            Understand fundamental concepts of programming and
-                            computer systems
+                            Apply data structure concepts to analyze complexity
+                            and perform operations like searching, sorting,
+                            insertion, and deletion on linear arrays
                           </li>
                           <li>
-                            Write, test, and debug programs using C programming
-                            language
+                            Apply linked lists, stacks, and queues with basic
+                            operations to solve computational problems
                           </li>
                           <li>
-                            Apply control structures, arrays, and functions to
-                            solve problems
+                            Implement and analyze tree and graph data structures
+                            with traversal, searching, and path- finding
+                            algorithms
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3IT206OE OE-1 Cyber Law
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply basic computer and internet concepts to
+                            analyze their role in digital business and
+                            governance
                           </li>
                           <li>
-                            Implement file handling and pointer operations in C
+                            Apply knowledge of e-payment systems to select
+                            suitable methods for secure online transactions
+                          </li>
+                          <li>
+                            Identify types of cybercrimes and common techniques
+                            used by cyber offenders
+                          </li>
+                          <li>
+                            Categorize cybercrimes and relate them to relevant
+                            legal provisions
+                          </li>
+                          <li>
+                            Apply sections of the IT Act to given cyber law
+                            scenarios
+                          </li>
+                          <li>
+                            Describe ethical and security concerns associated
+                            with the use of digital technologies
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3IT207EM Entrepreneurship Development
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the definitions and fundamental concepts
+                            of entrepreneurship and start-ups
+                          </li>
+                          <li>
+                            Understand the role of a business plan in guiding
+                            the implementation of business ideas
+                          </li>
+                          <li>
+                            Understand the company’s organization structure and
+                            its role in effective management. Course Name:
+                            Environmental Science Course Code: 3SH208VE
+                          </li>
+                          <li>
+                            Understand the multidisciplinary nature of
+                            environment and Renewable and non-renewable
+                            resources
+                          </li>
+                          <li>
+                            Understand natural environment and its relationship
+                            with human activities
+                          </li>
+                          <li>
+                            Understand the basic concepts and problems and
+                            follow sustainable development practices
                           </li>
                         </ol>
                       </div>
@@ -833,25 +992,25 @@ const IT = () => {
               </AnimatePresence>
             </div>
 
-            {/* B.E. Semester II */}
+            {/* B.E. Semester-IV */}
             <div className="border-b border-gray-200 pb-2">
               <button
                 onClick={() =>
                   setExpandedSemester(
-                    expandedSemester === "be-sem2" ? null : "be-sem2",
+                    expandedSemester === "be-sem4" ? null : "be-sem4",
                   )
                 }
                 className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
               >
                 <span className="font-medium text-gray-700">
-                  B.E. Semester-II
+                  B.E. Semester-IV
                 </span>
                 <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "be-sem2" ? "Hide" : "View"}
+                  {expandedSemester === "be-sem4" ? "Hide" : "View"}
                 </span>
               </button>
               <AnimatePresence>
-                {expandedSemester === "be-sem2" && (
+                {expandedSemester === "be-sem4" && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
@@ -861,45 +1020,722 @@ const IT = () => {
                     <div className="px-4 py-4 bg-gray-50 space-y-6">
                       <div>
                         <h4 className="font-bold text-gray-800 mb-2">
-                          1B1 ENGINEERING MATHEMATICS - II
+                          4IT209PC Data Structures
                         </h4>
                         <p className="text-sm text-gray-600 mb-2">
-                          After completing this course, student will be able to
+                          After successful completion of the course, students
+                          will be able to:
                         </p>
                         <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
                           <li>
-                            Solve systems of linear equations using matrices
+                            Explain fundamental concepts of data structures and
+                            pattern matching algorithms
                           </li>
                           <li>
-                            Apply Fourier series for periodic function analysis
+                            Use linear and multidimensional arrays for
+                            problem-solving
                           </li>
                           <li>
-                            Evaluate multiple integrals and their applications
+                            Construct and manipulate various types of linked
+                            lists
+                          </li>
+                          <li>
+                            Apply stack and queue operations in practical
+                            problems
+                          </li>
+                          <li>
+                            Use binary trees, BSTs, and heaps to solve problems
+                          </li>
+                          <li>
+                            Design and implement graph traversals and sorting
+                            techniques
                           </li>
                         </ol>
                       </div>
 
                       <div>
                         <h4 className="font-bold text-gray-800 mb-2">
-                          1B2 DATA STRUCTURES
+                          4IT210PC Data Communication &amp; Networking
                         </h4>
                         <p className="text-sm text-gray-600 mb-2">
-                          After completing this course, student will be able to
+                          After successful completion of the course, students
+                          will be able to:
                         </p>
                         <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
                           <li>
-                            Implement various data structures like arrays,
-                            linked lists, stacks, and queues
+                            Describe the fundamental concepts of data
+                            communication, including components, types of data
+                            flow, and communication systems
                           </li>
                           <li>
-                            Apply tree and graph data structures to solve
-                            computational problems
+                            Compare the OSI and TCP/IP models by analyzing the
+                            functionalities and protocols at each layer
                           </li>
                           <li>
-                            Analyze time and space complexity of algorithms
+                            Apply knowledge of signal conversion methods and
+                            apply error detection and correction techniques to
+                            ensure reliable communication
                           </li>
                           <li>
-                            Choose appropriate data structures for specific
+                            Analyze IPv4/IPv6 protocols, and packet delivery
+                            processes
+                          </li>
+                          <li>
+                            Compare and contrast TCP and UDP features, use
+                            cases, and transport layer mechanisms
+                          </li>
+                          <li>
+                            Assess application layer services like DNS and HTTP
+                            and troubleshoot networking issues using protocols
+                            and addressing schemes
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4IT211PC Computer Organization &amp; Architecture
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply the basic knowledge of computers to
+                            demonstrate the working of the computer system
+                          </li>
+                          <li>
+                            Analyze the execution of a complete instruction
+                            within the processing unit
+                          </li>
+                          <li>
+                            Discover the approaches computers follow to handle
+                            input/output operations
+                          </li>
+                          <li>
+                            Choose memory at each level in the computer based on
+                            its functionalities
+                          </li>
+                          <li>
+                            Interpret the arithmetic operations done by the
+                            computer
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4IT214MD Introduction to Operating Systems
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain and apply process scheduling algorithms
+                          </li>
+                          <li>
+                            Apply synchronization and deadlock-related issues
+                          </li>
+                          <li>Investigate memory management techniques</li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4IT215VS Computer Skills – I
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply the knowledge of Internet, web protocols,
+                            servers and web design principles to develop
+                            effective websites
+                          </li>
+                          <li>
+                            Apply the concepts and structure of HTML to create
+                            basic web pages
+                          </li>
+                          <li>
+                            Apply HTML elements knowledge to design web pages by
+                            working with text, lists, tables, frames,
+                            hyperlinks, images, multimedia etc
+                          </li>
+                          <li>
+                            Analyze and implement CSS techniques to create
+                            visually appealing and responsive web pages
+                          </li>
+                          <li>
+                            Apply JavaScript concepts to develop interactive and
+                            user-friendly web pages
+                          </li>
+                          <li>
+                            Apply your knowledge to build dynamic web
+                            applications using PHP by integrating PHP with HTML
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4IT216OE2 Artificial Intelligence
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain the Artificial Intelligence concepts.
+                            History, types, intelligent agents, and applications
+                            of AI
+                          </li>
+                          <li>
+                            Apply problem-solving techniques using uninformed
+                            and informed search strategies to solve AI-related
+                            problems
+                          </li>
+                          <li>
+                            Analyze knowledge representation methods basic
+                            machine learning approaches to design simple AI/ML
+                            solutions
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4IT217EM IT Ethics and Management
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply Engineering and professional ethics, morals,
+                            and laws in day to day life
+                          </li>
+                          <li>
+                            Analyze engineering ethical dilemmas using moral
+                            reasoning and professional codes of ethics
+                          </li>
+                          <li>
+                            Analyze computing ethics issues and apply IEEE Codes
+                            to privacy, intellectual property, and cyber crimes
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4SH219VE Universal Human Values and Ethics
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the concept of self, differentiate
+                            physical and mental needs, and apply human values
+                            for personal well-being and ethical awareness in
+                            engineering
+                          </li>
+                          <li>
+                            Understand and apply trust, empathy, conflict
+                            resolution, and ethical principles in relationships,
+                            family, and society
+                          </li>
+                          <li>
+                            Apply professional ethics, promote sustainability in
+                            engineering practices, and understand corporate and
+                            global ethical responsibilities including CSR
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester-V */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem5" ? null : "be-sem5",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-V
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem5" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem5" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5IT01 Database Management Systems
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Construct ER model with notations and constraints
+                          </li>
+                          <li>
+                            Build relational algebra queries using basic,
+                            additional and extended operations
+                          </li>
+                          <li>
+                            Create SQL queries based on the relation schema and
+                            tasks
+                          </li>
+                          <li>
+                            Apply concurrency control protocols on schedules and
+                            transactions
+                          </li>
+                          <li>
+                            Create roles, grant and revoke the privileges for
+                            providing database security
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5IT02 Theory of Computations
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Analyze formal languages with help of fundamental
+                            concepts and Finite Automata
+                          </li>
+                          <li>
+                            Create regular expressions and grammars which can be
+                            used to represent formal language in different forms
+                          </li>
+                          <li>
+                            Analyze the formal languages, their powers using
+                            different forms of grammars and classify them
+                            according to Chomsky hierarchy
+                          </li>
+                          <li>
+                            Design Push Down Automata for a Context Free
+                            Language along with context sensitive languages
+                          </li>
+                          <li>
+                            Design Turing machine for performing different types
+                            for computations
+                          </li>
+                          <li>
+                            Identify the decidability and un-decidability of
+                            problems in case of formal languages
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5IT03 Software Engineering
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Demonstrate the Fundamental Concepts of software
+                            engineering life cycle
+                          </li>
+                          <li>
+                            Elaborate the software engineering requirements
+                            specification and the SRS documents
+                          </li>
+                          <li>
+                            Examine the software engineering layered technology
+                            and process framework
+                          </li>
+                          <li>
+                            Illustrate the Use Case diagram, DFD, Sequence
+                            diagram, class diagram, Activity diagram and state
+                            Transition diagram
+                          </li>
+                          <li>
+                            Demonstrate the competence in communication
+                            planning, analysis, design, construction, and
+                            development of software as per requirement
+                          </li>
+                          <li>
+                            Develop a basic report on software testing for
+                            effectively test, debug, and validate software
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5IT04 Information Security Systems (PE-1(i))
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply fundamental information security concepts and
+                            the security development life cycle to secure
+                            information systems
+                          </li>
+                          <li>
+                            Apply knowledge of threats, attacks, and
+                            legal/ethical issues to determine organizational
+                            security needs
+                          </li>
+                          <li>
+                            Apply legal and ethical principles to support secure
+                            and responsible information security practices
+                          </li>
+                          <li>
+                            Analyze organizational risks using risk
+                            identification, assessment, and risk control
+                            strategies
+                          </li>
+                          <li>
+                            Apply security planning methods, policies,
+                            governance frameworks, and continuity strategies
+                            within an organization
+                          </li>
+                          <li>
+                            Analyze cryptographic techniques, algorithms, and
+                            secure communication protocols to evaluate their
+                            effectiveness
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5IT04 Data Science &amp; Statistics (PE-1(ii))
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply Numpy and Pandas Library functions on datasets
+                          </li>
+                          <li>
+                            Analyze data by performing EDA and data
+                            visualization by using plots
+                          </li>
+                          <li>
+                            Create hypothesis on data and perform hypothesis
+                            testing required
+                          </li>
+                          <li>
+                            Evaluate the Performance of Linear Regression model
+                            on dataset
+                          </li>
+                          <li>
+                            Evaluate the Performance of Logistic Regression
+                            Measure Decision Tree Algorithm on datasets
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5IT05 Data Structures and Algorithms (Open Elective)
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Summarize the fundamental concepts of Data
+                            Structures and algorithms. CO2; Demonstrate the
+                            implementation of arrays and linked lists in data
+                            structures
+                          </li>
+                          <li>
+                            Illustrate stack and queue operations with
+                            real-world examples
+                          </li>
+                          <li>
+                            Explain different binary tree traversal methods with
+                            examples
+                          </li>
+                          <li>
+                            Apply graph representation techniques and implement
+                            the shortest path algorithm
+                          </li>
+                          <li>
+                            Compare various sorting and searching techniques
+                            based on their efficiency
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5IT09 Computer Skill Lab III
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Install and configure Angular CLI to create and run
+                            a basic Angular application
+                          </li>
+                          <li>
+                            Design, create, and navigate Angular components and
+                            analyze component lifecycle events
+                          </li>
+                          <li>
+                            Implement variables and data binding techniques to
+                            connect templates with component logic
+                          </li>
+                          <li>
+                            Apply Angular Signals to manage reactive state and
+                            improve application performance
+                          </li>
+                          <li>
+                            Use Angular directives to manipulate DOM elements
+                            dynamically
+                          </li>
+                          <li>
+                            Implement control flow statements in Angular
+                            templates for conditional rendering and iteration
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester-VI */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem6" ? null : "be-sem6",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-VI
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem6" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem6" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6IT01 Compiler Design
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Demonstrate the fundamentals of compilation for
+                            designing lexical analyzers by utilizing regular
+                            expressions, LEX, YACC, etc. for token specification
+                            and recognition
+                          </li>
+                          <li>
+                            Perform syntax analysis using top-down parsing
+                            methods such as Back-Tracking, LL(k), etc. for error
+                            detection and error recovery in predictive parsing
+                          </li>
+                          <li>
+                            Perform syntax analysis using bottom-up parsing such
+                            as Handle Pruning, Shift-Reduce, LR(k), etc. methods
+                            for error detection and error recovery in predictive
+                            parsing
+                          </li>
+                          <li>
+                            Design and implement syntax-directed translations,
+                            using synthesized and inherited attributes with
+                            syntax trees, directed acyclic graphs, and evaluate
+                            syntax-directed definitions using various methods
+                          </li>
+                          <li>
+                            Demonstrate key concepts in runtime environments,
+                            and intermediate code generation for various source
+                            language constructs
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6IT02 Design Analysis &amp; Algorithm
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Analyze worst-case running times of algorithms using
+                            asymptotic analysis
+                          </li>
+                          <li>
+                            Apply the divide-and-conquer paradigm and examine
+                            when an algorithmic design situation calls for it
+                          </li>
+                          <li>
+                            Differentiate the greedy-programming paradigm and
+                            solve an algorithmic design situation calls for it
+                          </li>
+                          <li>
+                            Examine the dynamic programming approach and explain
+                            when an algorithmic design situation calls for it
+                          </li>
+                          <li>
+                            Differentiate and apply the concept of Backtracking,
+                            Polynomial Time &amp; Non Polynomial Time Algorithms
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6IT03 Artificial Intelligence
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain concepts of Artificial Intelligence and
+                            different types of intelligent agents and their
+                            architecture
+                          </li>
+                          <li>
+                            Evaluate different uninformed search algorithms on
+                            well formulate problems along with stating valid
+                            conclusions that the evaluation supports
+                          </li>
+                          <li>
+                            Design and analyze informed search algorithms on
+                            well formulated problems
+                          </li>
+                          <li>
+                            Formulate and solve given problem using
+                            Propositional and First order logic
+                          </li>
+                          <li>Apply reasoning for non-monotonic AI problems</li>
+                          <li>
+                            Have a basic understanding of some of the more
+                            advanced topics of AI such as learning,
+                            Understanding, Natural Language Processing
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6IT04 Cryptography and Network Security (PE-1(i))
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply fundamental cartographic principles to secure
+                            communication
+                          </li>
+                          <li>
+                            Implement encryption and decryption techniques
+                            ensuring confusion and diffusion
+                          </li>
+                          <li>
+                            Compare and analyze symmetric and asymmetric
+                            encryption method for data security
+                          </li>
+                          <li>
+                            Evaluate the role of network security protocols in
+                            securing data transmission
+                          </li>
+                          <li>
+                            Identify network security threats and implement
+                            countermeasures
+                          </li>
+                          <li>
+                            Identify different Web and system security solutions
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6IT04 Big Data Analytics (PE-1(ii))
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>Illustrate the concepts of big data</li>
+                          <li>
+                            Apply Hadoop goals and assumptions for choosing the
+                            proper component of the Hadoop ecosystem
+                          </li>
+                          <li>
+                            Apply the MapReduce operations based on the tasks
+                          </li>
+                          <li>
+                            Apply stream processing algorithms to data,
+                            considering issues in it
+                          </li>
+                          <li>
+                            Identify the big data mining algorithm based on the
                             applications
                           </li>
                         </ol>
@@ -907,46 +1743,70 @@ const IT = () => {
 
                       <div>
                         <h4 className="font-bold text-gray-800 mb-2">
-                          1B3 DIGITAL ELECTRONICS
+                          6IT05 Data Communication and Internet (Open Elective)
                         </h4>
                         <p className="text-sm text-gray-600 mb-2">
-                          After completing this course, student will be able to
+                          After successful completion of the course, students
+                          will be able to:
                         </p>
                         <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
                           <li>
-                            Design and analyze combinational and sequential
-                            logic circuits
+                            Explain the fundamental concepts and principles of
+                            computer networking
                           </li>
                           <li>
-                            Implement Boolean algebra and logic gates in digital
-                            systems
+                            Describe the components of data communication
+                            systems and the role of various networking protocols
                           </li>
                           <li>
-                            Understand number systems and binary arithmetic
+                            Apply networking concepts to demonstrate information
+                            sharing mechanisms in computer networks
+                          </li>
+                          <li>
+                            Explain the flow of data, categories of networks,
+                            and different network topologies
+                          </li>
+                          <li>
+                            Apply knowledge of signals, transmission media, and
+                            error detection and correction techniques in data
+                            communication
+                          </li>
+                          <li>
+                            Illustrate the building blocks and functioning of a
+                            digital communication system
                           </li>
                         </ol>
                       </div>
 
                       <div>
                         <h4 className="font-bold text-gray-800 mb-2">
-                          1B4 OBJECT-ORIENTED PROGRAMMING
+                          6IT09 Computer Skill Lab – IV
                         </h4>
                         <p className="text-sm text-gray-600 mb-2">
-                          After completing this course, student will be able to
+                          After successful completion of the course, students
+                          will be able to:
                         </p>
                         <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
                           <li>
-                            Understand and apply OOP concepts like
-                            encapsulation, inheritance, and polymorphism
+                            Apply basic Artificial Intelligence concepts and
+                            intelligent agent models to identify problem types
+                            and working environments
                           </li>
                           <li>
-                            Design and implement object-oriented solutions using
-                            C++ or Java
+                            Implement and analyze AI problem-solving techniques
+                            using uninformed and informed search strategies in
+                            Python
                           </li>
                           <li>
-                            Use exception handling and file I/O operations
+                            Develop programs that demonstrate reasoning and
+                            decision-making using knowledge representation,
+                            game-playing, and uncertainty handling techniques
                           </li>
-                          <li>Develop programs using classes and objects</li>
+                          <li>
+                            Apply natural language processing techniques to
+                            build simple AI applications using appropriate
+                            programming tools
+                          </li>
                         </ol>
                       </div>
                     </div>
@@ -955,47 +1815,415 @@ const IT = () => {
               </AnimatePresence>
             </div>
 
-            {/* Remaining Semesters - Placeholders */}
-            {[
-              { id: "be-sem3", label: "B.E. Semester-III" },
-              { id: "be-sem4", label: "B.E. Semester-IV" },
-              { id: "be-sem5", label: "B.E. Semester-V" },
-              { id: "be-sem6", label: "B.E. Semester-VI" },
-              { id: "be-sem7", label: "B.E. Semester-VII" },
-              { id: "be-sem8", label: "B.E. Semester-VIII" },
-            ].map((sem) => (
-              <div key={sem.id} className="border-b border-gray-200 pb-2">
-                <button
-                  onClick={() =>
-                    setExpandedSemester(
-                      expandedSemester === sem.id ? null : sem.id,
-                    )
-                  }
-                  className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-                >
-                  <span className="font-medium text-gray-700">{sem.label}</span>
-                  <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                    {expandedSemester === sem.id ? "Hide" : "View"}
-                  </span>
-                </button>
-                <AnimatePresence>
-                  {expandedSemester === sem.id && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-4 py-4 bg-gray-50">
-                        <p className="text-gray-600 text-sm italic">
-                          Course outcomes will be updated soon.
+            {/* B.E. Semester-VII */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem7" ? null : "be-sem7",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-VII
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem7" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem7" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7IT01 Mobile Computing
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
                         </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Gain knowledge of basic concepts of Mobile Computing
+                            and Principals of cellular communication
+                          </li>
+                          <li>
+                            Understand different components, devices for mobile
+                            computing and understand wireless application
+                            protocol
+                          </li>
+                          <li>
+                            Able to implement different concepts of mobile
+                            computing fundamentals using wireless scripting
+                            language
+                          </li>
+                          <li>
+                            To develop ability for developing open platform
+                            mobile development
+                          </li>
+                          <li>
+                            Explore concepts of distributed mobile computing
+                          </li>
+                          <li>
+                            Identify &amp; understand different security issues
+                            in mobile computing
+                          </li>
+                        </ol>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7IT02 Embedded System
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Demonstrate the basic components (hardware,
+                            application software and operating system) required
+                            for the development of embedded applications
+                          </li>
+                          <li>
+                            Identify the various components, computing models
+                            and communication devices required for the
+                            development of an embedded application
+                          </li>
+                          <li>
+                            Apply the programming, data structures and modeling
+                            processes for the implementation of network
+                            protocols
+                          </li>
+                          <li>
+                            Design the programming models for the analysis of
+                            priority based multiprocessing real time embedded
+                            systems
+                          </li>
+                          <li>
+                            Analyzed the priority based inter-process
+                            communication and synchronization issues and
+                            relevant solutions to make embedded applications
+                            real time
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7IT03 Cloud Computing
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Describe the fundamental concept, architecture and
+                            applications of Cloud Computing
+                          </li>
+                          <li>
+                            Discuss the problems related to cloud deployment
+                            model
+                          </li>
+                          <li>Examine the concept of virtualization</li>
+                          <li>
+                            Identify the role of network connectivity in the
+                            cloud
+                          </li>
+                          <li>Assess different Cloud service providers</li>
+                          <li>
+                            Inspect the security issues in cloud service models
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7IT04 Machine Learning (Prof. Elect.-III) (i)
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>Understand the concept of Machine Learning</li>
+                          <li>
+                            Understand how to evaluate models generated from
+                            data
+                          </li>
+                          <li>
+                            Implement a variety of algorithms for Supervised
+                            Learning
+                          </li>
+                          <li>
+                            Implement a variety of algorithms for Unsupervised
+                            Learning
+                          </li>
+                          <li>
+                            Implement a variety of algorithms for Reinforcement
+                            Learning
+                          </li>
+                          <li>Understand the concept of Neural Networks</li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7IT05 Blockchain Fundaments (Prof. Elect.-IV) (i)
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Examine the concept of decentralization and its
+                            importance in blockchain systems
+                          </li>
+                          <li>
+                            Illustrate the process of Cryptocurrency
+                            transactions &amp; role of miner in securing
+                            Cryptocurrency networks
+                          </li>
+                          <li>
+                            Evaluate the limitations of Bitcoin and propose
+                            alternative solutions for specific use cases
+                          </li>
+                          <li>
+                            Develop and deploy basic smart contracts using the
+                            Solidity programming language
+                          </li>
+                          <li>
+                            Utilize development frameworks streamline smart
+                            contract deployment and DApp development
+                          </li>
+                          <li>
+                            Evaluate the features and functionality of
+                            alternative Blockchains
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7IT05 Business Intelligence (Prof. Elect.-IV) (ii)
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply BI and analytics concepts to understand
+                            business changes and new technologies
+                          </li>
+                          <li>
+                            Apply data cleaning, modeling, and visualization
+                            methods to create clear business reports and
+                            dashboards
+                          </li>
+                          <li>
+                            Analyze business data using clustering, regression,
+                            time-series, and data mining techniques
+                          </li>
+                          <li>
+                            Analyze data warehouse designs, including schemas,
+                            facts, dimensions, and hierarchies
+                          </li>
+                          <li>
+                            Apply ETL processes such as extraction,
+                            transformation, loading, and staging for effective
+                            data integration
+                          </li>
+                          <li>
+                            Analyze new trends like IoT, cloud analytics, and
+                            privacy rules to understand their legal, ethical,
+                            and organizational impact
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester-VIII */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem8" ? null : "be-sem8",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-VIII
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem8" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem8" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8IT01 Object Oriented Analysis &amp; Design
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain the concepts of Object-Oriented Modeling in
+                            modern software development.
+                          </li>
+                          <li>
+                            Analyze the concepts of Unified Modeling Language
+                            (UML) to represent an object-oriented system using
+                            class diagrams
+                          </li>
+                          <li>
+                            Develop use case and activity diagrams for different
+                            requirement-based system scenarios
+                          </li>
+                          <li>
+                            Analyze the problem domain to identify class models,
+                            state models, and interaction models of a system
+                          </li>
+                          <li>
+                            Evaluate and decompose a system into subsystems
+                            based on system information and requirements
+                          </li>
+                          <li>
+                            Create and organize a class design using
+                            object-oriented principles
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8IT02 Professional Ethics &amp; Management
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply Engineering and professional ethics, morals,
+                            and laws in day to day life
+                          </li>
+                          <li>
+                            Analyze engineering ethical dilemmas using moral
+                            reasoning and professional codes of ethics
+                          </li>
+                          <li>
+                            Analyze computing ethics issues and apply IEEE Codes
+                            to privacy, intellectual property, and cyber crimes
+                          </li>
+                          <li>
+                            Analyze intellectual property laws and ethical
+                            issues related to patents, trademarks, and
+                            copyrights
+                          </li>
+                          <li>
+                            Analyze ethical issues in computers, software, and
+                            digital information using professional codes of
+                            conduct
+                          </li>
+                          <li>
+                            Apply ethical responsibility in managing safety,
+                            risk, and professional relationships in IT practice
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8IT03 Entrepreneurship &amp; Project Management
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Demonstrate the knowledge of entrepreneurship, need,
+                            scope, competencies and its types
+                          </li>
+                          <li>
+                            Interpret knowledge on opportunities / ideas
+                            screening for entrepreneurship
+                          </li>
+                          <li>
+                            Apply knowledge on basic process of project
+                            management to solve real life problem
+                          </li>
+                          <li>
+                            Explain the details of project financing criteria
+                          </li>
+                          <li>
+                            Develop critical thinking skills to solve real life
+                            Entrepreneurship and SME problems
+                          </li>
+                          <li>
+                            Develop critical thinking skills on developing a
+                            career as entrepreneurs
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8IT04 Virtual &amp; Augmented Reality (Prof.Elect.-V)
+                          (ii)
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successful completion of the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>Interpret the basic concept of VR &amp; AR</li>
+                          <li>Identify the Input/output devices for VR</li>
+                          <li>
+                            Applying the knowledge of rendering pipeline and
+                            graphics rendering pipeline in creating VR
+                            experience
+                          </li>
+                          <li>
+                            Analyze the hardware &amp; software needed for AR
+                          </li>
+                          <li>
+                            Examine the use of Augmented Reality (AR)
+                            applications to identify their benefits,
+                            limitations, and emerging trends
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>
@@ -1539,243 +2767,541 @@ const IT = () => {
 
     pride: (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
-          Pride of the Department
-        </h3>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex items-center gap-3 mb-8">
+            <FaTrophy className="text-4xl text-yellow-500" />
+            <h3 className="text-3xl font-bold text-gray-800">
+              Pride of the Department
+            </h3>
+          </div>
 
-        {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-4">
-          {[{ id: "gate", label: "GATE Qualified" }].map((tab) => (
+          {/* Tabs for different sections */}
+          <div className="flex gap-2 mb-6 border-b">
             <button
-              key={tab.id}
-              onClick={() => setPrideTab(tab.id)}
-              className={`px-6 py-2.5 rounded-lg font-medium transition-all text-sm ${
-                prideTab === tab.id
-                  ? "bg-[#003366] text-white shadow-md"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              onClick={() => setPrideTab("gate")}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                prideTab === "gate"
+                  ? "border-b-4 border-ssgmce-orange text-ssgmce-blue"
+                  : "text-gray-600 hover:text-ssgmce-blue"
               }`}
             >
-              {tab.label}
+              GATE Qualified
             </button>
-          ))}
-        </div>
-
-        {/* GATE Qualified */}
-        {prideTab === "gate" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                      GATE Year
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                      Sr.No
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                      Name of student
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                      Class
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                      Valid Score
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                      Category
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {[
-                    {
-                      year: "2025",
-                      sr: "1",
-                      name: "Shreyas Santosh Mundhe",
-                      class: "3N",
-                      score: "38.67",
-                      category: "OBC",
-                    },
-                    {
-                      year: "2025",
-                      sr: "2",
-                      name: "Vaishnavi Yuvraj Kaware",
-                      class: "4N",
-                      score: "26.97",
-                      category: "OBC",
-                    },
-                    {
-                      year: "2025",
-                      sr: "3",
-                      name: "Pranay Premsagar Rapartiwar",
-                      class: "3N",
-                      score: "26.51",
-                      category: "OBC",
-                    },
-                    {
-                      year: "2023",
-                      sr: "1",
-                      name: "Rushikesh Raghunath Patil",
-                      class: "4N",
-                      score: "39.00",
-                      category: "OBC",
-                    },
-                    {
-                      year: "2023",
-                      sr: "2",
-                      name: "Komal Subhash Kumbhare",
-                      class: "4N",
-                      score: "38.33",
-                      category: "OBC",
-                    },
-                    {
-                      year: "2023",
-                      sr: "3",
-                      name: "Gaurav Santosh Bansod",
-                      class: "3N",
-                      score: "22.67",
-                      category: "SC",
-                    },
-                    {
-                      year: "2022",
-                      sr: "1",
-                      name: "Gauri Sanjay Panpaliya",
-                      class: "4N",
-                      score: "35.33",
-                      category: "OPEN",
-                    },
-                    {
-                      year: "2022",
-                      sr: "2",
-                      name: "Pratik Gajanan Bondre",
-                      class: "4N",
-                      score: "29.00",
-                      category: "OBC",
-                    },
-                    {
-                      year: "2022",
-                      sr: "3",
-                      name: "Anand Eknath Wankhade",
-                      class: "4N",
-                      score: "28.00",
-                      category: "OPEN",
-                    },
-                    {
-                      year: "2022",
-                      sr: "4",
-                      name: "Rushikesh Raghunath Patil",
-                      class: "4N",
-                      score: "25.67",
-                      category: "OBC",
-                    },
-                    {
-                      year: "2022",
-                      sr: "5",
-                      name: "Tanmay Madhukar Band",
-                      class: "4N",
-                      score: "16.67",
-                      category: "SC",
-                    },
-                    {
-                      year: "2021",
-                      sr: "1",
-                      name: "Swapnil Devidas Bhagat",
-                      class: "4N",
-                      score: "22.27",
-                      category: "SC",
-                    },
-                    {
-                      year: "2019",
-                      sr: "1",
-                      name: "Sanket Rajendra Baheti",
-                      class: "4N",
-                      score: "47.00",
-                      category: "OPEN",
-                    },
-                    {
-                      year: "2019",
-                      sr: "2",
-                      name: "Harvindersingh Gopalsinhg Chavan",
-                      class: "4N",
-                      score: "35.67",
-                      category: "OPEN",
-                    },
-                    {
-                      year: "2015",
-                      sr: "1",
-                      name: "Jadhav Aditee Vasant",
-                      class: "4N",
-                      score: "25.69",
-                      category: "OBC",
-                    },
-                    {
-                      year: "2015",
-                      sr: "2",
-                      name: "Vaibhav Sardar",
-                      class: "4N",
-                      score: "18.91",
-                      category: "SC",
-                    },
-                    {
-                      year: "2015",
-                      sr: "3",
-                      name: "Lokhande Rahul Laxman",
-                      class: "4N",
-                      score: "18.67",
-                      category: "SC",
-                    },
-                    {
-                      year: "2014",
-                      sr: "1",
-                      name: "Jadhav Aditee Vasant",
-                      class: "4N",
-                      score: "25.69",
-                      category: "OBC",
-                    },
-                    {
-                      year: "2014",
-                      sr: "2",
-                      name: "Vaibhav Sardar",
-                      class: "4N",
-                      score: "18.91",
-                      category: "SC",
-                    },
-                    {
-                      year: "2014",
-                      sr: "3",
-                      name: "Lokhande Rahul Lakshman",
-                      class: "4N",
-                      score: "18.67",
-                      category: "SC",
-                    },
-                  ].map((student, i) => (
-                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-700">
-                        {student.year}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
-                        {student.sr}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                        {student.name}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
-                        {student.class}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                        {student.score}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
-                        {student.category}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <button
+              onClick={() => setPrideTab("toppers")}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                prideTab === "toppers"
+                  ? "border-b-4 border-ssgmce-orange text-ssgmce-blue"
+                  : "text-gray-600 hover:text-ssgmce-blue"
+              }`}
+            >
+              University Toppers
+            </button>
+            <button
+              onClick={() => setPrideTab("alumni")}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                prideTab === "alumni"
+                  ? "border-b-4 border-ssgmce-orange text-ssgmce-blue"
+                  : "text-gray-600 hover:text-ssgmce-blue"
+              }`}
+            >
+              Top Alumnis of Department
+            </button>
           </div>
-        )}
+
+          {/* GATE Qualified Students */}
+          {prideTab === "gate" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              {t("pride.gate", defaultPrideGate).map((gateYear, yearIdx) => (
+                <div
+                  key={yearIdx}
+                  className="bg-white rounded-lg shadow-md overflow-hidden"
+                >
+                  <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
+                    <h4 className="text-xl font-bold">
+                      <EditableText
+                        value={
+                          gateYear.title ||
+                          `GATE Qualified Students ${gateYear.year}`
+                        }
+                        onSave={(val) => {
+                          const newGate = JSON.parse(
+                            JSON.stringify(t("pride.gate", defaultPrideGate)),
+                          );
+                          newGate[yearIdx].title = val;
+                          updateData("pride.gate", newGate);
+                        }}
+                      />
+                    </h4>
+                  </div>
+                  {gateYear.students.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            {[
+                              "Sr. No.",
+                              "Name of Student",
+                              "Class",
+                              "Valid Score",
+                              "Category",
+                            ].map((h, i) => (
+                              <th
+                                key={i}
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              >
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {gateYear.students.map((student, studentIdx) => (
+                            <tr key={studentIdx} className="hover:bg-gray-50">
+                              {student.map((cell, cellIdx) => (
+                                <td
+                                  key={cellIdx}
+                                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                >
+                                  <EditableText
+                                    value={cell}
+                                    onSave={(val) =>
+                                      updatePrideGate(
+                                        yearIdx,
+                                        studentIdx,
+                                        cellIdx,
+                                        val,
+                                      )
+                                    }
+                                  />
+                                </td>
+                              ))}
+                              {isEditing && (
+                                <td
+                                  className="px-6 py-4 text-sm text-red-500 cursor-pointer"
+                                  onClick={() => {
+                                    const newGate = JSON.parse(
+                                      JSON.stringify(
+                                        t("pride.gate", defaultPrideGate),
+                                      ),
+                                    );
+                                    newGate[yearIdx].students = newGate[
+                                      yearIdx
+                                    ].students.filter(
+                                      (_, idx) => idx !== studentIdx,
+                                    );
+                                    updateData("pride.gate", newGate);
+                                  }}
+                                >
+                                  Delete
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="px-6 py-8 text-center text-gray-400 italic">
+                      No GATE qualified students for this year.
+                    </div>
+                  )}
+                  {isEditing && (
+                    <button
+                      onClick={() => {
+                        const newGate = JSON.parse(
+                          JSON.stringify(t("pride.gate", defaultPrideGate)),
+                        );
+                        const nextSr = String(gateYear.students.length + 1);
+                        newGate[yearIdx].students.push([
+                          nextSr,
+                          "New Student",
+                          "4N",
+                          "0",
+                          "OPEN",
+                        ]);
+                        updateData("pride.gate", newGate);
+                      }}
+                      className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                    >
+                      Add Student
+                    </button>
+                  )}
+                </div>
+              ))}
+              {isEditing && (
+                <button
+                  onClick={() => {
+                    const newGate = JSON.parse(
+                      JSON.stringify(t("pride.gate", defaultPrideGate)),
+                    );
+                    newGate.push({
+                      year: "2026",
+                      title: "GATE Qualified Students 2026",
+                      students: [],
+                    });
+                    updateData("pride.gate", newGate);
+                  }}
+                  className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                >
+                  Add Year
+                </button>
+              )}
+            </motion.div>
+          )}
+
+          {/* University Toppers */}
+          {prideTab === "toppers" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              {[
+                {
+                  label: "B.E. UNIVERSITY RANK HOLDERS",
+                  key: "be",
+                  default: defaultPrideToppersBE,
+                },
+              ].map((category) => (
+                <div
+                  key={category.key}
+                  className="bg-white rounded-lg shadow-md overflow-hidden"
+                >
+                  <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
+                    <h4 className="text-xl font-bold">{category.label}</h4>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          {[
+                            "Year",
+                            "Name of the Student",
+                            "University Rank",
+                            "CGPA/Percentage",
+                          ].map((h, i) => (
+                            <th
+                              key={i}
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {t(`pride.toppers.${category.key}`, category.default)
+                          .length > 0 ? (
+                          t(
+                            `pride.toppers.${category.key}`,
+                            category.default,
+                          ).map((yearGroup, yearIdx) => (
+                            <React.Fragment key={yearIdx}>
+                              {yearGroup.records.length > 0 ? (
+                                yearGroup.records.map((record, recordIdx) => (
+                                  <tr
+                                    key={recordIdx}
+                                    className="hover:bg-gray-50"
+                                  >
+                                    {recordIdx === 0 && (
+                                      <td
+                                        className="px-6 py-4 text-sm font-medium text-gray-900"
+                                        rowSpan={yearGroup.records.length}
+                                      >
+                                        <EditableText
+                                          value={yearGroup.year}
+                                          onSave={(val) => {
+                                            const newData = JSON.parse(
+                                              JSON.stringify(
+                                                t(
+                                                  `pride.toppers.${category.key}`,
+                                                  category.default,
+                                                ),
+                                              ),
+                                            );
+                                            newData[yearIdx].year = val;
+                                            updateData(
+                                              `pride.toppers.${category.key}`,
+                                              newData,
+                                            );
+                                          }}
+                                        />
+                                      </td>
+                                    )}
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                      <EditableText
+                                        value={record.name}
+                                        onSave={(val) =>
+                                          updatePrideToppers(
+                                            category.key,
+                                            yearIdx,
+                                            recordIdx,
+                                            "name",
+                                            val,
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                      <EditableText
+                                        value={record.rank}
+                                        onSave={(val) =>
+                                          updatePrideToppers(
+                                            category.key,
+                                            yearIdx,
+                                            recordIdx,
+                                            "rank",
+                                            val,
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                      <EditableText
+                                        value={record.score}
+                                        onSave={(val) =>
+                                          updatePrideToppers(
+                                            category.key,
+                                            yearIdx,
+                                            recordIdx,
+                                            "score",
+                                            val,
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                    {isEditing && (
+                                      <td
+                                        className="px-6 py-4 text-sm text-red-500 cursor-pointer"
+                                        onClick={() => {
+                                          const newData = JSON.parse(
+                                            JSON.stringify(
+                                              t(
+                                                `pride.toppers.${category.key}`,
+                                                category.default,
+                                              ),
+                                            ),
+                                          );
+                                          newData[yearIdx].records = newData[
+                                            yearIdx
+                                          ].records.filter(
+                                            (_, idx) => idx !== recordIdx,
+                                          );
+                                          if (
+                                            newData[yearIdx].records.length ===
+                                            0
+                                          ) {
+                                            newData.splice(yearIdx, 1);
+                                          }
+                                          updateData(
+                                            `pride.toppers.${category.key}`,
+                                            newData,
+                                          );
+                                        }}
+                                      >
+                                        Delete
+                                      </td>
+                                    )}
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                                    <EditableText
+                                      value={yearGroup.year}
+                                      onSave={(val) => {
+                                        const newData = JSON.parse(
+                                          JSON.stringify(
+                                            t(
+                                              `pride.toppers.${category.key}`,
+                                              category.default,
+                                            ),
+                                          ),
+                                        );
+                                        newData[yearIdx].year = val;
+                                        updateData(
+                                          `pride.toppers.${category.key}`,
+                                          newData,
+                                        );
+                                      }}
+                                    />
+                                  </td>
+                                  <td
+                                    colSpan={3}
+                                    className="px-6 py-4 text-center text-gray-400 italic text-sm"
+                                  >
+                                    No records yet.
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={4}
+                              className="px-6 py-8 text-center text-gray-400 italic"
+                            >
+                              No data available yet.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  {isEditing && (
+                    <button
+                      onClick={() => {
+                        const newData = JSON.parse(
+                          JSON.stringify(
+                            t(
+                              `pride.toppers.${category.key}`,
+                              category.default,
+                            ),
+                          ),
+                        );
+                        newData.push({
+                          year: "2024-25",
+                          records: [
+                            {
+                              name: "New Student",
+                              rank: "1st",
+                              score: "9.5 CGPA",
+                            },
+                          ],
+                        });
+                        updateData(`pride.toppers.${category.key}`, newData);
+                      }}
+                      className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                    >
+                      Add Year Group
+                    </button>
+                  )}
+                </div>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Top Alumni */}
+          {prideTab === "alumni" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-lg shadow-md overflow-hidden"
+            >
+              <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
+                <h4 className="text-xl font-bold">
+                  <EditableText
+                    value={t("pride.alumniTitle", "Top Alumnis of Department")}
+                    onSave={(val) => updateData("pride.alumniTitle", val)}
+                  />
+                </h4>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      {[
+                        "S. N.",
+                        "Names of Alumni",
+                        "Position",
+                        "Names of Organisation",
+                      ].map((h, i) => (
+                        <th
+                          key={i}
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {t("pride.alumni", defaultPrideAlumni).length > 0 ? (
+                      t("pride.alumni", defaultPrideAlumni).map(
+                        (alumnus, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                              {idx + 1}.
+                            </td>
+                            {alumnus.map((cell, cellIdx) => (
+                              <td
+                                key={cellIdx}
+                                className="px-6 py-4 text-sm text-gray-900"
+                              >
+                                <EditableText
+                                  value={cell}
+                                  onSave={(val) =>
+                                    updateOverviewTable(
+                                      "pride.alumni",
+                                      defaultPrideAlumni,
+                                      idx,
+                                      cellIdx,
+                                      val,
+                                    )
+                                  }
+                                />
+                              </td>
+                            ))}
+                            {isEditing && (
+                              <td
+                                className="px-6 py-4 text-sm text-red-500 cursor-pointer"
+                                onClick={() => {
+                                  const newArr = t(
+                                    "pride.alumni",
+                                    defaultPrideAlumni,
+                                  ).filter((_, i) => i !== idx);
+                                  updateData("pride.alumni", newArr);
+                                }}
+                              >
+                                Delete
+                              </td>
+                            )}
+                          </tr>
+                        ),
+                      )
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-6 py-8 text-center text-gray-400 italic"
+                        >
+                          No alumni data available yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {isEditing && (
+                <button
+                  onClick={() => {
+                    const newArr = [
+                      ...t("pride.alumni", defaultPrideAlumni),
+                      ["New Alumni", "Position", "Organisation"],
+                    ];
+                    updateData("pride.alumni", newArr);
+                  }}
+                  className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                >
+                  Add Alumni
+                </button>
+              )}
+            </motion.div>
+          )}
+        </motion.div>
       </div>
     ),
 
@@ -1821,40 +3347,37 @@ const IT = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-sm">
-                    {[
-                      { year: "2024-25", count: "16", id: "2024-25" },
-                      { year: "2023-24", count: "37", id: "2023-24" },
-                      { year: "2022-23", count: "48", id: "2022-23" },
-                      { year: "2021-22", count: "60", id: "2021-22" },
-                      { year: "2020-21", count: "61", id: "2020-21" },
-                      { year: "2019-20", count: "51", id: "2019-20" },
-                      { year: "2018-19", count: "42", id: "2018-19" },
-                    ].map((row, index) => (
-                      <tr
-                        key={index}
-                        className="hover:bg-blue-50/30 transition-colors"
-                      >
-                        <td className="px-6 py-4 text-center font-mono text-gray-400">
-                          {index + 1}
-                        </td>
-                        <td className="px-6 py-4 text-center font-bold text-gray-700">
-                          {row.year}
-                        </td>
-                        <td className="px-6 py-4 text-center font-bold text-ssgmce-blue text-lg">
-                          {row.count}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <button
-                            onClick={() => setPlacementYear(row.id)}
-                            className="text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
-                          >
-                            View Details
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {t("placements.summary", defaultPlacements.summary).map(
+                      (row, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-blue-50/30 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-center font-mono text-gray-400">
+                            {index + 1}
+                          </td>
+                          <td className="px-6 py-4 text-center font-bold text-gray-700">
+                            {row.year}
+                          </td>
+                          <td className="px-6 py-4 text-center font-bold text-ssgmce-blue text-lg">
+                            {row.count}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <button
+                              onClick={() => setPlacementYear(row.id)}
+                              className="text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                            >
+                              View Details
+                            </button>
+                          </td>
+                        </tr>
+                      ),
+                    )}
                   </tbody>
                 </table>
+              </div>
+              <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+                * Placements still in progress for the current academic year.
               </div>
             </motion.div>
           ) : (
@@ -1884,165 +3407,324 @@ const IT = () => {
                 </div>
               </div>
 
-              {placementYear === "2024-25" && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
-                        <tr>
-                          <th className="px-6 py-4 font-bold text-center w-16">
-                            SN
-                          </th>
-                          <th className="px-6 py-4 font-bold">
-                            Student Details
-                          </th>
-                          <th className="px-6 py-4 font-bold">Company Name</th>
-                          <th className="px-6 py-4 font-bold text-right">
-                            Placement Package (LPA)
-                          </th>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
+                      <tr>
+                        <th className="px-6 py-4 font-bold text-center w-16">
+                          Sr. No.
+                        </th>
+                        <th className="px-6 py-4 font-bold">Name of Student</th>
+                        <th className="px-6 py-4 font-bold">Company Name</th>
+                        <th className="px-6 py-4 font-bold text-right">CTC</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {t(
+                        `placements.details.${placementYear}`,
+                        defaultPlacements.details[placementYear] || [],
+                      ).map((student, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-center font-mono text-gray-400">
+                            {index + 1}
+                          </td>
+                          <td className="px-6 py-4 font-medium text-gray-800">
+                            {student.name}
+                          </td>
+                          <td className="px-6 py-4 text-gray-600">
+                            {student.company}
+                          </td>
+                          <td className="px-6 py-4 text-right font-bold text-ssgmce-blue">
+                            {student.ctc}
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {[
-                          {
-                            sn: 1,
-                            name: "Aditya Chavan",
-                            company:
-                              "Arohi Software Solution Pvt. Ltd., Ahmednagar",
-                            package: "3.30 to 6",
-                          },
-                          {
-                            sn: 2,
-                            name: "Rutuja Pawar",
-                            company:
-                              "Arohi Software Solution Pvt. Ltd., Ahmednagar",
-                            package: "3.30 to 6",
-                          },
-                          {
-                            sn: 3,
-                            name: "Samruddhi Tambatkar",
-                            company:
-                              "Arohi Software Solution Pvt. Ltd., Ahmednagar",
-                            package: "3.30 to 6",
-                          },
-                          {
-                            sn: 4,
-                            name: "Shreyash Dubey",
-                            company:
-                              "Arohi Software Solution Pvt. Ltd., Ahmednagar",
-                            package: "3.30 to 6",
-                          },
-                          {
-                            sn: 5,
-                            name: "Aditya Chavan",
-                            company: "Bristlecone India Limited, Mumbai",
-                            package: "4.25",
-                          },
-                          {
-                            sn: 6,
-                            name: "Samruddhi Tambatkar",
-                            company: "Bristlecone India Limited, Mumbai",
-                            package: "4.25",
-                          },
-                          {
-                            sn: 7,
-                            name: "Sanket Vinchankar",
-                            company: "Micropro Software Solutions Ltd., Nagpur",
-                            package: "3",
-                          },
-                          {
-                            sn: 8,
-                            name: "Prasad Khadse",
-                            company: "Eagle Byte Solutions Pvt. Ltd., Nashik",
-                            package: "3.2",
-                          },
-                          {
-                            sn: 9,
-                            name: "Atharva Kathole",
-                            company: "Eagle Byte Solutions Pvt. Ltd., Nashik",
-                            package: "3.2",
-                          },
-                          {
-                            sn: 10,
-                            name: "Tanvee Jawanjal",
-                            company: "Eagle Byte Solutions Pvt. Ltd., Nashik",
-                            package: "3.2",
-                          },
-                          {
-                            sn: 11,
-                            name: "Amey Mandwale",
-                            company: "Connecticus Technologies, Pune",
-                            package: "6",
-                          },
-                          {
-                            sn: 12,
-                            name: "Shreyash Dubey",
-                            company: "Connecticus Technologies, Pune",
-                            package: "6",
-                          },
-                          {
-                            sn: 13,
-                            name: "Isha Wagh",
-                            company: "Krutanik Solution, Bengaluru",
-                            package: "6",
-                          },
-                          {
-                            sn: 14,
-                            name: "Rutuja Pawar",
-                            company: "Krutanik Solution, Bengaluru",
-                            package: "6",
-                          },
-                          {
-                            sn: 15,
-                            name: "Kartik Dhande",
-                            company: "TCS Limited, Pune",
-                            package: "3.36",
-                          },
-                          {
-                            sn: 16,
-                            name: "Tejaswini Bhagat",
-                            company: "PHN Technology Pvt. Ltd., Pune",
-                            package: "5.6",
-                          },
-                        ].map((record, i) => (
-                          <tr
-                            key={i}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-6 py-4 text-center font-mono text-gray-400 text-xs">
-                              {record.sn}
-                            </td>
-                            <td className="px-6 py-4 font-medium text-gray-900">
-                              {record.name}
-                            </td>
-                            <td className="px-6 py-4 text-gray-700">
-                              {record.company}
-                            </td>
-                            <td className="px-6 py-4 text-right font-bold text-green-600">
-                              {record.package}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
+                {(!t(
+                  `placements.details.${placementYear}`,
+                  defaultPlacements.details[placementYear] || [],
+                ).length ||
+                  t(
+                    `placements.details.${placementYear}`,
+                    defaultPlacements.details[placementYear] || [],
+                  ).length === 0) && (
+                  <div className="p-8 text-center text-gray-400">
+                    <p>Detailed placement data will be updated soon.</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    ),
 
-              {placementYear !== "2024-25" && (
-                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded-lg">
-                  <div className="flex items-center mb-3">
-                    <FaLightbulb className="text-3xl text-yellow-600 mr-3" />
-                    <h3 className="text-xl font-bold text-gray-800">
-                      Data Not Available
-                    </h3>
+    activities: (
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+            <EditableText
+              value={t("activitiesTitle", "Curricular Activities")}
+              onSave={(val) => updateData("activitiesTitle", val)}
+            />
+          </h3>
+          <span className="hidden sm:inline-block text-sm text-gray-500 bg-gray-100 px-4 py-1.5 rounded-full">
+            {t("activities", defaultActivities).length} Activities
+          </span>
+        </div>
+
+        {/* Activity List */}
+        <div className="space-y-5">
+          {t("activities", defaultActivities)
+            .slice(0, activitiesVisible)
+            .map((activity, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.03, duration: 0.35 }}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden"
+              >
+                <div className="flex flex-col sm:flex-row">
+                  {/* Image */}
+                  <div
+                    className="sm:w-72 flex-shrink-0 cursor-pointer"
+                    onClick={() => setLightboxActivity(idx)}
+                  >
+                    {activity.image ? (
+                      <img
+                        src={activity.image}
+                        alt={activity.title}
+                        className="w-full h-48 sm:h-full object-contain bg-gray-50"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-48 sm:h-full flex items-center justify-center bg-gray-50">
+                        <FaCalendarAlt className="text-4xl text-gray-300" />
+                      </div>
+                    )}
                   </div>
-                  <p className="text-gray-600">
-                    Detailed placement records for {placementYear} will be
-                    updated soon.
-                  </p>
+
+                  {/* Details */}
+                  <div className="flex-1 p-5 sm:p-6">
+                    {/* Date */}
+                    <span className="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded mb-3">
+                      <EditableText
+                        value={activity.date}
+                        onSave={(val) => updateActivity(idx, "date", val)}
+                      />
+                    </span>
+
+                    {/* Title */}
+                    <h4 className="text-lg font-bold text-gray-800 mb-4 leading-snug">
+                      <EditableText
+                        value={activity.title}
+                        onSave={(val) => updateActivity(idx, "title", val)}
+                        multiline
+                      />
+                    </h4>
+
+                    {/* Meta Info */}
+                    <div className="space-y-2.5 text-sm text-gray-600">
+                      <div className="flex items-start gap-2.5">
+                        <FaUsers className="text-blue-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="font-medium text-gray-700">
+                            Participants:{" "}
+                          </span>
+                          <EditableText
+                            value={activity.participants}
+                            onSave={(val) =>
+                              updateActivity(idx, "participants", val)
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2.5">
+                        <FaUserGraduate className="text-orange-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="font-medium text-gray-700">
+                            Organized by:{" "}
+                          </span>
+                          <EditableText
+                            value={activity.organizer}
+                            onSave={(val) =>
+                              updateActivity(idx, "organizer", val)
+                            }
+                            multiline
+                          />
+                        </div>
+                      </div>
+
+                      {(activity.resource || isEditing) && (
+                        <div className="flex items-start gap-2.5">
+                          <FaChalkboardTeacher className="text-green-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="font-medium text-gray-700">
+                              Resource Person:{" "}
+                            </span>
+                            <EditableText
+                              value={
+                                activity.resource ||
+                                (isEditing ? "Add Resource Person" : "")
+                              }
+                              onSave={(val) =>
+                                updateActivity(idx, "resource", val)
+                              }
+                              multiline
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Edit: image URL + delete */}
+                    {isEditing && (
+                      <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-gray-500">Image URL:</span>
+                          <EditableText
+                            value={activity.image || "Add image URL"}
+                            onSave={(val) => updateActivity(idx, "image", val)}
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            const arr = [...t("activities", defaultActivities)];
+                            arr.splice(idx, 1);
+                            updateData("activities", arr);
+                          }}
+                          className="text-xs text-red-500 hover:text-red-700"
+                        >
+                          Remove Activity
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+              </motion.div>
+            ))}
+        </div>
+
+        {/* Show More / Show Less */}
+        {t("activities", defaultActivities).length > 6 && (
+          <div className="text-center pt-2">
+            <button
+              onClick={() =>
+                setActivitiesVisible((prev) =>
+                  prev >= t("activities", defaultActivities).length
+                    ? 6
+                    : prev + 6,
+                )
+              }
+              className="px-8 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
+            >
+              {activitiesVisible >= t("activities", defaultActivities).length
+                ? "Show Less"
+                : `Show More (${t("activities", defaultActivities).length - activitiesVisible} remaining)`}
+            </button>
+          </div>
+        )}
+
+        {/* Add Activity button (editing mode) */}
+        {isEditing && (
+          <div className="text-center">
+            <button
+              onClick={() => {
+                const updated = [
+                  ...t("activities", defaultActivities),
+                  {
+                    title: "New Activity",
+                    date: "Date",
+                    participants: "Participants",
+                    organizer: "Organizer",
+                    resource: "",
+                    image: "",
+                  },
+                ];
+                updateData("activities", updated);
+              }}
+              className="px-6 py-2.5 bg-ssgmce-blue text-white rounded-lg hover:bg-ssgmce-dark-blue transition-colors text-sm font-medium"
+            >
+              + Add Activity
+            </button>
+          </div>
+        )}
+
+        {/* Lightbox */}
+        <AnimatePresence>
+          {lightboxActivity !== null && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+              onClick={() => setLightboxActivity(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                className="relative max-w-4xl w-full max-h-[90vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  className="absolute -top-10 right-0 text-white text-2xl hover:text-gray-300 z-10"
+                  onClick={() => setLightboxActivity(null)}
+                >
+                  <FaTimes />
+                </button>
+
+                <img
+                  src={
+                    t("activities", defaultActivities)[lightboxActivity]?.image
+                  }
+                  alt={
+                    t("activities", defaultActivities)[lightboxActivity]?.title
+                  }
+                  className="w-full max-h-[80vh] object-contain rounded-lg"
+                />
+
+                <div className="text-white text-center mt-3 text-sm">
+                  {t("activities", defaultActivities)[lightboxActivity]?.title}
+                </div>
+
+                {/* Nav arrows */}
+                {lightboxActivity > 0 && (
+                  <button
+                    className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-3xl bg-black/40 rounded-full p-2 hover:bg-black/60"
+                    onClick={() =>
+                      setLightboxActivity((p) => Math.max(0, p - 1))
+                    }
+                  >
+                    <FaChevronLeft />
+                  </button>
+                )}
+                {lightboxActivity <
+                  t("activities", defaultActivities).length - 1 && (
+                  <button
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-white text-3xl bg-black/40 rounded-full p-2 hover:bg-black/60"
+                    onClick={() =>
+                      setLightboxActivity((p) =>
+                        Math.min(
+                          t("activities", defaultActivities).length - 1,
+                          p + 1,
+                        ),
+                      )
+                    }
+                  >
+                    <FaChevronRight />
+                  </button>
+                )}
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -2084,10 +3766,19 @@ const IT = () => {
 
               <div className="p-5 flex-1 flex flex-col justify-center">
                 <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
-                  <EditableText
-                    value={fac.name}
-                    onSave={(val) => updateFacultyMember(i, "name", val)}
-                  />
+                  {fac.id && !fac.isIndustry ? (
+                    <Link to={`/faculty/${fac.id}`} className="hover:underline">
+                      <EditableText
+                        value={fac.name}
+                        onSave={(val) => updateFacultyMember(i, "name", val)}
+                      />
+                    </Link>
+                  ) : (
+                    <EditableText
+                      value={fac.name}
+                      onSave={(val) => updateFacultyMember(i, "name", val)}
+                    />
+                  )}
                 </h4>
                 <p className="text-ssgmce-blue font-medium text-sm mb-3 uppercase tracking-wide text-[11px]">
                   <EditableText
@@ -2141,18 +3832,2013 @@ const IT = () => {
                     )}
                   </div>
 
-                  {!fac.isIndustry && (
+                  {fac.vidwanId && (
                     <a
-                      href="#"
-                      className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-2 hover:underline uppercase tracking-wide"
+                      href={`https://vidwan.inflibnet.ac.in/profile/${fac.vidwanId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-[10px] font-bold text-emerald-600 mt-2 hover:underline uppercase tracking-wide"
+                    >
+                      Vidwan Profile <FaAngleRight className="ml-1" />
+                    </a>
+                  )}
+                  {fac.id && !fac.isIndustry && (
+                    <Link
+                      to={`/faculty/${fac.id}`}
+                      className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
                     >
                       View Profile <FaAngleRight className="ml-1" />
-                    </a>
+                    </Link>
                   )}
                 </div>
               </div>
             </motion.div>
           ))}
+        </div>
+      </div>
+    ),
+
+    newsletter: (
+      <div className="space-y-8">
+        {/* Newsletter Header */}
+        <div className="text-center">
+          <div className="w-16 h-16 bg-blue-50 text-ssgmce-blue rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
+            <FaBullseye />
+          </div>
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
+            <EditableText
+              value={t("newsletterTitle", "Department Newsletters")}
+              onSave={(val) => updateData("newsletterTitle", val)}
+            />
+          </h3>
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <EditableText
+              value={t(
+                "newsletterDescription",
+                "Stay updated with the latest happenings, student achievements, faculty contributions, and department events through our periodic newsletters.",
+              )}
+              onSave={(val) => updateData("newsletterDescription", val)}
+              multiline
+            />
+          </div>
+        </div>
+
+        {/* Newsletter Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-8 py-5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-wide">Newsletter</h3>
+              <p className="text-sm text-gray-300 mt-1">
+                Department of Information Technology
+              </p>
+            </div>
+            <FaDownload className="text-4xl text-blue-200 opacity-40" />
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th className="px-6 py-4 font-bold text-center w-20">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 font-bold">Publishing Date</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    More Details
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {/* Latest Issue Row */}
+                <tr className="hover:bg-blue-50/30 transition-colors bg-blue-50/10">
+                  <td className="px-6 py-4 text-center font-mono text-gray-400">
+                    1
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded-full">
+                        Latest
+                      </span>
+                      <span className="font-bold text-gray-800">
+                        <EditableText
+                          value={
+                            t("newsletters_latest", defaultNewsletters.latest)
+                              .title || "Newsletter 2024-25"
+                          }
+                          onSave={(val) =>
+                            updateNewsletter("latest", 0, "title", val)
+                          }
+                        />
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <a
+                      href={
+                        t("newsletters_latest", defaultNewsletters.latest)
+                          .link || "#"
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                    >
+                      <FaDownload className="text-xs" /> Click for Details
+                    </a>
+                  </td>
+                </tr>
+
+                {/* Archive Rows */}
+                {(
+                  t("newsletters_archives", defaultNewsletters.archives) || []
+                ).map((issue, i) => (
+                  <tr key={i} className="hover:bg-blue-50/30 transition-colors">
+                    <td className="px-6 py-4 text-center font-mono text-gray-400">
+                      {i + 2}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-bold text-gray-700">
+                        <EditableText
+                          value={issue.vol}
+                          onSave={(val) =>
+                            updateNewsletter("archives", i, "vol", val)
+                          }
+                        />
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <a
+                        href={issue.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                      >
+                        <FaDownload className="text-xs" /> Click for Details
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+            Click on "Click for Details" to view/download the newsletter PDF.
+          </div>
+        </motion.div>
+      </div>
+    ),
+
+    achievements: (() => {
+      const facultyAchievements = t(
+        "achievements.faculty",
+        defaultAchievements.faculty,
+      );
+      const studentAchievements = t(
+        "achievements.students",
+        defaultAchievements.students,
+      );
+
+      const handleViewCertificate = (item) => {
+        if (!item.image) return;
+        const isPdf = item.image.toLowerCase().endsWith(".pdf");
+        if (isPdf) {
+          window.open(item.image, "_blank");
+        } else {
+          setCertificateLightbox(item);
+        }
+      };
+
+      return (
+        <div className="space-y-8">
+          {/* Certificate Lightbox Modal */}
+          <AnimatePresence>
+            {certificateLightbox && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                onClick={() => setCertificateLightbox(null)}
+              >
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  className="relative max-w-4xl max-h-[90vh] w-full bg-white rounded-2xl overflow-hidden shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-white font-bold text-lg">
+                        {certificateLightbox.name}
+                      </h3>
+                      <p className="text-blue-200 text-sm">
+                        {certificateLightbox.achievement}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setCertificateLightbox(null)}
+                      className="text-white hover:text-orange-300 transition-colors"
+                    >
+                      <FaTimes className="text-xl" />
+                    </button>
+                  </div>
+                  <div className="p-4 flex items-center justify-center bg-gray-50 max-h-[75vh] overflow-auto">
+                    <img
+                      src={certificateLightbox.image}
+                      alt={certificateLightbox.achievement}
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                      className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                    />
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Header */}
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-gray-900">Achievements</h2>
+            <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
+            <p className="text-gray-600 mt-3">
+              Department of Information Technology
+            </p>
+          </div>
+
+          {/* Tab Menu: Faculty | Student toggle */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex rounded-lg bg-gray-100 p-1">
+              <button
+                onClick={() => setAchievementTab("faculty")}
+                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  achievementTab === "faculty"
+                    ? "bg-[#003366] text-white shadow-md"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                }`}
+              >
+                <FaChalkboardTeacher className="text-lg" />
+                Faculty Achievements
+              </button>
+              <button
+                onClick={() => setAchievementTab("student")}
+                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  achievementTab === "student"
+                    ? "bg-[#003366] text-white shadow-md"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                }`}
+              >
+                <FaUserGraduate className="text-lg" />
+                Student Achievements
+              </button>
+            </div>
+          </div>
+
+          {/* Faculty Achievements */}
+          {achievementTab === "faculty" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {facultyAchievements.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <FaTrophy className="mr-3 text-yellow-300" />
+                      {item.name}
+                    </h3>
+                    <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
+                      {item.category}
+                    </span>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-[#003366] mb-2">
+                          {item.achievement}
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                      {item.image && (
+                        <button
+                          onClick={() => handleViewCertificate(item)}
+                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                          <FaAward className="text-yellow-300" />
+                          View Certificate
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+              {facultyAchievements.length === 0 && (
+                <p className="text-center text-gray-400 py-8 text-sm">
+                  No faculty achievements recorded yet.
+                </p>
+              )}
+            </motion.div>
+          )}
+
+          {/* Student Achievements */}
+          {achievementTab === "student" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {studentAchievements.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <FaAward className="mr-3 text-yellow-300" />
+                      {item.name}
+                    </h3>
+                    <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
+                      {item.category}
+                    </span>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-[#003366] mb-2">
+                          {item.achievement}
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                      {item.image && (
+                        <button
+                          onClick={() => handleViewCertificate(item)}
+                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                          <FaAward className="text-yellow-300" />
+                          View Certificate
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+              {studentAchievements.length === 0 && (
+                <p className="text-center text-gray-400 py-8 text-sm">
+                  No student achievements recorded yet.
+                </p>
+              )}
+            </motion.div>
+          )}
+        </div>
+      );
+    })(),
+
+    "course-material": (
+      <div className="space-y-8">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-orange-50 text-ssgmce-orange rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
+            <FaChalkboardTeacher />
+          </div>
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
+            <EditableText
+              value={t("courseMaterial.title", "Course Material")}
+              onSave={(val) => updateData("courseMaterial.title", val)}
+            />
+          </h3>
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <EditableText
+              value={t(
+                "courseMaterial.description",
+                "Access comprehensive course materials, lecture notes, assignments, and study resources for all semesters.",
+              )}
+              onSave={(val) => updateData("courseMaterial.description", val)}
+              multiline
+            />
+          </div>
+        </div>
+
+        {/* Course Material Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white px-8 py-5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-wide">
+                Course Material
+              </h3>
+              <p className="text-sm text-orange-100 mt-1">
+                Department of Information Technology
+              </p>
+            </div>
+            <FaChalkboardTeacher className="text-4xl text-orange-200 opacity-40" />
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th className="px-6 py-4 font-bold text-center w-20">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 font-bold">Year / Class</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    Access Materials
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {(
+                  t("courseMaterials", [
+                    {
+                      year: "Second Year",
+                      title: "Second Year IT (2N)",
+                      link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/EsMfkpy9SuNMltN9KWdtcX8BkW-mKmRdA-uTh-eFMOFpzA",
+                    },
+                    {
+                      year: "Third Year",
+                      title: "Third Year IT (3N)",
+                      link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/EmEb5ijdZBdGvqT12xXRL_0BChr4yYIEdVyx1JfOPwP5MA",
+                    },
+                    {
+                      year: "Final Year",
+                      title: "Final Year IT (4N)",
+                      link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Eqo9010PXeVGlakouWUW2n8BAyzRvV0h8AuSVQdTA-9lvw",
+                    },
+                  ]) || []
+                ).map((material, i) => (
+                  <tr
+                    key={i}
+                    className="hover:bg-orange-50/30 transition-colors"
+                  >
+                    <td className="px-6 py-4 text-center font-mono text-gray-400">
+                      {i + 1}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-bold text-gray-800">
+                        <EditableText
+                          value={material.title}
+                          onSave={(val) => {
+                            const defaults = [
+                              {
+                                year: "Second Year",
+                                title: "Second Year IT (2N)",
+                                link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/EsMfkpy9SuNMltN9KWdtcX8BkW-mKmRdA-uTh-eFMOFpzA",
+                              },
+                              {
+                                year: "Third Year",
+                                title: "Third Year IT (3N)",
+                                link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/EmEb5ijdZBdGvqT12xXRL_0BChr4yYIEdVyx1JfOPwP5MA",
+                              },
+                              {
+                                year: "Final Year",
+                                title: "Final Year IT (4N)",
+                                link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Eqo9010PXeVGlakouWUW2n8BAyzRvV0h8AuSVQdTA-9lvw",
+                              },
+                            ];
+                            const updated = [...t("courseMaterials", defaults)];
+                            updated[i] = { ...updated[i], title: val };
+                            updateData("courseMaterials", updated);
+                          }}
+                        />
+                      </span>
+                      {isEditing && (
+                        <div className="text-xs text-blue-500 mt-1">
+                          Link:{" "}
+                          <EditableText
+                            value={material.link}
+                            onSave={(val) => {
+                              const defaults = [
+                                {
+                                  year: "Second Year",
+                                  title: "Second Year IT (2N)",
+                                  link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/EsMfkpy9SuNMltN9KWdtcX8BkW-mKmRdA-uTh-eFMOFpzA",
+                                },
+                                {
+                                  year: "Third Year",
+                                  title: "Third Year IT (3N)",
+                                  link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/EmEb5ijdZBdGvqT12xXRL_0BChr4yYIEdVyx1JfOPwP5MA",
+                                },
+                                {
+                                  year: "Final Year",
+                                  title: "Final Year IT (4N)",
+                                  link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Eqo9010PXeVGlakouWUW2n8BAyzRvV0h8AuSVQdTA-9lvw",
+                                },
+                              ];
+                              const updated = [
+                                ...t("courseMaterials", defaults),
+                              ];
+                              updated[i] = { ...updated[i], link: val };
+                              updateData("courseMaterials", updated);
+                            }}
+                          />
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <a
+                        href={material.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-ssgmce-orange hover:text-orange-700 font-medium text-xs border border-gray-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
+                      >
+                        <FaDownload className="text-xs" /> Access OneDrive
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+            Click on "Access OneDrive" to view and download course materials
+            from the respective year's shared folder.
+          </div>
+          {isEditing && (
+            <div className="p-4 border-t border-gray-100">
+              <button
+                onClick={() => {
+                  const defaults = [
+                    {
+                      year: "Second Year",
+                      title: "Second Year IT (2N)",
+                      link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/EsMfkpy9SuNMltN9KWdtcX8BkW-mKmRdA-uTh-eFMOFpzA",
+                    },
+                    {
+                      year: "Third Year",
+                      title: "Third Year IT (3N)",
+                      link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/EmEb5ijdZBdGvqT12xXRL_0BChr4yYIEdVyx1JfOPwP5MA",
+                    },
+                    {
+                      year: "Final Year",
+                      title: "Final Year IT (4N)",
+                      link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Eqo9010PXeVGlakouWUW2n8BAyzRvV0h8AuSVQdTA-9lvw",
+                    },
+                  ];
+                  const updated = [
+                    ...t("courseMaterials", defaults),
+                    { year: "New Year", title: "New Semester", link: "#" },
+                  ];
+                  updateData("courseMaterials", updated);
+                }}
+                className="px-4 py-2 bg-ssgmce-blue text-white rounded hover:bg-ssgmce-dark-blue transition-colors text-sm"
+              >
+                + Add Material
+              </button>
+            </div>
+          )}
+        </motion.div>
+      </div>
+    ),
+
+    practices: (
+      <div className="space-y-8">
+        <div className="max-w-3xl">
+          <h3 className="text-3xl font-bold text-gray-800 mb-4 border-l-4 border-orange-500 pl-4">
+            Innovative Practice
+          </h3>
+        </div>
+
+        {/* Innovative Practice Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead
+                style={{ backgroundColor: "#003366" }}
+                className="text-white"
+              >
+                <tr>
+                  <th className="px-6 py-4 text-center font-semibold whitespace-nowrap text-sm">
+                    S.N.
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Name of The Faculty
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Subject
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Innovative Practice
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Link
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {t("innovativePractices", defaultInnovativePractices).map(
+                  (item, idx) => (
+                    <tr
+                      key={idx}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-center font-medium text-gray-900">
+                        {item.sn}
+                      </td>
+                      <td
+                        className="px-6 py-4 text-center whitespace-nowrap"
+                        style={{ color: "#003366" }}
+                      >
+                        <span className="font-medium">{item.faculty}</span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {item.subject}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {item.practice}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {item.link && (
+                          <a
+                            href={item.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                          >
+                            <FaExternalLinkAlt className="text-xs" />
+                            Link
+                          </a>
+                        )}
+                      </td>
+                    </tr>
+                  ),
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    ),
+
+    "industrial-visits": (() => {
+      const industrialVisitPhotos = [
+        {
+          image: ivValueMomentum2025,
+          caption:
+            "Industry Visit to ValueMomentum, Pune for B.E. 3rd Year IT and CSE Students on 20 March 2025",
+          location: "Pune",
+          date: "20 March 2025",
+        },
+        {
+          image: ivHcltech2024,
+          caption:
+            "Industry Visit to HCL Technologies, Nagpur for B.E. 2nd Year Information Technology Students on 10th April 2024",
+          location: "Nagpur",
+          date: "10 April 2024",
+        },
+        {
+          image: ivSaama2024,
+          caption:
+            "Industry Visit to Saama Technologies, Hinjewadi Phase-I, Pune for B.E. 3rd Year Information Technology Students on 06th March 2024",
+          location: "Pune",
+          date: "06 March 2024",
+        },
+        {
+          image: ivValueMomentum2024,
+          caption:
+            "Industry Visit to ValueMomentum, Hinjewadi Phase-II, Pune for B.E. 3rd Year Information Technology Students on 07th March 2024",
+          location: "Pune",
+          date: "07 March 2024",
+        },
+        {
+          image: ivMindscripts2020,
+          caption:
+            "Industrial Visit at Mindscripts, Pune by Prof A G Sharma and Prof. F I Khandwani. Participants: Third Year IT Students",
+          location: "Pune",
+          date: "25 February 2020",
+        },
+        {
+          image: ivJadeGlobal2020,
+          caption:
+            "Industrial Visit at Jade Global, Pune by Prof A G Sharma and Prof. F I Khandwani. Participants: Third Year IT Students",
+          location: "Pune",
+          date: "26 February 2020",
+        },
+        {
+          image: ivEzest2018,
+          caption:
+            "Industrial Visit at e-Zest Solutions Ltd, Hinjewadi, Pune for B.E. 3rd Year Information Technology Students",
+          location: "Pune",
+          date: "2018-19",
+        },
+        {
+          image: ivRamakrishna2018,
+          caption:
+            "Industrial Visit at Ramakrishna IT Services Pvt. Ltd, Pune for B.E. 3rd Year Information Technology Students",
+          location: "Pune",
+          date: "2018-19",
+        },
+      ];
+
+      const industrialVisitTable = [
+        {
+          sn: 1,
+          industries: ["ValueMomentum, Pune"],
+          report: "/uploads/documents/it/industrial-visits/it_iv_2024_25.pdf",
+          class: "3rd Year IT & CSE",
+          date: "19/03/2025 to 22/03/2025",
+          students: "62",
+        },
+        {
+          sn: 2,
+          industries: ["HCL Technologies Ltd, Nagpur"],
+          report:
+            "/uploads/documents/it/industrial-visits/it_iv_hcltech_nagpur.pdf",
+          class: "2nd Year IT",
+          date: "10/04/2024",
+          students: "54",
+        },
+        {
+          sn: 3,
+          industries: [
+            "Saama Technologies, Hinjewadi, Pune",
+            "ValueMomentum, Hinjewadi, Pune",
+          ],
+          report: "/uploads/documents/it/industrial-visits/it_iv_2023_24.pdf",
+          class: "3rd Year IT",
+          date: "05/03/2024 to 09/03/2024",
+          students: "45",
+        },
+        {
+          sn: 4,
+          industries: ["Mindscripts, Pune", "Jade Global, Pune"],
+          class: "3rd Year IT",
+          date: "25/02/2020 to 26/02/2020",
+          students: "--",
+        },
+        {
+          sn: 5,
+          industries: [
+            "e-Zest Solutions Ltd, Hinjewadi, Pune",
+            "Ramakrishna IT Consultancy, Pune",
+          ],
+          report: "/uploads/documents/it/industrial-visits/it_iv_2018_19.pdf",
+          class: "3rd Year IT",
+          date: "02/10/2018 to 06/10/2018",
+          students: "46",
+        },
+        {
+          sn: 6,
+          industries: ["pandayG.com, Hyderabad"],
+          report: "/uploads/documents/it/industrial-visits/it_iv_2017_18.pdf",
+          class: "3rd Year CSE & IT",
+          date: "06/09/2017",
+          students: "--",
+        },
+        {
+          sn: 7,
+          industries: ["Value Momentum, Hyderabad"],
+          report:
+            "/uploads/documents/it/industrial-visits/it_iv_2017_18_vm.pdf",
+          class: "3rd Year CSE & IT",
+          date: "04/09/2017",
+          students: "--",
+        },
+        {
+          sn: 8,
+          industries: [
+            "I-Medita (Cisco Networking Labs), Pune",
+            "Mindscripts, Pune",
+          ],
+          report: "/uploads/documents/it/industrial-visits/it_iv_2016_17.pdf",
+          class: "3rd Year IT",
+          date: "15/03/2017 to 18/03/2017",
+          students: "33",
+        },
+      ];
+
+      return (
+        <div className="space-y-10">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h3 className="text-3xl font-bold text-gray-800 mb-3">
+              Industrial Visits
+            </h3>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              The department regularly organizes industrial visits to provide
+              students with hands-on exposure to industry practices, emerging
+              technologies, and professional work culture.
+            </p>
+          </div>
+
+          {/* Photo Gallery Section */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 mb-4">
+              <FaImages className="text-2xl text-ssgmce-blue" />
+              <h4 className="text-xl font-bold text-gray-800">Visit Gallery</h4>
+              <span className="text-sm font-medium text-ssgmce-blue bg-blue-50 px-3 py-1 rounded-full">
+                {industrialVisitPhotos.length} Photos
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {industrialVisitPhotos.map((photo, idx) => (
+                <motion.div
+                  key={idx}
+                  whileHover={{ y: -4 }}
+                  className="group relative bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setIvLightbox(idx)}
+                >
+                  <div className="aspect-[4/3] overflow-hidden bg-gray-100">
+                    <img
+                      src={photo.image}
+                      alt={photo.caption}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                      <FaSearchPlus className="absolute top-3 right-3 text-white text-lg drop-shadow" />
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-sm text-gray-700 leading-relaxed line-clamp-2">
+                      {photo.caption}
+                    </p>
+                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <FaMapMarkerAlt className="text-red-400" />
+                        {photo.location}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <FaCalendarAlt className="text-blue-400" />
+                        {photo.date}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Lightbox */}
+          <AnimatePresence>
+            {ivLightbox !== null && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4"
+                onClick={() => setIvLightbox(null)}
+              >
+                <button
+                  className="absolute top-4 right-4 text-white/80 hover:text-white text-3xl z-10"
+                  onClick={() => setIvLightbox(null)}
+                >
+                  <FaTimes />
+                </button>
+
+                {/* Previous */}
+                <button
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-3xl bg-black/30 hover:bg-black/50 rounded-full w-12 h-12 flex items-center justify-center transition-colors z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIvLightbox((prev) =>
+                      prev === 0 ? industrialVisitPhotos.length - 1 : prev - 1,
+                    );
+                  }}
+                >
+                  <FaChevronLeft />
+                </button>
+
+                {/* Image */}
+                <motion.div
+                  key={ivLightbox}
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  className="max-w-5xl max-h-[85vh] flex flex-col items-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img
+                    src={industrialVisitPhotos[ivLightbox].image}
+                    alt={industrialVisitPhotos[ivLightbox].caption}
+                    className="max-h-[70vh] max-w-full object-contain rounded-lg shadow-2xl"
+                  />
+                  <div className="mt-4 text-center max-w-2xl">
+                    <p className="text-white/90 text-sm leading-relaxed">
+                      {industrialVisitPhotos[ivLightbox].caption}
+                    </p>
+                    <div className="flex items-center justify-center gap-4 mt-2 text-white/60 text-xs">
+                      <span className="flex items-center gap-1">
+                        <FaMapMarkerAlt className="text-red-400" />
+                        {industrialVisitPhotos[ivLightbox].location}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <FaCalendarAlt className="text-blue-400" />
+                        {industrialVisitPhotos[ivLightbox].date}
+                      </span>
+                      <span className="text-white/40">
+                        {ivLightbox + 1} / {industrialVisitPhotos.length}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Next */}
+                <button
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-3xl bg-black/30 hover:bg-black/50 rounded-full w-12 h-12 flex items-center justify-center transition-colors z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIvLightbox((prev) =>
+                      prev === industrialVisitPhotos.length - 1 ? 0 : prev + 1,
+                    );
+                  }}
+                >
+                  <FaChevronRight />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Table Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-4">
+              <FaIndustry className="text-2xl text-ssgmce-blue" />
+              <h4 className="text-xl font-bold text-gray-800">Visit Details</h4>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-ssgmce-blue text-white">
+                    <tr>
+                      <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                        S.N.
+                      </th>
+                      <th className="px-6 py-4 text-left font-bold">
+                        Name of Industry Visited
+                      </th>
+                      <th className="px-6 py-4 text-left font-bold">Class</th>
+                      <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                        Date
+                      </th>
+                      <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                        No of Students
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {industrialVisitTable.map((visit, idx) => (
+                      <tr
+                        key={idx}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 font-medium text-gray-900">
+                          {String(visit.sn).padStart(2, "0")}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="space-y-1">
+                            {visit.industries.map((ind, i) => (
+                              <div key={i} className="text-gray-700">
+                                {ind}
+                              </div>
+                            ))}
+                            {visit.report && (
+                              <a
+                                href={visit.report}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-ssgmce-blue hover:underline text-xs mt-1"
+                              >
+                                <FaFileAlt className="text-xs" />
+                                Details Report
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">
+                          {visit.class}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                          {visit.date}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700 text-center font-medium">
+                          {visit.students}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    })(),
+
+    mous: (
+      <div className="space-y-8">
+        <div className="text-center mb-8">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">MoUs</h3>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Strategic partnerships with industry leaders to enhance learning
+            outcomes and provide students with real-world exposure.
+          </p>
+        </div>
+
+        {/* Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-ssgmce-blue text-white">
+                <tr>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold">
+                    Name of the Organization
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    MOU Signing Date
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    MOU Copy / Report
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {[
+                  {
+                    no: "1.",
+                    org: "Prodevans Technologies Pvt. Ltd., Bengaluru",
+                    date: "05-10-2023",
+                    report:
+                      "/uploads/documents/it_mous/MOU_Prodevans_Technologies_2023.pdf",
+                  },
+                  {
+                    no: "2.",
+                    org: "BridgeLabz Solutions Pvt. Ltd., Mumbai",
+                    date: "31-01-2023",
+                    report:
+                      "/uploads/documents/it_mous/MOU_BridgeLabz_2023.pdf",
+                  },
+                  {
+                    no: "3.",
+                    org: "Expert Global Solutions Pvt. Ltd., Sambhajinagar (Aurangabad)",
+                    date: "24-11-2022",
+                    report:
+                      "/uploads/documents/it_mous/MOU_Expert_Global_Solutions_2022.pdf",
+                  },
+                  {
+                    no: "4.",
+                    org: "Vnurt, Bengaluru",
+                    date: "19-01-2019",
+                    report: "/uploads/documents/it_mous/MOU_Vnurt_2019.pdf",
+                  },
+                  {
+                    no: "5.",
+                    org: "Renuka Technology, Nagpur",
+                    date: "19-01-2019",
+                    report:
+                      "/uploads/documents/it_mous/MOU_Renuka_Technology_2019.pdf",
+                  },
+                  {
+                    no: "6.",
+                    org: "Clubix Technology, Nagpur",
+                    date: "19-01-2019",
+                    report:
+                      "/uploads/documents/it_mous/MOU_Clubix_Technology_2019.pdf",
+                  },
+                  {
+                    no: "7.",
+                    org: "Vidharbha Industry Defence Hub, Mihan, Nagpur",
+                    date: "19-01-2019",
+                    report:
+                      "/uploads/documents/it_mous/MOU_Vidarbha_Defence_Hub_2019.pdf",
+                  },
+                  {
+                    no: "8.",
+                    org: "JDM Semiconductor, Nagpur",
+                    date: "19-01-2019",
+                    report:
+                      "/uploads/documents/it_mous/MOU_JDM_Semiconductor_2019.pdf",
+                  },
+                  {
+                    no: "9.",
+                    org: "Red Hat Academy, Bengaluru",
+                    date: "11-06-2018",
+                    report:
+                      "/uploads/documents/it_mous/MOU_Red_Hat_Academy_2018.pdf",
+                  },
+                ].map((mou, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-900">
+                      {mou.no}
+                    </td>
+                    <td className="px-6 py-4 text-gray-700">{mou.org}</td>
+                    <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                      {mou.date}
+                    </td>
+                    <td className="px-6 py-4">
+                      <a
+                        href={mou.report}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-orange font-semibold text-sm transition-colors"
+                      >
+                        <FaFileAlt className="mr-1.5" />
+                        View Document
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    ),
+    patents: (
+      <div className="space-y-8">
+        <div className="flex flex-wrap space-x-1 bg-gray-100 p-1 rounded-lg w-fit mb-6">
+          {[
+            "patents",
+            "publications",
+            "conferences",
+            "books",
+            "copyrights",
+          ].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setPatentSubTab(tab)}
+              className={`px-4 py-2 text-sm font-bold rounded-md transition-all capitalize ${patentSubTab === tab ? "bg-white text-ssgmce-blue shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              {tab === "patents"
+                ? "Patents"
+                : tab === "publications"
+                  ? "Publications"
+                  : tab === "conferences"
+                    ? "Conferences"
+                    : tab === "books"
+                      ? "Books"
+                      : "Copyrights"}
+            </button>
+          ))}
+        </div>
+
+        {/* Report PDFs Download Links */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+          <h4 className="text-sm font-bold text-ssgmce-blue mb-2 flex items-center">
+            <FaDownload className="mr-2" /> Year-wise Detailed Reports (PDF)
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {researchYears.map((year) => (
+              <a
+                key={year}
+                href={`/uploads/documents/it_publications/IT_${year}_Patent_Publication_Data.pdf`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-3 py-1.5 text-xs font-bold bg-white text-ssgmce-blue rounded-lg border border-blue-200 hover:bg-ssgmce-blue hover:text-white transition-all"
+              >
+                <FaFileAlt className="mr-1.5" /> {year}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {patentSubTab === "patents" ? (
+            <motion.div
+              key="patents"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaLightbulb className="text-yellow-500 mr-2" />
+                  Patents Granted & Published
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultItPatents[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No patents recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider w-1/3">
+                            Title of Invention
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Application No.
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Inventors
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultItPatents[researchYear] || []).map(
+                          (pat, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-green-50/30 transition-colors group"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400 group-hover:text-green-600">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {pat.title}
+                                <span
+                                  className={`ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${pat.status === "Granted" ? "bg-green-100 text-green-700" : pat.status === "Registered" ? "bg-blue-100 text-blue-700" : "bg-yellow-100 text-yellow-700"}`}
+                                >
+                                  {pat.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 font-mono text-xs text-gray-500 whitespace-nowrap text-right">
+                                {pat.id}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 italic text-right">
+                                {pat.inventors}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : patentSubTab === "publications" ? (
+            <motion.div
+              key="publications"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaChartLine className="text-ssgmce-orange mr-2" />
+                  Research Publications (Journals)
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultItPublications[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No publications recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Paper
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Authors
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Journal Details
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Link
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultItPublications[researchYear] || []).map(
+                          (pub, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-indigo-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {pub.title}
+                              </td>
+                              <td className="px-6 py-4 text-gray-600">
+                                {pub.authors}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 italic text-xs">
+                                {pub.journal}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                {pub.link ? (
+                                  <a
+                                    href={pub.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-dark-blue font-bold px-3 py-1 bg-blue-50 rounded-lg transition-colors border border-blue-100"
+                                  >
+                                    View{" "}
+                                    <FaExternalLinkAlt className="ml-2 text-[10px]" />
+                                  </a>
+                                ) : (
+                                  <span className="text-gray-400 text-xs">
+                                    -
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : patentSubTab === "conferences" ? (
+            <motion.div
+              key="conferences"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaChalkboardTeacher className="text-indigo-500 mr-2" />
+                  Conference Publications
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultItConferences[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No conference publications recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Paper
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Authors
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Conference Details
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Link
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultItConferences[researchYear] || []).map(
+                          (conf, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-indigo-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {conf.title}
+                              </td>
+                              <td className="px-6 py-4 text-gray-600">
+                                {conf.authors}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 italic text-xs">
+                                {conf.journal}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                {conf.link ? (
+                                  <a
+                                    href={conf.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-dark-blue font-bold px-3 py-1 bg-blue-50 rounded-lg transition-colors border border-blue-100"
+                                  >
+                                    View{" "}
+                                    <FaExternalLinkAlt className="ml-2 text-[10px]" />
+                                  </a>
+                                ) : (
+                                  <span className="text-gray-400 text-xs">
+                                    -
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : patentSubTab === "copyrights" ? (
+            <motion.div
+              key="copyrights"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaAward className="text-purple-500 mr-2" />
+                  Copyrights
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultItCopyrights[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No copyrights recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Name of Faculty
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Work
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultItCopyrights[researchYear] || []).map(
+                          (cr, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-purple-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {cr.name}
+                              </td>
+                              <td className="px-6 py-4 text-gray-700">
+                                {cr.title}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700">
+                                  {cr.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : patentSubTab === "books" ? (
+            <motion.div
+              key="books"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaBook className="text-teal-500 mr-2" />
+                  Books / Book Chapters Published
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultItBooks[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No books published for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Author(s)
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Publisher
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            ISBN
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultItBooks[researchYear] || []).map((book, i) => (
+                          <tr
+                            key={i}
+                            className="hover:bg-teal-50/30 transition-colors"
+                          >
+                            <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                              {i + 1}
+                            </td>
+                            <td className="px-6 py-4 font-medium text-gray-800">
+                              {book.name}
+                              {book.coAuthors ? `, ${book.coAuthors}` : ""}
+                            </td>
+                            <td className="px-6 py-4 text-gray-700">
+                              {book.title}
+                            </td>
+                            <td className="px-6 py-4 text-gray-500 italic text-xs">
+                              {book.details}
+                            </td>
+                            <td className="px-6 py-4 font-mono text-xs text-gray-500 text-right">
+                              {book.isbn}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </div>
+    ),
+    internships: (
+      <div className="space-y-8">
+        <div className="text-center mb-8">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">
+            <EditableText
+              value={t("internshipsTitle", "Internship and Training Record")}
+              onSave={(val) => updateField("internshipsTitle", val)}
+            />
+          </h3>
+          <div className="text-gray-600 max-w-2xl mx-auto">
+            <EditableText
+              value={t(
+                "internshipsSubtitle",
+                "Comprehensive internship and industrial training records providing students with hands-on industry experience and professional development.",
+              )}
+              onSave={(val) => updateField("internshipsSubtitle", val)}
+              multiline
+            />
+          </div>
+        </div>
+
+        {/* Year Filter */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex bg-gray-100 rounded-lg p-1 shadow-sm">
+            <button
+              onClick={() => setInternshipYear("2024-25")}
+              className={`px-6 py-2 text-sm font-bold rounded-md transition-all ${
+                internshipYear === "2024-25"
+                  ? "bg-white text-ssgmce-blue shadow-md"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Session: 2024-25
+            </button>
+            <button
+              onClick={() => setInternshipYear("2023-24")}
+              className={`px-6 py-2 text-sm font-bold rounded-md transition-all ${
+                internshipYear === "2023-24"
+                  ? "bg-white text-ssgmce-blue shadow-md"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Session: 2023-24
+            </button>
+          </div>
+        </div>
+
+        {/* Detail Report Download */}
+        <div className="flex justify-center mb-4">
+          <a
+            href={
+              internshipYear === "2024-25"
+                ? "/uploads/documents/it_internships/IT_Internship_2024-25.pdf"
+                : "/uploads/documents/it_internships/IT_Internship_2023-24.pdf"
+            }
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-ssgmce-blue text-white rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium text-sm"
+          >
+            <FaDownload className="text-sm" />
+            Download Detail Report ({internshipYear})
+          </a>
+        </div>
+
+        {/* Internship Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-ssgmce-blue text-white">
+                <tr>
+                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                    Sr. No.
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                    SIS ID
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold">
+                    Name of Intern
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold">
+                    Name of Industry / Organization
+                  </th>
+                  <th className="px-3 py-4 text-left font-bold">Class</th>
+                  <th className="px-3 py-4 text-left font-bold">Duration</th>
+                  <th className="px-3 py-4 text-left font-bold">Stipend</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {(
+                  t(
+                    `internships.${internshipYear}`,
+                    defaultItInternships[internshipYear],
+                  ) || []
+                ).map((intern, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-3 py-3 font-medium text-gray-900">
+                      {intern.no}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700">{intern.sis}</td>
+                    <td className="px-3 py-3 text-gray-700">{intern.name}</td>
+                    <td className="px-3 py-3 text-gray-700 text-xs">
+                      {intern.org}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700 text-center whitespace-nowrap">
+                      {intern.class}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
+                      {intern.duration}
+                    </td>
+                    <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
+                      {intern.stipend}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Summary */}
+        <div className="text-center text-sm text-gray-500 mt-4">
+          Total Records:{" "}
+          {
+            (
+              t(
+                `internships.${internshipYear}`,
+                defaultItInternships[internshipYear],
+              ) || []
+            ).length
+          }{" "}
+          students
+        </div>
+      </div>
+    ),
+
+    projects: (
+      <div className="space-y-8">
+        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
+          <EditableText
+            value={t("ugProjectsTitle", "UG Projects")}
+            onSave={(val) => updateField("ugProjectsTitle", val)}
+          />
+        </h3>
+
+        {/* Year Tabs */}
+        <div className="flex flex-wrap gap-2">
+          {Object.keys(t("ugProjects", defaultItUgProjects)).map((year) => (
+            <button
+              key={year}
+              onClick={() => setUgProjectYear(year)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                ugProjectYear === year
+                  ? "bg-ssgmce-blue text-white shadow-md"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              {year}
+            </button>
+          ))}
+        </div>
+
+        {/* Project Table */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white p-4">
+            <h4 className="text-lg font-bold flex items-center gap-2">
+              <FaBook className="text-ssgmce-orange" />
+              UG Projects – {ugProjectYear}
+            </h4>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border border-gray-200 w-16">
+                    Sr. No.
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border border-gray-200">
+                    Project Title
+                  </th>
+                  {(
+                    t("ugProjects", defaultItUgProjects)[ugProjectYear] || []
+                  ).some((p) => p.report) && (
+                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border border-gray-200 w-32">
+                      Project Report
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {(
+                  t("ugProjects", defaultItUgProjects)[ugProjectYear] || []
+                ).map((project, i) => (
+                  <tr key={i} className="hover:bg-blue-50/30 transition-colors">
+                    <td className="px-4 py-3 text-sm text-gray-500 font-medium border border-gray-200 text-center">
+                      {project.id || i + 1}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700 border border-gray-200">
+                      <EditableText
+                        value={project.title}
+                        onSave={(val) => {
+                          const updated = {
+                            ...t("ugProjects", defaultItUgProjects),
+                          };
+                          const yearProjects = [...updated[ugProjectYear]];
+                          yearProjects[i] = {
+                            ...yearProjects[i],
+                            title: val,
+                          };
+                          updated[ugProjectYear] = yearProjects;
+                          updateData("ugProjects", updated);
+                        }}
+                      />
+                    </td>
+                    {(
+                      t("ugProjects", defaultItUgProjects)[ugProjectYear] || []
+                    ).some((p) => p.report) && (
+                      <td className="px-4 py-3 text-sm border border-gray-200 text-center">
+                        {project.report ? (
+                          <a
+                            href={project.report}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs"
+                          >
+                            <FaExternalLinkAlt className="text-xs" /> View
+                          </a>
+                        ) : (
+                          <span className="text-gray-400 text-xs">—</span>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {isEditing && (
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                const updated = { ...t("ugProjects", defaultItUgProjects) };
+                const yearProjects = updated[ugProjectYear] || [];
+                updated[ugProjectYear] = [
+                  ...yearProjects,
+                  {
+                    id: String(yearProjects.length + 1),
+                    title: "New Project Title",
+                  },
+                ];
+                updateData("ugProjects", updated);
+              }}
+              className="flex-1 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 cursor-pointer text-center"
+            >
+              + Add Project to {ugProjectYear}
+            </button>
+          </div>
+        )}
+      </div>
+    ),
+
+    services: (
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="max-w-4xl">
+          <h3 className="text-3xl font-bold text-gray-800 mb-4 border-l-4 border-orange-500 pl-4">
+            Services Offered
+          </h3>
+          <p className="text-gray-600 leading-relaxed">
+            The Department of Information Technology, SSGMCE, Shegaon is
+            offering the following services to government organizations,
+            research organizations, industries, and society, etc. under Research
+            &amp; Development Policy, Industry-Interaction Policy, Consultancy
+            Policy, Sponsored Project Policy, Community Development &amp;
+            Extension Services, etc.
+          </p>
+        </div>
+
+        {/* Services Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div
+            className="px-6 py-4 text-white flex items-center gap-3"
+            style={{ backgroundColor: "#003366" }}
+          >
+            <FaLaptopCode className="text-2xl text-orange-400" />
+            <h4 className="text-xl font-bold">
+              Services Offered by the Department
+            </h4>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-center text-sm font-bold text-gray-600 border border-gray-200 w-20">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                    Service
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {[
+                  "Basic Website Development (Static and Dynamic) using HTML",
+                  "Advanced Website Development using PHP, JS, Python, etc.",
+                  "Advanced Website Development with Features using ML, AI, DS, etc.",
+                  "Software Development (ERP)",
+                  "Customized Software Development",
+                  "Android Application Development",
+                  "E-Commerce Platform Development",
+                  "Customized IoT Development",
+                  "Workshops on Recent Technologies",
+                  "Training Related to Accreditation (NAAC, NBA, ISO, etc.)",
+                  "Mentor or Auditor for Accreditation (NAAC, NBA, ISO, etc.)",
+                  "Training on IPR, Article Writing, etc.",
+                  "Consultancy Services for IPR, Book Writing, etc.",
+                  "Software / Hardware Testing Training and Consultancy Services",
+                  "Cloud / Hosting Related Services",
+                  "Academic Services (Paper Setting, External Examiner, etc.)",
+                  "Computer Networking Related Services",
+                ].map((service, idx) => (
+                  <tr
+                    key={idx}
+                    className="hover:bg-blue-50/30 transition-colors"
+                  >
+                    <td className="px-6 py-4 text-center font-semibold text-gray-700 border border-gray-200">
+                      {idx + 1}
+                    </td>
+                    <td className="px-6 py-4 text-gray-700 border border-gray-200">
+                      {service}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* PDF Download Link */}
+        <div className="flex items-center gap-4">
+          <a
+            href="/uploads/documents/it_services/IT_Services_Offered.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors font-medium shadow-sm"
+          >
+            <FaFileAlt />
+            View Original Document
+          </a>
         </div>
       </div>
     ),
@@ -2179,20 +5865,20 @@ const IT = () => {
   const SidebarLink = ({ id, label }) => (
     <button
       onClick={() => setActiveTab(id)}
-      className={`relative w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-between group overflow-hidden
+      className={`relative w-full text-left px-4 py-2.5 rounded-lg text-[13px] transition-all duration-300 flex items-center justify-between group overflow-hidden
         ${
           activeTab === id
-            ? "bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white shadow-lg border-l-4 border-ssgmce-orange"
-            : "text-gray-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-blue-50 hover:text-ssgmce-blue hover:shadow-md hover:scale-[1.02]"
+            ? "bg-[#003366] text-white shadow-md font-semibold"
+            : "text-gray-500 font-medium hover:bg-gray-50 hover:text-gray-700"
         }`}
     >
       <span className="flex items-center relative z-10">
         <span
-          className={`w-2 h-2 rounded-full mr-3 transition-all duration-300 ${activeTab === id ? "bg-white shadow-md" : "bg-gray-400 group-hover:bg-ssgmce-orange group-hover:shadow-sm"}`}
+          className={`w-1.5 h-1.5 rounded-full mr-3 transition-all duration-300 ${activeTab === id ? "bg-white" : "bg-gray-300 group-hover:bg-[#FF6B00]"}`}
         ></span>
         {label}
       </span>
-      {activeTab === id && <FaAngleRight className="opacity-90 text-white" />}
+      {activeTab === id && <FaAngleRight className="text-white text-sm" />}
     </button>
   );
 
@@ -2218,9 +5904,9 @@ const IT = () => {
 
             {/* Industry Interaction Section */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-              <div className="bg-gradient-to-r from-ssgmce-orange to-orange-600 p-4">
+              <div className="bg-[#FF6B00] p-4">
                 <h3 className="text-lg font-bold text-white flex items-center">
-                  <FaIndustry className="text-white mr- 2" /> Industry Relation
+                  <FaIndustry className="text-white mr-2" /> Industry Relation
                 </h3>
               </div>
               <div className="p-4 space-y-2">

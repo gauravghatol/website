@@ -1,9 +1,24 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import GenericPage from "../../components/GenericPage";
 import { useDepartmentData } from "../../hooks/useDepartmentData";
 import EditableText from "../../components/admin/EditableText";
 import EditableImage from "../../components/admin/EditableImage";
 import mbaBanner from "../../assets/images/departments/mba/MBA banner.png";
+import {
+  defaultFaculty as MBA_DEFAULT_FACULTY,
+  defaultPrideToppers,
+  defaultPrideAlumni,
+  defaultActivities,
+  defaultNewsletters,
+  defaultAchievements,
+  defaultMbaPatents,
+  defaultMbaPublications,
+  defaultMbaConferences,
+  defaultMbaBooks,
+  defaultMbaCopyrights,
+} from "../../data/mbaDefaults";
+import { defaultPlacements } from "../../data/mbaPlacements";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   FaLaptopCode,
@@ -23,6 +38,15 @@ import {
   FaCalendarAlt,
   FaDownload,
   FaIdCard,
+  FaUsers,
+  FaUserGraduate,
+  FaChalkboardTeacher,
+  FaTimes,
+  FaChevronLeft,
+  FaChevronRight,
+  FaFileAlt,
+  FaExternalLinkAlt,
+  FaBook,
 } from "react-icons/fa";
 
 // Import HOD photo
@@ -40,6 +64,26 @@ import absPhoto from "../../assets/images/departments/mba/faculty/AdeshSolanke.j
 import upPhoto from "../../assets/images/departments/mba/faculty/UdayPatil.jpg";
 import mmPhoto from "../../assets/images/departments/mba/faculty/MohiniModak.jpg";
 
+// Photo map for resolving MBA faculty photo string references
+const mbaPhotoMap = {
+  PMK: pmkPhoto,
+  LBD: lbdPhoto,
+  MAD: madPhoto,
+  SMM: ssmPhoto,
+  VVP: vvpPhoto,
+  WZS: wzsPhoto,
+  BH: bhPhoto,
+  ABS: absPhoto,
+  UP: upPhoto,
+  MMM: mmPhoto,
+};
+
+// Resolve MBA faculty photos from string references to actual imports
+const resolvedMbaFaculty = MBA_DEFAULT_FACULTY.map((f) => ({
+  ...f,
+  photo: mbaPhotoMap[f.photo] || f.photo,
+}));
+
 const MBA = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [vmTab, setVmTab] = useState("vision");
@@ -50,6 +94,20 @@ const MBA = () => {
   const [projectYear, setProjectYear] = useState("2023-24");
   const [researchYear, setResearchYear] = useState("2023-24");
   const [placementYear, setPlacementYear] = useState(null);
+  const [prideTab, setPrideTab] = useState("toppers");
+  const [activitiesVisible, setActivitiesVisible] = useState(6);
+  const [lightboxActivity, setLightboxActivity] = useState(null);
+  const [achievementTab, setAchievementTab] = useState("faculty");
+  const [certificateLightbox, setCertificateLightbox] = useState(null);
+  const [patentSubTab, setPatentSubTab] = useState("patents");
+  const researchYears = [
+    "2024-25",
+    "2023-24",
+    "2022-23",
+    "2021-22",
+    "2020-21",
+    "2019-20",
+  ];
 
   // Load department data (works in both edit and public view modes)
   const {
@@ -63,6 +121,45 @@ const MBA = () => {
   // Helper for array updates
   const updateField = (path, value) => {
     updateData(path, value);
+  };
+
+  // Activity helper
+  const updateActivity = (idx, field, value) => {
+    const arr = JSON.parse(JSON.stringify(t("activities", defaultActivities)));
+    arr[idx][field] = value;
+    updateData("activities", arr);
+  };
+
+  // Newsletter helper
+  const updateNewsletter = (type, index, field, value) => {
+    if (type === "latest") {
+      const latest = JSON.parse(
+        JSON.stringify(t("newsletters_latest", defaultNewsletters.latest)),
+      );
+      latest[field] = value;
+      updateData("newsletters_latest", latest);
+    } else {
+      const archives = JSON.parse(
+        JSON.stringify(t("newsletters_archives", defaultNewsletters.archives)),
+      );
+      archives[index][field] = value;
+      updateData("newsletters_archives", archives);
+    }
+  };
+
+  // Pride section helper functions
+  const updatePrideToppers = (yearIdx, recordIdx, field, val) => {
+    const newData = JSON.parse(
+      JSON.stringify(t("pride.toppers", defaultPrideToppers)),
+    );
+    newData[yearIdx].records[recordIdx][field] = val;
+    updateData("pride.toppers", newData);
+  };
+
+  const updateOverviewTable = (path, defaultArr, rowIdx, cellIdx, val) => {
+    const newData = JSON.parse(JSON.stringify(t(path, defaultArr)));
+    newData[rowIdx][cellIdx] = val;
+    updateData(path, newData);
   };
 
   const academicsLinks = [
@@ -92,87 +189,12 @@ const MBA = () => {
     { id: "patents", label: "Patent & Publication" },
   ];
 
-  // Faculty data
-  const facultyData = [
-    {
-      name: "Dr. Pawan M. Kuchar",
-      photo: pmkPhoto,
-      designation: "Asst. Professor and Head of Department",
-      specialization: "Marketing, HR Management",
-      email: "pmkuchar@ssgmce.ac.in",
-    },
-    {
-      name: "Dr. Laxmikant B. Deshmukh",
-      photo: lbdPhoto,
-      designation: "Associate Professor",
-      specialization:
-        "Marketing & Sales, Production & Oper., Quant. Methods & Stats, SCM & Logistics",
-      email: "lbdeshmukh@ssgmce.ac.in",
-      phone: "+91 7875104343",
-    },
-    {
-      name: "Dr. Mayur A. Dande",
-      photo: madPhoto,
-      designation: "Asst. Professor",
-      specialization: "Marketing, Finance",
-      email: "madande@ssgmce.ac.in",
-      phone: "9423619555",
-    },
-    {
-      name: "Dr. Satya Mohan Mishra",
-      photo: ssmPhoto,
-      designation: "Asst. Professor",
-      specialization: "Finance, Marketing, Business Economics",
-      email: "smmishra@ssgmce.ac.in",
-      phone: "9405105291 / 9960687972",
-    },
-    {
-      name: "Vishal V. Patil",
-      photo: vvpPhoto,
-      designation: "Asst. Professor",
-      specialization: "Law, Finance and Human Resource Management",
-      email: "vvpatil@ssgmce.ac.in",
-      phone: "+91 9422864248",
-    },
-    {
-      name: "Dr. Wechansing Suliya",
-      photo: wzsPhoto,
-      designation: "Asst. Professor",
-      specialization: "Human Resource Management and Production Management",
-      email: "wzsuliya@ssgmce.ac.in",
-    },
-    {
-      name: "Dr. Bilal Husain",
-      photo: bhPhoto,
-      designation: "Assistant Professor",
-      specialization: "Finance",
-      email: "bilalhusain@ssgmce.ac.in",
-      phone: "+91 7774816702",
-    },
-    {
-      name: "Adesh B. Solanke",
-      photo: absPhoto,
-      designation: "Asst. Professor and Training & Placement Officer",
-      specialization: "Human Resource of Development and Management (HRDM)",
-      email: "absolanke@ssgmce.ac.in",
-      phone: "+91-8390407947",
-    },
-    {
-      name: "Mr. Uday Patil",
-      photo: upPhoto,
-      designation: "Professor of Practice",
-      specialization:
-        "Executive Vice President - Urban B2CPL-Prime, Bajaj Finserv Ltd.",
-      email: "",
-    },
-    {
-      name: "Mohini Mahesh Modak",
-      photo: mmPhoto,
-      designation: "Professor of Practice",
-      specialization: "Director Horizon Web Technologies",
-      email: "",
-    },
-  ];
+  // Faculty data - use resolved defaults with photos
+  const facultyData = resolvedMbaFaculty.map((f) => ({
+    ...f,
+    designation: f.role,
+    specialization: f.area ? f.area.join(", ") : "",
+  }));
 
   const updateFacultyMember = (index, field, value) => {
     const faculty = JSON.parse(
@@ -366,7 +388,7 @@ const MBA = () => {
                 className="flex items-start gap-4 w-full"
               >
                 <div className="mt-1 text-ssgmce-orange text-2xl flex-shrink-0">
-                  ➤
+                  âž¤
                 </div>
                 <div className="text-lg text-gray-700 leading-relaxed font-medium flex-1">
                   <EditableText
@@ -391,7 +413,7 @@ const MBA = () => {
                   "To develop human resources with spiritual values to serve global society.",
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-4">
-                    <div className="mt-1 text-ssgmce-orange text-xl">➤</div>
+                    <div className="mt-1 text-ssgmce-orange text-xl">âž¤</div>
                     <p className="text-gray-700">{item}</p>
                   </div>
                 ))}
@@ -436,7 +458,7 @@ const MBA = () => {
                   "Students would develop multidisciplinary and professional approach coupled with communication skills and teamwork skills to excel in the global environment.",
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-4">
-                    <div className="mt-1 text-blue-900 text-xl">➤</div>
+                    <div className="mt-1 text-blue-900 text-xl">âž¤</div>
                     <p className="text-gray-700 leading-relaxed font-medium">
                       {item}
                     </p>
@@ -459,7 +481,7 @@ const MBA = () => {
                   "Ability to lead themselves and others in the achievement of organization goals, contributing effectively to a team environment.",
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-4">
-                    <div className="mt-1 text-blue-900 text-xl">➤</div>
+                    <div className="mt-1 text-blue-900 text-xl">âž¤</div>
                     <p className="text-gray-700 leading-relaxed font-medium">
                       {item}
                     </p>
@@ -712,10 +734,12 @@ const MBA = () => {
               {/* Content Area */}
               <div className="p-5 flex-1 flex flex-col justify-center">
                 <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
-                  <EditableText
-                    value={fac.name}
-                    onSave={(val) => updateFacultyMember(i, "name", val)}
-                  />
+                  <Link to={`/faculty/${fac.id}`} className="hover:underline">
+                    <EditableText
+                      value={fac.name}
+                      onSave={(val) => updateFacultyMember(i, "name", val)}
+                    />
+                  </Link>
                 </h4>
                 <p className="text-ssgmce-blue font-medium text-sm mb-3 uppercase tracking-wide text-[11px]">
                   <EditableText
@@ -759,12 +783,22 @@ const MBA = () => {
                     )}
                   </div>
 
-                  <a
-                    href="#"
-                    className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-2 hover:underline uppercase tracking-wide"
+                  {fac.vidwanId && (
+                    <a
+                      href={`https://vidwan.inflibnet.ac.in/profile/${fac.vidwanId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-[10px] font-bold text-emerald-600 mt-2 hover:underline uppercase tracking-wide"
+                    >
+                      Vidwan Profile <FaAngleRight className="ml-1" />
+                    </a>
+                  )}
+                  <Link
+                    to={`/faculty/${fac.id}`}
+                    className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
                   >
                     View Profile <FaAngleRight className="ml-1" />
-                  </a>
+                  </Link>
                 </div>
               </div>
             </motion.div>
@@ -781,57 +815,1581 @@ const MBA = () => {
             Course Outcomes
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Comprehensive course outcomes for all semesters of M.B.A
+            Comprehensive course outcomes for all semesters of M.B.A. (Business
+            Administration and Research)
           </p>
         </div>
 
-        {/* M.B.A Course Outcomes */}
+        {/* M.B.A. Course Outcomes */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-[#003366] px-6 py-4 text-center">
             <h3 className="text-xl font-bold text-white">
-              M.B.A Course Outcomes
+              M.B.A. (Business Administration and Research) - Course Outcomes
             </h3>
           </div>
 
-          <div className="p-6">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 border-collapse">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                      Semester
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                      PDF Link
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {[
-                    { semester: "M. B. A. Semester-I", link: "#" },
-                    { semester: "M. B. A. Semester-II", link: "#" },
-                    { semester: "M. B. A. Semester-III", link: "#" },
-                    { semester: "M. B. A. Semester-IV", link: "#" },
-                  ].map((item, i) => (
-                    <tr
-                      key={i}
-                      className="hover:bg-gray-50/50 transition-colors"
-                    >
-                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
-                        {item.semester}
-                      </td>
-                      <td className="px-6 py-3 text-sm border border-gray-200">
-                        <a
-                          href={item.link}
-                          className="text-ssgmce-blue hover:text-ssgmce-orange hover:underline font-medium"
-                        >
-                          view PDF
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div className="p-6 space-y-2">
+            {/* M.B.A. Semester-I */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "mba-sem1" ? null : "mba-sem1",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  M.B.A. Semester-I
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "mba-sem1" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "mba-sem1" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      {/* 101 Managerial Economics */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          101 Managerial Economics
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Develop a fundamental understanding of supply,
+                            demand, buyer surplus, seller's surplus, and
+                            elasticities.
+                          </li>
+                          <li>
+                            Understand competitive markets and economic
+                            efficiency.
+                          </li>
+                          <li>
+                            Use firm and industry cost analysis for production
+                            and strategic decisions.
+                          </li>
+                          <li>
+                            Distinguish between different market structures and
+                            different business strategies.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 102 Legal and Business Environment */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          102 Legal and Business Environment
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Identify and evaluate the complexities of business
+                            environment and their impact on the business.
+                          </li>
+                          <li>
+                            Analyze the relationships between Government and
+                            business and understand the political, economic,
+                            legal and social policies of the country.
+                          </li>
+                          <li>
+                            Analyze current economic conditions in developing
+                            emerging markets, and evaluate present and future
+                            opportunities.
+                          </li>
+                          <li>
+                            Understand the Industrial functioning and strategies
+                            to overcome challenges in competitive markets.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 103 Financial Reporting, Statement and Analysis */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          103 Financial Reporting, Statement and Analysis
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the basic concepts of accounting and also
+                            able to know the difference between accounting,
+                            financial accounting, management accounting and Cost
+                            accounting.
+                          </li>
+                          <li>
+                            Prepare financial statements and also able to make
+                            decisions with the help of various financial
+                            analysis tools.
+                          </li>
+                          <li>
+                            Acquainting the knowledge regarding various cost
+                            accounting concepts with analytical skills for its
+                            application in managerial decision making.
+                          </li>
+                          <li>
+                            Able to present the financial results and position
+                            of a company relative to its industry by developing
+                            skills for interpretation to adopt for financial
+                            reporting purposes.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 104 Indian Ethos and Business Ethics */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          104 Indian Ethos and Business Ethics
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Students will be acquainted with the fundamentals of
+                            Indian ethos and its relevance in the practical
+                            aspects.
+                          </li>
+                          <li>
+                            Students will comprehend the allied root reasons and
+                            nature of ethical issues.
+                          </li>
+                          <li>
+                            Aspirants will endeavor to find remedies for ethical
+                            issues being faced by organizations, employees,
+                            managers and policy makers.
+                          </li>
+                          <li>
+                            Students will reflect a personality well equipped by
+                            values and spread the same at workplaces in future.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 105 Organizational Behaviour */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          105 Organizational Behaviour
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Aware the students regarding human interaction in an
+                            organization.
+                          </li>
+                          <li>
+                            Finding what forces enhancing it for setting better
+                            results in attending the business goals.
+                          </li>
+                          <li>
+                            Formulate approaches to reorient individual, team,
+                            managerial and leadership behavior in order to
+                            achieve organizational goals.
+                          </li>
+                          <li>
+                            Able to analyze the behavior of individuals and
+                            groups in organizations in terms of the key factors
+                            that influence organizational behavior and
+                            demonstrate skills required for working in groups.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 106 Computer Application for Business */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          106 Computer Application for Business
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Students will possess a comprehensive understanding
+                            of Management Information Systems, encompassing
+                            information concepts, subsystems, and the
+                            development phases of MIS.
+                          </li>
+                          <li>
+                            Develop the basic understanding and describe various
+                            aspects of IT, including telecommunication and
+                            networks, data management systems, and IT-enabled
+                            services.
+                          </li>
+                          <li>
+                            Students will be able to explain the decision-making
+                            process and the role of Information Systems in
+                            supporting decision-making phases, including the
+                            construction of Decision Support Systems.
+                          </li>
+                          <li>
+                            Students will be able to understand the management
+                            issues associated with MIS, including information
+                            security and control, quality assurance, ethical and
+                            social dimensions, intellectual property rights, and
+                            the challenges of managing global information
+                            systems.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 107 Business Statistics and Analytics for Decision Making */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          107 Business Statistics and Analytics for Decision
+                          Making
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Develop an understanding of Business Statistics and
+                            Analytics and its managerial applications in the
+                            real business world.
+                          </li>
+                          <li>
+                            Make the student familiar with statistical
+                            techniques in Business Decision Making.
+                          </li>
+                          <li>
+                            Expand the knowledge of inferential statistics for
+                            developing criteria for decision making.
+                          </li>
+                          <li>
+                            Understanding of basic and advance quantitative
+                            models in management decision making.
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* M.B.A. Semester-II */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "mba-sem2" ? null : "mba-sem2",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  M.B.A. Semester-II
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "mba-sem2" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "mba-sem2" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      {/* 201 Business Communication */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          201 Business Communication
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Demonstrate students to verbal and non-verbal
+                            communication ability to solve workplace
+                            communication issues.
+                          </li>
+                          <li>
+                            Create and deliver effective business presentations,
+                            using appropriate tools.
+                          </li>
+                          <li>
+                            Draft effective business correspondence with brevity
+                            and clarity.
+                          </li>
+                          <li>Develop the students for job market.</li>
+                        </ol>
+                      </div>
+
+                      {/* 202 Marketing Management */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          202 Marketing Management
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Develop an understanding of the underlying concept,
+                            theories and strategies involved in the marketing of
+                            product and services.
+                          </li>
+                          <li>
+                            Capable to apply the three steps of target
+                            marketing: market segmentation, target marketing,
+                            and market positioning.
+                          </li>
+                          <li>
+                            Able to evaluate different distribution channel
+                            options and their suitability for the company's
+                            product.
+                          </li>
+                          <li>
+                            Develop a suitable promotion mix (advertising, sales
+                            promotion, public relations, personal selling, and
+                            direct marketing etc.) for the product.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 203 Corporate Finance */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          203 Corporate Finance
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Aware of the basic concepts related to financial
+                            management, various techniques and tools to manage
+                            finance function.
+                          </li>
+                          <li>
+                            Gaining the knowledge of principles and concepts
+                            used in financial decision making and familiarizing
+                            the students with the valuation of firm.
+                          </li>
+                          <li>
+                            Able to find out the best course of action among
+                            several financial options with the technique of
+                            capital budgeting and restructuring.
+                          </li>
+                          <li>
+                            Assessing the impact of corporate investment
+                            decisions in financing of working capital needs and
+                            the long term capital needs of the business
+                            organization.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 204 Research Methodology */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          204 Research Methodology
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the basics of marketing research,
+                            literature review and research design.
+                          </li>
+                          <li>
+                            Understand the different tools and techniques of
+                            measurement, scaling and data collection.
+                          </li>
+                          <li>
+                            Understand sampling, sample design and descriptive
+                            statistics.
+                          </li>
+                          <li>
+                            Acquire an ability to conduct hypothesis testing.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 205 Production and Operation Management */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          205 Production and Operation Management
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Equip students with process of planning, organizing
+                            and controlling activities of production.
+                          </li>
+                          <li>
+                            Educate them on resources system used for
+                            transforming raw materials into value added
+                            products.
+                          </li>
+                          <li>
+                            Explain the students various dimensions of
+                            production planning and control and their
+                            inter-linkages with forecasting.
+                          </li>
+                          <li>
+                            Students can measure performance related to
+                            productivity and will be able to conduct basic
+                            industrial engineering study on men and machines.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 206 Human Resource Management */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          206 Human Resource Management
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Judge Human Resource Management scenario and
+                            practices for acquisition of manpower in India.
+                          </li>
+                          <li>
+                            Implement Human Resource Development practices for
+                            development of human resources.
+                          </li>
+                          <li>
+                            Judge their role according to problems and
+                            situations in human resource department.
+                          </li>
+                          <li>
+                            Implement training methods and practices on employee
+                            development.
+                          </li>
+                          <li>
+                            Project human resource management policies for any
+                            organization.
+                          </li>
+                        </ol>
+                      </div>
+
+                      {/* 207 Entrepreneurship Development */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          207 Entrepreneurship Development
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          After successfully completing the course, students
+                          will be able to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explore entrepreneurial path and acquaint them with
+                            the essential knowledge of starting new ventures.
+                          </li>
+                          <li>
+                            Students will learn tools and techniques for
+                            generating, testing and developing innovative
+                            startup ideas into successful enterprise.
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* M.B.A. Semester-III */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "mba-sem3" ? null : "mba-sem3",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  M.B.A. Semester-III
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "mba-sem3" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "mba-sem3" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      {/* Common Subjects */}
+                      <div className="mb-4">
+                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
+                          Common Subjects
+                        </h4>
+                        <div className="space-y-6">
+                          {/* 301 International Business Environment */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              301 International Business Environment
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Get acquainted with the fundamentals of
+                                International trade and business.
+                              </li>
+                              <li>
+                                Analyse and evaluate International marketing
+                                environment and the export procedures.
+                              </li>
+                              <li>
+                                Analyse and evaluate Global logistics and Supply
+                                chain environment.
+                              </li>
+                              <li>
+                                Analyse and evaluate International financial
+                                environments and working of institutions.
+                              </li>
+                            </ol>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Finance Specialization */}
+                      <div className="mb-4">
+                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
+                          Finance Specialization
+                        </h4>
+                        <div className="space-y-6">
+                          {/* 3101 Investment Analysis and Portfolio Management */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              3101 Investment Analysis and Portfolio Management
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Understand and get insights into investment
+                                analysis for investment decision making.
+                              </li>
+                              <li>
+                                Acquire knowledge and skills on Technical and
+                                Fundamental analysis.
+                              </li>
+                              <li>Understand concept of Equity valuation.</li>
+                              <li>
+                                Learn the concept of Portfolio management along
+                                with different theories.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 3102 Indian Financial System and Financial Markets */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              3102 Indian Financial System and Financial Markets
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Understand the role, function, components and
+                                regulation of the financial system in reference
+                                to the macro economy.
+                              </li>
+                              <li>
+                                Identify the existence of regulatory authority
+                                and development of Banking and non-banking
+                                financial institutions.
+                              </li>
+                              <li>
+                                Know the instruments, participants, structure
+                                and operation of various financial market
+                                working in India.
+                              </li>
+                              <li>
+                                Assess the important role of development banks
+                                in the Indian financial system and create
+                                strategies to promote financial inclusion.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 3103 Financial Derivatives and Risk Management */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              3103 Financial Derivatives and Risk Management
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Describe and explain the fundamental features of
+                                a range of key financial derivatives
+                                instruments.
+                              </li>
+                              <li>
+                                Solve problems requiring pricing derivative
+                                instruments and hedge market risk based on
+                                numerical data and current market trends.
+                              </li>
+                              <li>
+                                Acquire ability to selection of various options
+                                strategies and able to determine option prices
+                                with Binomial and Black Scholes models.
+                              </li>
+                              <li>
+                                Estimate the value of interest rate and foreign
+                                exchange swaps; Be able to understand the
+                                structure of commodity market.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 3104 Behavioral Finance */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              3104 Behavioral Finance
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Explain and demonstrate using empirical data the
+                                challenges to the efficient market hypothesis.
+                              </li>
+                              <li>
+                                Explain the nature and forecast the consequences
+                                of key behavioural biases of investors.
+                              </li>
+                              <li>
+                                Demonstrate the effect of Emotional Factors and
+                                Social Forces on investment.
+                              </li>
+                              <li>
+                                Explain the psychological factors influencing
+                                decision-making.
+                              </li>
+                            </ol>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Marketing Specialization */}
+                      <div className="mb-4">
+                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
+                          Marketing Specialization
+                        </h4>
+                        <div className="space-y-6">
+                          {/* 3201 Retail Management */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              3201 Retail Management
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Acquaintance budding managers with knowledge of
+                                planning, designing, implementation and
+                                assessment of retail strategies based on
+                                consumer needs and prevailing trends.
+                              </li>
+                              <li>
+                                Understands evolution of retail industry,
+                                strategies and apply in retail sector.
+                              </li>
+                              <li>
+                                Understand characteristics of retail trading
+                                area, factors of site locations, information
+                                system requirements and techniques of customer
+                                retention.
+                              </li>
+                              <li>
+                                Understand the role of ICT in retail management
+                                in today's market scenario.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 3202 Consumer Behavior */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              3202 Consumer Behavior
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Understand consumer behavior in totality and its
+                                application in marketing.
+                              </li>
+                              <li>
+                                Understand marketing decisions and its interlink
+                                with consumer behavior.
+                              </li>
+                              <li>
+                                Recognize social, technological, implications of
+                                marketing actions on consumer behavior.
+                              </li>
+                              <li>
+                                Design Models and analyse latest trends which
+                                influence consumer behavior.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 3203 Brand Management */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              3203 Brand Management
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Train students to manage product, and building
+                                brand equity in the market of an organization.
+                              </li>
+                              <li>
+                                Give students an insight of managing brand over
+                                multiple categories, over time and across
+                                multiple market segments.
+                              </li>
+                              <li>
+                                Gain knowledge and skills in brand architecture
+                                and brand engagement.
+                              </li>
+                              <li>
+                                Build strategies for launching product across
+                                markets.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 3204 Sales and Distribution Management */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              3204 Sales and Distribution Management
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Learner understand importance of SDM in
+                                marketing functional and its interlinks with
+                                other functional areas.
+                              </li>
+                              <li>
+                                Had knowledge and understand the diverse
+                                variables affecting sales and distribution
+                                functions and various plans of distribution.
+                              </li>
+                              <li>
+                                Develop expertise in designing and effectively
+                                managing company's sales and distributions
+                                operations.
+                              </li>
+                              <li>
+                                Understand fundamentals of distribution
+                                channels, logistics and supply chain management.
+                              </li>
+                            </ol>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Human Resource Specialization */}
+                      <div className="mb-4">
+                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
+                          Human Resource Specialization
+                        </h4>
+                        <div className="space-y-6">
+                          {/* 3301 Talent Acquisition and Development */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              3301 Talent Acquisition and Development
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Students will be able to understand and explain
+                                talent acquisition process and retain talent.
+                              </li>
+                              <li>
+                                Students will be able to understand the
+                                interplay between various aspects of talent
+                                acquisition retention and development of talent.
+                              </li>
+                              <li>
+                                Students will be able to analyse the need
+                                assessment of training and its methods.
+                              </li>
+                              <li>
+                                Student will be able to learn to design training
+                                programme and also can explore issues and
+                                possible solutions for evaluating training.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 3302 Employee Relations */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              3302 Employee Relations
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>Elaborate the IR perspective in detail.</li>
+                              <li>
+                                Illustrate the role of trade union in the
+                                industrial setup.
+                              </li>
+                              <li>
+                                Comprehend the causes and impact of industrial
+                                disputes.
+                              </li>
+                              <li>
+                                Understand importance and process of developing
+                                and maintaining harmonious relationships between
+                                the management and all level of employees.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 3303 Performance Management System */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              3303 Performance Management System
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Explain the concept of performance management,
+                                challenges of performance management and
+                                different advantages of implementing
+                                well-designed performance management systems.
+                              </li>
+                              <li>
+                                Understand that performance management is an
+                                on-going process composed of several
+                                sub-processes, such as performance planning,
+                                execution, assessment, and review.
+                              </li>
+                              <li>
+                                Analyze different methods and approaches to
+                                performance measurement and also can identify
+                                some of the common challenges, problems with the
+                                performance appraisal process.
+                              </li>
+                              <li>
+                                Design a performance management system and also
+                                can develop key skills involved in effective
+                                performance management and employee development.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 3304 Compensation and Benefit Management */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              3304 Compensation and Benefit Management
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Students will be able to design rational and
+                                contemporary compensation systems in modern
+                                organization and analyse different types of
+                                rewarding procedures of employees on the basis
+                                of performance.
+                              </li>
+                              <li>
+                                Students will be able to analyse, integrate, and
+                                apply the knowledge to solve compensation and
+                                reward related problems in organization.
+                                Students will be able to justify the existing
+                                pay structure to employees.
+                              </li>
+                              <li>
+                                Students can hold the knowledge of the different
+                                softwares used for compensation management in
+                                this technological era.
+                              </li>
+                              <li>
+                                Students will be able to summarize the important
+                                provisions of social security legislation in
+                                reference to Employee State Insurance Act 1948,
+                                Payment of Gratuity Act 1982, and Employee's
+                                Provident Fund Act 1952.
+                              </li>
+                            </ol>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* M.B.A. Semester-IV */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "mba-sem4" ? null : "mba-sem4",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  M.B.A. Semester-IV
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "mba-sem4" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "mba-sem4" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      {/* Common Subjects */}
+                      <div className="mb-4">
+                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
+                          Common Subjects
+                        </h4>
+                        <div className="space-y-6">
+                          {/* 401 Strategic Management */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              401 Strategic Management
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Understand the fundamental aspects of strategy,
+                                strategic management process and its intents.
+                              </li>
+                              <li>
+                                Analyse the importance of environmental and
+                                competitive analysis for formulating Corporate
+                                strategy.
+                              </li>
+                              <li>
+                                Categorize different level of Corporate
+                                strategies and its alternatives in strategy
+                                formulation.
+                              </li>
+                              <li>
+                                Apply the strategic alternative and implement
+                                &amp; control in corporate setting.
+                              </li>
+                            </ol>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Finance Specialization */}
+                      <div className="mb-4">
+                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
+                          Finance Specialization
+                        </h4>
+                        <div className="space-y-6">
+                          {/* 4101 Managing Banks and Financial Institutions */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4101 Managing Banks and Financial Institutions
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Understand functioning of banking industry and
+                                able to know about the various financial
+                                services provided by banks.
+                              </li>
+                              <li>
+                                Aware about significance of modern banking
+                                products and schemes.
+                              </li>
+                              <li>
+                                Learn about the important concepts like
+                                investment banking and wealth management along
+                                with practical approach.
+                              </li>
+                              <li>
+                                Understand the technology driven banking system
+                                like e-banking, electronic fund transfer and
+                                electronic payment system.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 4102 Financial Markets and Financial Services */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4102 Financial Markets and Financial Services
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Identify the functions of financial markets and
+                                institutions and examine their impact on
+                                financial system of a country.
+                              </li>
+                              <li>
+                                Describe the framework of Forex markets and
+                                mechanism of exchange rate determination.
+                              </li>
+                              <li>
+                                Analyse the salient features of various
+                                financial products, services and instruments.
+                              </li>
+                              <li>
+                                Acquire knowledge of modern financial services
+                                and familiarize with Fintech and Digital
+                                currency.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 4103 Project Appraisal and Finance */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4103 Project Appraisal and Finance
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Acquire the knowledge of Project Management and
+                                able to prepare Detail project report.
+                              </li>
+                              <li>
+                                Gain the knowledge about different sources of
+                                financing and financial appraisal technique.
+                              </li>
+                              <li>
+                                Understanding the concept of Corporate
+                                restructuring, Mergers and Acquisitions.
+                              </li>
+                              <li>
+                                Analyse various types of Project risk and
+                                preparation of project report.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 4104 Working Capital Management */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4104 Working Capital Management
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Evaluate Working Capital effectiveness of a
+                                company based on its operating and cash
+                                conversion cycles, and compare the company's
+                                effectiveness with that of peer companies.
+                              </li>
+                              <li>
+                                Identify and evaluate the necessary tools to use
+                                in managing a company's net daily cash position.
+                              </li>
+                              <li>
+                                Estimate a company's management of accounts
+                                receivable policy, inventory, and accounts
+                                payable over time and compared to peer
+                                companies.
+                              </li>
+                              <li>
+                                Evaluate the choices of short-term funding
+                                available to a company and recommend a financing
+                                method.
+                              </li>
+                            </ol>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Marketing Specialization */}
+                      <div className="mb-4">
+                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
+                          Marketing Specialization
+                        </h4>
+                        <div className="space-y-6">
+                          {/* 4201 Digital Marketing */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4201 Digital Marketing
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                To familiarize aspirants with fundamental of
+                                digital Marketing.
+                              </li>
+                              <li>
+                                Implement a process of planning of social media
+                                or digital marketing activities.
+                              </li>
+                              <li>
+                                Use tools and techniques to manage digital and
+                                social media marketing programs.
+                              </li>
+                              <li>
+                                Design social media programs that directly
+                                support business and marketing goals.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 4202 Integrated Marketing Communication */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4202 Integrated Marketing Communication
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                To recognise the significance of IC in the
+                                contemporary times and understand fundamentals
+                                thereof.
+                              </li>
+                              <li>
+                                To comprehend the advertising media related
+                                attributes thoroughly and modern media
+                                platforms.
+                              </li>
+                              <li>
+                                To enable aspirants to design the advertising
+                                body copy and campaign.
+                              </li>
+                              <li>
+                                To contribute to advertising arena with a due
+                                consideration for ethical and social aspects.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 4203 Sales Promotion Management */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4203 Sales Promotion Management
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Learn sales promotion techniques for consumer,
+                                trade, company and sales force.
+                              </li>
+                              <li>
+                                Develop sales promotion campaign, establishing
+                                its objectives, tools and program.
+                              </li>
+                              <li>
+                                Understand its roles and purpose to serve in
+                                overall marketing communication, assessing
+                                effectiveness of tools used in promotion, know
+                                modern day tools of promotion.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 4204 Service Marketing */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4204 Service Marketing
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Have a greater understanding of services
+                                marketing, specialties of how it dominates the
+                                business landscape.
+                              </li>
+                              <li>
+                                Acquaintance with major elements needed to
+                                improve marketing of services and adding value
+                                to the customers perception.
+                              </li>
+                              <li>
+                                Appraise the nature and development of
+                                strategies of marketing of services.
+                              </li>
+                              <li>
+                                Handling customers complaints and insight to
+                                service recovery management.
+                              </li>
+                            </ol>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Human Resource Specialization */}
+                      <div className="mb-4">
+                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
+                          Human Resource Specialization
+                        </h4>
+                        <div className="space-y-6">
+                          {/* 4301 Legal Framework Governing Human Relations */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4301 Legal Framework Governing Human Relations
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Students will gain a basic understanding of
+                                objectives and importance of laws relating to
+                                industrial disputes and management of trade
+                                union and the role of trade unions in changing
+                                environment.
+                              </li>
+                              <li>
+                                Understanding of various factors responsible for
+                                growth and development of labour laws.
+                              </li>
+                              <li>
+                                Student will be able to summarize the important
+                                provisions of Wage Legislations, in reference to
+                                Payment of Wages Act 1936, Minimum Wages Act
+                                1948 &amp; Payment of Bonus Act 1965.
+                              </li>
+                              <li>
+                                Students will be able to understand the laws
+                                related to working conditions in factories.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 4302 Organizational Change and Intervention Strategies */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4302 Organizational Change and Intervention
+                              Strategies
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Students will be able to understand theories and
+                                models that form the foundation of disciplines
+                                as well as the OD diagnostic process.
+                              </li>
+                              <li>
+                                Students will be able to understand the ethics
+                                of OD professional and also can recognise
+                                ethical principles in organisational
+                                development.
+                              </li>
+                              <li>
+                                Students will comprehend the main approaches of
+                                change and will be equipped with knowledge and
+                                skills required for effective change and
+                                organisational development.
+                              </li>
+                              <li>
+                                Students will be able to apply various OD
+                                interventions and can develop a working
+                                knowledge of all aspects of OD intervention
+                                process.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 4303 Team Dynamics at Work */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4303 Team Dynamics at Work
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Students will be able to justify formation and
+                                development of teams and can explain the
+                                dynamics of Team &amp; Team Building and
+                                different learning methodologies in team
+                                decision-making.
+                              </li>
+                              <li>
+                                Student will be able to justify the
+                                applicability of various theories of Motivation,
+                                T-group sensitivity training and Johari Window
+                                and also able to justify the Conflict resolution
+                                strategy.
+                              </li>
+                              <li>
+                                Student will be able to understand the
+                                development of team and can discover orientation
+                                through FIRO-B.
+                              </li>
+                              <li>
+                                Students will be able to determine the
+                                importance of Interpersonal Communication and
+                                can increase their self-awareness and strengthen
+                                ability to better understand others.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 4304 International Human Resource Management */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4304 International Human Resource Management
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Recognize, outline, and illustrate the enduring
+                                global contexts of International HRM
+                                understanding and key skills required by HR
+                                professionals working in an international
+                                context with multinational organizations.
+                              </li>
+                              <li>
+                                Demonstrate, appraise the implications of IHRM
+                                in the Host Country Context and managing
+                                alliances and joint venture.
+                              </li>
+                              <li>
+                                Differentiate the Context of Cross-border
+                                Alliances, prepare staffing international
+                                operations for sustained global growth,
+                                recruiting and selecting staff for international
+                                assignments, interpret and analyze the
+                                International Industrial Relation issues and
+                                performance management.
+                              </li>
+                              <li>
+                                Evaluate, interpret issues of international
+                                training, development and also can able to
+                                comprehend HRM practices in different countries.
+                              </li>
+                            </ol>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Business Analytics Specialization */}
+                      <div className="mb-4">
+                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
+                          Business Analytics Specialization
+                        </h4>
+                        <div className="space-y-6">
+                          {/* 4401 Data Analytics with R */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4401 Data Analytics with R
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>Demonstrate skill in data management.</li>
+                              <li>
+                                Understand the basic concept of R programming.
+                              </li>
+                              <li>Demonstrate skills in data visualization.</li>
+                              <li>
+                                Describe their proficiency in business
+                                statistical analysis of data.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 4402 Data Mining for Business Decisions */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4402 Data Mining for Business Decisions
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Realize Data Mining (DM) principles and
+                                techniques.
+                              </li>
+                              <li>
+                                Analyse large sets of data to gain useful
+                                business understanding.
+                              </li>
+                              <li>
+                                Interpret business applications of data mining.
+                              </li>
+                              <li>
+                                Demonstrate skills in new trends of Data Mining
+                                in relevant business fields.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 4403 Marketing Analytics */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4403 Marketing Analytics
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>Develop the skill in marketing analytics.</li>
+                              <li>
+                                Predict the market scenario for effective
+                                marketing decision.
+                              </li>
+                              <li>
+                                Analyze the customer behavior for strategy
+                                formation.
+                              </li>
+                              <li>
+                                Assess the advertising effect to form adequate
+                                retailing policies.
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* 4404 Financial Credit Risk Analytics */}
+                          <div>
+                            <h4 className="font-bold text-gray-800 mb-2">
+                              4404 Financial Credit Risk Analytics
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              After successfully completing the course, students
+                              will be able to:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                              <li>
+                                Understand about various types of financial
+                                credit.
+                              </li>
+                              <li>Interpret the credit risk and its rating.</li>
+                              <li>
+                                Inspect the risk to frame effective management
+                                and governance policies.
+                              </li>
+                              <li>Demonstrate skill of credit analysis.</li>
+                            </ol>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -877,6 +2435,8 @@ const MBA = () => {
                     survey:
                       "Indian Institutional Ranking Framework (IIRF) Top MBA Colleges in India 2025",
                     link: "more details",
+                    linkUrl:
+                      "/uploads/documents/mba_ranking/IIRF_Best_B-School_Ranking_2025.pdf",
                     ranking:
                       "Ranked 47th in the State, 111th Rank among all Private B-schools in India",
                   },
@@ -885,6 +2445,8 @@ const MBA = () => {
                     survey:
                       "Indian Institutional Ranking Framework (IIRF) Top MBA Colleges in India 2024",
                     link: "more details",
+                    linkUrl:
+                      "/uploads/documents/mba_ranking/IIRF_Best_B-School_Ranking_2024.pdf",
                     ranking:
                       "Ranked 35th in the State, 108th Rank among all Private B-schools in India",
                   },
@@ -893,6 +2455,8 @@ const MBA = () => {
                     survey:
                       "Indian Institutional Ranking Framework (IIRF) Top MBA Colleges in India 2023 - Survey conducted during September-October 2022",
                     link: "more details",
+                    linkUrl:
+                      "/uploads/documents/mba_ranking/IIRF_Best_B-School_Ranking_2023.pdf",
                     ranking:
                       "Ranked 30th in the West Zone, 108th Rank among all Private B-schools in India",
                   },
@@ -901,6 +2465,8 @@ const MBA = () => {
                     survey:
                       "Fortune India Best B-School Ranking, August-September 2022",
                     link: "more details",
+                    linkUrl:
+                      "/uploads/documents/mba_ranking/Fortune_India_Best_B-School_Ranking_2022.pdf",
                     ranking:
                       "Only institute from Vidarbha, Maharashtra appearing in the Fortune India Best B-School Ranking 2022",
                   },
@@ -909,6 +2475,8 @@ const MBA = () => {
                     survey:
                       "Business School Rankings by Business today published as on 29th Oct 2022",
                     link: "more details",
+                    linkUrl: "https://www.businesstoday.in/bt-schools",
+                    external: true,
                     ranking:
                       "Ranked among Top 100 B-school in India in Living as well as ROI",
                   },
@@ -917,6 +2485,8 @@ const MBA = () => {
                     survey:
                       "SSGMCE ranking in DATA QUEST T- School Employability Ranking 2021",
                     link: "more details",
+                    linkUrl:
+                      "/uploads/documents/mba_ranking/DataQuest_T-School_Ranking_2021.pdf",
                     ranking:
                       "Rank-73 : Private Sector\nRank - 81 : Government and private institutes",
                   },
@@ -925,6 +2495,8 @@ const MBA = () => {
                     survey:
                       "Outlook-Drshti Survey 2018 ranks DBA&R at 86th amongst Indias Top 100 Management Schools",
                     link: "Click here for Details",
+                    linkUrl:
+                      "/uploads/documents/mba_ranking/Outlook_Drshti_Survey_2018.pdf",
                     ranking: "Ranked 86th",
                   },
                   {
@@ -932,6 +2504,8 @@ const MBA = () => {
                     survey:
                       "Business Today ranks Shegaon MBA amongst top 100 B-Schools in India",
                     link: "Click here for Details",
+                    linkUrl:
+                      "/uploads/documents/mba_ranking/Business_Today_Ranking_2018.pdf",
                     ranking: "Ranked 80th",
                   },
                   {
@@ -939,6 +2513,8 @@ const MBA = () => {
                     survey:
                       "HONOURED AS MANAGEMENT COLLEGE OF THE YEAR 2017 -Program Efficacy by Higher Education Review Magazine, Nov. 2017",
                     link: "Click here for Details",
+                    linkUrl:
+                      "/uploads/documents/mba_ranking/Higher_Education_Review_2017.pdf",
                     ranking: "",
                   },
                   {
@@ -946,6 +2522,8 @@ const MBA = () => {
                     survey:
                       "Business Today-MDRA ranks DBA&R, SSGMCE, Shegaon amongst Best B-Schools of India",
                     link: "Click here for Details",
+                    linkUrl:
+                      "/uploads/documents/mba_ranking/BT_MDRA_Ranking_2017.pdf",
                     ranking: "Ranked at 146th position",
                   },
                   {
@@ -953,6 +2531,7 @@ const MBA = () => {
                     survey:
                       "DBA&R, Shegaon amongst India's Top 100 B-Schools for fourth consecutive year - Outlook-Drshti Survey 2017",
                     link: "Click here for Details",
+                    linkUrl: "#",
                     ranking:
                       "Ranked at 92nd place amongst all the top business schools of our country.",
                   },
@@ -966,7 +2545,9 @@ const MBA = () => {
                     </td>
                     <td className="px-6 py-3 text-sm border border-gray-200">
                       <a
-                        href="#"
+                        href={item.linkUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="text-ssgmce-blue hover:text-ssgmce-orange hover:underline font-medium"
                       >
                         {item.link}
@@ -1051,390 +2632,551 @@ const MBA = () => {
 
     pride: (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
-          Pride of the Department
-        </h3>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex items-center gap-3 mb-8">
+            <FaTrophy className="text-4xl text-yellow-500" />
+            <h3 className="text-3xl font-bold text-gray-800">
+              Pride of the Department
+            </h3>
+          </div>
 
-        {/* Tab Switcher */}
-        <div className="flex gap-3">
-          {[
-            { id: "toppers", label: "University Rank Holders" },
-            { id: "alumni", label: "Top Alumni" },
-          ].map((tab) => (
+          {/* Tabs for different sections */}
+          <div className="flex gap-2 mb-6 border-b">
             <button
-              key={tab.id}
-              onClick={() => setResearchTab(tab.id)}
-              className={`px-6 py-2.5 rounded-lg font-medium transition-all text-sm ${
-                researchTab === tab.id
-                  ? "bg-[#003366] text-white shadow-md"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              onClick={() => setPrideTab("toppers")}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                prideTab === "toppers"
+                  ? "border-b-4 border-ssgmce-orange text-ssgmce-blue"
+                  : "text-gray-600 hover:text-ssgmce-blue"
               }`}
             >
-              {tab.label}
+              University Toppers
             </button>
-          ))}
-        </div>
-
-        {/* University Rank Holders */}
-        {researchTab === "toppers" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                      Year
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                      Name of the Student
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                      Univ. Topper Rank
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                      CGPA
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {[
-                    {
-                      year: "2022-23",
-                      name: "Vaishnavi Khandare",
-                      rank: "II",
-                      cgpa: "8.97",
-                    },
-                    {
-                      year: "2022-23",
-                      name: "Prerana Chandwani",
-                      rank: "IX",
-                      cgpa: "-",
-                    },
-                    {
-                      year: "2022-23",
-                      name: "Madhuri Chandwani",
-                      rank: "IX",
-                      cgpa: "-",
-                    },
-                    {
-                      year: "2021-22",
-                      name: "Damini Zambad",
-                      rank: "-",
-                      cgpa: "-",
-                    },
-                    {
-                      year: "2020-21",
-                      name: "Divya Ramchandani",
-                      rank: "IV",
-                      cgpa: "-",
-                    },
-                    {
-                      year: "2019-20",
-                      name: "Namrata Patil",
-                      rank: "VII",
-                      cgpa: "-",
-                    },
-                    {
-                      year: "2017-18",
-                      name: "Divya Mohta",
-                      rank: "-",
-                      cgpa: "-",
-                    },
-                  ].map((student, i) => (
-                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-700">
-                        {student.year}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                        {student.name}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                        {student.rank}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
-                        {student.cgpa}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <button
+              onClick={() => setPrideTab("alumni")}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                prideTab === "alumni"
+                  ? "border-b-4 border-ssgmce-orange text-ssgmce-blue"
+                  : "text-gray-600 hover:text-ssgmce-blue"
+              }`}
+            >
+              Top Alumnis of Department
+            </button>
           </div>
-        )}
 
-        {/* Top Alumni */}
-        {researchTab === "alumni" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                      Names of Alumni
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                      Position
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                      Organization
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {[
-                    {
-                      name: "Dr. Devesh Sharma",
-                      position: "Executive Vice President",
-                      org: "Credit Suisse, Singapore",
-                    },
-                    {
-                      name: "Uday Patil",
-                      position: "Executive Vice President",
-                      org: "Bajaj Finserv Ltd.",
-                    },
-                    {
-                      name: "Dr. Ashutosh Singh",
-                      position: "Founder and Professor of Practice",
-                      org: "Director, Medhaura and Professor of Practice, SSGMCE",
-                    },
-                    {
-                      name: "Dr. Krishnakant Dawe",
-                      position: "Vice Chancellor",
-                      org: "SKN Agriculture University",
-                    },
-                    {
-                      name: "Dr. Dinesh Puranik",
-                      position: "Vice President",
-                      org: "Accenture Pvt. Ltd., Bangalore",
-                    },
-                    {
-                      name: "Swapnil Raut",
-                      position: "Director",
-                      org: "PwC, Singapore",
-                    },
-                    {
-                      name: "Shriram Dhabe",
-                      position: "Vice President",
-                      org: "Kotak Mahindra Asset Management Company Ltd., Mumbai",
-                    },
-                    {
-                      name: "Vijay Talekar",
-                      position: "Head of Sales",
-                      org: "Chubb Insurance, Singapore",
-                    },
-                    {
-                      name: "Amol Sirsikar",
-                      position: "Vice President Marketing",
-                      org: "Kotak Mahindra Bank Ltd., Mumbai",
-                    },
-                    {
-                      name: "Vikas Lande",
-                      position: "Vice President",
-                      org: "ICICI, Mumbai",
-                    },
-                    {
-                      name: "Roshan Navandar",
-                      position: "Managing Director",
-                      org: "EQ Techno Consulting Pvt. Ltd., Nagpur",
-                    },
-                    {
-                      name: "Suhas Bhand",
-                      position: "Vice President",
-                      org: "Landmark Group, Dubai, UAE",
-                    },
-                    {
-                      name: "Kirti Sabale",
-                      position: "Senior Manager",
-                      org: "Amazon, USA",
-                    },
-                    {
-                      name: "Vinit Ranavare",
-                      position: "General Manager",
-                      org: "L&T, Mumbai",
-                    },
-                  ].map((alumni, i) => (
-                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                        {alumni.name}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
-                        {alumni.position}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
-                        {alumni.org}
-                      </td>
+          {/* University Toppers */}
+          {prideTab === "toppers" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
+                  <h4 className="text-xl font-bold">UNIVERSITY RANK HOLDERS</h4>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        {[
+                          "Year",
+                          "Name of the Student",
+                          "University Rank",
+                          "CGPA/Percentage",
+                        ].map((h, i) => (
+                          <th
+                            key={i}
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {t("pride.toppers", defaultPrideToppers).length > 0 ? (
+                        t("pride.toppers", defaultPrideToppers).map(
+                          (yearGroup, yearIdx) => (
+                            <React.Fragment key={yearIdx}>
+                              {yearGroup.records.map((record, recordIdx) => (
+                                <tr
+                                  key={recordIdx}
+                                  className="hover:bg-gray-50"
+                                >
+                                  {recordIdx === 0 && (
+                                    <td
+                                      className="px-6 py-4 text-sm font-medium text-gray-900"
+                                      rowSpan={yearGroup.records.length}
+                                    >
+                                      <EditableText
+                                        value={yearGroup.year}
+                                        onSave={(val) => {
+                                          const newData = JSON.parse(
+                                            JSON.stringify(
+                                              t(
+                                                "pride.toppers",
+                                                defaultPrideToppers,
+                                              ),
+                                            ),
+                                          );
+                                          newData[yearIdx].year = val;
+                                          updateData("pride.toppers", newData);
+                                        }}
+                                      />
+                                    </td>
+                                  )}
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <EditableText
+                                      value={record.name}
+                                      onSave={(val) =>
+                                        updatePrideToppers(
+                                          yearIdx,
+                                          recordIdx,
+                                          "name",
+                                          val,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <EditableText
+                                      value={record.rank}
+                                      onSave={(val) =>
+                                        updatePrideToppers(
+                                          yearIdx,
+                                          recordIdx,
+                                          "rank",
+                                          val,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <EditableText
+                                      value={record.score}
+                                      onSave={(val) =>
+                                        updatePrideToppers(
+                                          yearIdx,
+                                          recordIdx,
+                                          "score",
+                                          val,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  {isEditing && (
+                                    <td
+                                      className="px-6 py-4 text-sm text-red-500 cursor-pointer"
+                                      onClick={() => {
+                                        const newData = JSON.parse(
+                                          JSON.stringify(
+                                            t(
+                                              "pride.toppers",
+                                              defaultPrideToppers,
+                                            ),
+                                          ),
+                                        );
+                                        newData[yearIdx].records = newData[
+                                          yearIdx
+                                        ].records.filter(
+                                          (_, idx) => idx !== recordIdx,
+                                        );
+                                        if (
+                                          newData[yearIdx].records.length === 0
+                                        ) {
+                                          newData.splice(yearIdx, 1);
+                                        }
+                                        updateData("pride.toppers", newData);
+                                      }}
+                                    >
+                                      Delete
+                                    </td>
+                                  )}
+                                </tr>
+                              ))}
+                            </React.Fragment>
+                          ),
+                        )
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={4}
+                            className="px-6 py-8 text-center text-gray-400 italic"
+                          >
+                            No data available yet.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                {isEditing && (
+                  <button
+                    onClick={() => {
+                      const newData = JSON.parse(
+                        JSON.stringify(t("pride.toppers", defaultPrideToppers)),
+                      );
+                      newData.push({
+                        year: "2024-25",
+                        records: [
+                          {
+                            name: "New Student",
+                            rank: "1st",
+                            score: "9.5 CGPA",
+                          },
+                        ],
+                      });
+                      updateData("pride.toppers", newData);
+                    }}
+                    className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                  >
+                    Add Year Group
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Top Alumni */}
+          {prideTab === "alumni" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-lg shadow-md overflow-hidden"
+            >
+              <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
+                <h4 className="text-xl font-bold">
+                  <EditableText
+                    value={t("pride.alumniTitle", "Top Alumnis of Department")}
+                    onSave={(val) => updateData("pride.alumniTitle", val)}
+                  />
+                </h4>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      {[
+                        "S. N.",
+                        "Names of Alumni",
+                        "Position",
+                        "Names of Organisation",
+                      ].map((h, i) => (
+                        <th
+                          key={i}
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          {h}
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {t("pride.alumni", defaultPrideAlumni).length > 0 ? (
+                      t("pride.alumni", defaultPrideAlumni).map(
+                        (alumnus, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                              {idx + 1}.
+                            </td>
+                            {alumnus.map((cell, cellIdx) => (
+                              <td
+                                key={cellIdx}
+                                className="px-6 py-4 text-sm text-gray-900"
+                              >
+                                <EditableText
+                                  value={cell}
+                                  onSave={(val) =>
+                                    updateOverviewTable(
+                                      "pride.alumni",
+                                      defaultPrideAlumni,
+                                      idx,
+                                      cellIdx,
+                                      val,
+                                    )
+                                  }
+                                />
+                              </td>
+                            ))}
+                            {isEditing && (
+                              <td
+                                className="px-6 py-4 text-sm text-red-500 cursor-pointer"
+                                onClick={() => {
+                                  const newArr = t(
+                                    "pride.alumni",
+                                    defaultPrideAlumni,
+                                  ).filter((_, i) => i !== idx);
+                                  updateData("pride.alumni", newArr);
+                                }}
+                              >
+                                Delete
+                              </td>
+                            )}
+                          </tr>
+                        ),
+                      )
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-6 py-8 text-center text-gray-400 italic"
+                        >
+                          No alumni data available yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {isEditing && (
+                <button
+                  onClick={() => {
+                    const newArr = [
+                      ...t("pride.alumni", defaultPrideAlumni),
+                      ["New Alumni", "Position", "Organisation"],
+                    ];
+                    updateData("pride.alumni", newArr);
+                  }}
+                  className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                >
+                  Add Alumni
+                </button>
+              )}
+            </motion.div>
+          )}
+        </motion.div>
       </div>
     ),
 
-    achievements: (
-      <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
-          Achievements and Awards
-        </h3>
+    achievements: (() => {
+      const facultyAchievements = t(
+        "achievements.faculty",
+        defaultAchievements.faculty || [],
+      );
+      const studentAchievements = t(
+        "achievements.students",
+        defaultAchievements.students || [],
+      );
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                    Year
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                    Faculty/Student
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                    Achievement
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {/* 2025 */}
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2025
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Dr. Husain B.
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Best Paper Award at International Conference
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2025
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Dr. Pawan Kuchar
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Selected as Member, Board of Studies in Management, SGBAU
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2025
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Dr. Satya Mohan Mishra
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Editorial Board Member, Journal of Advanced Research in
-                    Business and Management Studies
-                  </td>
-                </tr>
+      const handleViewCertificate = (item) => {
+        if (!item.image) return;
+        const isPdf = item.image.toLowerCase().endsWith(".pdf");
+        if (isPdf) {
+          window.open(item.image, "_blank");
+        } else {
+          setCertificateLightbox(item);
+        }
+      };
 
-                {/* 2024 */}
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2024
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Dr. Satya Mohan Mishra
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Research Proposal Funded - "Efficiency of NBFCs in Eastern
-                    and Southern India"
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2024
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Dr. Pawan Kuchar
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Research Proposal Funded - Marketing and Consumer Behavior
-                    Study
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2024
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Dr. Mayur Dande
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Research Proposal Funded - Digital Marketing Trends in Rural
-                    India
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2024
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Dr. Husain B.
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Keynote Speaker at National Conference on Finance and
-                    Banking
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2024
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Dr. Laxmikant Deshmukh
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Empaneled as Resource Person by SEBI for Investor Awareness
-                    Programs
-                  </td>
-                </tr>
+      return (
+        <div className="space-y-8">
+          {/* Certificate Lightbox Modal */}
+          <AnimatePresence>
+            {certificateLightbox && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                onClick={() => setCertificateLightbox(null)}
+              >
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  className="relative max-w-4xl max-h-[90vh] w-full bg-white rounded-2xl overflow-hidden shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-white font-bold text-lg">
+                        {certificateLightbox.name}
+                      </h3>
+                      <p className="text-blue-200 text-sm">
+                        {certificateLightbox.achievement}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setCertificateLightbox(null)}
+                      className="text-white hover:text-orange-300 transition-colors"
+                    >
+                      <FaTimes className="text-xl" />
+                    </button>
+                  </div>
+                  <div className="p-4 flex items-center justify-center bg-gray-50 max-h-[75vh] overflow-auto">
+                    <img
+                      src={certificateLightbox.image}
+                      alt={certificateLightbox.achievement}
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                      className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                    />
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-                {/* 2023 */}
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2023
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Department
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Ranked among Top 100 B-Schools in India by Career Outlook
-                    Survey
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2023
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Dr. Wechansing Suliya
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Best Faculty Award by Maharashtra State Innovation Society
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2023
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Students
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Winners - National Business Plan Competition, IIM Indore
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          {/* Header */}
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-gray-900">
+              Achievements & Awards
+            </h2>
+            <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
+            <p className="text-gray-600 mt-3">
+              Master of Business Administration (MBA)
+            </p>
           </div>
+
+          {/* Tab Menu: Faculty | Student toggle */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex rounded-lg bg-gray-100 p-1">
+              <button
+                onClick={() => setAchievementTab("faculty")}
+                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  achievementTab === "faculty"
+                    ? "bg-[#003366] text-white shadow-md"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                }`}
+              >
+                <FaChalkboardTeacher className="text-lg" />
+                Faculty Achievements
+              </button>
+              <button
+                onClick={() => setAchievementTab("student")}
+                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  achievementTab === "student"
+                    ? "bg-[#003366] text-white shadow-md"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                }`}
+              >
+                <FaUserGraduate className="text-lg" />
+                Student Achievements
+              </button>
+            </div>
+          </div>
+
+          {/* Faculty Achievements */}
+          {achievementTab === "faculty" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {facultyAchievements.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <FaTrophy className="mr-3 text-yellow-300" />
+                      {item.name}
+                    </h3>
+                    <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
+                      {item.category}
+                    </span>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-[#003366] mb-2">
+                          {item.achievement}
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                      {item.image && (
+                        <button
+                          onClick={() => handleViewCertificate(item)}
+                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                          <FaAward className="text-yellow-300" />
+                          View Certificate
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+              {facultyAchievements.length === 0 && (
+                <p className="text-center text-gray-400 py-8 text-sm">
+                  No faculty achievements recorded yet.
+                </p>
+              )}
+            </motion.div>
+          )}
+
+          {/* Student Achievements */}
+          {achievementTab === "student" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {studentAchievements.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <FaAward className="mr-3 text-yellow-300" />
+                      {item.name}
+                    </h3>
+                    <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
+                      {item.category}
+                    </span>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-[#003366] mb-2">
+                          {item.achievement}
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                      {item.image && (
+                        <button
+                          onClick={() => handleViewCertificate(item)}
+                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                          <FaAward className="text-yellow-300" />
+                          View Certificate
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+              {studentAchievements.length === 0 && (
+                <p className="text-center text-gray-400 py-8 text-sm">
+                  No student achievements recorded yet.
+                </p>
+              )}
+            </motion.div>
+          )}
         </div>
-      </div>
-    ),
+      );
+    })(),
 
     accreditations: (
       <div className="space-y-8">
@@ -1668,38 +3410,32 @@ const MBA = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-sm">
-                    {[
-                      { year: "2024-25", count: "39*", id: "2024-25" },
-                      { year: "2023-24", count: "44", id: "2023-24" },
-                      { year: "2022-23", count: "49*", id: "2022-23" },
-                      { year: "2021-22", count: "35", id: "2021-22" },
-                      { year: "2020-21", count: "43", id: "2020-21" },
-                      { year: "2019-20", count: "35", id: "2019-20" },
-                      { year: "2018-19", count: "30", id: "2018-19" },
-                    ].map((row, index) => (
-                      <tr
-                        key={index}
-                        className="hover:bg-blue-50/30 transition-colors"
-                      >
-                        <td className="px-6 py-4 text-center font-mono text-gray-400">
-                          {index + 1}
-                        </td>
-                        <td className="px-6 py-4 text-center font-bold text-gray-700">
-                          {row.year}
-                        </td>
-                        <td className="px-6 py-4 text-center font-bold text-ssgmce-blue text-lg">
-                          {row.count}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <button
-                            onClick={() => setPlacementYear(row.id)}
-                            className="text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
-                          >
-                            View Details
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {t("placements.summary", defaultPlacements.summary).map(
+                      (row, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-blue-50/30 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-center font-mono text-gray-400">
+                            {index + 1}
+                          </td>
+                          <td className="px-6 py-4 text-center font-bold text-gray-700">
+                            {row.year}
+                          </td>
+                          <td className="px-6 py-4 text-center font-bold text-ssgmce-blue text-lg">
+                            {row.count}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <button
+                              onClick={() => setPlacementYear(row.id)}
+                              className="text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                            >
+                              View Details
+                            </button>
+                          </td>
+                        </tr>
+                      ),
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1717,596 +3453,74 @@ const MBA = () => {
               <div className="flex justify-between items-center mb-6">
                 <button
                   onClick={() => setPlacementYear(null)}
-                  className="flex items-center text-ssgmce-blue hover:text-ssgmce-orange font-medium"
+                  className="flex items-center text-gray-600 hover:text-ssgmce-blue font-medium transition-colors"
                 >
-                  <FaAngleRight className="rotate-180 mr-2" /> Back to Summary
+                  <span className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-2 text-sm group-hover:bg-blue-100">
+                    <FaAngleRight className="transform rotate-180" />
+                  </span>
+                  Back to Statistics
                 </button>
-                <h3 className="text-xl font-bold text-gray-800">
-                  Placement Data - AY {placementYear}
-                </h3>
+                <div className="text-right">
+                  <h3 className="text-xl font-bold text-gray-800">
+                    Placement Record
+                  </h3>
+                  <p className="text-sm text-ssgmce-blue font-bold">
+                    Session: {placementYear}
+                  </p>
+                </div>
               </div>
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr className="text-sm">
-                        <th className="px-4 py-3 font-bold text-gray-700 text-center">
-                          Sr.No.
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
+                      <tr>
+                        <th className="px-6 py-4 font-bold text-center w-16">
+                          Sr. No.
                         </th>
-                        <th className="px-4 py-3 font-bold text-gray-700">
-                          Student Name
-                        </th>
-                        <th className="px-4 py-3 font-bold text-gray-700">
-                          Company Name
-                        </th>
-                        <th className="px-4 py-3 font-bold text-gray-700 text-center">
-                          CTC Offered
-                        </th>
+                        <th className="px-6 py-4 font-bold">Name of Student</th>
+                        <th className="px-6 py-4 font-bold">Company Name</th>
+                        <th className="px-6 py-4 font-bold text-right">CTC</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100 text-sm">
-                      {placementYear === "2024-25" &&
-                        [
-                          {
-                            sr: 1,
-                            name: "Adinath Sanjay Sangle",
-                            company:
-                              "Avenue Super Mart Limited (Dmart), Nagpur",
-                            ctc: "Rs.3.5 LPA",
-                          },
-                          {
-                            sr: 2,
-                            name: "Aditya Keshavrao Unhale",
-                            company: "IndiaMart, Mumbai",
-                            ctc: "Rs.3.9 LPA",
-                          },
-                          {
-                            sr: 3,
-                            name: "Aditya Keshavrao Unhale",
-                            company:
-                              "Avenue Super Mart Limited (Dmart), Nagpur",
-                            ctc: "Rs. 3.5 LPA",
-                          },
-                          {
-                            sr: 4,
-                            name: "AMIT SUNIL NIKOLE",
-                            company: "DCB Bank, Akola",
-                            ctc: "Rs.3.5 LPA",
-                          },
-                          {
-                            sr: 5,
-                            name: "ANIKET WASUDEO BONDRE",
-                            company:
-                              "Avenue Super Mart Limited (Dmart), Nagpur",
-                            ctc: "Rs.3.5 LPA",
-                          },
-                          {
-                            sr: 6,
-                            name: "Ashutosh Vinay Kathole",
-                            company: "ESAF",
-                            ctc: "Rs.4.25 LPA",
-                          },
-                          {
-                            sr: 7,
-                            name: "Gayatri Vitthalrao Deshmukh",
-                            company: "ESAF",
-                            ctc: "Rs.4.25 LPA",
-                          },
-                          {
-                            sr: 8,
-                            name: "Gunjan Sunil Ingle",
-                            company: "Kalash Seeds Pvt. Ltd., Jalna",
-                            ctc: "Rs.2.76 LPA",
-                          },
-                          {
-                            sr: 9,
-                            name: "Kartik Pawar",
-                            company: "DCB Bank, Akola",
-                            ctc: "Rs.3.5 LPA",
-                          },
-                          {
-                            sr: 10,
-                            name: "NISHANT PRADIP DIDOLKAR",
-                            company:
-                              "Kidara Tech, Thane / Daikin Airconditioning Industries Ltd., Pune",
-                            ctc: "Rs.6 LPA",
-                          },
-                          {
-                            sr: 11,
-                            name: "Pragati Devidas Rekhate",
-                            company:
-                              "Daikin Airconditioning Industries Ltd., Pune",
-                            ctc: "Rs. 4.5 LPA",
-                          },
-                          {
-                            sr: 12,
-                            name: "Ravi Arvind Ingle",
-                            company: "Motilal Oswal, Mumbai",
-                            ctc: "Rs.3.5 LPA",
-                          },
-                          {
-                            sr: 13,
-                            name: "Rushikesh Sangitrao Mankar",
-                            company: "IndiaMart, Mumbai",
-                            ctc: "Rs.3.9 LPA",
-                          },
-                          {
-                            sr: 14,
-                            name: "Rushikesh Sangitrao Mankar",
-                            company: "ESAF",
-                            ctc: "Rs. 4.25 LPA",
-                          },
-                          {
-                            sr: 15,
-                            name: "Shantanu Paramanand Sawat",
-                            company:
-                              "Home First Finance Co. India Limited, Mumbai",
-                            ctc: "Rs.6 LPA",
-                          },
-                          {
-                            sr: 16,
-                            name: "Shubhangi Nikhade",
-                            company: "Indian Forest Services, Pune",
-                            ctc: "Rs.3.5 LPA",
-                          },
-                          {
-                            sr: 17,
-                            name: "Sudarshan Dnyaneshwar Mehetre",
-                            company:
-                              "Avenue Super Mart Limited (Dmart), Nagpur",
-                            ctc: "Rs.3.5 LPA",
-                          },
-                          {
-                            sr: 18,
-                            name: "Utkarsha Harish Patil",
-                            company: "Kalash Seeds Pvt. Ltd., Jalna",
-                            ctc: "Rs.3 LPA",
-                          },
-                          {
-                            sr: 19,
-                            name: "Yash Dipak Adhe",
-                            company: "Krutanic Solutions, Bengaluru",
-                            ctc: "Rs.6.00 LPA",
-                          },
-                          {
-                            sr: 20,
-                            name: "Yash Dipak Adhe",
-                            company:
-                              "Daikin Airconditioning India Pvt. Ltd., Pune",
-                            ctc: "Rs. 7 LPA",
-                          },
-                          {
-                            sr: 21,
-                            name: "Yashvant Janardhan Pawar",
-                            company: "IndiaMart, Mumbai",
-                            ctc: "Rs.3.9 LPA",
-                          },
-                          {
-                            sr: 22,
-                            name: "Yashvant Janardhan Pawar",
-                            company: "KI Tech Vista Pvt. Ltd., Hyderabad",
-                            ctc: "Rs.7.20 LPA",
-                          },
-                          {
-                            sr: 23,
-                            name: "Yogesh sanjay Wakudkar",
-                            company:
-                              "Avenue Super Mart Limited (Dmart), Nagpur",
-                            ctc: "Rs.3.5 LPA",
-                          },
-                          {
-                            sr: 24,
-                            name: "Yogesh sanjay Wakudkar",
-                            company: "KI Tech Vista Pvt Ltd, Hyderabad",
-                            ctc: "Rs.7.20 LPA",
-                          },
-                          {
-                            sr: 25,
-                            name: "Apeksha Anil Kawale",
-                            company: "TCS Limited,",
-                            ctc: "Rs.5.8 LPA",
-                          },
-                          {
-                            sr: 26,
-                            name: "Dipak Pramodrao Patil khond",
-                            company: "KI Tech Vista Pvt Ltd, Hyderabad",
-                            ctc: "Rs.7.20 LPA",
-                          },
-                          {
-                            sr: 27,
-                            name: "Dnyaneshwari Vijay wakudkar",
-                            company: "KI Tech Vista Pvt Ltd, Hyderabad",
-                            ctc: "Rs.7.20 LPA",
-                          },
-                          {
-                            sr: 28,
-                            name: "Arbat MAHIMA ANIL CHOUDHARY",
-                            company: "KI Tech Vista Pvt Ltd, Hyderabad",
-                            ctc: "Rs.7.20 LPA",
-                          },
-                          {
-                            sr: 29,
-                            name: "MAHIMA ANIL CHOUDHARY",
-                            company: "TCS Limited,",
-                            ctc: "Rs.5.8 LPA",
-                          },
-                          {
-                            sr: 30,
-                            name: "Pallavi Ravindra Ghiye",
-                            company:
-                              "Delst Technologies India Pvt Ltd, Faridabad",
-                            ctc: "Rs.3.5 LPA",
-                          },
-                          {
-                            sr: 31,
-                            name: "Sakshi Haridasji Dhole",
-                            company: "KI Tech Vista Pvt Ltd, Hyderabad",
-                            ctc: "Rs.7.20 LPA",
-                          },
-                          {
-                            sr: 32,
-                            name: "Yashwantrao Santosh Gawande",
-                            company: "KI Tech Vista Pvt Ltd, Hyderabad",
-                            ctc: "Rs.7.20 LPA",
-                          },
-                          {
-                            sr: 33,
-                            name: "Akanksha Dnyaneshwar Bagwe",
-                            company: "Krutanic Solutions, Bengaluru",
-                            ctc: "Rs.6.00 LPA",
-                          },
-                          {
-                            sr: 34,
-                            name: "Abhishek Vijay Bhattadak",
-                            company: "NJ Group, Akola",
-                            ctc: "-",
-                          },
-                          {
-                            sr: 35,
-                            name: "Aviral Gajanan Kaware",
-                            company: "Infosys Ltd., Pune",
-                            ctc: "Rs.2.4 LPA",
-                          },
-                          {
-                            sr: 36,
-                            name: "Hrutuja Arun Takwale",
-                            company: "Infinity Solution, Akola",
-                            ctc: "Rs.2.4 LPA",
-                          },
-                          {
-                            sr: 37,
-                            name: "Shraddha Bhagwan Pimpalkar",
-                            company: "HDFC Bank, Pune",
-                            ctc: "Rs.3.6 LPA",
-                          },
-                          {
-                            sr: 38,
-                            name: "Vaishnavi Sanjay Sonone",
-                            company: "Kidara Tech, Pune",
-                            ctc: "Rs.6 LPA",
-                          },
-                          {
-                            sr: 39,
-                            name: "Vaishnavi Sanjay Sonone",
-                            company: "HDFC Bank, Pune",
-                            ctc: "Rs.3.6 LPA",
-                          },
-                        ].map((student, i) => (
-                          <tr
-                            key={i}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-4 py-3 text-center text-gray-500">
-                              {student.sr}
-                            </td>
-                            <td className="px-4 py-3 text-gray-900 font-medium">
-                              {student.name}
-                            </td>
-                            <td className="px-4 py-3 text-gray-700">
-                              {student.company}
-                            </td>
-                            <td className="px-4 py-3 text-center text-ssgmce-blue font-semibold">
-                              {student.ctc}
-                            </td>
-                          </tr>
-                        ))}
-                      {placementYear === "2023-24" &&
-                        [
-                          {
-                            sr: 1,
-                            name: "Hemant Gajanan Raut",
-                            company: "ESAF Small Finance Bank",
-                            ctc: "Rs.4.25LPA",
-                          },
-                          {
-                            sr: 2,
-                            name: "Hemant Gajanan Raut",
-                            company: "HDFC Bank",
-                            ctc: "Rs.3.5LPA",
-                          },
-                          {
-                            sr: 3,
-                            name: "Akshada Narendra Parchu re",
-                            company: "Rinex Technologies Pvt.Ltd., Bangalore",
-                            ctc: "Rs.5.20LPA",
-                          },
-                          {
-                            sr: 4,
-                            name: "Dhanshree Sujay Deshmu kh",
-                            company: "Academor Edutech, Bangalore",
-                            ctc: "Rs.6.8LPA",
-                          },
-                          {
-                            sr: 5,
-                            name: "Krushna Jitendrasingh Th akur",
-                            company: "ESAF Small Finance Bank",
-                            ctc: "Rs.4.25LPA",
-                          },
-                          {
-                            sr: 6,
-                            name: "Krushna Jitendrasingh Th akur",
-                            company: "SPCL Infotech Services Pvt Ltd, Pune",
-                            ctc: "Rs.1.8LPA",
-                          },
-                          {
-                            sr: 7,
-                            name: "Pratiksha Santosh Gawand e",
-                            company: "Corizo Edtech, Bengaluru",
-                            ctc: "Rs. 6.5LPA",
-                          },
-                          {
-                            sr: 8,
-                            name: "Shruti Prakash Auti",
-                            company: "HDFC Bank",
-                            ctc: "Rs.3.5 LPA",
-                          },
-                          {
-                            sr: 9,
-                            name: "Vaishnavi Anil Hage",
-                            company: "Academor Edutech, Bangalore",
-                            ctc: "Rs.6.8LPA",
-                          },
-                          {
-                            sr: 10,
-                            name: "Vaishnavi Anil Hage",
-                            company: "Stellar Hunt, Pune",
-                            ctc: "",
-                          },
-                          {
-                            sr: 11,
-                            name: "Vashishtha Diwansing Th akur",
-                            company: "Stellar Hunt, Pune",
-                            ctc: "",
-                          },
-                          {
-                            sr: 12,
-                            name: "Nagesh Dinkar Banait",
-                            company: "Academor Edutech, Bangalore",
-                            ctc: "Rs.6.8LPA",
-                          },
-                          {
-                            sr: 13,
-                            name: "Nagesh Dinkar Banait",
-                            company: "Stellar Hunt, Pune",
-                            ctc: "",
-                          },
-                          {
-                            sr: 14,
-                            name: "Nagesh Dinkar Banait",
-                            company:
-                              "Home First Finance Company India Limited, Amravati",
-                            ctc: "Rs.6LPA",
-                          },
-                          {
-                            sr: 15,
-                            name: "Pratik Pramod Dhage",
-                            company: "ESAF Small Finance Bank",
-                            ctc: "Rs.4.25LPA",
-                          },
-                          {
-                            sr: 16,
-                            name: "Pravin Shrikrushna Kale",
-                            company: "Indiamart Interm MESH Ltd., Noida",
-                            ctc: "Rs.3.96LPA",
-                          },
-                          {
-                            sr: 17,
-                            name: "Swapnil Gajanan Ikhare",
-                            company: "Academor Edutech, Bangalore",
-                            ctc: "Rs.6.8LPA",
-                          },
-                          {
-                            sr: 18,
-                            name: "Vaibhav Tejrao Dali",
-                            company: "HDFC Bank (No Offer Letter)",
-                            ctc: "Rs. 2.08LPA",
-                          },
-                          {
-                            sr: 19,
-                            name: "Akshay Arun Jadhao",
-                            company:
-                              "Home First Finance Company India Limited, Amravati",
-                            ctc: "Rs.6LPA",
-                          },
-                          {
-                            sr: 20,
-                            name: "Gaurav Ajay Varma",
-                            company: "HDFC Bank",
-                            ctc: "Rs. 3.25LPA",
-                          },
-                          {
-                            sr: 21,
-                            name: "Harshal Kamlakar Gawai",
-                            company: "SmartED Bangalore",
-                            ctc: "Rs. 3-6LPA",
-                          },
-                          {
-                            sr: 22,
-                            name: "Mansi Vilas Bharane",
-                            company: "SmartED Bangalore",
-                            ctc: "Rs. 3-6LPA",
-                          },
-                          {
-                            sr: 23,
-                            name: "Mansi Vilas Bharane",
-                            company: "Academor",
-                            ctc: "Rs. 3-6LPA",
-                          },
-                          {
-                            sr: 24,
-                            name: "Monika Kishor Ghawat",
-                            company: "HDFC Bank",
-                            ctc: "Rs.3.5 LPA",
-                          },
-                          {
-                            sr: 25,
-                            name: "Revati Sharadrao Mahalle",
-                            company: "SPCL Infotech Services Pvt Ltd, Pune",
-                            ctc: "Rs.1.8LPA",
-                          },
-                          {
-                            sr: 26,
-                            name: "Shraddha Rameshwar Gon dchwar",
-                            company: "SmartED Bangalore",
-                            ctc: "3-6LPA",
-                          },
-                          {
-                            sr: 27,
-                            name: "Shrusti Suryakant Purwal",
-                            company: "SmartED Bangalore",
-                            ctc: "3-6LPA",
-                          },
-                          {
-                            sr: 28,
-                            name: "Sneha Bhagwan Gaikwad",
-                            company: "SmartED Bangalore",
-                            ctc: "3-6LPA",
-                          },
-                          {
-                            sr: 29,
-                            name: "Tanaya Ajay Mate",
-                            company: "SmartED Bangalore",
-                            ctc: "3-6LPA",
-                          },
-                          {
-                            sr: 30,
-                            name: "Vishakha Vijay Tantak",
-                            company: "SmartED Bangalore",
-                            ctc: "3-6LPA",
-                          },
-                          {
-                            sr: 31,
-                            name: "Kunal Sanjy Bhise",
-                            company:
-                              "Home First Finance Company India Limited, Amravati",
-                            ctc: "Rs.6LPA",
-                          },
-                          {
-                            sr: 32,
-                            name: "Kunal Sanjy Bhise",
-                            company: "HDFC",
-                            ctc: "Rs.3.5 LPA",
-                          },
-                          {
-                            sr: 33,
-                            name: "Lucky Radheshyam Rathi",
-                            company:
-                              "Home First Finance Company India Limited, Amravati",
-                            ctc: "Rs.6LPA",
-                          },
-                          {
-                            sr: 34,
-                            name: "Shubham Damodar Ratho d",
-                            company: "SmartED Bangalore",
-                            ctc: "Rs. 3-6LPA",
-                          },
-                          {
-                            sr: 35,
-                            name: "Vaibhav Jayendra Ahir",
-                            company:
-                              "Home First Finance Company India Limited, Amravati",
-                            ctc: "Rs.6LPA",
-                          },
-                          {
-                            sr: 36,
-                            name: "Anmol Ramesh Solanke",
-                            company: "Parijat Industries Pvt. Ltd., Jalgaon",
-                            ctc: "",
-                          },
-                          {
-                            sr: 37,
-                            name: "Ishan Pavan Shah",
-                            company:
-                              "Home First Finance Company India Limited, Amravati",
-                            ctc: "Rs.3.2LPA",
-                          },
-                          {
-                            sr: 38,
-                            name: "Sneha Sunil Wankhede",
-                            company: "Obits Learning, Bangalore",
-                            ctc: "Rs. 3.00 LPA",
-                          },
-                          {
-                            sr: 39,
-                            name: "Utkarsha Dhanraj Nitnawa re",
-                            company: "SmartED Bangalore",
-                            ctc: "Rs. 3-6LPA",
-                          },
-                          {
-                            sr: 40,
-                            name: "Vaishnavi Manish Hiwral",
-                            company: "Obits Learning, Bangalore",
-                            ctc: "Rs. 3.00 LPA",
-                          },
-                          {
-                            sr: 41,
-                            name: "Mahesh Ratanlal Girhe",
-                            company: "HDFC",
-                            ctc: "Rs. 3.12 LPA",
-                          },
-                          {
-                            sr: 42,
-                            name: "Sumersing Babusing Barw al",
-                            company:
-                              "Bush Electromech & Engineering Pvt. Ltd., Aurangabad",
-                            ctc: "Rs. 2.4 LPA",
-                          },
-                          {
-                            sr: 43,
-                            name: "Vitthal Dnyaneshwar Ram ekar",
-                            company: "Obits Learning, Bangalore",
-                            ctc: "Rs. 3.00 LPA",
-                          },
-                          {
-                            sr: 44,
-                            name: "Aishwarya Vinayak Tayade",
-                            company:
-                              "Right Move Staffing Solutions Pvt.Ltd., Pune",
-                            ctc: "",
-                          },
-                        ].map((student, i) => (
-                          <tr
-                            key={i}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-4 py-3 text-center text-gray-500">
-                              {student.sr}
-                            </td>
-                            <td className="px-4 py-3 text-gray-900 font-medium">
-                              {student.name}
-                            </td>
-                            <td className="px-4 py-3 text-gray-700">
-                              {student.company}
-                            </td>
-                            <td className="px-4 py-3 text-center text-ssgmce-blue font-semibold">
-                              {student.ctc}
-                            </td>
-                          </tr>
-                        ))}
+                    <tbody className="divide-y divide-gray-100">
+                      {t(
+                        `placements.details.${placementYear}`,
+                        defaultPlacements.details[placementYear] || [],
+                      ).map((student, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-center font-mono text-gray-400">
+                            {index + 1}
+                          </td>
+                          <td className="px-6 py-4 font-medium text-gray-800">
+                            {student.name}
+                          </td>
+                          <td className="px-6 py-4 text-gray-600">
+                            {student.company}
+                          </td>
+                          <td className="px-6 py-4 text-right font-bold text-ssgmce-blue">
+                            {student.ctc}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
+                {(!t(
+                  `placements.details.${placementYear}`,
+                  defaultPlacements.details[placementYear] || [],
+                ).length ||
+                  t(
+                    `placements.details.${placementYear}`,
+                    defaultPlacements.details[placementYear] || [],
+                  ).length === 0) && (
+                  <div className="p-8 text-center text-gray-400">
+                    <p>Detailed placement data will be updated soon.</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -2315,98 +3529,136 @@ const MBA = () => {
     ),
 
     newsletter: (
-      <div className="space-y-12">
+      <div className="space-y-8">
         {/* Newsletter Header */}
         <div className="text-center">
           <div className="w-16 h-16 bg-blue-50 text-ssgmce-blue rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
             <FaBullseye />
           </div>
           <h3 className="text-3xl font-bold text-gray-800 mb-4">
-            Department Newsletters
+            <EditableText
+              value={t("newsletterTitle", "Department Newsletters")}
+              onSave={(val) => updateData("newsletterTitle", val)}
+            />
           </h3>
-          <p className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
-            Stay updated with the latest happenings, student achievements,
-            faculty contributions, and department events through our periodic
-            newsletters.
-          </p>
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <EditableText
+              value={t(
+                "newsletterDescription",
+                "Stay updated with the latest happenings, student achievements, faculty contributions, and department events through our periodic newsletters.",
+              )}
+              onSave={(val) => updateData("newsletterDescription", val)}
+              multiline
+            />
+          </div>
         </div>
 
-        {/* Current Issue - Featured */}
-        <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 rounded-bl-full -mr-8 -mt-8 opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
-
-          <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-            {/* Thumbnail Placeholder */}
-            <div className="w-full md:w-1/3 aspect-[3/4] bg-gray-100 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-gray-300 group-hover:border-orange-300 transition-colors">
-              <FaAward className="text-5xl text-gray-300 mb-4 group-hover:text-orange-400 transition-colors" />
-              <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">
-                Cover Page
-              </span>
-            </div>
-
-            <div className="flex-1 text-center md:text-left">
-              <span className="inline-block px-3 py-1 bg-blue-100 text-ssgmce-blue font-bold text-xs uppercase tracking-wider rounded-full mb-4">
-                Latest Release
-              </span>
-              <h4 className="text-2xl font-bold text-gray-800 mb-2">
-                Volume I: 2025-26 (Term I)
-              </h4>
-              <p className="text-gray-500 mb-6">
-                Highlights: Top placement records, Industry collaborations with
-                leading corporates, Student achievements, and Faculty research
-                milestones.
+        {/* Newsletter Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-8 py-5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-wide">Newsletter</h3>
+              <p className="text-sm text-gray-300 mt-1">
+                Department of Master of Business Administration (MBA)
               </p>
-
-              <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                <a
-                  href="/documents/news-letter-mba-25-26-I.pdf"
-                  className="flex items-center px-6 py-3 bg-ssgmce-blue text-white font-bold rounded-xl shadow-lg shadow-blue-200 hover:bg-ssgmce-dark-blue hover:shadow-xl transition-all"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <FaDownload className="mr-2" /> Download Newsletter
-                </a>
-                <button className="flex items-center px-6 py-3 bg-white text-gray-700 font-bold rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
-                  Read Online
-                </button>
-              </div>
             </div>
+            <FaDownload className="text-4xl text-blue-200 opacity-40" />
           </div>
-        </div>
 
-        {/* Archives */}
-        <div>
-          <h4 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
-            <span className="w-8 h-1 bg-gray-800 rounded-full mr-3"></span>
-            Archives
-          </h4>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { vol: "Vol II: 2024-25", term: "Term II", date: "May 2025" },
-              { vol: "Vol I: 2024-25", term: "Term I", date: "Dec 2024" },
-              { vol: "Vol II: 2023-24", term: "Term II", date: "May 2024" },
-            ].map((issue, i) => (
-              <div
-                key={i}
-                className="bg-white p-6 rounded-xl border border-gray-200 hover:border-gray-200 hover:shadow-md transition-all group"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 group-hover:bg-blue-50 group-hover:text-ssgmce-orange transition-colors">
-                    <FaAngleRight />
-                  </div>
-                  <span className="text-xs font-mono text-gray-400">
-                    {issue.date}
-                  </span>
-                </div>
-                <h5 className="font-bold text-gray-800 mb-1">{issue.vol}</h5>
-                <p className="text-sm text-gray-500 mb-4">{issue.term}</p>
-                <button className="text-sm font-bold text-ssgmce-blue hover:underline flex items-center">
-                  Download <FaDownload className="ml-2 text-xs" />
-                </button>
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th className="px-6 py-4 font-bold text-center w-20">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 font-bold">Publishing Date</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    More Details
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {/* Latest Issue Row */}
+                <tr className="hover:bg-blue-50/30 transition-colors bg-blue-50/10">
+                  <td className="px-6 py-4 text-center font-mono text-gray-400">
+                    1
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded-full">
+                        Latest
+                      </span>
+                      <span className="font-bold text-gray-800">
+                        <EditableText
+                          value={
+                            t("newsletters_latest", defaultNewsletters.latest)
+                              .title ||
+                            "Newsletter Spring Semester July - December 2025"
+                          }
+                          onSave={(val) =>
+                            updateNewsletter("latest", 0, "title", val)
+                          }
+                        />
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <a
+                      href={
+                        t("newsletters_latest", defaultNewsletters.latest)
+                          .link || "#"
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                    >
+                      <FaDownload className="text-xs" /> Click for Details
+                    </a>
+                  </td>
+                </tr>
+
+                {/* Archive Rows */}
+                {(
+                  t("newsletters_archives", defaultNewsletters.archives) || []
+                ).map((issue, i) => (
+                  <tr key={i} className="hover:bg-blue-50/30 transition-colors">
+                    <td className="px-6 py-4 text-center font-mono text-gray-400">
+                      {i + 2}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-bold text-gray-700">
+                        <EditableText
+                          value={issue.vol}
+                          onSave={(val) =>
+                            updateNewsletter("archives", i, "vol", val)
+                          }
+                        />
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <a
+                        href={issue.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                      >
+                        <FaDownload className="text-xs" /> Click for Details
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
+          <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+            Click on "Click for Details" to view/download the newsletter PDF.
+          </div>
+        </motion.div>
       </div>
     ),
 
@@ -2716,6 +3968,185 @@ const MBA = () => {
       </div>
     ),
 
+    "course-material": (
+      <div className="space-y-8">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-orange-50 text-ssgmce-orange rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
+            <FaChalkboardTeacher />
+          </div>
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
+            <EditableText
+              value={t("courseMaterial.title", "Course Material")}
+              onSave={(val) => updateData("courseMaterial.title", val)}
+            />
+          </h3>
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <EditableText
+              value={t(
+                "courseMaterial.description",
+                "Access comprehensive course materials, lecture notes, assignments, and study resources for all semesters.",
+              )}
+              onSave={(val) => updateData("courseMaterial.description", val)}
+              multiline
+            />
+          </div>
+        </div>
+
+        {/* Course Material Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white px-8 py-5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-wide">
+                Course Material
+              </h3>
+              <p className="text-sm text-orange-100 mt-1">
+                Department of Business Administration and Research (MBA)
+              </p>
+            </div>
+            <FaChalkboardTeacher className="text-4xl text-orange-200 opacity-40" />
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th className="px-6 py-4 font-bold text-center w-20">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 font-bold">Year / Class</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    Access Materials
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {(
+                  t("courseMaterials", [
+                    {
+                      year: "First Year",
+                      title: "MBA First Year",
+                      link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Ep9IXN-R6NhNpjFEeX2eXN4BB3ef78z5_OY0agqd7p2r1w?e=FcxQeI",
+                    },
+                    {
+                      year: "Final Year",
+                      title: "MBA Final Year",
+                      link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Epr9v88heupFrY6lkHFvq0UB6kC3oakk1ow7ukD3rfBEZQ?e=KIOGXZ",
+                    },
+                  ]) || []
+                ).map((material, i) => (
+                  <tr
+                    key={i}
+                    className="hover:bg-orange-50/30 transition-colors"
+                  >
+                    <td className="px-6 py-4 text-center font-mono text-gray-400">
+                      {i + 1}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-bold text-gray-800">
+                        <EditableText
+                          value={material.title}
+                          onSave={(val) => {
+                            const defaults = [
+                              {
+                                year: "First Year",
+                                title: "MBA First Year",
+                                link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Ep9IXN-R6NhNpjFEeX2eXN4BB3ef78z5_OY0agqd7p2r1w?e=FcxQeI",
+                              },
+                              {
+                                year: "Final Year",
+                                title: "MBA Final Year",
+                                link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Epr9v88heupFrY6lkHFvq0UB6kC3oakk1ow7ukD3rfBEZQ?e=KIOGXZ",
+                              },
+                            ];
+                            const updated = [...t("courseMaterials", defaults)];
+                            updated[i] = { ...updated[i], title: val };
+                            updateData("courseMaterials", updated);
+                          }}
+                        />
+                      </span>
+                      {isEditing && (
+                        <div className="text-xs text-blue-500 mt-1">
+                          Link:{" "}
+                          <EditableText
+                            value={material.link}
+                            onSave={(val) => {
+                              const defaults = [
+                                {
+                                  year: "First Year",
+                                  title: "MBA First Year",
+                                  link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Ep9IXN-R6NhNpjFEeX2eXN4BB3ef78z5_OY0agqd7p2r1w?e=FcxQeI",
+                                },
+                                {
+                                  year: "Final Year",
+                                  title: "MBA Final Year",
+                                  link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Epr9v88heupFrY6lkHFvq0UB6kC3oakk1ow7ukD3rfBEZQ?e=KIOGXZ",
+                                },
+                              ];
+                              const updated = [
+                                ...t("courseMaterials", defaults),
+                              ];
+                              updated[i] = { ...updated[i], link: val };
+                              updateData("courseMaterials", updated);
+                            }}
+                          />
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <a
+                        href={material.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-ssgmce-orange hover:text-orange-700 font-medium text-xs border border-gray-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
+                      >
+                        <FaDownload className="text-xs" /> Access OneDrive
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+            Click on "Access OneDrive" to view and download course materials
+            from the respective year's shared folder.
+          </div>
+          {isEditing && (
+            <div className="p-4 border-t border-gray-100">
+              <button
+                onClick={() => {
+                  const defaults = [
+                    {
+                      year: "First Year",
+                      title: "MBA First Year",
+                      link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Ep9IXN-R6NhNpjFEeX2eXN4BB3ef78z5_OY0agqd7p2r1w?e=FcxQeI",
+                    },
+                    {
+                      year: "Final Year",
+                      title: "MBA Final Year",
+                      link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Epr9v88heupFrY6lkHFvq0UB6kC3oakk1ow7ukD3rfBEZQ?e=KIOGXZ",
+                    },
+                  ];
+                  const updated = [
+                    ...t("courseMaterials", defaults),
+                    { year: "New Year", title: "New Semester", link: "#" },
+                  ];
+                  updateData("courseMaterials", updated);
+                }}
+                className="px-4 py-2 bg-ssgmce-blue text-white rounded hover:bg-ssgmce-dark-blue transition-colors text-sm"
+              >
+                + Add Material
+              </button>
+            </div>
+          )}
+        </motion.div>
+      </div>
+    ),
+
     specializations: (
       <div className="space-y-6">
         <div className="bg-gradient-to-r from-blue-50 to-white p-6 rounded-lg border-l-4 border-ssgmce-orange">
@@ -2729,22 +4160,22 @@ const MBA = () => {
           {[
             {
               name: "Financial Management",
-              icon: "💰",
+              icon: "ðŸ’°",
               desc: "Focus on financial analysis, investment management, and corporate finance",
             },
             {
               name: "Marketing Management",
-              icon: "📊",
+              icon: "ðŸ“Š",
               desc: "Learn brand management, digital marketing, and consumer behavior",
             },
             {
               name: "Human Resource Management",
-              icon: "👥",
+              icon: "ðŸ‘¥",
               desc: "Specialize in talent management, organizational behavior, and HR analytics",
             },
             {
               name: "Business Analytics",
-              icon: "📈",
+              icon: "ðŸ“ˆ",
               desc: "Master data analytics, business intelligence, and decision science",
             },
           ].map((spec, index) => (
@@ -2763,6 +4194,1931 @@ const MBA = () => {
             </motion.div>
           ))}
         </div>
+      </div>
+    ),
+
+    activities: (
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+            <EditableText
+              value={t("activitiesTitle", "Curricular Activities")}
+              onSave={(val) => updateData("activitiesTitle", val)}
+            />
+          </h3>
+          <span className="hidden sm:inline-block text-sm text-gray-500 bg-gray-100 px-4 py-1.5 rounded-full">
+            {t("activities", defaultActivities).length} Activities
+          </span>
+        </div>
+
+        {/* Activity List */}
+        <div className="space-y-5">
+          {t("activities", defaultActivities)
+            .slice(0, activitiesVisible)
+            .map((activity, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.03, duration: 0.35 }}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden"
+              >
+                <div className="flex flex-col sm:flex-row">
+                  {/* Image */}
+                  <div
+                    className="sm:w-72 flex-shrink-0 cursor-pointer"
+                    onClick={() => setLightboxActivity(idx)}
+                  >
+                    {activity.image ? (
+                      <img
+                        src={activity.image}
+                        alt={activity.title}
+                        className="w-full h-48 sm:h-full object-contain bg-gray-50"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-48 sm:h-full flex items-center justify-center bg-gray-50">
+                        <FaCalendarAlt className="text-4xl text-gray-300" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Details */}
+                  <div className="flex-1 p-5 sm:p-6">
+                    {/* Date */}
+                    <span className="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded mb-3">
+                      <EditableText
+                        value={activity.date}
+                        onSave={(val) => updateActivity(idx, "date", val)}
+                      />
+                    </span>
+
+                    {/* Title */}
+                    <h4 className="text-lg font-bold text-gray-800 mb-4 leading-snug">
+                      <EditableText
+                        value={activity.title}
+                        onSave={(val) => updateActivity(idx, "title", val)}
+                        multiline
+                      />
+                    </h4>
+
+                    {/* Meta Info */}
+                    <div className="space-y-2.5 text-sm text-gray-600">
+                      <div className="flex items-start gap-2.5">
+                        <FaUsers className="text-blue-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="font-medium text-gray-700">
+                            Participants:{" "}
+                          </span>
+                          <EditableText
+                            value={activity.participants}
+                            onSave={(val) =>
+                              updateActivity(idx, "participants", val)
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2.5">
+                        <FaUserGraduate className="text-orange-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="font-medium text-gray-700">
+                            Organized by:{" "}
+                          </span>
+                          <EditableText
+                            value={activity.organizer}
+                            onSave={(val) =>
+                              updateActivity(idx, "organizer", val)
+                            }
+                            multiline
+                          />
+                        </div>
+                      </div>
+
+                      {(activity.resource || isEditing) && (
+                        <div className="flex items-start gap-2.5">
+                          <FaChalkboardTeacher className="text-green-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="font-medium text-gray-700">
+                              Resource Person:{" "}
+                            </span>
+                            <EditableText
+                              value={
+                                activity.resource ||
+                                (isEditing ? "Add Resource Person" : "")
+                              }
+                              onSave={(val) =>
+                                updateActivity(idx, "resource", val)
+                              }
+                              multiline
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Edit: image URL + delete */}
+                    {isEditing && (
+                      <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-gray-500">Image URL:</span>
+                          <EditableText
+                            value={activity.image || "Add image URL"}
+                            onSave={(val) => updateActivity(idx, "image", val)}
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            const arr = [...t("activities", defaultActivities)];
+                            arr.splice(idx, 1);
+                            updateData("activities", arr);
+                          }}
+                          className="text-xs text-red-500 hover:text-red-700"
+                        >
+                          Remove Activity
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+        </div>
+
+        {/* Show More / Show Less */}
+        {t("activities", defaultActivities).length > 6 && (
+          <div className="text-center pt-2">
+            <button
+              onClick={() =>
+                setActivitiesVisible((prev) =>
+                  prev >= t("activities", defaultActivities).length
+                    ? 6
+                    : prev + 6,
+                )
+              }
+              className="px-8 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
+            >
+              {activitiesVisible >= t("activities", defaultActivities).length
+                ? "Show Less"
+                : `Show More (${t("activities", defaultActivities).length - activitiesVisible} remaining)`}
+            </button>
+          </div>
+        )}
+
+        {/* Add Activity button (editing mode) */}
+        {isEditing && (
+          <div className="text-center">
+            <button
+              onClick={() => {
+                const updated = [
+                  ...t("activities", defaultActivities),
+                  {
+                    title: "New Activity",
+                    date: "Date",
+                    participants: "Participants",
+                    organizer: "Organizer",
+                    resource: "",
+                    image: "",
+                  },
+                ];
+                updateData("activities", updated);
+              }}
+              className="px-6 py-2.5 bg-ssgmce-blue text-white rounded-lg hover:bg-ssgmce-dark-blue transition-colors text-sm font-medium"
+            >
+              + Add Activity
+            </button>
+          </div>
+        )}
+
+        {/* Lightbox */}
+        <AnimatePresence>
+          {lightboxActivity !== null && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+              onClick={() => setLightboxActivity(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                className="relative max-w-4xl w-full max-h-[90vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  className="absolute -top-10 right-0 text-white text-2xl hover:text-gray-300 z-10"
+                  onClick={() => setLightboxActivity(null)}
+                >
+                  <FaTimes />
+                </button>
+
+                <img
+                  src={
+                    t("activities", defaultActivities)[lightboxActivity]?.image
+                  }
+                  alt={
+                    t("activities", defaultActivities)[lightboxActivity]?.title
+                  }
+                  className="w-full max-h-[80vh] object-contain rounded-lg"
+                />
+
+                <div className="text-white text-center mt-3 text-sm">
+                  {t("activities", defaultActivities)[lightboxActivity]?.title}
+                </div>
+
+                {/* Nav arrows */}
+                {lightboxActivity > 0 && (
+                  <button
+                    className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-3xl bg-black/40 rounded-full p-2 hover:bg-black/60"
+                    onClick={() =>
+                      setLightboxActivity((p) => Math.max(0, p - 1))
+                    }
+                  >
+                    <FaChevronLeft />
+                  </button>
+                )}
+                {lightboxActivity <
+                  t("activities", defaultActivities).length - 1 && (
+                  <button
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-white text-3xl bg-black/40 rounded-full p-2 hover:bg-black/60"
+                    onClick={() =>
+                      setLightboxActivity((p) =>
+                        Math.min(
+                          t("activities", defaultActivities).length - 1,
+                          p + 1,
+                        ),
+                      )
+                    }
+                  >
+                    <FaChevronRight />
+                  </button>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    ),
+
+    "industrial-visits": (
+      <div className="space-y-8">
+        <div className="text-center mb-8">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">
+            <FaIndustry className="inline-block mr-2 text-ssgmce-blue" />
+            Industry Interaction and Tours
+          </h3>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Industrial tours organized by the department for students of MBA
+            first and final years along with faculty members to provide
+            practical exposure to business operations and management practices.
+          </p>
+        </div>
+
+        {/* Industrial Visits Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-ssgmce-blue text-white">
+                <tr>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    S.N.
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold">
+                    Visit / Tour Details
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    Report
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {[
+                  {
+                    sn: "01",
+                    title: "Industrial Tour to KALASH SEEDS, Jalna",
+                    date: "January 2025",
+                    report:
+                      "/uploads/documents/mba/industrial-visits/mba_iv_kalash_seeds_jan2025.pdf",
+                  },
+                  {
+                    sn: "02",
+                    title:
+                      "Experiential Study Visit to Reliance Trends, Shegaon",
+                    date: "January 2025",
+                    report:
+                      "/uploads/documents/mba/industrial-visits/mba_iv_reliance_trends_jan2025.pdf",
+                  },
+                  {
+                    sn: "03",
+                    title: "Experiential Study Visit to Peter England, Shegaon",
+                    date: "January 2025",
+                    report:
+                      "/uploads/documents/mba/industrial-visits/mba_iv_peter_england_jan2025.pdf",
+                  },
+                  {
+                    sn: "04",
+                    title:
+                      "Visit to AAVISHKAR Social, Cultural and Specially Abled Organization, Shegaon",
+                    date: "December 2024",
+                    report:
+                      "/uploads/documents/mba/industrial-visits/mba_iv_aavishkar_dec2024.pdf",
+                  },
+                  {
+                    sn: "05",
+                    title: "Visit to Brahmakumari, Shegaon",
+                    date: "November 2024",
+                    report:
+                      "/uploads/documents/mba/industrial-visits/mba_iv_brahmakumari_nov2024.pdf",
+                  },
+                  {
+                    sn: "06",
+                    title:
+                      "Industrial Tour to Mahatma Gandhi Institute for Rural Industrialization (MGIRI), Wardha",
+                    date: "--",
+                    report:
+                      "/uploads/documents/mba/industrial-visits/mba_iv_mgiri_wardha.pdf",
+                  },
+                  {
+                    sn: "07",
+                    title:
+                      "Industrial Tour to Super Thermal Power, Chandrapur and Anandwan, Warora",
+                    date: "04/02/2019 to 05/02/2019",
+                    report:
+                      "/uploads/documents/mba/industrial-visits/mba_iv_chandrapur_warora_feb2019.pdf",
+                  },
+                  {
+                    sn: "08",
+                    title:
+                      "Industrial Visit to Jain Irrigation and Gandhi Research Foundation, Jalgaon",
+                    date: "22/10/2018",
+                    report:
+                      "/uploads/documents/mba/industrial-visits/mba_iv_jain_irrigation_jalgaon_2018.pdf",
+                  },
+                  {
+                    sn: "09",
+                    title:
+                      "Industrial Tour to Adani Port Special Economic Zone, Mundra, Kutch, Gujarat",
+                    date: "15/03/2017 to 18/03/2017",
+                    report: null,
+                  },
+                ].map((visit, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-900">
+                      {visit.sn}
+                    </td>
+                    <td className="px-6 py-4 text-gray-700">{visit.title}</td>
+                    <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                      {visit.date}
+                    </td>
+                    <td className="px-6 py-4">
+                      {visit.report ? (
+                        <a
+                          href={visit.report}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-ssgmce-blue hover:underline text-xs"
+                        >
+                          <FaFileAlt className="text-xs" />
+                          View Report
+                        </a>
+                      ) : (
+                        <span className="text-gray-400 text-xs">--</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    ),
+
+    "guest-lectures": (
+      <div className="space-y-8">
+        <h3 className="text-2xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2">
+          Corporate Leader Speak's
+        </h3>
+
+        {[
+          {
+            session: "Session 2024-25",
+            entries: [
+              {
+                speaker: "Mrs. Sudha Murthy Ji",
+                topic: "A Philanthropist Speaks on Lessons from Life",
+                report:
+                  "/uploads/documents/mba_corporate_leader_speaks/Session_2024-25_Mrs._Sudha_Murthy_Ji.pdf",
+              },
+              {
+                speaker:
+                  "Mr. Chirag Lasod, Jain Exports, Neemuch, M.P.; Mr. Rajesh Jadhav, Founder, Surya Consumer Products, MIDC, Buldana; Mr. Soham Belokar, District Officer, PMSA Udyog, Buldana",
+                topic: "Guest Talk",
+                report:
+                  "/uploads/documents/mba_corporate_leader_speaks/Session_2024-25_Mr._Chirag_Lasod,_Jain_Exports,_Neemuch,_M._P._Mr._Rajesh_Jadhav,_founder,_Surya_Consumer_Products,_MIDC.pdf",
+              },
+            ],
+          },
+          {
+            session: "Session 2020-22",
+            entries: [
+              {
+                speaker:
+                  "Mr. Shrikant P. Naphade, Head, Procurement and Contract Management, Tata Power",
+                topic: "Work life - An enquiry",
+              },
+              {
+                speaker:
+                  "Mr. Gaurav Date, Training Manager, Maharashtra EBSCO India",
+                topic: "Expanding Horizons with true knowledge",
+              },
+              {
+                speaker:
+                  "Mr. Amol Sawant, Founder - Nisarg Katta, Member, Tiger Cell, Joint Secretary, Satpuda Foundation",
+                topic: "The Nature and Us",
+              },
+              {
+                speaker: "Mrs. Mohini Modak, Founder - Webmasterkey, Akola",
+                topic: "Digital Marketing",
+              },
+              {
+                speaker:
+                  "Mr. K. K. Dave, Dean Academics, Pacific University, Rajasthan",
+                topic: "Leadership",
+              },
+              {
+                speaker:
+                  "Dr. Devesh Kumar Sharma, Senior Vice President, Credit Suisse, Geneva, Switzerland",
+                topic: "COVID 19 - India and future",
+              },
+              {
+                speaker:
+                  "D. Chandramohan Swamy, National Head - Operations, WardWiz India Solutions Pvt. Ltd., Pune",
+                topic: "Winning skills to succeed in corporate world",
+              },
+              {
+                speaker:
+                  "Dr. Ajay Trivedi, Principal and Dean, Dept of Commerce, Parul University, Vadodara, Gujarat",
+                topic: "New Perspectives of Management",
+              },
+            ],
+          },
+          {
+            session: "Session 2018-2020",
+            entries: [
+              {
+                speaker:
+                  "Mr. Subhash Gore, Secretary, Saturday Club Global Trust, Akola Chapter",
+                topic: "Opportunities in the digital world",
+              },
+              {
+                speaker:
+                  "Dr. Ajay Trivedi, Professor and Dean, Faculty of Commerce, Parul University, Baroda, Gujarat",
+                topic: 'Webinar on "New Perspectives of Management"',
+              },
+              {
+                speaker:
+                  "Mr. Prasanna Dharmadhikari, Chembond Chemicals Ltd., Mumbai",
+                topic:
+                  "Opportunities in HR, Skills required for HR personnel and the advanced HR software",
+              },
+              {
+                speaker: "Mr. Prasanna Dharmadhikari, ChemBond, Mumbai",
+                topic: "Career Avenues and Emerging trends in HR",
+              },
+              {
+                speaker:
+                  "Mr. Vaibhav Nichit, Talent Acquisition Partner, HDFC, Nagpur",
+                topic: "Pre-requisite for a good job",
+              },
+              {
+                speaker: "Mr. Hemand Sharma, VNURT, Bengaluru",
+                topic:
+                  "VNURT Role for project and platform to MBA (Motivation for job)",
+              },
+              {
+                speaker: "Mr. Swapnil Meshram, Capgemini, Pune",
+                topic: "Latest Trends / Additional Important",
+              },
+              {
+                speaker: "Mr. Prasad Khanzode, Professor, LTM, Wani",
+                topic: "Motivation within you",
+              },
+              {
+                speaker: "Mr. Kurien Daniel, Regional Vice President, ISTD",
+                topic: "Pre-requisites at workplace in current Era",
+              },
+              {
+                speaker:
+                  "Mr. Vinod Dubey, Branch Head, SBI Life Insurance, Khamgaon",
+                topic: "Career Opportunities - Seminar with SBI Life Insurance",
+              },
+              {
+                speaker: "Mr. Rajiv Jawale, HR Manager, Kalash Seeds, Jalna",
+                topic: "Perception about ways of a successful career",
+              },
+              {
+                speaker:
+                  "Mr. Subhash Gore, Saturday Club Global Trust, Akola Chapter",
+                topic: "Entrepreneurship - Prerequisite",
+              },
+              {
+                speaker: "Mr. Shekhar Rajguru, JPM - Jio Reliance, Shegaon",
+                topic: "Marketing and Distribution",
+              },
+              {
+                speaker:
+                  "Miss Sweta Sharma, Radio Jockey, Radio Orange, Nagpur",
+                topic:
+                  "Distinguished career opportunities for management aspirant",
+              },
+              {
+                speaker:
+                  "Mr. Swapnil Meshram, Capgemini Technology Services, Pune",
+                topic: "Fresher's enquiry - A thorough enquiry",
+              },
+              {
+                speaker: "Mrs. Sudha Murthy, Chairperson, Infosys Foundation",
+                topic: '"A Philanthropist Speaks - Lessons from Life"',
+              },
+              {
+                speaker:
+                  "Mr. Shekhar Rajguru, General Manager, Reliance Jio Centre, Shegaon",
+                topic: "General Management",
+              },
+              {
+                speaker: "Mr. Mayur Kalore, Cybernetix, Jaipur, Rajasthan",
+                topic: "Pre-requisites for entering corporate world",
+              },
+              {
+                speaker: "Mr. Rajiv Pande, GSM, Reliance Jio Centre Khamgaon",
+                topic: "Career growth and Motivation",
+              },
+            ],
+          },
+          {
+            session: "Session 2016-17",
+            entries: [
+              {
+                speaker:
+                  "Mr. Shekhar Rajguru, General Manager, Reliance Jio Centre, Shegaon",
+                topic: "Expectations of Corporate from fresher",
+              },
+              {
+                speaker:
+                  "Mr. Porasnath Singh, Project Manager, Reliance Jio Centre, Shegaon",
+                topic: "Opportunities in Telecom industry for MBA students",
+              },
+              {
+                speaker:
+                  "Mr. Piyush Nagda, CEO & Cofounder, Talking Asset Eduventure Pvt. Ltd., Thane",
+                topic:
+                  "Emerging trends in capital market & career opportunities; Sales as a career choice; Investor awareness programme",
+              },
+              {
+                speaker: "Mr. Nikhil Nair, NSE, Mumbai",
+                topic: "Career opportunities in Finance",
+              },
+              {
+                speaker:
+                  "Mr. Subhash Gore, G.K. Intelligent Systems Pvt. Ltd., Saturday Club Global Trust, Akola",
+                topic: "Digital Marketing - I",
+              },
+              {
+                speaker:
+                  "Ms. Mohini Modak, Training Division, Webmaster Key, Akola",
+                topic: "Digital Marketing - II",
+              },
+              {
+                speaker:
+                  "Swami Tanmayanandji, Secretary, Vivekanand Sewashram, Ambikapur, Chhattisgarh",
+                topic: "Bhagwad Gita for the Youth; Karmayoga",
+              },
+              {
+                speaker:
+                  "Swami Tanmayanandji, Secretary, Vivekanand Sewashram, Ambikapur, Chhattisgarh",
+                topic: 'Ancient Indian Education System; "Bhaj Govindam" & Q/A',
+              },
+              {
+                speaker:
+                  "Mr. Uday Patil, Business Head, Bajaj Finserve Ltd., Pune",
+                topic: "General Management & Motivation - I",
+              },
+              {
+                speaker:
+                  "Mr. Pankaj Yadav, HR Manager, Bajaj Finserve Ltd., Pune",
+                topic: "General Management & Motivation - II",
+              },
+              {
+                speaker:
+                  "Mr. Nitin Wankhade, V.P. - Client Services, Value Momentum Pvt. Ltd., Hyderabad",
+                topic:
+                  "Opportunities for MBA in IT & building broad skills for professional development",
+              },
+              {
+                speaker: "Mr. Uday Sampat, Marketing & Sales Manager, Nashik",
+                topic: "Leaders & Managers",
+              },
+              {
+                speaker:
+                  "Mr. Mayur Kalore, Assist. Sales Manager, Cybernetix, Gujarat",
+                topic: "Motivation and expectation of corporate world",
+              },
+              {
+                speaker:
+                  "Mr. Vivek Dahake, Head Process Development, Essel Propack Ltd., Thane",
+                topic: "Project management and Strategic management",
+              },
+              {
+                speaker: "Ms. Dipika Kolhe",
+                topic: "How to face Interview?",
+              },
+              {
+                speaker:
+                  "Mr. Ravindra Adhau, Sr. Credit Analyst, John Deere Finance, Pune",
+                topic: "Inside you!",
+              },
+              {
+                speaker: "Mr. Rajiv Jawale, Proprietor, BeBraaand, Jalna",
+                topic:
+                  "Branding Concepts; Need of single roof of branding (Umbrella)",
+              },
+              {
+                speaker:
+                  "Mr. Samadhan Damdhar, Marketing Manager, BeBraaand, Jalna",
+                topic: "Promotional means and their uses",
+              },
+            ],
+          },
+        ].map((sessionGroup, sIdx) => (
+          <div
+            key={sIdx}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6"
+          >
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3">
+              <h4 className="text-white font-bold text-lg">
+                {sessionGroup.session}
+              </h4>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200 w-12">
+                      Sr.
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                      Name of Speaker
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                      Topic
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200 w-28">
+                      Report
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {sessionGroup.entries.map((entry, eIdx) => (
+                    <tr
+                      key={eIdx}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 font-medium text-center">
+                        {eIdx + 1}
+                      </td>
+                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                        {entry.speaker}
+                      </td>
+                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                        {entry.topic}
+                      </td>
+                      <td className="px-6 py-3 text-sm border border-gray-200 text-center">
+                        {entry.report ? (
+                          <a
+                            href={entry.report}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-ssgmce-blue hover:text-ssgmce-orange hover:underline font-medium text-xs"
+                          >
+                            <FaFileAlt className="text-xs" />
+                            View
+                          </a>
+                        ) : (
+                          <span className="text-gray-400 text-xs">--</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </div>
+    ),
+
+    mous: (
+      <div className="space-y-8">
+        <div className="text-center mb-8">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">MoUs</h3>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Strategic partnerships with industry leaders and academic
+            institutions to enhance learning outcomes and provide students with
+            real-world exposure.
+          </p>
+        </div>
+
+        {/* Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-ssgmce-blue text-white">
+                <tr>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold">
+                    Name of the Organization
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    MOU Signing Date
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    MOU Copy / Report
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {[
+                  {
+                    no: "1.",
+                    org: "Bajaj Finance Limited and Bajaj Finserv Limited",
+                    date: "16-June-2025",
+                    report:
+                      "/uploads/documents/mba_mous/MOU_Bajaj_Finance_2025.pdf",
+                  },
+                  {
+                    no: "2.",
+                    org: "Kalash Seeds Pvt. Ltd., Mantha Road, Jalna, M.S.",
+                    date: "04-Jan-2025",
+                    report:
+                      "/uploads/documents/mba_mous/MOU_Kalash_Seeds_2025.pdf",
+                  },
+                  {
+                    no: "3.",
+                    org: "Saturday Club Global Trust — Co-operation in Research and Education",
+                    date: "12-Jan-2024",
+                    report:
+                      "/uploads/documents/mba_mous/MOU_Saturday_Club_Global_Trust_2024.pdf",
+                  },
+                  {
+                    no: "4.",
+                    org: "Circular Angel Pvt Ltd., Mumbai — Research, Education and Real-time Consultancy",
+                    date: "13-Jan-2024",
+                    report:
+                      "/uploads/documents/mba_mous/MOU_Circular_Angel_2024.pdf",
+                  },
+                  {
+                    no: "5.",
+                    org: "Leben Life Sciences, Akola",
+                    date: "17-Feb-2023",
+                    report:
+                      "/uploads/documents/mba_mous/MOU_Leben_Life_Sciences_2023.pdf",
+                  },
+                  {
+                    no: "6.",
+                    org: "Lyceum of the Philippines University — Laguna",
+                    date: "14-July-2022",
+                    report:
+                      "/uploads/documents/mba_mous/MOU_LPU_Laguna_Philippines_2022.pdf",
+                  },
+                ].map((mou, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-900">
+                      {mou.no}
+                    </td>
+                    <td className="px-6 py-4 text-gray-700">{mou.org}</td>
+                    <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                      {mou.date}
+                    </td>
+                    <td className="px-6 py-4">
+                      <a
+                        href={mou.report}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-orange font-semibold text-sm transition-colors"
+                      >
+                        <FaFileAlt className="mr-1.5" />
+                        View Document
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    ),
+
+    workshops: (
+      <div className="space-y-8">
+        <h3 className="text-2xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2">
+          MDP's, FDP's and Workshop
+        </h3>
+
+        <p className="text-gray-600 text-sm leading-relaxed">
+          SEBI sponsored Financial Education Workshops conducted by Dr. H. M.
+          Jha "Bidyarthi", a SEBI (Securities Exchange Board of India)
+          empanelled Resource Person during current year
+        </p>
+
+        {/* MDP's, CEP's and FDP's */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3">
+            <h4 className="text-white font-bold text-lg">
+              MDP's, CEP's and FDP's
+            </h4>
+            <p className="text-orange-100 text-xs mt-1">
+              Programs conducted under the auspices of MSME DI Nagpur
+            </p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                    Title of the Program
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                    Faculty Coordinator
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                    No. of Beneficiaries
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {[
+                  {
+                    title:
+                      "Management Development Program on Financial Management",
+                    coordinator: "Prof. S. M. Mishra",
+                    participants: "20",
+                  },
+                  {
+                    title: "Business Skill Development Program",
+                    coordinator: "Prof. P. M. Kuchar",
+                    participants: "25",
+                  },
+                  {
+                    title: "Entrepreneurship Development Program",
+                    coordinator: "Prof. L.B. Deshmukh",
+                    participants: "25",
+                  },
+                  {
+                    title: "Industrial Motivation Campaign",
+                    coordinator: "Prof. M. L. Herode",
+                    participants: "120",
+                  },
+                ].map((item, i) => (
+                  <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                      {item.title}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                      {item.coordinator}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 text-center">
+                      {item.participants}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* FDP */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3">
+            <h4 className="text-white font-bold text-lg">
+              Faculty Development Program (FDP)
+            </h4>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                    Title of the Program
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                    Faculty Coordinator
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                    No. of Participants
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {[
+                  {
+                    title:
+                      "Case Development and Analysis in Management Education",
+                    coordinator: "Prof. M. L. Herode",
+                    participants: "26",
+                  },
+                ].map((item, i) => (
+                  <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                      {item.title}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                      {item.coordinator}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 text-center">
+                      {item.participants}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Workshops */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-3">
+            <h4 className="text-white font-bold text-lg">Workshops</h4>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200 w-12">
+                    Sr.
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                    Title of the Workshop
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                    Faculty Coordinator
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                    No. of Participants
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200 w-28">
+                    Report
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {[
+                  {
+                    title: "Workshop on Microsoft Excel",
+                    coordinator: "Dr. Bilal T. Husain",
+                    participants: "17 students cleared",
+                    report:
+                      "/uploads/documents/mba_workshops/workshops_Workshop_on_Microsoft_Excel.pdf",
+                  },
+                  {
+                    title:
+                      "Accelerated Training and Development Program (ALDP)",
+                    coordinator: "Prof. Wechansing Suliya",
+                    participants: "36 students participated",
+                    report:
+                      "/uploads/documents/mba_workshops/workshops_Accelerated_training_and_development_program(ALDP).pdf",
+                  },
+                  {
+                    title:
+                      "International Workshop on Business Analytics by DBAR, SSGMCE-Shegaon and Lyceum of the Philippines University - Laguna",
+                    coordinator: "Dr. Bilal T. Husain",
+                    participants: "54 students participated",
+                    report:
+                      "/uploads/documents/mba_workshops/workshops_International_Workshop_on_Business_Analytics_by_DBAR,_SSGMCE-Shegaon_and_Lyceum_of_the_Philippines_University-_Laguna.pdf",
+                  },
+                  {
+                    title: "Workshop on Holistic Management",
+                    coordinator: "Dr. Mayur A. Dande",
+                    participants: "58 students participated",
+                    report:
+                      "/uploads/documents/mba_workshops/workshops_Workshop_on_Holistic_Management.pdf",
+                  },
+                  {
+                    title: "A Session on Digital Marketing",
+                    coordinator:
+                      "Mr. Subhash Gore, Secretary, Saturday Club Global Trust, Akola Chapter",
+                    participants: "MBA Department students participated",
+                    report:
+                      "/uploads/documents/mba_workshops/workshops_A_SESSION_ON_DIGITAL_MARKETING.pdf",
+                  },
+                  {
+                    title:
+                      "A Session on Website Creation and Creative Social Media Use",
+                    coordinator:
+                      "Mr. Subhash Gore, Saturday Club Global Trust, Akola Chapter; Mrs. Mohini Modak, Founder, Webmasterkey, Akola",
+                    participants: "MBA Department students participated",
+                    report:
+                      "/uploads/documents/mba_workshops/workshops_A_SESSION_ON_WEBSITE_CREATION_AND_CREATIVE_SOCIAL_MEDIA_USE.pdf",
+                  },
+                ].map((item, i) => (
+                  <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 font-medium text-center">
+                      {i + 1}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                      {item.title}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                      {item.coordinator}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                      {item.participants}
+                    </td>
+                    <td className="px-6 py-3 text-sm border border-gray-200 text-center">
+                      {item.report ? (
+                        <a
+                          href={item.report}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-ssgmce-blue hover:text-ssgmce-orange hover:underline font-medium text-xs"
+                        >
+                          <FaFileAlt className="text-xs" />
+                          View
+                        </a>
+                      ) : (
+                        <span className="text-gray-400 text-xs">--</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    ),
+
+    consultancy: (
+      <div className="space-y-8">
+        <h3 className="text-2xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2">
+          Consultancy
+        </h3>
+
+        {[
+          {
+            year: "2018 - 2019",
+            entries: [
+              {
+                org: "Securities Exchange Board Of India, Mumbai",
+                faculty: 'Dr. H. M. Jha "Bidyarthi"',
+                remarks: "Financial Awareness Workshop",
+              },
+              {
+                org: "Kalash Seeds, Jalna",
+                faculty: "Prof. M.A. Dande",
+                remarks: "Assistance in Sales Promotion",
+              },
+              {
+                org: "Yadav Academy",
+                faculty: "Prof. M.A. Dande",
+                remarks: "Career Counselling",
+              },
+              {
+                org: "Saraswati College, Shegaon",
+                faculty:
+                  "Dr. P.V. Bokad, Dr. L.B. Deshmukh, Prof. S.M. Mishra, Prof. V.V. Patil, Prof. W.Z. Suliya",
+                remarks: "Regular Classes Of BBA",
+              },
+              {
+                org: "Nutan Udyog, Shegaon",
+                faculty:
+                  'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. V.V. Patil',
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Rathi Cycles, Khamgaon",
+                faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Kunal Electronics, Khamgaon",
+                faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Gurudev Motor Driving School, Shegaon",
+                faculty:
+                  "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Reliance Jio, Shegaon",
+                faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
+                remarks: "Marketing Assistance",
+              },
+            ],
+          },
+          {
+            year: "2017 - 2018",
+            entries: [
+              {
+                org: "Securities Exchange Board Of India, Mumbai",
+                faculty: 'Dr. H. M. Jha "Bidyarthi"',
+                remarks: "Financial Awareness Workshop",
+              },
+              {
+                org: "Kalash Seeds, Jalna",
+                faculty:
+                  'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. S.M. Mishra, Prof. P.M. Kuchar',
+                remarks: "Assistance in Sales Promotion",
+              },
+              {
+                org: "Yadav Academy",
+                faculty: "Prof. M.A. Dande",
+                remarks: "Career Counselling",
+              },
+              {
+                org: "Saraswati College, Shegaon",
+                faculty:
+                  "Dr. P.V. Bokad, Dr. L.B. Deshmukh, Prof. S.M. Mishra, Prof. V.V. Patil, Prof. W.Z. Suliya",
+                remarks: "Regular Classes Of BBA",
+              },
+              {
+                org: "Nutan Udyog, Shegaon",
+                faculty:
+                  'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. V.V. Patil',
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Mandar Sports, Shegaon",
+                faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Sarda's Career Point",
+                faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Maggi Corner, Shegaon",
+                faculty:
+                  "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Hot Chips, Shegaon",
+                faculty: "Prof. V.V. Patil, Prof. W.Z. Suliya",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Kanchan Electronics, Akola",
+                faculty: "Prof. V.V. Patil, Prof. W.Z. Suliya",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Singar Sadan, Khamgaon",
+                faculty: "Prof. W.Z. Suliya",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Bappa Dabeli, Akola",
+                faculty:
+                  "Prof. V.V. Patil, Prof. W.Z. Suliya, Prof. M.A. Dande",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Indira Co. Op. Society, Shegaon",
+                faculty:
+                  "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Hend Suzuki",
+                faculty:
+                  "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "IPL Auction",
+                faculty:
+                  "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
+                remarks: "Event Management",
+              },
+            ],
+          },
+          {
+            year: "2016 - 2017",
+            entries: [
+              {
+                org: "Securities Exchange Board of India, Mumbai",
+                faculty: 'Dr. H. M. Jha "Bidyarthi"',
+                remarks: "Post TDS, 15 FE Workshops conducted",
+              },
+              {
+                org: "Consumer Guidance Society of India, Mumbai",
+                faculty: 'Dr. H. M. Jha "Bidyarthi", Prof. S. M. Mishra',
+                remarks: "Consumer Awareness Workshop conducted",
+              },
+              {
+                org: "SNG Packaging Pvt. Ltd., Khamgaon",
+                faculty: "Dr. P. V. Bokad and Prof. W. Z. Suliya",
+                remarks: "HR Consultancy",
+              },
+              {
+                org: "M. M. Industries, Akola",
+                faculty:
+                  "Prof. M. A. Dande, Prof. P. M. Kuchar and Prof. S. M. Mishra",
+                remarks: "HR Consultancy",
+              },
+              {
+                org: "Web Master Key, Akola (Subhash Gore)",
+                faculty: "Prof. M. A. Dande",
+                remarks: "Summer Internship by students (03)",
+              },
+              {
+                org: "Saraswati College, Shegaon",
+                faculty:
+                  "Prof. L. B. Deshmukh, Prof. S. M. Mishra and Prof. V. V. Patil",
+                remarks: "Regular classes of BBA",
+              },
+              {
+                org: "Saraswati College, Shegaon",
+                faculty:
+                  "Prof. M. A. Dande, Prof. P. M. Kuchar and Prof. S. M. Mishra",
+                remarks: "MBA Coaching classes",
+              },
+              {
+                org: "Reliance Jio, Shegaon",
+                faculty: "Prof. S. M. Mishra",
+                remarks: "Summer Internship by students (03)",
+              },
+              {
+                org: "TNS India (Mrs. Usha Ingole)",
+                faculty: "Prof. M. A. Dande",
+                remarks: "Logo and Product launch consultancy",
+              },
+              {
+                org: "Internshala",
+                faculty: "Prof. M. A. Dande",
+                remarks:
+                  "Content writing, Career counseling talk, Nursery consultancy",
+              },
+            ],
+          },
+          {
+            year: "2015 - 2016",
+            entries: [
+              {
+                org: "Securities Exchange Board Of India, Mumbai",
+                faculty: 'Dr. H. M. Jha "Bidyarthi"',
+                remarks: "Financial Awareness Workshop",
+              },
+              {
+                org: "Kalash Seeds, Jalna",
+                faculty:
+                  'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Dr. P.V. Bokad, Prof. V.V. Patil',
+                remarks: "Assistance in Sales Promotion",
+              },
+              {
+                org: "Bajaj Finserv",
+                faculty: "Prof. S.M. Mishra",
+                remarks: "Summer Internship Projects",
+              },
+              {
+                org: "Reliance Jio",
+                faculty: "Prof. S.M. Mishra",
+                remarks: "Summer Internship Projects",
+              },
+              {
+                org: "Havells - Jagadamba Services And Care",
+                faculty:
+                  'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. V.V. Patil',
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Buldana Urban Co Op Cr So, Shegaon",
+                faculty: "Prof. P.M. Kuchar",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "KFC",
+                faculty:
+                  'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. P.M. Kuchar',
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Hend Suzuki",
+                faculty:
+                  'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. P.M. Kuchar',
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "KTM Bikes, Akola",
+                faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Sakshi Constructions, Shegaon",
+                faculty: "Dr. L.B. Deshmukh, Prof. W.Z. Suliya",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "Nutan Udyog, Shegaon",
+                faculty: "Dr. L.B. Deshmukh, Prof. W.Z. Suliya",
+                remarks: "Marketing Assistance",
+              },
+              {
+                org: "ACC Cement",
+                faculty: "Prof. V. V. Patil, Prof. W.Z. Suliya",
+                remarks: "Marketing Assistance",
+              },
+            ],
+          },
+        ].map((yearGroup, yIdx) => (
+          <div
+            key={yIdx}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6"
+          >
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3">
+              <h4 className="text-white font-bold text-lg">
+                Consultancy {yearGroup.year}
+              </h4>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200 w-12">
+                      Sr.
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                      Consulting Organization
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                      Consultant Faculty
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                      Remarks
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {yearGroup.entries.map((entry, eIdx) => (
+                    <tr
+                      key={eIdx}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 font-medium text-center">
+                        {eIdx + 1}
+                      </td>
+                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 font-medium">
+                        {entry.org}
+                      </td>
+                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                        {entry.faculty}
+                      </td>
+                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                        {entry.remarks}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </div>
+    ),
+
+    patents: (
+      <div className="space-y-8">
+        <div className="flex flex-wrap space-x-1 bg-gray-100 p-1 rounded-lg w-fit mb-6">
+          {[
+            "patents",
+            "publications",
+            "conferences",
+            "books",
+            "copyrights",
+          ].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setPatentSubTab(tab)}
+              className={`px-4 py-2 text-sm font-bold rounded-md transition-all capitalize ${patentSubTab === tab ? "bg-white text-ssgmce-blue shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              {tab === "patents"
+                ? "Patents"
+                : tab === "publications"
+                  ? "Publications"
+                  : tab === "conferences"
+                    ? "Conferences"
+                    : tab === "books"
+                      ? "Books"
+                      : "Copyrights"}
+            </button>
+          ))}
+        </div>
+
+        {/* Report PDFs Download Links */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+          <h4 className="text-sm font-bold text-ssgmce-blue mb-2 flex items-center">
+            <FaDownload className="mr-2" /> Year-wise Detailed Reports (PDF)
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {researchYears.map((year) => (
+              <a
+                key={year}
+                href={`/uploads/documents/mba_publications/MBA_publication_${year}.pdf`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-3 py-1.5 text-xs font-bold bg-white text-ssgmce-blue rounded-lg border border-blue-200 hover:bg-ssgmce-blue hover:text-white transition-all"
+              >
+                <FaFileAlt className="mr-1.5" /> {year}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {patentSubTab === "patents" ? (
+            <motion.div
+              key="patents"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaLightbulb className="text-yellow-500 mr-2" />
+                  Patents Granted & Published
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultMbaPatents[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No patents recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider w-1/3">
+                            Title of Invention
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Application No.
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Inventors
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultMbaPatents[researchYear] || []).map(
+                          (pat, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-green-50/30 transition-colors group"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400 group-hover:text-green-600">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {pat.title}
+                                <span
+                                  className={`ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${pat.status === "Granted" || pat.status === "Copyright Awarded" ? "bg-green-100 text-green-700" : pat.status === "Registered" ? "bg-blue-100 text-blue-700" : "bg-yellow-100 text-yellow-700"}`}
+                                >
+                                  {pat.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 font-mono text-xs text-gray-500 whitespace-nowrap text-right">
+                                {pat.id}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 italic text-right">
+                                {pat.inventors}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : patentSubTab === "publications" ? (
+            <motion.div
+              key="publications"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaChartLine className="text-ssgmce-orange mr-2" />
+                  Research Publications (Journals)
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultMbaPublications[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No publications recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Paper
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Authors
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Journal Details
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Link
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultMbaPublications[researchYear] || []).map(
+                          (pub, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-indigo-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {pub.title}
+                              </td>
+                              <td className="px-6 py-4 text-gray-600">
+                                {pub.authors}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 italic text-xs">
+                                {pub.journal}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                {pub.link ? (
+                                  <a
+                                    href={pub.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-dark-blue font-bold px-3 py-1 bg-blue-50 rounded-lg transition-colors border border-blue-100"
+                                  >
+                                    View{" "}
+                                    <FaExternalLinkAlt className="ml-2 text-[10px]" />
+                                  </a>
+                                ) : (
+                                  <span className="text-gray-400 text-xs">
+                                    -
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : patentSubTab === "conferences" ? (
+            <motion.div
+              key="conferences"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaChalkboardTeacher className="text-indigo-500 mr-2" />
+                  Conference Publications
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultMbaConferences[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No conference publications recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Paper
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Authors
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Conference Details
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Link
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultMbaConferences[researchYear] || []).map(
+                          (conf, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-indigo-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {conf.title}
+                              </td>
+                              <td className="px-6 py-4 text-gray-600">
+                                {conf.authors}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 italic text-xs">
+                                {conf.journal}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                {conf.link ? (
+                                  <a
+                                    href={conf.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-dark-blue font-bold px-3 py-1 bg-blue-50 rounded-lg transition-colors border border-blue-100"
+                                  >
+                                    View{" "}
+                                    <FaExternalLinkAlt className="ml-2 text-[10px]" />
+                                  </a>
+                                ) : (
+                                  <span className="text-gray-400 text-xs">
+                                    -
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : patentSubTab === "copyrights" ? (
+            <motion.div
+              key="copyrights"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaAward className="text-purple-500 mr-2" />
+                  Copyrights
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultMbaCopyrights[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No copyrights recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Name of Faculty
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Work
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultMbaCopyrights[researchYear] || []).map(
+                          (cr, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-purple-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {cr.name}
+                              </td>
+                              <td className="px-6 py-4 text-gray-700">
+                                {cr.title}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700">
+                                  {cr.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : patentSubTab === "books" ? (
+            <motion.div
+              key="books"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaBook className="text-teal-500 mr-2" />
+                  Books / Book Chapters Published
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultMbaBooks[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No books published for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Author(s)
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Publisher
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            ISBN
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultMbaBooks[researchYear] || []).map(
+                          (book, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-teal-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {book.name}
+                                {book.coAuthors ? `, ${book.coAuthors}` : ""}
+                              </td>
+                              <td className="px-6 py-4 text-gray-700">
+                                {book.title}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 italic text-xs">
+                                {book.details}
+                              </td>
+                              <td className="px-6 py-4 font-mono text-xs text-gray-500 text-right">
+                                {book.isbn}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </div>
     ),
   };
