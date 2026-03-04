@@ -31,6 +31,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaExternalLinkAlt,
+  FaFileAlt,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -114,12 +115,23 @@ const CSE = () => {
   const [showAllPos, setShowAllPos] = useState(false);
   const [expandedSemester, setExpandedSemester] = useState(null);
   const [researchTab, setResearchTab] = useState("patents");
-  const researchYears = ["2024-25", "2023-24", "2022-23", "2021-22", "2020-21", "2019-20", "2018-19"];
+  const researchYears = [
+    "2024-25",
+    "2023-24",
+    "2022-23",
+    "2021-22",
+    "2020-21",
+    "2019-20",
+    "2018-19",
+  ];
   const [projectYear, setProjectYear] = useState("2024-25");
+  const [studentProjectYear, setStudentProjectYear] = useState("2024-25");
   const [researchYear, setResearchYear] = useState("2024-25");
   const [placementYear, setPlacementYear] = useState(null);
   const [internshipYear, setInternshipYear] = useState("2024-25");
   const [prideTab, setPrideTab] = useState("gate");
+  const [achievementTab, setAchievementTab] = useState("faculty");
+  const [certificateLightbox, setCertificateLightbox] = useState(null);
 
   // State for Curricular Activities section
   const [activitiesVisible, setActivitiesVisible] = useState(6);
@@ -240,11 +252,11 @@ const CSE = () => {
     }
   };
 
-  // Reset project year when switching to student-projects tab
+  // Reset Student's Best Projects year when switching to that tab
   useEffect(() => {
     if (activeTab === "student-projects") {
       window.scrollTo(0, 0);
-      setProjectYear("2024-25");
+      setStudentProjectYear("2024-25");
     }
     if (activeTab === "activities") {
       setActivitiesVisible(6);
@@ -1985,9 +1997,11 @@ const CSE = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {t(
-                  `ugProjects.records.${projectYear}`,
-                  defaultUgProjects[projectYear],
+                {(
+                  t(
+                    `ugProjects.records.${projectYear}`,
+                    defaultUgProjects[projectYear],
+                  ) || []
                 ).map((project, i) => (
                   <tr key={i} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-center font-mono text-gray-400 text-xs">
@@ -2072,99 +2086,165 @@ const CSE = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex"
+              className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300  flex relative"
             >
+              {/* Delete Button */}
+              {isEditing && (
+                <button
+                  onClick={() => {
+                    const updated = t("faculty", defaultFaculty).filter(
+                      (_, idx) => idx !== i,
+                    );
+                    updateData("faculty", updated);
+                  }}
+                  className="absolute top-2 right-2 z-10 bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md hover:bg-red-600 transition-colors"
+                  title="Remove faculty member"
+                >
+                  Remove
+                </button>
+              )}
+
               {/* Image Area - Fixed Width */}
-              <div className="w-36 sm:w-44 min-h-[200px] bg-gray-50 flex-shrink-0 relative overflow-hidden border-r border-gray-100 flex items-center justify-center">
-                <EditableImage
-                  src={photoMap[fac.photo] || fac.photo}
-                  onSave={(val) => updateFaculty(i, "photo", val)}
-                  alt={fac.name}
-                  className="w-full h-full object-contain transition-transform group-hover:scale-105 duration-500"
-                />
+              <div className="w-32 sm:w-40 bg-gray-50 flex-shrink-0 relative overflow-hidden border-r border-gray-100">
+                {fac.photo ? (
+                  <EditableImage
+                    src={photoMap[fac.photo] || fac.photo}
+                    onSave={(url) => {
+                      const updated = [...t("faculty", defaultFaculty)];
+                      updated[i].photo = url;
+                      updateData("faculty", updated);
+                    }}
+                    alt={fac.name}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => {
+                      if (isEditing) {
+                        const url = prompt("Enter faculty photo URL:");
+                        if (url) {
+                          const updated = [...t("faculty", defaultFaculty)];
+                          updated[i].photo = url;
+                          updateData("faculty", updated);
+                        }
+                      }
+                    }}
+                  >
+                    <FaUserTie className="text-5xl text-gray-300" />
+                    {isEditing && (
+                      <span className="absolute bottom-2 text-xs text-gray-500">
+                        Click to add
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Content Area */}
               <div className="p-5 flex-1 flex flex-col justify-center">
-                <Link
-                  to={`/faculty/${fac.id}`}
-                  className="text-lg font-bold text-gray-900 hover:text-ssgmce-blue transition-colors cursor-pointer"
-                >
+                <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
                   <EditableText
                     value={fac.name}
-                    onSave={(val) => updateFaculty(i, "name", val)}
+                    onSave={(val) => {
+                      const updated = [...t("faculty", defaultFaculty)];
+                      updated[i].name = val;
+                      updateData("faculty", updated);
+                    }}
                   />
-                </Link>
+                </h4>
                 <div className="text-ssgmce-blue font-medium text-sm mb-3 uppercase tracking-wide text-[11px]">
                   <EditableText
                     value={fac.role}
-                    onSave={(val) => updateFaculty(i, "role", val)}
+                    onSave={(val) => {
+                      const updated = [...t("faculty", defaultFaculty)];
+                      updated[i].role = val;
+                      updateData("faculty", updated);
+                    }}
                   />
                 </div>
 
                 {/* Compact Details */}
                 <div className="space-y-2 text-sm text-gray-600">
-                  {fac.area && (
-                    <div className="text-xs">
-                      <span className="font-bold text-gray-700">Area: </span>
+                  {(fac.area || isEditing) && (
+                    <div className="line-clamp-2 text-xs">
+                      <span className="font-bold text-gray-700">
+                        <EditableText
+                          value={t("facultyAreaLabel", "Area: ")}
+                          onSave={(val) => updateData("facultyAreaLabel", val)}
+                        />
+                      </span>
                       <EditableText
                         value={
                           Array.isArray(fac.area)
                             ? fac.area.join(", ")
-                            : fac.area
+                            : fac.area || "Research areas..."
                         }
-                        onSave={(val) =>
-                          updateFaculty(
-                            i,
-                            "area",
-                            val.split(",").map((s) => s.trim()),
-                          )
-                        }
+                        onSave={(val) => {
+                          const updated = [...t("faculty", defaultFaculty)];
+                          updated[i].area = val.split(",").map((s) => s.trim());
+                          updateData("faculty", updated);
+                        }}
                       />
                     </div>
                   )}
 
                   <div className="pt-2 flex flex-col gap-1">
-                    {fac.vidwanId && (
-                      <span className="flex items-center text-xs">
-                        <FaUserTie className="mr-2 text-gray-400" />
-                        <span className="font-semibold text-gray-700">
-                          Vidwan ID:{" "}
-                        </span>
-                        <a
-                          href={`https://vidwan.inflibnet.ac.in/profile/${fac.vidwanId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-ssgmce-blue hover:underline ml-1"
-                        >
-                          {fac.vidwanId}
-                        </a>
-                      </span>
-                    )}
-                    {fac.email && (
+                    {(fac.email || isEditing) && (
                       <div className="flex items-center hover:text-ssgmce-blue transition-colors truncate text-xs">
-                        <FaEnvelope className="mr-2 text-gray-400" />{" "}
+                        <FaEnvelope className="mr-2 text-gray-400 flex-shrink-0" />{" "}
                         <EditableText
-                          value={fac.email}
-                          onSave={(val) => updateFaculty(i, "email", val)}
+                          value={fac.email || "email@ssgmce.ac.in"}
+                          onSave={(val) => {
+                            const updated = [...t("faculty", defaultFaculty)];
+                            updated[i].email = val;
+                            updateData("faculty", updated);
+                          }}
                         />
                       </div>
                     )}
-                    {fac.phone && (
-                      <span className="flex items-center text-xs">
-                        <FaPhone className="mr-2 text-gray-400" />{" "}
+                    {(fac.email2 || isEditing) && (
+                      <div className="flex items-center hover:text-ssgmce-blue transition-colors truncate text-xs">
+                        <FaEnvelope className="mr-2 text-gray-400 flex-shrink-0" />{" "}
                         <EditableText
-                          value={fac.phone}
-                          onSave={(val) => updateFaculty(i, "phone", val)}
+                          value={fac.email2 || "secondary@ssgmce.ac.in"}
+                          onSave={(val) => {
+                            const updated = [...t("faculty", defaultFaculty)];
+                            updated[i].email2 = val;
+                            updateData("faculty", updated);
+                          }}
+                        />
+                      </div>
+                    )}
+                    {(fac.phone || isEditing) && (
+                      <span className="flex items-center text-xs">
+                        <FaPhone className="mr-2 text-gray-400 flex-shrink-0" />{" "}
+                        <EditableText
+                          value={fac.phone || "+91XXXXXXXXXX"}
+                          onSave={(val) => {
+                            const updated = [...t("faculty", defaultFaculty)];
+                            updated[i].phone = val;
+                            updateData("faculty", updated);
+                          }}
                         />
                       </span>
                     )}
                   </div>
 
+                  {fac.vidwanId && (
+                    <a
+                      href={`https://vidwan.inflibnet.ac.in/profile/${fac.vidwanId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-[10px] font-bold text-emerald-600 mt-1 hover:underline uppercase tracking-wide"
+                    >
+                      Vidwan Profile <FaAngleRight className="ml-1" />
+                    </a>
+                  )}
                   {!fac.isIndustry && (
                     <Link
                       to={`/faculty/${fac.id}`}
-                      className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-2 hover:underline uppercase tracking-wide"
+                      className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
                     >
                       View Profile <FaAngleRight className="ml-1" />
                     </Link>
@@ -2174,6 +2254,31 @@ const CSE = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Add New Faculty Button */}
+        {isEditing && (
+          <div className="mt-6">
+            <button
+              onClick={() => {
+                const updated = [
+                  ...t("faculty", defaultFaculty),
+                  {
+                    name: "New Faculty Member",
+                    role: "Assistant Professor",
+                    area: ["Research Area"],
+                    email: "newfaculty@ssgmce.ac.in",
+                    phone: "+91XXXXXXXXXX",
+                    photo: "",
+                  },
+                ];
+                updateData("faculty", updated);
+              }}
+              className="w-full py-3 px-4 bg-ssgmce-blue text-white rounded-lg hover:bg-ssgmce-dark-blue transition-colors font-medium"
+            >
+              + Add New Faculty Member
+            </button>
+          </div>
+        )}
       </div>
     ),
 
@@ -5020,9 +5125,9 @@ const CSE = () => {
             {["2024-25", "2023-24", "2022-23", "2021-22"].map((year) => (
               <button
                 key={year}
-                onClick={() => setProjectYear(year)}
+                onClick={() => setStudentProjectYear(year)}
                 className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${
-                  projectYear === year
+                  studentProjectYear === year
                     ? "bg-white text-ssgmce-blue shadow-md"
                     : "text-gray-600 hover:text-gray-800"
                 }`}
@@ -5052,7 +5157,7 @@ const CSE = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {projectYear === "2024-25" &&
+                {studentProjectYear === "2024-25" &&
                   [
                     {
                       no: 1,
@@ -5091,7 +5196,7 @@ const CSE = () => {
                     </tr>
                   ))}
 
-                {projectYear === "2023-24" &&
+                {studentProjectYear === "2023-24" &&
                   [
                     {
                       no: 1,
@@ -5129,7 +5234,7 @@ const CSE = () => {
                     </tr>
                   ))}
 
-                {projectYear === "2022-23" &&
+                {studentProjectYear === "2022-23" &&
                   [
                     {
                       no: 1,
@@ -5166,18 +5271,17 @@ const CSE = () => {
                     </tr>
                   ))}
 
-                {projectYear === "2021-22" &&
+                {studentProjectYear === "2021-22" &&
                   [
                     {
                       no: 1,
-                      title:
-                        "Autonomous Robotics using VSLAM Technology and Implementation using ARM architecture",
-                      guide: "Prof.VS Mahalle",
+                      title: "Autonomous Robotics Using VSLAM Technology and Implementation Using ARM Architecture.",
+                      guide: "Prof. V. S. Mahalle",
                       award: "1st Rank",
                     },
                     {
                       no: 2,
-                      title: "Sentiment Analysis Of Marathi Language",
+                      title: "Sentiment Analysis of Marathi Language.",
                       guide: "Prof. KP Sable",
                       award: "2nd Rank",
                     },
@@ -7687,82 +7791,49 @@ const CSE = () => {
                   <th className="px-6 py-4 text-center font-semibold text-sm">
                     Innovative Practice
                   </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Link
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {[
-                  {
-                    sn: "01",
-                    faculty: "Dr. J. M. Patil",
-                    subject: "Database Management Systems",
-                    practice: "Power Point Presentation",
-                  },
-                  {
-                    sn: "02",
-                    faculty: "Dr. N. M. Kandoi",
-                    subject: "Block Chain Fundamentals",
-                    practice:
-                      "Mini/Term/Short Projects (Design/Fabrication/Simulation/Software/Hardware Development)",
-                  },
-                  {
-                    sn: "03",
-                    faculty: "C. M. Mankar",
-                    subject: "Theory of Computation",
-                    practice: "Power Point Presentation",
-                  },
-                  {
-                    sn: "04",
-                    faculty: "V. S. Mahalle",
-                    subject:
-                      "Object Oriented Programming Approach with Real-life Example",
-                    practice: "Google AI Studio, Movavi Video Editor",
-                  },
-                  {
-                    sn: "05",
-                    faculty: "Dr. P. K. Bharne",
-                    subject: "Operating System",
-                    practice: "Content based question making",
-                  },
-                  {
-                    sn: "06",
-                    faculty: "K. P. Sable",
-                    subject: "Data Communication & Networking",
-                    practice: "Learning through Survey/Case studies",
-                  },
-                  {
-                    sn: "07",
-                    faculty: "S. B. Pagrut",
-                    subject: "Digital Forensics",
-                    practice: "New Experiment development and testing",
-                  },
-                  {
-                    sn: "08",
-                    faculty: "Dr. R. A. Zamare",
-                    subject: "Big Data Analytics",
-                    practice:
-                      "Learning through Industrial visit/field work and report writing",
-                  },
-                  {
-                    sn: "09",
-                    faculty: "P. R. Pohare",
-                    subject: "AI",
-                    practice: "Designing Quizzes",
-                  },
-                ].map((item, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-center font-medium text-gray-900">
-                      {item.sn}
-                    </td>
-                    <td
-                      className="px-6 py-4 text-center whitespace-nowrap"
-                      style={{ color: "#003366" }}
+                {t("innovativePractices", defaultInnovativePractices).map(
+                  (item, idx) => (
+                    <tr
+                      key={idx}
+                      className="hover:bg-gray-50 transition-colors"
                     >
-                      <span className="font-medium">{item.faculty}</span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">{item.subject}</td>
-                    <td className="px-6 py-4 text-gray-700">{item.practice}</td>
-                  </tr>
-                ))}
+                      <td className="px-6 py-4 text-center font-medium text-gray-900">
+                        {item.sn}
+                      </td>
+                      <td
+                        className="px-6 py-4 text-center whitespace-nowrap"
+                        style={{ color: "#003366" }}
+                      >
+                        <span className="font-medium">{item.faculty}</span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {item.subject}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {item.practice}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {item.link && (
+                          <a
+                            href={item.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                          >
+                            <FaExternalLinkAlt className="text-xs" />
+                            Link
+                          </a>
+                        )}
+                      </td>
+                    </tr>
+                  ),
+                )}
               </tbody>
             </table>
           </div>
@@ -7956,6 +8027,9 @@ const CSE = () => {
                   <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
                     MOU Signing Date
                   </th>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    MOU Copy / Report
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -7964,57 +8038,83 @@ const CSE = () => {
                     no: "1.",
                     org: "Bharat Software Solutions, Pune",
                     date: "05-Apr-2025",
+                    report:
+                      "/uploads/documents/cse_mous/MOU_Bharat_Software_2025.pdf",
                   },
                   {
                     no: "2.",
-                    org: "TRUSCHOLAR ASSET CHAIN TECHNIILLIGENCE PVT LTD, AMRAVATI",
+                    org: "TRUSCHOLAR ASSET CHAIN TECHNILLIGENCE PVT LTD, AMRAVATI",
                     date: "05-APR-2025",
+                    report:
+                      "/uploads/documents/cse_mous/MOU_Truscholar_2025.pdf",
                   },
                   {
                     no: "3.",
                     org: "PRAGMATYC GLOBEL PVT LTD, NAGPUR",
                     date: "05-APR-2025",
+                    report:
+                      "/uploads/documents/cse_mous/MOU_Pragmatyc_2025.pdf",
                   },
                   {
                     no: "4.",
                     org: "MoU With Intel Unnati",
                     date: "29-MAR-2025",
+                    report:
+                      "/uploads/documents/cse_mous/MOU_Intel_Unnati_2025.pdf",
                   },
                   {
                     no: "5.",
                     org: "MoU With J-Navodaya Unnat Bharat",
                     date: "05-MAR-2025",
+                    report:
+                      "/uploads/documents/cse_mous/MOU_J_Navodaya_Unnat_Bharat_2025.pdf",
                   },
                   {
                     no: "6.",
                     org: "Bharat Software Solutions, Pune",
                     date: "21-Dec-2023",
+                    report:
+                      "/uploads/documents/cse_mous/MOU_Bharat_Software_2023.pdf",
                   },
                   {
                     no: "7.",
                     org: "MITU Skillogogies, Pune",
                     date: "21-Dec-2023",
+                    report:
+                      "/uploads/documents/cse_mous/MOU_MITU_Skillologies_2023.pdf",
                   },
                   {
                     no: "8.",
                     org: "TrueScholar- Asset Chain Techniligence Private Ltd., Amravati",
                     date: "01-June-2022",
+                    report:
+                      "/uploads/documents/cse_mous/MOU_TrueScholar_2022.pdf",
                   },
-                  { no: "9.", org: "Opine Group, Pune", date: "13-July-2019" },
+                  {
+                    no: "9.",
+                    org: "Opine Group, Pune",
+                    date: "13-July-2019",
+                    report:
+                      "/uploads/documents/cse_mous/MOU_Opine_Group_2019.pdf",
+                  },
                   {
                     no: "10.",
                     org: "e-Zest Solutions Ltd. Pune",
                     date: "06-January-2019",
+                    report: "/uploads/documents/cse_mous/MOU_eZest_2019.pdf",
                   },
                   {
                     no: "11.",
                     org: "IBM India Pvt. Ltd., Pune",
                     date: "19-January-2019",
+                    report: "/uploads/documents/cse_mous/MOU_IBM_2019.pdf",
                   },
                   {
                     no: "12.",
                     org: "Pi R Square Digital Solutions Pvt. Ltd., Pune",
                     date: "16-July-2018",
+                    report:
+                      "/uploads/documents/cse_mous/MOU_PiRSquare_2018.pdf",
                   },
                 ].map((mou, idx) => (
                   <tr key={idx} className="hover:bg-gray-50 transition-colors">
@@ -8024,6 +8124,17 @@ const CSE = () => {
                     <td className="px-6 py-4 text-gray-700">{mou.org}</td>
                     <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
                       {mou.date}
+                    </td>
+                    <td className="px-6 py-4">
+                      <a
+                        href={mou.report}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-orange font-semibold text-sm transition-colors"
+                      >
+                        <FaFileAlt className="mr-1.5" />
+                        View Document
+                      </a>
                     </td>
                   </tr>
                 ))}
@@ -8042,7 +8153,13 @@ const CSE = () => {
               onClick={() => setResearchTab(tab)}
               className={`px-4 py-2 text-sm font-bold rounded-md transition-all capitalize ${researchTab === tab ? "bg-white text-ssgmce-blue shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
             >
-              {tab === "copyrights" ? "Copyrights" : tab === "books" ? "Books" : tab === "patents" ? "Patents" : "Publications"}
+              {tab === "copyrights"
+                ? "Copyrights"
+                : tab === "books"
+                  ? "Books"
+                  : tab === "patents"
+                    ? "Patents"
+                    : "Publications"}
             </button>
           ))}
         </div>
@@ -8080,89 +8197,101 @@ const CSE = () => {
                   ))}
                 </div>
               </div>
-              {(t(`research.patents.${researchYear}`, defaultPatents[researchYear]) || []).length === 0 ? (
+              {(
+                t(
+                  `research.patents.${researchYear}`,
+                  defaultPatents[researchYear],
+                ) || []
+              ).length === 0 ? (
                 <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
-                  <p className="text-gray-500 text-sm">No patents recorded for {researchYear}.</p>
+                  <p className="text-gray-500 text-sm">
+                    No patents recorded for {researchYear}.
+                  </p>
                 </div>
               ) : (
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left text-gray-600">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
-                          #
-                        </th>
-                        <th className="px-6 py-4 font-black tracking-wider w-1/3">
-                          Title of Invention
-                        </th>
-                        <th className="px-6 py-4 font-black tracking-wider text-right">
-                          Application No.
-                        </th>
-                        <th className="px-6 py-4 font-black tracking-wider text-right">
-                          Inventors
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {(
-                        t(
-                          `research.patents.${researchYear}`,
-                          defaultPatents[researchYear],
-                        ) || []
-                      ).map((pat, i) => (
-                        <tr
-                          key={i}
-                          className="hover:bg-green-50/30 transition-colors group"
-                        >
-                          <td className="px-6 py-4 text-center font-mono text-xs text-gray-400 group-hover:text-green-600">
-                            {i + 1}
-                          </td>
-                          <td className="px-6 py-4 font-medium text-gray-800">
-                            <EditableText
-                              value={pat.title}
-                              onSave={(val) =>
-                                updatePatent(researchYear, i, "title", val)
-                              }
-                              multiline
-                            />
-                            <span
-                              className={`ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${pat.status === "Given" || pat.status === "Granted" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}
-                            >
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider w-1/3">
+                            Title of Invention
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Application No.
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Inventors
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(
+                          t(
+                            `research.patents.${researchYear}`,
+                            defaultPatents[researchYear],
+                          ) || []
+                        ).map((pat, i) => (
+                          <tr
+                            key={i}
+                            className="hover:bg-green-50/30 transition-colors group"
+                          >
+                            <td className="px-6 py-4 text-center font-mono text-xs text-gray-400 group-hover:text-green-600">
+                              {i + 1}
+                            </td>
+                            <td className="px-6 py-4 font-medium text-gray-800">
                               <EditableText
-                                value={
-                                  pat.status === "Given"
-                                    ? "Granted"
-                                    : pat.status
-                                }
+                                value={pat.title}
                                 onSave={(val) =>
-                                  updatePatent(researchYear, i, "status", val)
+                                  updatePatent(researchYear, i, "title", val)
+                                }
+                                multiline
+                              />
+                              <span
+                                className={`ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${pat.status === "Given" || pat.status === "Granted" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}
+                              >
+                                <EditableText
+                                  value={
+                                    pat.status === "Given"
+                                      ? "Granted"
+                                      : pat.status
+                                  }
+                                  onSave={(val) =>
+                                    updatePatent(researchYear, i, "status", val)
+                                  }
+                                />
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 font-mono text-xs text-gray-500 whitespace-nowrap text-right">
+                              <EditableText
+                                value={pat.id}
+                                onSave={(val) =>
+                                  updatePatent(researchYear, i, "id", val)
                                 }
                               />
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 font-mono text-xs text-gray-500 whitespace-nowrap text-right">
-                            <EditableText
-                              value={pat.id}
-                              onSave={(val) =>
-                                updatePatent(researchYear, i, "id", val)
-                              }
-                            />
-                          </td>
-                          <td className="px-6 py-4 text-gray-500 italic text-right">
-                            <EditableText
-                              value={pat.inventors}
-                              onSave={(val) =>
-                                updatePatent(researchYear, i, "inventors", val)
-                              }
-                            />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            </td>
+                            <td className="px-6 py-4 text-gray-500 italic text-right">
+                              <EditableText
+                                value={pat.inventors}
+                                onSave={(val) =>
+                                  updatePatent(
+                                    researchYear,
+                                    i,
+                                    "inventors",
+                                    val,
+                                  )
+                                }
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
               )}
             </motion.div>
           ) : researchTab === "publications" ? (
@@ -8351,37 +8480,58 @@ const CSE = () => {
               </div>
               {(defaultCopyrights[researchYear] || []).length === 0 ? (
                 <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
-                  <p className="text-gray-500 text-sm">No copyrights recorded for {researchYear}.</p>
+                  <p className="text-gray-500 text-sm">
+                    No copyrights recorded for {researchYear}.
+                  </p>
                 </div>
               ) : (
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left text-gray-600">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-6 py-4 font-black tracking-wider w-12 text-center">#</th>
-                        <th className="px-6 py-4 font-black tracking-wider">Name of Faculty</th>
-                        <th className="px-6 py-4 font-black tracking-wider">Title of Work</th>
-                        <th className="px-6 py-4 font-black tracking-wider text-right">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {(defaultCopyrights[researchYear] || []).map((cr, i) => (
-                        <tr key={i} className="hover:bg-purple-50/30 transition-colors">
-                          <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">{i + 1}</td>
-                          <td className="px-6 py-4 font-medium text-gray-800">{cr.name}</td>
-                          <td className="px-6 py-4 text-gray-700">{cr.title}</td>
-                          <td className="px-6 py-4 text-right">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700">
-                              {cr.status}
-                            </span>
-                          </td>
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Name of Faculty
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Work
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Status
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultCopyrights[researchYear] || []).map(
+                          (cr, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-purple-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {cr.name}
+                              </td>
+                              <td className="px-6 py-4 text-gray-700">
+                                {cr.title}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700">
+                                  {cr.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
               )}
             </motion.div>
           ) : researchTab === "books" ? (
@@ -8415,35 +8565,61 @@ const CSE = () => {
               </div>
               {(defaultBooks[researchYear] || []).length === 0 ? (
                 <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
-                  <p className="text-gray-500 text-sm">No books published for {researchYear}.</p>
+                  <p className="text-gray-500 text-sm">
+                    No books published for {researchYear}.
+                  </p>
                 </div>
               ) : (
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left text-gray-600">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-6 py-4 font-black tracking-wider w-12 text-center">#</th>
-                        <th className="px-6 py-4 font-black tracking-wider">Author(s)</th>
-                        <th className="px-6 py-4 font-black tracking-wider">Title</th>
-                        <th className="px-6 py-4 font-black tracking-wider">Publisher</th>
-                        <th className="px-6 py-4 font-black tracking-wider text-right">ISBN</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {(defaultBooks[researchYear] || []).map((book, i) => (
-                        <tr key={i} className="hover:bg-teal-50/30 transition-colors">
-                          <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">{i + 1}</td>
-                          <td className="px-6 py-4 font-medium text-gray-800">{book.name}{book.coAuthors ? `, ${book.coAuthors}` : ""}</td>
-                          <td className="px-6 py-4 text-gray-700">{book.title}</td>
-                          <td className="px-6 py-4 text-gray-500 italic text-xs">{book.details}</td>
-                          <td className="px-6 py-4 font-mono text-xs text-gray-500 text-right">{book.isbn}</td>
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Author(s)
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Publisher
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            ISBN
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultBooks[researchYear] || []).map((book, i) => (
+                          <tr
+                            key={i}
+                            className="hover:bg-teal-50/30 transition-colors"
+                          >
+                            <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                              {i + 1}
+                            </td>
+                            <td className="px-6 py-4 font-medium text-gray-800">
+                              {book.name}
+                              {book.coAuthors ? `, ${book.coAuthors}` : ""}
+                            </td>
+                            <td className="px-6 py-4 text-gray-700">
+                              {book.title}
+                            </td>
+                            <td className="px-6 py-4 text-gray-500 italic text-xs">
+                              {book.details}
+                            </td>
+                            <td className="px-6 py-4 font-mono text-xs text-gray-500 text-right">
+                              {book.isbn}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
               )}
             </motion.div>
           ) : null}
@@ -8726,6 +8902,226 @@ const CSE = () => {
         </motion.div>
       </div>
     ),
+    achievements: (() => {
+      const facultyAchievements = t(
+        "achievements.faculty",
+        defaultAchievements.faculty || [],
+      );
+      const studentAchievements = t(
+        "achievements.students",
+        defaultAchievements.students || [],
+      );
+
+      const handleViewCertificate = (item) => {
+        if (!item.image) return;
+        const isPdf = item.image.toLowerCase().endsWith(".pdf");
+        if (isPdf) {
+          window.open(item.image, "_blank");
+        } else {
+          setCertificateLightbox(item);
+        }
+      };
+
+      return (
+        <div className="space-y-8">
+          {/* Certificate Lightbox Modal */}
+          <AnimatePresence>
+            {certificateLightbox && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                onClick={() => setCertificateLightbox(null)}
+              >
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  className="relative max-w-4xl max-h-[90vh] w-full bg-white rounded-2xl overflow-hidden shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-white font-bold text-lg">
+                        {certificateLightbox.name}
+                      </h3>
+                      <p className="text-blue-200 text-sm">
+                        {certificateLightbox.achievement}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setCertificateLightbox(null)}
+                      className="text-white hover:text-orange-300 transition-colors"
+                    >
+                      <FaTimes className="text-xl" />
+                    </button>
+                  </div>
+                  <div className="p-4 flex items-center justify-center bg-gray-50 max-h-[75vh] overflow-auto">
+                    <img
+                      src={certificateLightbox.image}
+                      alt={certificateLightbox.achievement}
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                      className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                    />
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Header */}
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-gray-900">Achievements</h2>
+            <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
+            <p className="text-gray-600 mt-3">
+              Department of Computer Science and Engineering
+            </p>
+          </div>
+
+          {/* Tab Menu */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex rounded-lg bg-gray-100 p-1">
+              <button
+                onClick={() => setAchievementTab("faculty")}
+                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  achievementTab === "faculty"
+                    ? "bg-[#003366] text-white shadow-md"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                }`}
+              >
+                <FaChalkboardTeacher className="text-lg" />
+                Faculty Achievements
+              </button>
+              <button
+                onClick={() => setAchievementTab("student")}
+                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  achievementTab === "student"
+                    ? "bg-[#003366] text-white shadow-md"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                }`}
+              >
+                <FaUserGraduate className="text-lg" />
+                Student Achievements
+              </button>
+            </div>
+          </div>
+
+          {/* Faculty Achievements Tab Content */}
+          {achievementTab === "faculty" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {facultyAchievements.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <FaTrophy className="mr-3 text-yellow-300" />
+                      {item.name}
+                    </h3>
+                    <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
+                      {item.category}
+                    </span>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-[#003366] mb-2">
+                          {item.achievement}
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                      {item.image && (
+                        <button
+                          onClick={() => handleViewCertificate(item)}
+                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                          <FaAward className="text-yellow-300" />
+                          View Certificate
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+              {facultyAchievements.length === 0 && (
+                <p className="text-center text-gray-400 py-8 text-sm">
+                  No faculty achievements recorded yet.
+                </p>
+              )}
+            </motion.div>
+          )}
+
+          {/* Student Achievements Tab Content */}
+          {achievementTab === "student" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {studentAchievements.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <FaAward className="mr-3 text-yellow-300" />
+                      {item.name}
+                    </h3>
+                    <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
+                      {item.category}
+                    </span>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-[#003366] mb-2">
+                          {item.achievement}
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                      {item.image && (
+                        <button
+                          onClick={() => handleViewCertificate(item)}
+                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                          <FaAward className="text-yellow-300" />
+                          View Certificate
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+              {studentAchievements.length === 0 && (
+                <p className="text-center text-gray-400 py-8 text-sm">
+                  No student achievements recorded yet.
+                </p>
+              )}
+            </motion.div>
+          )}
+        </div>
+      );
+    })(),
   };
 
   const renderContent = () => {

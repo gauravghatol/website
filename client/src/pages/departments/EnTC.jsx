@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import GenericPage from "../../components/GenericPage";
 import { useDepartmentData } from "../../hooks/useDepartmentData";
 import EditableText from "../../components/admin/EditableText";
@@ -29,6 +30,9 @@ import {
   FaBook,
   FaStar,
   FaMedal,
+  FaChalkboardTeacher,
+  FaUserGraduate,
+  FaTimes,
 } from "react-icons/fa";
 
 // Faculty Photos
@@ -56,6 +60,23 @@ import NSD from "../../assets/images/departments/electronics/faculty/NSD.jpeg";
 import MBD from "../../assets/images/departments/electronics/faculty/MBD.jpeg";
 import SPS from "../../assets/images/departments/electronics/faculty/SPS.jpeg";
 import GK from "../../assets/images/departments/electronics/faculty/GK.jpeg";
+
+// Non-Teaching Staff Photos
+import VGP from "../../assets/images/departments/electronics/faculty/V.G.Payghan.png";
+import MYK from "../../assets/images/departments/electronics/faculty/M.Y. Kashikar.jpg";
+import SAA from "../../assets/images/departments/electronics/faculty/S.A.Ahmad.jpg";
+import ASA from "../../assets/images/departments/electronics/faculty/A.S.Akotkar.jpg";
+import SBS from "../../assets/images/departments/electronics/faculty/S.B.Sonawane.jpg";
+import JSK from "../../assets/images/departments/electronics/faculty/JSKolhe.jpg";
+import KKT from "../../assets/images/departments/electronics/faculty/K.K.Thakur.jpg";
+import GOT from "../../assets/images/departments/electronics/faculty/G.O.Tayade.jpg";
+import ALN from "../../assets/images/departments/electronics/faculty/A.L.Nemade.jpg";
+import SAR from "../../assets/images/departments/electronics/faculty/A.S. Raut.jpg";
+import PBB from "../../assets/images/departments/electronics/faculty/P.B.Bule.jpg";
+import KRK from "../../assets/images/departments/electronics/faculty/kr_khatri.jpg";
+import DBB from "../../assets/images/departments/electronics/faculty/Suresh Barbdhe.jpeg";
+import MUS from "../../assets/images/departments/electronics/faculty/Mohan Sable.png";
+
 import hodPhoto from "../../assets/images/departments/electronics/EXTC_HOD.jpg";
 
 import {
@@ -73,6 +94,7 @@ import {
   defaultActivities,
   defaultStudentProjects,
   defaultFaculty,
+  defaultStaff,
   defaultAchievements,
   defaultCourseMaterials,
   defaultInnovativePractices,
@@ -83,20 +105,40 @@ import {
   defaultServicesExtended,
   defaultUgProjects,
   defaultSchemeAndSyllabus,
+  defaultEntcPatents,
+  defaultEntcPublications,
+  defaultEntcConferences,
+  defaultEntcBooks,
+  defaultEntcCopyrights,
+  defaultInternships,
+  defaultMagazines,
 } from "../../data/entcDefaults";
 
 const EnTC = () => {
   const [activeTab, setActiveTab] = useState("overview");
+  const [achievementTab, setAchievementTab] = useState("faculty");
+  const [certificateLightbox, setCertificateLightbox] = useState(null);
   const [vmTab, setVmTab] = useState("vision");
   const [poTab, setPoTab] = useState("peo");
   const [showAllPos, setShowAllPos] = useState(false);
   const [researchTab, setResearchTab] = useState("projects");
+  const [patentSubTab, setPatentSubTab] = useState("patents");
   const [projectYear, setProjectYear] = useState("2024-25");
-  const [researchYear, setResearchYear] = useState("2023-24");
+  const [researchYear, setResearchYear] = useState("2024-25");
+  const researchYears = [
+    "2024-25",
+    "2023-24",
+    "2022-23",
+    "2021-22",
+    "2020-21",
+    "2019-20",
+    "2018-19",
+  ];
   const [placementYear, setPlacementYear] = useState(null);
   const [expandedSemester, setExpandedSemester] = useState(null);
   const [prideTab, setPrideTab] = useState("gate");
   const [ugProjectYear, setUgProjectYear] = useState("2024-25");
+  const [internshipYear, setInternshipYear] = useState("2024-25");
 
   // Load department data (works in both edit and public view modes)
   const {
@@ -127,6 +169,14 @@ const EnTC = () => {
     const newProjects = [...currentProjects];
     newProjects[index] = { ...newProjects[index], [field]: value };
     updateData(`studentProjects.${year}`, newProjects);
+  };
+
+  const updateInternship = (year, index, field, value) => {
+    const dataObj = JSON.parse(
+      JSON.stringify(t("internships", defaultInternships)),
+    );
+    dataObj[year][index][field] = value;
+    updateData("internships", dataObj);
   };
 
   const updateNewsletter = (section, index, field, value) => {
@@ -1094,146 +1144,2418 @@ const EnTC = () => {
     ),
 
     "course-outcomes": (
-      <div className="space-y-6">
+      <div className="space-y-8">
+        {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">
-            <EditableText
-              value={t("courseOutcomes.title", "Course Outcomes")}
-              onSave={(val) => updateField("courseOutcomes.title", val)}
-            />
+          <h2 className="text-3xl font-bold text-gray-800 mb-3">
+            Course Outcomes
           </h2>
-          <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
-          <div className="text-gray-600 mt-3">
-            <EditableText
-              value={t(
-                "courseOutcomes.subtitle",
-                "Detailed course outcomes for all semesters",
-              )}
-              onSave={(val) => updateField("courseOutcomes.subtitle", val)}
-            />
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Comprehensive course outcomes for all semesters of B.E. Electronics
+            &amp; Telecommunication Engineering
+          </p>
+        </div>
+
+        {/* B.E. Course Outcomes */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-[#003366] px-6 py-4 text-center">
+            <h3 className="text-xl font-bold text-white">
+              B.E. Electronics &amp; Telecommunication Engineering - Course
+              Outcomes
+            </h3>
+          </div>
+
+          <div className="p-6 space-y-2">
+            {/* B.E. Semester-III */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem3" ? null : "be-sem3",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-III
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem3" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem3" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ECT01 Engineering Mathematics III
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply Laplace transform to solve differential
+                            equation.
+                          </li>
+                          <li>
+                            Apply the knowledge of vector calculus to solve
+                            physical problems.
+                          </li>
+                          <li>Apply the knowledge of complex analysis.</li>
+                          <li>Apply the knowledge of Numerical analysis.</li>
+                          <li>
+                            Apply the concepts of Difference Equations and
+                            Partial Differential Equations.
+                          </li>
+                          <li>
+                            Apply the concepts of Difference Equations and
+                            Partial Differential Equations.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ETC02 Electronic Devices and Circuits
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply the principles of PN Junction diode and
+                            filters (C, L, LC) to design rectifiers, voltage
+                            regulators and wave-shaping circuits.
+                          </li>
+                          <li>
+                            Examine the response of wave shaping circuits,
+                            including RC filters, Clipping and Clamping circuits
+                            for step, pulse, square and sinusoidal
+                          </li>
+                          <li>
+                            Utilise the Characteristics and parameters of BJT,
+                            JFET, MOSFET and UJT for switching and amplification
+                            applications. 3ETC02.4 Assess the roll of feedback
+                            in amplifiers in oscillator circuits using BJT and
+                            its impact on the frequency stability and analyze
+                            the performance of single stage and multi stage
+                            amplifier circuits using BJT for signal.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ETC03 Digital System Design
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply Boolean algebra to simplify logic functions,
+                            minimize expressions, perform number system
+                            conversions, and execute arithmetic operations.
+                          </li>
+                          <li>
+                            Design combinational and sequential circuits using
+                            logic gates, MSI chips, and programmable logic
+                            devices
+                          </li>
+                          <li>
+                            Analyze digital logic families based on
+                            characteristics such as noise margin, propagation
+                            delay, and power dissipation.
+                          </li>
+                          <li>
+                            Implement semiconductor memory architectures and
+                            programmable logic devices in digital system design.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ETC04 Electromagnetic Waves
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the coordinate systems and vector
+                            integrals.
+                          </li>
+                          <li>
+                            Derive all four Maxwell's equations for steady and
+                            time varying fields and apply them to find boundary
+                            conditions.
+                          </li>
+                          <li>
+                            Apply the Maxwell&apos;s equations to find the
+                            characteristics of Uniform Plane Waves.
+                          </li>
+                          <li>
+                            Apply the Maxwell&apos;s equations to derive
+                            radiation resistance of Hertzian Dipole, Quarter
+                            wave Monopole and Half-wave Dipole antennas.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ETC05 Object Oriented Programming
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain the basics of object-oriented programming
+                            concepts such as data types, functions, classes,
+                            objects, constructors, inheritance, overloading etc.
+                          </li>
+                          <li>
+                            Design, implement, test, and debug simple programs
+                            in C++.
+                          </li>
+                          <li>
+                            Demonstrate how the class mechanism supports
+                            encapsulation and information hiding.
+                          </li>
+                          <li>
+                            Discuss the implementation of Java programming
+                            concepts
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ETC06 Electronic Devices and Circuits Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply the basics of diode and Zener diode to obtain
+                            the characteristics and its use as rectifier and
+                            voltage regulator
+                          </li>
+                          <li>
+                            Verify and analyze clipper circuit as wave shaping
+                            circuits and their responses to various signals.
+                          </li>
+                          <li>
+                            Realise effect of positive and negative feedback
+                            theory for circuit as an oscillator and amplifier.
+                          </li>
+                          <li>Analyze characteristics of JFET and UJT</li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ETC07 Digital System Design Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply practically the concepts of digital
+                            electronics.
+                          </li>
+                          <li>
+                            Apply the operation of various logic gates and their
+                            implementation on combinational design using digital
+                            IC's.
+                          </li>
+                          <li>
+                            Design and implement various combinational logic
+                            circuits.
+                          </li>
+                          <li>
+                            Design and implement various sequential logic
+                            circuits.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ETC08 Object Oriented Programming Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Justify the basics of object-oriented design and the
+                            concepts of encapsulation, abstraction, inheritance,
+                            and polymorphism
+                          </li>
+                          <li>
+                            Design, implement, test, and debug simple programs
+                            in an object-oriented programming language.
+                          </li>
+                          <li>
+                            Describe how the class mechanism supports
+                            encapsulation and information hiding
+                          </li>
+                          <li>
+                            Design and test the implementation of C++ and java
+                            programming concepts
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ETC09 Electronic Workshop Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand measuring devices, types of cables and
+                            connectors, diodes, and sensors
+                          </li>
+                          <li>
+                            Apply knowledge of measuring devices to RLC
+                            circuits, diodes, transistors, switches, and cables
+                          </li>
+                          <li>Analyze circuits using simulation software</li>
+                          <li>
+                            Apply basic knowledge of component to design and
+                            hardware implementation Evaluate
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester-III (NEP) */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem3-nep" ? null : "be-sem3-nep",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-III (NEP)
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem3-nep" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem3-nep" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ET200PC Electronic Devices and Circuits
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the construction, working principles,
+                            Characteristics of semiconductor diodes and
+                            transistors including PN junction, Zener, LED, Photo
+                            diode, BJT, JFET, MOSFET, and UJT.
+                          </li>
+                          <li>
+                            Apply semiconductor devices in circuits such as
+                            rectifiers, voltage regulators, clippers, clampers,
+                            amplifiers, and oscillators for electronic circuit
+                            design.
+                          </li>
+                          <li>
+                            Analyze the performance of various BJT
+                            configurations and MOSFET/JFET devices using
+                            characteristic curves and small signal parameters.
+                          </li>
+                          <li>
+                            Evaluate the impact of feedback in amplifier design
+                            and determine the suitability of different
+                            oscillator circuits for given applications based on
+                            frequency and stability requirements.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ET201PC Electromagnetic Waves
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            To understand the coordinate systems and vector
+                            integrals.
+                          </li>
+                          <li>
+                            To derive all four Maxwell's equations for steady
+                            and time varying fields and apply them to find
+                            boundary conditions.
+                          </li>
+                          <li>
+                            To apply the Maxwell&apos;s equations to find the
+                            characteristics of Uniform Plane Waves
+                          </li>
+                          <li>
+                            To apply the Maxwell&apos;s equations to derive
+                            radiation resistance of Hertzian Dipole, Quarter
+                            wave Monopole and Half-wave Dipole antennas.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ET202PC Signals and Systems
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply the continues time signals and systems
+                            mathematically and their classification along with
+                            the mathematical operations performed on them.
+                          </li>
+                          <li>
+                            Analyze signals and systems in the frequency domain
+                            using Fourier series and Fourier transform
+                            techniques.
+                          </li>
+                          <li>
+                            Use Laplace transform to analyze continuous-time and
+                            discrete-time systems, including system response and
+                            stability.
+                          </li>
+                          <li>
+                            Evaluate the spectral characteristics of
+                            discrete-time signals and systems using DTFT and its
+                            properties.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ET206OE Analog Communication
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain the Fundamentals of Analog Communication.
+                          </li>
+                          <li>
+                            Illustrate the working of AM Generation and
+                            Demodulation.
+                          </li>
+                          <li>Explain the FM Generation and Demodulation.</li>
+                          <li>
+                            Explain the concept noise in Analog Communication.
+                          </li>
+                          <li>Illustrate the working of Radio Receivers.</li>
+                          <li>Explain the Fundamental concepts of Antenna.</li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ET207EM Entrepreneurship Development
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain the fundamentals of entrepreneurship and its
+                            role in economic development.
+                          </li>
+                          <li>
+                            Apply innovation and design thinking to develop
+                            business ideas.
+                          </li>
+                          <li>
+                            Prepare a feasibility study and basic business plan
+                            for entrepreneurial ventures. Creating L6 3ME205M
+                            3ME205M.1 Understand the properties, testing and
+                            inspection of engineering materials. Understanding
+                            L2 Basics of Mechanical Engineering
+                          </li>
+                          <li>
+                            Summarize fundamental techniques and process used in
+                            energy conversion systems.
+                          </li>
+                          <li>
+                            Understand various casting techniques and the
+                            importance of various metal forming processes.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3ME206OE Engineering Materials
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            To illustrate the basic concepts of metallurgy and
+                            classification of materials and their applications.
+                          </li>
+                          <li>
+                            To study the various mechanical properties and
+                            applications of engineering materials.
+                          </li>
+                          <li>
+                            To explain application and properties of advanced
+                            materials like smarts materials, piezoelectric
+                            materials, superconducting materials etc.
+                          </li>
+                          <li>
+                            To illustrate the properties and application of
+                            various types of steels.
+                          </li>
+                          <li>
+                            To explain features, classification, application of
+                            newer class materials like biomaterials, composite
+                            materials etc.
+                          </li>
+                          <li>
+                            To illustrate the concept of powder metallurgy and
+                            its industrial applications.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3CS205MD Foundations of Computing &amp; Programming–
+                          III
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand computing systems and problem-solving
+                            logic
+                          </li>
+                          <li>
+                            Apply algorithmic thinking to solve simple problems.
+                          </li>
+                          <li>
+                            Implement basic programs using control structures
+                            and I/O operations. Applying L3 3EP206OE-I Power
+                            Supply System
+                          </li>
+                          <li>
+                            Explain the working of thermal &amp; Hydro-electric
+                            power plants.
+                          </li>
+                          <li>
+                            Understand the basics of solar and wind energy and
+                            their conversion.
+                          </li>
+                          <li>
+                            Demonstrate the knowledge of various types of
+                            substations and distribution systems.
+                          </li>
+                          <li>
+                            Demonstrate the knowledge of electrical wiring
+                            installation and earthing system.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          3IT302OE Cyber Law
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply basic computer and internet concepts to
+                            analyze their role in digital business and
+                            governance.
+                          </li>
+                          <li>
+                            Apply knowledge of e-payment systems to select
+                            suitable methods for secure online transactions.
+                          </li>
+                          <li>
+                            Identify types of cybercrimes and common techniques
+                            used by cyber offenders.
+                          </li>
+                          <li>
+                            Categorize cybercrimes and relate them to relevant
+                            legal provisions.
+                          </li>
+                          <li>
+                            Apply sections of the IT Act to given cyber law
+                            scenarios.
+                          </li>
+                          <li>
+                            Describe ethical and security concerns associated
+                            with the use of digital technologies.
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester-IV */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem4" ? null : "be-sem4",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-IV
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem4" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem4" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4ETC01 Analog and Digital Communication
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Analyze AM (DSB-FC, DSB-SC, SSB-SC) and
+                            superheterodyne receivers for power efficiency,
+                            bandwidth, and fidelity in analog communication.
+                          </li>
+                          <li>
+                            Apply the concepts of FM generation, demodulation,
+                            and comparison of FM and AM system performance.
+                          </li>
+                          <li>
+                            Apply random process statistics and noise analysis
+                            to assess noise impact on communication, including
+                            FM threshold effects.
+                          </li>
+                          <li>
+                            Utilize pulse modulation (PAM, PWM, PPM) and PCM to
+                            digitize analog signals while addressing issues like
+                            aliasing, quantization noise, and companding
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4ETC02 Analog Circuits
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            To understand the basic concepts and parameters of
+                            Op-Amp-741, Voltage regulator IC723, timer IC555 and
+                            PLL565.
+                          </li>
+                          <li>
+                            To make use of Op-Amp for implementation of linear
+                            and non-linear applications.
+                          </li>
+                          <li>
+                            To Analyze various analog circuits using IC741,
+                            IC723, IC555 and IC565.
+                          </li>
+                          <li>
+                            To Design of various analog circuits using IC741,
+                            IC723, IC555 and IC565.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4ETC03 Network Theory
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply Mesh and Node analysis techniques to formulate
+                            and solve electrical circuit equations involving
+                            resistive, inductive, and capacitive components
+                          </li>
+                          <li>
+                            Utilize appropriate Network Theorems to simplify and
+                            analyze electrical circuits for determining voltage,
+                            current, and power relationships
+                          </li>
+                          <li>
+                            Construct and analyze oriented graphs of electrical
+                            networks using incidence, tie- set, and cut-set
+                            matrices to determine network currents and voltages
+                            systematically
+                          </li>
+                          <li>
+                            Implement Laplace Transform techniques to solve
+                            electrical circuit problems involving initial
+                            conditions, transient responses, and steady-state
+                            behavior 4ETC03.5 Examine the characteristics of
+                            Two-Port networks by determining impedance,
+                            admittance, transmission, and hybrid parameters for
+                            analyzing interconnected circuits
+                          </li>
+                          <li>
+                            Interpret network functions by evaluating poles and
+                            zeros, driving point functions, and transfer
+                            functions to predict circuit behavior in time and
+                            frequency domains
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4ETC04 Signals and Systems
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Demonstarte the continuous-time signals and systems
+                            mathematically and illustrate their classification
+                            with the mathematical operations performed on them.
+                            4ETC04.2 Analyze the spectral characteristics of
+                            continuous-time periodic signals and systems using
+                            Fourier series. Apply the spectral characteristics
+                            of continuous-time aperiodic signals and systems
+                            using Fourier Transform. 4ETC04.3 Apply the Laplace
+                            transform for analysis of continuous-time systems.
+                            Evaluate the classical Solution of Linear Difference
+                            Equations. Apply the discrete-time signals and
+                            systems mathematically and analyze their
+                            classifications.
+                          </li>
+                          <li>
+                            Evaluate the spectral characteristics of Discrete
+                            Time signals and systems using DTFT and its
+                            properties Evaluate
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4ETC05 Values and Ethics
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand Possibilities of better Life through
+                            Value education
+                          </li>
+                          <li>
+                            Demostrate the concept of coexitance in life
+                            sitution
+                          </li>
+                          <li>
+                            Develop harmony in nature through emphesis on
+                            dimensitions of human endeavor
+                          </li>
+                          <li>Apply the concept of ethical human conduct</li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4ETC06 Analog and Digital Communication Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Illustrate modulation and demodulation in
+                            communication system.
+                          </li>
+                          <li>
+                            Analyze performance characteristics of AM/FM
+                            receiver.
+                          </li>
+                          <li>
+                            Analyze the performance of digital communication
+                            system.
+                          </li>
+                          <li>
+                            Model communication concepts using simulation
+                            software.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4ETC07 Analog Circuits Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Demonstrate linear and nonlinear applications of
+                            Op-Amp
+                          </li>
+                          <li>
+                            Design voltage regulators using IC723 and IC317
+                          </li>
+                          <li>
+                            Analyze and design applicationn of timer IC555
+                          </li>
+                          <li>Study characteristic of PLL using IC565</li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4ETC08 Network Theory Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply knowledge of Mesh and Node analysis for a
+                            given network
+                          </li>
+                          <li>
+                            Apply various network theorems to solve networks
+                          </li>
+                          <li>
+                            Apply knowledge of Two Port network to analyze given
+                            network.
+                          </li>
+                          <li>
+                            Apply knowledge of Network Functions to analyze
+                            given network.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          4ETC09 Signal and Systems Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Familiarize with the signal processing functions and
+                            verify each function.
+                          </li>
+                          <li>
+                            Generate different types of signals and explore
+                            results to draw valid conclusions in Signal
+                            Processing.
+                          </li>
+                          <li>
+                            Enable on how to evaluate the signal processing and
+                            system design using simulation tools.
+                          </li>
+                          <li>
+                            Analyze signals using different transform methods.
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester-V */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem5" ? null : "be-sem5",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-V
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem5" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem5" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5ETC01 Microcontroller
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the architecture of 8085/8051 and
+                            advanced RISC processors
+                          </li>
+                          <li>
+                            Analyze the assembly language programming algorithm
+                            using Instructions set and addressing modes
+                          </li>
+                          <li>
+                            Develop a skill to write application-oriented
+                            algorithms
+                          </li>
+                          <li>
+                            Apply the concepts of microcontroller for
+                            interfacing of peripheral devices
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5ETC02 Control System
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Develop mathematical models of electrical,
+                            mechanical and electromechanical systems.
+                          </li>
+                          <li>
+                            Build transfer functions using block diagrams
+                            reduction and signal flow graph.
+                          </li>
+                          <li>
+                            Analyze stability of the LTI system using different
+                            techniques.
+                          </li>
+                          <li>
+                            Solve state space models and its response using
+                            state variable method
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5ETC03 Digital Signal Processing
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply the fundamental concepts of discrete-time
+                            signals and systems to perform signal operations and
+                            convolution
+                          </li>
+                          <li>
+                            Analyze Z-transform properties and utilize them for
+                            system characterization and signal processing
+                            applications.
+                          </li>
+                          <li>
+                            Implement DFT and FFT techniques for spectral
+                            analysis and circular convolution in digital signal
+                            processing.
+                          </li>
+                          <li>
+                            Design FIR and IIR digital filters and examine the
+                            fundamentals of multirate digital signal processing.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5ETC04 Power Electronics (PE-I)
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Demostrate the characteristics of SCR and working of
+                            firing circuits.
+                          </li>
+                          <li>
+                            Summarised Triac /Diac Power devices like
+                            Transistor, MOSFET and IGBT and force commutation
+                            techniques
+                          </li>
+                          <li>
+                            Identify the AC to DC Phase control rectifiers and
+                            dual converters.
+                          </li>
+                          <li>Identify DC to AC and DC to DC converters.</li>
+                          <li>
+                            Examine the principle of Cyclo-converter and
+                            DC/universal motor Control
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5ETC05 Fiber Optics Communication (PE-II)
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Illustrate the principles fiber-optic communication,
+                            the components and Losses and dispersion in fiber.
+                            Undersatnding
+                          </li>
+                          <li>
+                            Explain the transmission characteristics of optical
+                            fiber Undersatnding
+                          </li>
+                          <li>
+                            Express the properties of the optical components in
+                            sources.
+                          </li>
+                          <li>
+                            Explain operation of lasers, LEDs, and detectors in
+                            fiber Undersatnding
+                          </li>
+                          <li>
+                            Describe the aspects of optical fiber coupler and
+                            switches Undersatnding
+                          </li>
+                          <li>Elaborate WDM and DWDM systems.</li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5ETC06 Microcontroller Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Desrcibe the internal organization of Microprocessor
+                            and Microcontroller
+                          </li>
+                          <li>
+                            Develop programing skill for applications of
+                            Microprocessor and Microcontroller
+                          </li>
+                          <li>
+                            Experiment with interfacing of IO devices with
+                            Microcontroller
+                          </li>
+                          <li>
+                            Apply the concepts of microcontroller for
+                            interfacing of peripheral devices
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5ETC07 Digital Signal Processing Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply the basic concepts of signal and its sampling
+                            for digital signal processing Applying (L3),
+                          </li>
+                          <li>
+                            Apply DFT and IDFT for the analysis of digital
+                            signals and systems. Applying (L3),
+                          </li>
+                          <li>
+                            Design FIR, IIR filters for digital signal
+                            processing.
+                          </li>
+                          <li>
+                            Understand the basics of Multirate Digital Signal
+                            Processing.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5ETC08 Power Electronics Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the various power electronics devices and
+                            their characteristics.
+                          </li>
+                          <li>Analyse the Triggering of SCR techniques.</li>
+                          <li>
+                            Illlustrate commutation and DC to AC inverter
+                            techniques.
+                          </li>
+                          <li>
+                            Understand the operation of AC to DC converters.
+                          </li>
+                          <li>
+                            Know operation of various DC and AC motors and their
+                            applications.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          5ETC09 Electronic Lab based on Instrumentation
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Select temperature transducers for different ranges
+                            of temperature measurement
+                          </li>
+                          <li>
+                            Utilize displacement transducers in various
+                            applications
+                          </li>
+                          <li>
+                            Utilize piezoelectric transducers for pressure
+                            measurement
+                          </li>
+                          <li>Utilize strain guage for strain measurement</li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester-VI */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem6" ? null : "be-sem6",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-VI
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem6" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem6" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ETC01 Communication Network
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Classify types of network devices, OSI and TCP/IP
+                            model.layes and their functions.
+                          </li>
+                          <li>
+                            Illustrate basic functions of data link control and
+                            media access control protocol.
+                          </li>
+                          <li>
+                            Analyze routing strategies for an IP based network.
+                          </li>
+                          <li>
+                            Compair the concepts of reliable and unreliable
+                            transfer protocols in TCP and UDP and Demonstrate
+                            application layer Protocols.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ETC02 Computer Architecture
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Describe the working and the performance parameters
+                            of the computers
+                          </li>
+                          <li>
+                            Design efficient ALU operations using processor
+                            organization, number formats, and IEEE 754
+                            standards.
+                          </li>
+                          <li>
+                            Analyze micro-operation control unit, hardwired vs.
+                            micro-program control unit, and microinstruction
+                            execution
+                          </li>
+                          <li>
+                            Apply memory management concepts in system design.
+                          </li>
+                          <li>
+                            Describe I/O organization and parallel processing
+                            concepts in system design
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ETC03 Satellite Communication
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply satellite communication principles to solve
+                            engineering problems
+                          </li>
+                          <li>
+                            Utilize fundamental theories of orbital mechanics
+                            and link budget analysis
+                          </li>
+                          <li>
+                            Analyze satellite subsystems, propagation effects,
+                            and system performance
+                          </li>
+                          <li>
+                            Explain satellite-based communication VSAT and GPS
+                            systems Undersatnding
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ETC03 CMOS Design
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply CMOS circuit concepts to analyze transistor
+                            operation, inverter behavior, and switching
+                            characteristics
+                          </li>
+                          <li>
+                            Construct CMOS layouts and stick diagrams using
+                            lambda-based design rules.
+                          </li>
+                          <li>
+                            Analyze CMOS circuit performance parameters,
+                            including delay models, power consumption, and
+                            interconnect effects.
+                          </li>
+                          <li>
+                            Implement combinational circuit designs using CMOS
+                            logic families, transmissions gates, and pass
+                            transistor logic.
+                          </li>
+                          <li>
+                            Design sequential circuits such as latches,
+                            flip-flops, and memory elements using CMOS
+                            technology.
+                          </li>
+                          <li>
+                            Utilize Domino and NORA dynamic logic methods for
+                            CMOS circuit implementation.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ETC05 Engineering Economics
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Demonstrate the application of production theories,
+                            cost analysis, and price determination to solve
+                            real-world engineering and industrial problems.
+                          </li>
+                          <li>
+                            Analyze depreciation methods, break-even analysis,
+                            and banking functions to determine their impact on
+                            financial sustainability and engineering projects.
+                            6ETC05.4 Evaluate time value of money concepts, cash
+                            flow techniques, and project evaluation methods to
+                            analyze financial alternatives and make informed
+                            investment decisions.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6FEEP06 Energy Audit and Management
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>Discuss energy scenario and it's management.</li>
+                          <li>
+                            Conduct the energy audit of different systems.
+                          </li>
+                          <li>
+                            Determine the economics of energy conservation
+                          </li>
+                          <li>
+                            Discuss various energy Conservation methods &amp;
+                            their case studies
+                          </li>
+                          <li>Explain fundamentals of Harmonics.</li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ETC06 Communication Network Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Categorize different networking devices and
+                            topologies
+                          </li>
+                          <li>
+                            Configure computer networks using different devices
+                            and topologiesTo construct and configure a network.
+                          </li>
+                          <li>
+                            Implement computer network for sharing various
+                            resources
+                          </li>
+                          <li>Configure Wireless network</li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ETC07 Electronics Circuit Design Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Design and verify CMOS layouts for logic gates and
+                            sequential circuits using ASIC tools.
+                          </li>
+                          <li>
+                            Analyze timing and performance of CMOS circuits
+                            through simulations.
+                          </li>
+                          <li>
+                            Write and simulate Verilog code for combinational
+                            circuits like decoders and multiplexers.
+                          </li>
+                          <li>
+                            Write and simulate Verilog code for sequential
+                            circuits like flip-flops, counters, and sequence
+                            detectors.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ETC08 Python Programming Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Implement fundamental Python programming concepts to
+                            solve problems
+                          </li>
+                          <li>
+                            Apply file handling and string operations to solve
+                            real-world problems.
+                          </li>
+                          <li>
+                            Demonstrate proficiency in data manipulation using
+                            Python collections
+                          </li>
+                          <li>Analyze data using Python</li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          6ETC09 Mini Project
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Identify problems based on societal /research needs
+                          </li>
+                          <li>
+                            Apply Knowledge and skill to solve societal problems
+                            in a group
+                          </li>
+                          <li>
+                            Develop interpersonal skills to work as member of a
+                            group or leader
+                          </li>
+                          <li>
+                            Analyze the impact of solutions in societal and
+                            environmental context for sustainable development
+                          </li>
+                          <li>
+                            Conclude project presetnation with results and
+                            management principles
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester-VII */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem7" ? null : "be-sem7",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-VII
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem7" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem7" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ETC01 Cryptography and Network Security
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>Analyze concepts of security and ciphers</li>
+                          <li>
+                            Interprete the working of encryption and decryption
+                            algorithms
+                          </li>
+                          <li>
+                            Apply authentication functions and hash algorithms
+                          </li>
+                          <li>
+                            Understand the concepts of email and transport
+                            security
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ETC02 Digital Image &amp; Video Processing
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Analyze and implement digital image processing
+                            algorithms. Develop spatial filtering and other
+                            filtering techniques for preprocessing of images.
+                            7ETC02.3 Implement the intensity transformations and
+                            various image transforms, Fourier transform for
+                            image processing in frequency domain and filtering
+                            techniques in Fourier Domain.
+                          </li>
+                          <li>
+                            Evaluate the methodologies for image segmentation,
+                            Compression and restoration etc. Also design Image
+                            processing techniques with practical approach.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ETC03 Project Management and Entrepreneurship
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand basic concept of Project management.
+                          </li>
+                          <li>
+                            Attain the knowledge of cost estimation &amp;
+                            working capital.
+                          </li>
+                          <li>
+                            Prepare Cost Sheets, balance sheets and Cash Flow
+                            statements.
+                          </li>
+                          <li>
+                            Understand the Entrepreneurial competencies &amp;
+                            traits.
+                          </li>
+                          <li>
+                            Discuss the Management skills for Entrepreneurs.
+                          </li>
+                          <li>Understand Social Entrepreneurship.</li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ETC04 Mobile Communication and Networks
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Explain basic concept of Cellular systems and
+                            standards
+                          </li>
+                          <li>
+                            Apply knowledge of signal propagation models to
+                            predict wireless communication performance in
+                            different environments.
+                          </li>
+                          <li>
+                            Implement multiple access techniques in mobile
+                            communication and demonstrate advanced knowledge of
+                            MIMO through practical applications
+                          </li>
+                          <li>
+                            Describe the concept of rake receiver and Know
+                            various Mobile Communication Systems and standards
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ETC05 Introduction to MEMS
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply the concepts of MEMS for project, research and
+                            academic work.
+                          </li>
+                          <li>
+                            Analyze the miniaturization issues and MEMS
+                            Materials
+                          </li>
+                          <li>
+                            Evaluate the principles of solid mechanics in
+                            MEMS/NEMS, sensors and actuators
+                          </li>
+                          <li>
+                            Elaborate fabrication modules of MEMS for
+                            Electronics, automotive and medical application
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ETC06 Cryptography and Network Security LAB
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>To evaluate working of ciphers</li>
+                          <li>
+                            To analyze encryption and decryption algorithms
+                          </li>
+                          <li>
+                            To experiment with authentication and hash functions
+                          </li>
+                          <li>To Apply the consepts of nework security</li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ETC07 Digital Image &amp; Video Processing Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Demonstarte the image formation and apply the basic
+                            operations and histogram equalization on an image.
+                          </li>
+                          <li>
+                            Apply the gray scale image in spatial domain and
+                            apply arithmetic and logical operations on gray
+                            scale image. 7ETC07.3 Implement the thresholding
+                            techniques and frequency domain filtering on the
+                            gray scale image. Implement the morphological
+                            opearations and edge detection operations on an
+                            image.
+                          </li>
+                          <li>
+                            Create a Video from images frames and implement and
+                            Video object detection and tracking for an
+                            application.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ETC08 Project Management and Entrepreneurship LAB
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            To analyze technical feasibility, Environmental and
+                            market feasibility.
+                          </li>
+                          <li>
+                            To interprete quickly about a new industry,
+                            technology, market.
+                          </li>
+                          <li>
+                            To apply academic knowledge to the problems faced by
+                            entrepreneurial firms in a context of uncertainty,
+                            costing and financial statement.
+                          </li>
+                          <li>
+                            To interpret different theories and models of
+                            entrepreneurship.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          7ETC09 Seminar
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Deliver seminar content logically to ensure clarity
+                            in objectives and coherence in information flow.
+                          </li>
+                          <li>
+                            Demonstrate in-depth understanding of the seminar
+                            topic by explaining key concepts with clarity and
+                            elaboration.
+                          </li>
+                          <li>
+                            Apply effective presentation and communication
+                            techniques to engage the audience professionally.
+                          </li>
+                          <li>
+                            Create clear and visually appealing presentation
+                            materials to enhance understanding.
+                          </li>
+                          <li>
+                            Analyse and respond to audience queries with logical
+                            reasoning and critical thinking.
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* B.E. Semester-VIII */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "be-sem8" ? null : "be-sem8",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  B.E. Semester-VIII
+                </span>
+                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                  {expandedSemester === "be-sem8" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "be-sem8" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8ETC01 Embedded Systems
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Apply the concepts and quality attributes of
+                            Embedded Systems
+                          </li>
+                          <li>
+                            Apply the architecture and inbuilt peripherals of
+                            AVR Microcontroller to design the application
+                          </li>
+                          <li>
+                            Analyze the programming of AVR Microcontroller in C
+                            for various applicattion
+                          </li>
+                          <li>
+                            Apply the concepts of RTOs and debugging in embedded
+                            systems application
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8ETC02 Microwave Theory &amp; Techniques
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Applying the Operations of Microwave Active,
+                            Passive, and Semiconductor Microwave Devices in
+                            practical applications.
+                          </li>
+                          <li>
+                            Analyze the Characteristics of Microwave Propagation
+                            in Waveguides and Parallel Microstrip Lines
+                          </li>
+                          <li>
+                            Apply the Operations of Microwave Resonators in
+                            Practical Applications.
+                          </li>
+                          <li>
+                            Analyze the use of S-parameters for the
+                            characterization of microwave devices and evaluate
+                            various parameters of a microwave system through
+                            measurement.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8ETC03 Wireless Sensor Network
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Demonstrate the basics of Ad-hoc networks and
+                            Wireless sensor networks
+                          </li>
+                          <li>
+                            Explain the architecture and placement strategies of
+                            Sensors
+                          </li>
+                          <li>
+                            Analyze topology and MAC layer protocols used in
+                            wireless sensor network
+                          </li>
+                          <li>
+                            Apply the knowledge for suitable routing protocols
+                            based on network and user requirement.
+                          </li>
+                          <li>
+                            Analyze Protocols for congestion and flow control in
+                            sensor networks
+                          </li>
+                          <li>
+                            Develop solutions to real world problems using
+                            Wireless sensor devices
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8ETC04 5G-6G Mobile Communication
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Construct a comparative analysis of LTE and 5G by
+                            identifying key technological advancements and
+                            designing potential use case applications.
+                          </li>
+                          <li>
+                            Analyze RF front-end technologies, including
+                            millimeter wave communication, massive MIMO, and
+                            beamforming techniques.
+                          </li>
+                          <li>
+                            Implement different 5G radio access technologies,
+                            waveforms, and wireless propagation channel models
+                            for various applications. 8ETC04.4 Develop a
+                            comparative framework for 5G and 6G architectures by
+                            analyzing their key building blocks and designing
+                            potential applications for future communication
+                            systems.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8ETC05 Embedded Systems Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Design and implement embedded systems using
+                            microcontrollers and other embedded components,
+                            including hardware and software design.
+                          </li>
+                          <li>
+                            Develope efficient and optimized C++ code for
+                            microcontrollers, utilizing peripherals such as
+                            GPIO, timers, interrupts
+                          </li>
+                          <li>
+                            Analyze the performance of an embedded system in
+                            terms of memory usage, and execution time
+                          </li>
+                          <li>
+                            Design a system with interfacing various sensors,
+                            actuators, and communication modules with a
+                            microcontroller to build functional embedded systems
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8ETC06 Microwave Theory &amp; Techniques Lab
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Analyze the characteristics of microwave
+                            transmission lines and components, including
+                            microstrip lines, attenuators, power dividers.
+                          </li>
+                          <li>
+                            Evaluate the working principles of advanced
+                            microwave network components, such as E-plane,
+                            H-plane, Magic Tee, directional couplers, and
+                            circulators. Evaluate 8ETC06.4 Apply measurement
+                            techniques for microwave parameters, including
+                            frequency measurement using slotted lines,
+                            power-frequency relationships, and attenuation, to
+                            assess system performance.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          8ETC07 Project
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Analyze relevant literature and define a research
+                            problem with well-formulated objectives.
+                          </li>
+                          <li>
+                            Plan and execute the project using appropriate
+                            methodologies and systematic work distribution.
+                          </li>
+                          <li>
+                            Demonstrate technical profiency through structured
+                            presentations, demonstrations, and effective
+                            communication.
+                          </li>
+                          <li>
+                            Interpret and analyze feedback, refine project
+                            implementation and present meaningful results and
+                            conclusions.
+                          </li>
+                          <li>
+                            Exhibit professional ethics, teamwork, and project
+                            documentation skills through effective report
+                            writing and participation in research dissemination
+                            activities.
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
 
+        {/* M.E. Course Outcomes */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          {/* B.E. Course Outcomes Header */}
-          <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-6">
-            <h3 className="text-2xl font-bold text-white">
-              B.E. (Electronics & Telecommunication Engineering)
+          <div className="bg-[#003366] px-6 py-4 text-center">
+            <h3 className="text-xl font-bold text-white">
+              M.E. (Digital Electronics) - Course Outcomes
             </h3>
-            <p className="text-blue-100 mt-1">
-              Click on semester to view detailed course outcomes
-            </p>
-          </div>
-          <div className="divide-y divide-gray-200">
-            {[
-              { id: "be-sem3", label: "B.E. Semester-III" },
-              { id: "be-sem4", label: "B.E. Semester-IV" },
-              { id: "be-sem5", label: "B.E. Semester-V" },
-              { id: "be-sem6", label: "B.E. Semester-VI" },
-              { id: "be-sem7", label: "B.E. Semester-VII" },
-              { id: "be-sem8", label: "B.E. Semester-VIII" },
-            ].map((sem) => (
-              <div key={sem.id} className="border-b border-gray-200 pb-2">
-                <button
-                  onClick={() =>
-                    setExpandedSemester(
-                      expandedSemester === sem.id ? null : sem.id,
-                    )
-                  }
-                  className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-                >
-                  <span className="font-medium text-gray-700">{sem.label}</span>
-                  <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                    {expandedSemester === sem.id ? "Hide" : "View"}
-                  </span>
-                </button>
-                <AnimatePresence>
-                  {expandedSemester === sem.id && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-4 py-4 bg-gray-50 space-y-6">
-                        <div className="text-center py-8">
-                          <EditableText
-                            value={t(
-                              `courseOutcomes.${sem.id}`,
-                              "Course outcomes data will be added soon",
-                            )}
-                            onSave={(val) =>
-                              updateField(`courseOutcomes.${sem.id}`, val)
-                            }
-                            multiline
-                            className="text-gray-500 italic w-full block"
-                          />
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
           </div>
 
-          {/* M.E. Course Outcomes Header */}
-          <div className="bg-gradient-to-r from-orange-600 to-orange-700 p-6 mt-0">
-            <h3 className="text-2xl font-bold text-white">
-              M.E. (Digital Electronics)
-            </h3>
-            <p className="text-orange-100 mt-1">
-              Click on semester to view detailed course outcomes
-            </p>
-          </div>
-          <div className="divide-y divide-gray-200">
-            {[
-              { id: "me-sem1", label: "M.E. Semester-I" },
-              { id: "me-sem2", label: "M.E. Semester-II" },
-              { id: "me-sem3", label: "M.E. Semester-III" },
-            ].map((sem) => (
-              <div key={sem.id} className="border-b border-gray-200 pb-2">
-                <button
-                  onClick={() =>
-                    setExpandedSemester(
-                      expandedSemester === sem.id ? null : sem.id,
-                    )
-                  }
-                  className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-                >
-                  <span className="font-medium text-gray-700">{sem.label}</span>
-                  <span className="px-4 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700 transition-colors">
-                    {expandedSemester === sem.id ? "Hide" : "View"}
-                  </span>
-                </button>
-                <AnimatePresence>
-                  {expandedSemester === sem.id && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-4 py-4 bg-gray-50 space-y-6">
-                        <div className="text-center py-8">
-                          <EditableText
-                            value={t(
-                              `courseOutcomes.${sem.id}`,
-                              "Course outcomes data will be added soon",
-                            )}
-                            onSave={(val) =>
-                              updateField(`courseOutcomes.${sem.id}`, val)
-                            }
-                            multiline
-                            className="text-gray-500 italic w-full block"
-                          />
-                        </div>
+          <div className="p-6 space-y-2">
+            {/* M.E. Semester-I */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "me-sem1" ? null : "me-sem1",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  M.E. Semester-I
+                </span>
+                <span className="px-4 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700 transition-colors">
+                  {expandedSemester === "me-sem1" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "me-sem1" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1UMEF-1/2UMEP-1- Digital Instrumentation
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Design and implement the various digital measurement
+                            techniques, display and recording systems..
+                          </li>
+                          <li>
+                            Comprehend the knowledge of the concept of digital
+                            signal analysis &amp; analyzers.
+                          </li>
+                          <li>
+                            Comprehend the knowledge of smart sensors/digital
+                            sensors and smart or automatic test equipment's and
+                            reliability.
+                          </li>
+                          <li>
+                            Design and implementation of digital controllers,
+                            Programmable Logic controller and its functions.
+                          </li>
+                          <li>
+                            Design of various biomedical instrumentation
+                            systems.
+                          </li>
+                        </ol>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1UMEF2-Advanced Digital Signal Processing
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the various analysis techniques of
+                            discrete time signals..
+                          </li>
+                          <li>
+                            Analyse the finite impulse and infinite impulse
+                            response filters
+                          </li>
+                          <li>
+                            Understand the implementation of sampling rate
+                            converters.
+                          </li>
+                          <li>
+                            Develop the various adaptive filtering and two
+                            dimension transformation algorithms
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1UMEF3- Modern Electronic Design Techniques
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand isolation and Design techniques for
+                            amplifiers.
+                          </li>
+                          <li>
+                            Design buck, boost, buck-boost their control
+                            techniques
+                          </li>
+                          <li>
+                            Understand Communication and Control System Design
+                          </li>
+                          <li>
+                            Understand design of Portable Electronic System
+                          </li>
+                          <li>
+                            Understand design of Electronic System for
+                            Production
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1UMEF4- Digital Communication Technique
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand the fundamental and advanced concepts of
+                            digital communication systems including the digital
+                            transmission over fading channels.
+                          </li>
+                          <li>
+                            Solve the problems associated with various
+                            impairments in digital communication systems.
+                          </li>
+                          <li>
+                            Study and analyse the effects of channel bandwidth
+                            and channel noise on transmitted waveform.
+                          </li>
+                          <li>
+                            Design optimum receivers for a given signal-space
+                            structure for additive Gaussian channels and assess
+                            performance of digital communication receivers for
+                            additive Gaussian channels.
+                          </li>
+                          <li>
+                            Analyse the effect of ISI and Equalization in
+                            digital communication.
+                          </li>
+                          <li>
+                            Apply the knowledge to analyse the digital
+                            communication system with spread spectrum modulation
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          1UMEF5- Embedded System Design
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>Explain architecture of Microcontroller</li>
+                          <li>
+                            Distinguish real-time embedded systems from other
+                            systems.
+                          </li>
+                          <li>
+                            Evaluate the need for real-time operating system
+                          </li>
+                          <li>
+                            Interpret real-time algorithm for task scheduling.
+                          </li>
+                          <li>
+                            Summarize technique used for product enclosure
+                            design and development
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* M.E. Semester-II */}
+            <div className="border-b border-gray-200 pb-2">
+              <button
+                onClick={() =>
+                  setExpandedSemester(
+                    expandedSemester === "me-sem2" ? null : "me-sem2",
+                  )
+                }
+                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-700">
+                  M.E. Semester-II
+                </span>
+                <span className="px-4 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700 transition-colors">
+                  {expandedSemester === "me-sem2" ? "Hide" : "View"}
+                </span>
+              </button>
+              <AnimatePresence>
+                {expandedSemester === "me-sem2" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-4 bg-gray-50 space-y-6">
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          2UMEF1- Digital Image Processing
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand and analyze basic terminology of digital
+                            image processing, elements of visual perception,
+                            image quantization, image types. Zoom operation,
+                            Basic gray level Transformations, Histogram
+                            Processing, etc
+                          </li>
+                          <li>
+                            Examine and analyze various types of images,
+                            intensity transformations, and various spatial
+                            domain image transforms. Analyze Arithmetic and
+                            logic operations, spatial domain filtering,
+                            bit-plane slicing, median filter, color image
+                            processing, fundaments, and color image models.
+                          </li>
+                          <li>
+                            Examine and analyze the 2D Fourier transform and
+                            other frequency domain transformation and
+                            enhancement techniques. Examine and analyze the
+                            Image Restoration and Denoising models for image
+                            enhancement.
+                          </li>
+                          <li>
+                            Evaluate and apply the methodologies for image
+                            segmentation, image Compression, and restoration
+                            etc. Analyze the image morphological techniques.
+                            Create a term/mini- project for practical
+                            applications to image processing.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          2UMEF2- CMOS VLSI Design
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Build upon the theoretical, mathematical and
+                            physical analysis of digital VLSI circuits, for
+                            proper understanding of concept, working and
+                            analysis
+                          </li>
+                          <li>
+                            Analyze the various analog integrated circuits
+                          </li>
+                          <li>Analyse the various RF integrated circuits</li>
+                          <li>
+                            Understand the various partitioning ,floor planning
+                            and placement algorithms in ASIC. 4UMEP1 / 2UMEF3-
+                            Parallel Computing
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          2UMEF4- Artificial Intelligent System
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Develop algorithms for supervised and unsupervised
+                            ANN
+                          </li>
+                          <li>
+                            Implement the ANN concepts to solve real life
+                            problems
+                          </li>
+                          <li>Analyze the ANN network.</li>
+                          <li>
+                            Develop algorithms in fuzzy logic for applications
+                            such as pattern recognition
+                          </li>
+                          <li>
+                            Implement the fuzzy logic concepts to solve real
+                            life problems.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-2">
+                          2UMEF5- High Speed Digital System Design
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          On completion of the course, the students will be able
+                          to:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                          <li>
+                            Understand fundamentals of transmission line , cross
+                            talk estimation and minimization.
+                          </li>
+                          <li>
+                            Aware about non ideal interconnect issues and
+                            transmission line losses
+                          </li>
+                          <li>
+                            Understand non ideal return paths , switching losses
+                            and different design methodology.
+                          </li>
+                          <li>
+                            Know about the buffer modelling , timing analysis
+                            and high speed measurements techniques .
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>
@@ -1762,7 +4084,7 @@ const EnTC = () => {
             />
           </h2>
           <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
-          <div className="text-gray-600 mt-3">
+          <p className="text-gray-600 mt-3">
             <EditableText
               value={t(
                 "projects.subtitle",
@@ -1770,7 +4092,7 @@ const EnTC = () => {
               )}
               onSave={(val) => updateField("projects.subtitle", val)}
             />
-          </div>
+          </p>
         </div>
 
         <div className="flex justify-center mb-6">
@@ -2156,260 +4478,226 @@ const EnTC = () => {
       </div>
     ),
 
-    achievements: (
-      <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
-          <EditableText
-            value={t("achievements.title", "Achievements")}
-            onSave={(val) => updateField("achievements.title", val)}
-          />
-        </h3>
+    achievements: (() => {
+      const facultyAchievements = t(
+        "achievements.faculty",
+        defaultAchievements.faculty || [],
+      );
+      const studentAchievements = t(
+        "achievements.students",
+        defaultAchievements.students || [],
+      );
 
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-8 border border-gray-200">
-          <div className="text-center mb-6">
-            <h4 className="text-2xl font-bold text-gray-900 mb-2">
-              <EditableText
-                value={t(
-                  "achievements.departmentTitle",
-                  "Department Achievements & Recognition",
-                )}
-                onSave={(val) =>
-                  updateField("achievements.departmentTitle", val)
-                }
-              />
-            </h4>
-            <div className="text-gray-600">
-              <EditableText
-                value={t(
-                  "achievements.departmentSubtitle",
-                  "Excellence in Academics, Research, and Innovation",
-                )}
-                onSave={(val) =>
-                  updateField("achievements.departmentSubtitle", val)
-                }
-              />
+      const handleViewCertificate = (item) => {
+        if (!item.image) return;
+        const isPdf = item.image.toLowerCase().endsWith(".pdf");
+        if (isPdf) {
+          window.open(item.image, "_blank");
+        } else {
+          setCertificateLightbox(item);
+        }
+      };
+
+      return (
+        <div className="space-y-8">
+          {/* Certificate Lightbox Modal */}
+          <AnimatePresence>
+            {certificateLightbox && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                onClick={() => setCertificateLightbox(null)}
+              >
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  className="relative max-w-4xl max-h-[90vh] w-full bg-white rounded-2xl overflow-hidden shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-white font-bold text-lg">
+                        {certificateLightbox.name}
+                      </h3>
+                      <p className="text-blue-200 text-sm">
+                        {certificateLightbox.achievement}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setCertificateLightbox(null)}
+                      className="text-white hover:text-orange-300 transition-colors"
+                    >
+                      <FaTimes className="text-xl" />
+                    </button>
+                  </div>
+                  <div className="p-4 flex items-center justify-center bg-gray-50 max-h-[75vh] overflow-auto">
+                    <img
+                      src={certificateLightbox.image}
+                      alt={certificateLightbox.achievement}
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                      className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                    />
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Header */}
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-gray-900">Achievements</h2>
+            <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
+            <p className="text-gray-600 mt-3">
+              Department of Electronics &amp; Telecommunication Engineering
+            </p>
+          </div>
+
+          {/* Tab Menu: Faculty | Student toggle */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex rounded-lg bg-gray-100 p-1">
+              <button
+                onClick={() => setAchievementTab("faculty")}
+                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  achievementTab === "faculty"
+                    ? "bg-[#003366] text-white shadow-md"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                }`}
+              >
+                <FaChalkboardTeacher className="text-lg" />
+                Faculty Achievements
+              </button>
+              <button
+                onClick={() => setAchievementTab("student")}
+                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  achievementTab === "student"
+                    ? "bg-[#003366] text-white shadow-md"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                }`}
+              >
+                <FaUserGraduate className="text-lg" />
+                Student Achievements
+              </button>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {t("achievements.cards", defaultAchievements.cards).map(
-              (item, i) => {
-                const icons = { FaBullseye, FaUserTie, FaProjectDiagram };
-                const Icon = icons[item.icon] || FaProjectDiagram;
-                const colors = {
-                  yellow: "text-yellow-600 bg-yellow-100",
-                  blue: "text-ssgmce-blue bg-blue-100",
-                  green: "text-green-600 bg-green-100",
-                  purple: "text-purple-600 bg-purple-100",
-                  red: "text-red-600 bg-red-100",
-                  indigo: "text-indigo-600 bg-indigo-100",
-                };
-                const colorClass = colors[item.color] || colors.blue;
-
-                return (
-                  <div
-                    key={i}
-                    className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow relative"
-                  >
-                    {isEditing && (
-                      <button
-                        onClick={() => {
-                          const newCards = t(
-                            "achievements.cards",
-                            defaultAchievements.cards,
-                          ).filter((_, idx) => idx !== i);
-                          updateData("achievements.cards", newCards);
-                        }}
-                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md transition-colors"
-                        title="Remove achievement"
-                      >
-                        Remove
-                      </button>
-                    )}
-                    <div className="text-center">
-                      <div
-                        className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${colorClass.split(" ")[1]}`}
-                      >
-                        <Icon
-                          className={`text-3xl ${colorClass.split(" ")[0]}`}
-                        />
+          {/* Faculty Achievements */}
+          {achievementTab === "faculty" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {facultyAchievements.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <FaTrophy className="mr-3 text-yellow-300" />
+                      {item.name}
+                    </h3>
+                    <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
+                      {item.category}
+                    </span>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-[#003366] mb-2">
+                          {item.achievement}
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {item.description}
+                        </p>
                       </div>
-                      <h5 className="text-xl font-bold text-gray-900 mb-2">
-                        <EditableText
-                          value={item.title}
-                          onSave={(val) => {
-                            const newCards = [
-                              ...t(
-                                "achievements.cards",
-                                defaultAchievements.cards,
-                              ),
-                            ];
-                            newCards[i] = { ...newCards[i], title: val };
-                            updateData("achievements.cards", newCards);
-                          }}
-                        />
-                      </h5>
-                      <p className="text-gray-600 text-sm">
-                        <EditableText
-                          value={item.desc}
-                          onSave={(val) => {
-                            const newCards = [
-                              ...t(
-                                "achievements.cards",
-                                defaultAchievements.cards,
-                              ),
-                            ];
-                            newCards[i] = { ...newCards[i], desc: val };
-                            updateData("achievements.cards", newCards);
-                          }}
-                          multiline
-                        />
-                      </p>
+                      {item.image && (
+                        <button
+                          onClick={() => handleViewCertificate(item)}
+                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                          <FaAward className="text-yellow-300" />
+                          View Certificate
+                        </button>
+                      )}
                     </div>
                   </div>
-                );
-              },
-            )}
-            {isEditing && (
-              <button
-                onClick={() => {
-                  const newCard = {
-                    title: "New Achievement",
-                    desc: "Description",
-                    icon: "FaProjectDiagram",
-                    color: "blue",
-                  };
-                  updateData("achievements.cards", [
-                    ...t("achievements.cards", defaultAchievements.cards),
-                    newCard,
-                  ]);
-                }}
-                className="flex items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 cursor-pointer"
-              >
-                + Add Card
-              </button>
-            )}
-          </div>
-        </div>
+                </motion.div>
+              ))}
+              {facultyAchievements.length === 0 && (
+                <p className="text-center text-gray-400 py-8 text-sm">
+                  No faculty achievements recorded yet.
+                </p>
+              )}
+            </motion.div>
+          )}
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-          <h4 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-            <FaProjectDiagram className="text-ssgmce-blue mr-3" />
-            <EditableText
-              value={t("achievements.highlightsTitle", "Recent Highlights")}
-              onSave={(val) => updateField("achievements.highlightsTitle", val)}
-            />
-          </h4>
-          <div className="space-y-4">
-            {t("achievements.highlights", defaultAchievements.highlights).map(
-              (item, i) => {
-                const colors = {
-                  blue: "bg-ssgmce-blue bg-blue-50",
-                  green: "bg-green-600 bg-green-50",
-                  purple: "bg-purple-600 bg-purple-50",
-                  orange: "bg-orange-600 bg-orange-50",
-                };
-                const colorClass = colors[item.color] || colors.blue;
-                const dotColor = colorClass.split(" ")[0];
-                const bgColor = colorClass.split(" ")[1];
-
-                return (
-                  <div
-                    key={i}
-                    className={`flex items-start gap-3 p-4 rounded-lg ${bgColor} relative`}
-                  >
-                    {isEditing && (
-                      <button
-                        onClick={() => {
-                          const newHighlights = t(
-                            "achievements.highlights",
-                            defaultAchievements.highlights,
-                          ).filter((_, idx) => idx !== i);
-                          updateData("achievements.highlights", newHighlights);
-                        }}
-                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md transition-colors"
-                        title="Remove highlight"
-                      >
-                        Remove
-                      </button>
-                    )}
-                    <div
-                      className={`w-2 h-2 rounded-full mt-2 ${dotColor}`}
-                    ></div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">
-                        <EditableText
-                          value={item.title}
-                          onSave={(val) => {
-                            const newHighlights = [
-                              ...t(
-                                "achievements.highlights",
-                                defaultAchievements.highlights,
-                              ),
-                            ];
-                            newHighlights[i] = {
-                              ...newHighlights[i],
-                              title: val,
-                            };
-                            updateData(
-                              "achievements.highlights",
-                              newHighlights,
-                            );
-                          }}
-                        />
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        <EditableText
-                          value={item.desc}
-                          onSave={(val) => {
-                            const newHighlights = [
-                              ...t(
-                                "achievements.highlights",
-                                defaultAchievements.highlights,
-                              ),
-                            ];
-                            newHighlights[i] = {
-                              ...newHighlights[i],
-                              desc: val,
-                            };
-                            updateData(
-                              "achievements.highlights",
-                              newHighlights,
-                            );
-                          }}
-                          multiline
-                        />
-                      </p>
+          {/* Student Achievements */}
+          {achievementTab === "student" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {studentAchievements.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <FaAward className="mr-3 text-yellow-300" />
+                      {item.name}
+                    </h3>
+                    <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
+                      {item.category}
+                    </span>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-[#003366] mb-2">
+                          {item.achievement}
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                      {item.image && (
+                        <button
+                          onClick={() => handleViewCertificate(item)}
+                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                          <FaAward className="text-yellow-300" />
+                          View Certificate
+                        </button>
+                      )}
                     </div>
                   </div>
-                );
-              },
-            )}
-            {isEditing && (
-              <button
-                onClick={() => {
-                  const newHighlight = {
-                    title: "New Highlight",
-                    desc: "Description",
-                    color: "blue",
-                  };
-                  updateData("achievements.highlights", [
-                    ...t(
-                      "achievements.highlights",
-                      defaultAchievements.highlights,
-                    ),
-                    newHighlight,
-                  ]);
-                }}
-                className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 cursor-pointer text-center"
-              >
-                + Add Highlight
-              </button>
-            )}
-          </div>
+                </motion.div>
+              ))}
+              {studentAchievements.length === 0 && (
+                <p className="text-center text-gray-400 py-8 text-sm">
+                  No student achievements recorded yet.
+                </p>
+              )}
+            </motion.div>
+          )}
         </div>
-      </div>
-    ),
+      );
+    })(),
 
     faculty: (
       <div className="space-y-10">
@@ -2420,7 +4708,7 @@ const EnTC = () => {
               onSave={(val) => updateField("templateData.faculty.title", val)}
             />
           </h3>
-          <div className="text-gray-500 mt-2">
+          <p className="text-gray-500 mt-2">
             <EditableText
               value={t(
                 "templateData.faculty.subtitle",
@@ -2430,7 +4718,7 @@ const EnTC = () => {
                 updateField("templateData.faculty.subtitle", val)
               }
             />
-          </div>
+          </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -2508,15 +4796,32 @@ const EnTC = () => {
                 {/* Content Area */}
                 <div className="p-5 flex-1 flex flex-col justify-center">
                   <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
-                    <EditableText
-                      value={fac.name}
-                      onSave={(val) =>
-                        updateFacultyList((list) => {
-                          list[i] = { ...list[i], name: val };
-                          return list;
-                        })
-                      }
-                    />
+                    {fac.id && !fac.isIndustry ? (
+                      <Link
+                        to={`/faculty/${fac.id}`}
+                        className="hover:underline"
+                      >
+                        <EditableText
+                          value={fac.name}
+                          onSave={(val) =>
+                            updateFacultyList((list) => {
+                              list[i] = { ...list[i], name: val };
+                              return list;
+                            })
+                          }
+                        />
+                      </Link>
+                    ) : (
+                      <EditableText
+                        value={fac.name}
+                        onSave={(val) =>
+                          updateFacultyList((list) => {
+                            list[i] = { ...list[i], name: val };
+                            return list;
+                          })
+                        }
+                      />
+                    )}
                   </h4>
                   <p className="text-ssgmce-blue font-medium text-sm mb-3 uppercase tracking-wide text-[11px]">
                     <EditableText
@@ -2583,6 +4888,25 @@ const EnTC = () => {
                         </span>
                       )}
                     </div>
+
+                    {fac.vidwanId && (
+                      <a
+                        href={`https://vidwan.inflibnet.ac.in/profile/${fac.vidwanId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-[10px] font-bold text-emerald-600 mt-2 hover:underline uppercase tracking-wide"
+                      >
+                        Vidwan Profile <FaAngleRight className="ml-1" />
+                      </a>
+                    )}
+                    {fac.id && !fac.isIndustry && (
+                      <Link
+                        to={`/faculty/${fac.id}`}
+                        className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
+                      >
+                        View Profile <FaAngleRight className="ml-1" />
+                      </Link>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -2609,161 +4933,479 @@ const EnTC = () => {
       </div>
     ),
 
+    staff: (() => {
+      const staffData = defaultStaff || [];
+      const staffImages = {
+        VGP,
+        MYK,
+        SAA,
+        ASA,
+        SBS,
+        JSK,
+        KKT,
+        GOT,
+        ALN,
+        SAR,
+        PBB,
+        KRK,
+        DBB,
+        MUS,
+      };
+
+      return (
+        <div className="space-y-8">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
+              Staff @ Department
+            </h3>
+            <p className="text-gray-500 text-sm mt-2 pl-5">
+              Non-teaching staff members of the Electronics & Telecommunication
+              Engineering Department.
+            </p>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            {staffData.map((staff, i) => {
+              const resolvedPhoto = staffImages[staff.photo] || staff.photo;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex relative"
+                >
+                  {/* Image Area */}
+                  <div className="w-32 sm:w-40 bg-gray-50 flex-shrink-0 relative overflow-hidden border-r border-gray-100">
+                    {resolvedPhoto ? (
+                      <img
+                        src={resolvedPhoto}
+                        alt={staff.name}
+                        className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <FaUserTie className="text-5xl text-gray-300" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content Area */}
+                  <div className="p-5 flex-1 flex flex-col justify-center">
+                    <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
+                      {staff.name}
+                    </h4>
+                    <p className="text-ssgmce-blue font-medium text-sm uppercase tracking-wide text-[11px] mt-1">
+                      {staff.role}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    })(),
+
     "course-material": (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
-          Course Material
-        </h3>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Subject
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Link
-                </th>
-                {isEditing && <th className="px-6 py-3 text-right">Actions</th>}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {t("courseMaterial", defaultCourseMaterials).map((item, i) => (
-                <tr key={i}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <EditableText
-                      value={item.subject}
-                      onSave={(val) => {
-                        const newMat = [
-                          ...t("courseMaterial", defaultCourseMaterials),
-                        ];
-                        newMat[i] = { ...newMat[i], subject: val };
-                        updateData("courseMaterial", newMat);
-                      }}
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-blue-600 hover:underline">
-                    <EditableText
-                      value={item.link}
-                      onSave={(val) => {
-                        const newMat = [
-                          ...t("courseMaterial", defaultCourseMaterials),
-                        ];
-                        newMat[i] = { ...newMat[i], link: val };
-                        updateData("courseMaterial", newMat);
-                      }}
-                    />
-                  </td>
-                  {isEditing && (
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => {
-                          const newMat = t(
-                            "courseMaterial",
-                            defaultCourseMaterials,
-                          ).filter((_, idx) => idx !== i);
-                          updateData("courseMaterial", newMat);
-                        }}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {isEditing && (
-            <button
-              onClick={() => {
-                const newItem = { subject: "New Subject", link: "#" };
-                updateData("courseMaterial", [
-                  ...t("courseMaterial", defaultCourseMaterials),
-                  newItem,
-                ]);
-              }}
-              className="w-full py-2 bg-green-500 text-white hover:bg-green-600"
-            >
-              + Add Material
-            </button>
-          )}
+        <div className="text-center">
+          <div className="w-16 h-16 bg-orange-50 text-ssgmce-orange rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
+            <FaChalkboardTeacher />
+          </div>
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
+            <EditableText
+              value={t("courseMaterial.title", "Course Material")}
+              onSave={(val) => updateData("courseMaterial.title", val)}
+            />
+          </h3>
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <EditableText
+              value={t(
+                "courseMaterial.description",
+                "Access comprehensive course materials, lecture notes, assignments, and study resources for all semesters.",
+              )}
+              onSave={(val) => updateData("courseMaterial.description", val)}
+              multiline
+            />
+          </div>
         </div>
+
+        {/* Course Material Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white px-8 py-5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-wide">
+                Course Material
+              </h3>
+              <p className="text-sm text-orange-100 mt-1">
+                Department of Electronics & Telecommunication Engineering
+              </p>
+            </div>
+            <FaChalkboardTeacher className="text-4xl text-orange-200 opacity-40" />
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th className="px-6 py-4 font-bold text-center w-20">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 font-bold">Year / Class</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    Access Materials
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {(t("courseMaterial", defaultCourseMaterials) || []).map(
+                  (material, i) => (
+                    <tr
+                      key={i}
+                      className="hover:bg-orange-50/30 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-center font-mono text-gray-400">
+                        {i + 1}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-gray-800">
+                          <EditableText
+                            value={material.title}
+                            onSave={(val) => {
+                              const updated = [
+                                ...t("courseMaterial", defaultCourseMaterials),
+                              ];
+                              updated[i] = { ...updated[i], title: val };
+                              updateData("courseMaterial", updated);
+                            }}
+                          />
+                        </span>
+                        {isEditing && (
+                          <div className="text-xs text-blue-500 mt-1">
+                            Link:{" "}
+                            <EditableText
+                              value={material.link}
+                              onSave={(val) => {
+                                const updated = [
+                                  ...t(
+                                    "courseMaterial",
+                                    defaultCourseMaterials,
+                                  ),
+                                ];
+                                updated[i] = { ...updated[i], link: val };
+                                updateData("courseMaterial", updated);
+                              }}
+                            />
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <a
+                          href={material.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-ssgmce-orange hover:text-orange-700 font-medium text-xs border border-gray-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
+                        >
+                          <FaDownload className="text-xs" /> Access Drive
+                        </a>
+                      </td>
+                    </tr>
+                  ),
+                )}
+                {(t("courseMaterial", defaultCourseMaterials) || []).length ===
+                  0 && (
+                  <tr>
+                    <td
+                      colSpan={3}
+                      className="px-6 py-12 text-center text-gray-400"
+                    >
+                      No course materials available yet. Use the admin editor to
+                      add materials.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+            Click on "Access Drive" to view and download course materials from
+            the respective year's shared folder.
+          </div>
+          {isEditing && (
+            <div className="p-4 border-t border-gray-100">
+              <button
+                onClick={() => {
+                  updateData("courseMaterial", [
+                    ...t("courseMaterial", defaultCourseMaterials),
+                    { title: "New Semester", link: "#" },
+                  ]);
+                }}
+                className="px-4 py-2 bg-ssgmce-blue text-white rounded hover:bg-ssgmce-dark-blue transition-colors text-sm"
+              >
+                + Add Material
+              </button>
+            </div>
+          )}
+        </motion.div>
       </div>
     ),
 
-    "innovative-practices": (
+    magazines: (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
-          Innovative Practices
-        </h3>
-        <div className="grid gap-6">
-          {t("innovativePractices", defaultInnovativePractices).map(
-            (item, i) => (
-              <div
-                key={i}
-                className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 relative"
-              >
-                {isEditing && (
-                  <button
-                    onClick={() => {
-                      const newPrac = t(
-                        "innovativePractices",
-                        defaultInnovativePractices,
-                      ).filter((_, idx) => idx !== i);
-                      updateData("innovativePractices", newPrac);
-                    }}
-                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md transition-colors"
-                    title="Remove practice"
-                  >
-                    Remove
-                  </button>
+        {/* Magazines Header */}
+        <div className="text-center">
+          <div className="w-16 h-16 bg-orange-50 text-ssgmce-orange rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
+            <FaBook />
+          </div>
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
+            <EditableText
+              value={t("magazines.title", "Department Magazines")}
+              onSave={(val) => updateData("magazines.title", val)}
+            />
+          </h3>
+          <div className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <EditableText
+              value={t(
+                "magazines.description",
+                "Srujjan - the department magazine featuring student creativity, technical articles, achievements, and department highlights.",
+              )}
+              onSave={(val) => updateData("magazines.description", val)}
+              multiline
+            />
+          </div>
+        </div>
+
+        {/* Magazine Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-8 py-5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-wide">Magzines</h3>
+              <p className="text-sm text-gray-300 mt-1">
+                Department of Electronics & Telecommunication Engineering
+              </p>
+            </div>
+            <FaDownload className="text-4xl text-orange-200 opacity-40" />
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                  <th className="px-6 py-4 font-bold text-center w-20">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 font-bold">Publishing Date</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    More Details
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {/* Latest Issue Row */}
+                <tr className="hover:bg-orange-50/30 transition-colors bg-orange-50/10">
+                  <td className="px-6 py-4 text-center font-mono text-gray-400">
+                    1
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded-full">
+                        Latest
+                      </span>
+                      <span className="font-bold text-gray-800">
+                        <EditableText
+                          value={t(
+                            "magazines.latest.title",
+                            defaultMagazines.latest.title ||
+                              "Srujjan Magazine 2024-25",
+                          )}
+                          onSave={(val) =>
+                            updateData("magazines.latest.title", val)
+                          }
+                        />
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <a
+                      href={t(
+                        "magazines.latest.link",
+                        defaultMagazines.latest.link || "#",
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
+                    >
+                      <FaDownload className="text-xs" /> Click for Details
+                    </a>
+                  </td>
+                </tr>
+
+                {/* Archive Rows */}
+                {(t("magazines.archives", defaultMagazines.archives) || []).map(
+                  (issue, i) => (
+                    <tr
+                      key={i}
+                      className="hover:bg-orange-50/30 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-center font-mono text-gray-400">
+                        {i + 2}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-gray-700">
+                          <EditableText
+                            value={issue.title}
+                            onSave={(val) => {
+                              const archives = [
+                                ...t(
+                                  "magazines.archives",
+                                  defaultMagazines.archives,
+                                ),
+                              ];
+                              archives[i] = { ...archives[i], title: val };
+                              updateData("magazines.archives", archives);
+                            }}
+                          />
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <a
+                          href={issue.link || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
+                        >
+                          <FaDownload className="text-xs" /> Click for Details
+                        </a>
+                      </td>
+                    </tr>
+                  ),
                 )}
-                <h4 className="text-xl font-bold text-gray-900 mb-2">
-                  <EditableText
-                    value={item.title}
-                    onSave={(val) => {
-                      const newPrac = [
-                        ...t("innovativePractices", defaultInnovativePractices),
-                      ];
-                      newPrac[i] = { ...newPrac[i], title: val };
-                      updateData("innovativePractices", newPrac);
-                    }}
-                  />
-                </h4>
-                <div className="text-gray-600">
-                  <EditableText
-                    value={item.description}
-                    onSave={(val) => {
-                      const newPrac = [
-                        ...t("innovativePractices", defaultInnovativePractices),
-                      ];
-                      newPrac[i] = { ...newPrac[i], description: val };
-                      updateData("innovativePractices", newPrac);
-                    }}
-                    multiline
-                  />
-                </div>
-              </div>
-            ),
-          )}
-          {isEditing && (
-            <button
-              onClick={() => {
-                const newItem = {
-                  title: "New Practice",
-                  description: "Description",
-                };
-                updateData("innovativePractices", [
-                  ...t("innovativePractices", defaultInnovativePractices),
-                  newItem,
-                ]);
-              }}
-              className="w-full py-3 bg-gray-100 text-gray-500 border-2 border-dashed rounded-lg hover:border-ssgmce-blue hover:text-ssgmce-blue"
-            >
-              + Add Practice
-            </button>
-          )}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
+            Click on "Click for Details" to view/download the magazine PDF.
+          </div>
+        </motion.div>
+      </div>
+    ),
+
+    practices: (
+      <div className="space-y-8">
+        <div className="max-w-3xl">
+          <h3 className="text-3xl font-bold text-gray-800 mb-4 border-l-4 border-orange-500 pl-4">
+            Innovative Practice
+          </h3>
+        </div>
+
+        {/* Innovative Practice Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead
+                style={{ backgroundColor: "#003366" }}
+                className="text-white"
+              >
+                <tr>
+                  <th className="px-6 py-4 text-center font-semibold whitespace-nowrap text-sm">
+                    S.N.
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Name of The Faculty
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Subject
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Innovative Practice
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold text-sm">
+                    Link
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {t("innovativePractices", defaultInnovativePractices).map(
+                  (item, idx) => (
+                    <tr
+                      key={idx}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      {item.rowSpanParent !== false && (
+                        <td
+                          className="px-6 py-4 text-center font-medium text-gray-900"
+                          rowSpan={(() => {
+                            if (!item.sn) return undefined;
+                            const practices = t(
+                              "innovativePractices",
+                              defaultInnovativePractices,
+                            );
+                            let span = 1;
+                            for (let j = idx + 1; j < practices.length; j++) {
+                              if (practices[j].rowSpanParent === false) span++;
+                              else break;
+                            }
+                            return span > 1 ? span : undefined;
+                          })()}
+                        >
+                          {item.sn}
+                        </td>
+                      )}
+                      {item.rowSpanParent !== false && (
+                        <td
+                          className="px-6 py-4 text-center whitespace-nowrap"
+                          style={{ color: "#003366" }}
+                          rowSpan={(() => {
+                            if (!item.faculty) return undefined;
+                            const practices = t(
+                              "innovativePractices",
+                              defaultInnovativePractices,
+                            );
+                            let span = 1;
+                            for (let j = idx + 1; j < practices.length; j++) {
+                              if (practices[j].rowSpanParent === false) span++;
+                              else break;
+                            }
+                            return span > 1 ? span : undefined;
+                          })()}
+                        >
+                          <span className="font-medium">{item.faculty}</span>
+                        </td>
+                      )}
+                      <td className="px-6 py-4 text-gray-700">
+                        {item.subject}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {item.practice}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {item.link && (
+                          <a
+                            href={item.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                          >
+                            <FaExternalLinkAlt className="text-xs" />
+                            Link
+                          </a>
+                        )}
+                      </td>
+                    </tr>
+                  ),
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     ),
@@ -3182,6 +5824,22 @@ const EnTC = () => {
               <div className="flex items-stretch">
                 <div className="w-2 bg-ssgmce-blue shrink-0"></div>
                 <div className="p-6 flex-1">
+                  {/* Lab Name */}
+                  {(item.lab || isEditing) && (
+                    <p className="text-xs font-semibold text-ssgmce-blue uppercase tracking-wider mb-1">
+                      <EditableText
+                        value={item.lab || "Lab Name"}
+                        onSave={(val) => {
+                          const updated = [
+                            ...t("servicesExtended", defaultServicesExtended),
+                          ];
+                          updated[i] = { ...updated[i], lab: val };
+                          updateData("servicesExtended", updated);
+                        }}
+                      />
+                    </p>
+                  )}
+                  {/* Facility Title */}
                   <div className="flex items-center gap-3 mb-3">
                     <FaTools className="text-xl text-ssgmce-orange" />
                     <h4 className="text-lg font-bold text-gray-900">
@@ -3197,6 +5855,7 @@ const EnTC = () => {
                       />
                     </h4>
                   </div>
+                  {/* Details */}
                   <p className="text-gray-600 leading-relaxed">
                     <EditableText
                       value={item.details}
@@ -3211,6 +5870,46 @@ const EnTC = () => {
                     />
                   </p>
                 </div>
+                {/* Image Area */}
+                {(item.image || isEditing) && (
+                  <div className="w-40 sm:w-48 flex-shrink-0 bg-gray-50 border-l border-gray-100 flex items-center justify-center">
+                    {item.image ? (
+                      <EditableImage
+                        src={item.image}
+                        onSave={(url) => {
+                          const updated = [
+                            ...t("servicesExtended", defaultServicesExtended),
+                          ];
+                          updated[i] = { ...updated[i], image: url };
+                          updateData("servicesExtended", updated);
+                        }}
+                        alt={item.facility}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : isEditing ? (
+                      <div
+                        className="flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-gray-100 transition-colors w-full h-full"
+                        onClick={() => {
+                          const url = prompt(
+                            "Enter image URL for this service:",
+                          );
+                          if (url) {
+                            const updated = [
+                              ...t("servicesExtended", defaultServicesExtended),
+                            ];
+                            updated[i] = { ...updated[i], image: url };
+                            updateData("servicesExtended", updated);
+                          }
+                        }}
+                      >
+                        <FaTools className="text-3xl text-gray-300 mb-2" />
+                        <span className="text-xs text-gray-400">
+                          Click to add image
+                        </span>
+                      </div>
+                    ) : null}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -3222,8 +5921,10 @@ const EnTC = () => {
               const updated = [
                 ...t("servicesExtended", defaultServicesExtended),
                 {
+                  lab: "Lab Name",
                   facility: "New Facility",
                   details: "Description of services",
+                  image: "",
                 },
               ];
               updateData("servicesExtended", updated);
@@ -3335,6 +6036,1000 @@ const EnTC = () => {
             </button>
           </div>
         )}
+      </div>
+    ),
+
+    "industrial-visits": (
+      <div className="space-y-8">
+        <div className="text-center mb-8">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">
+            <FaIndustry className="inline-block mr-2 text-ssgmce-blue" />
+            Industrial Visits
+          </h3>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            The department regularly organizes industrial visits and training
+            programs to provide students hands-on exposure to industry
+            practices, cutting-edge technologies, and professional work culture.
+          </p>
+        </div>
+
+        {/* Industrial Visits Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-ssgmce-blue text-white">
+                <tr>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    S.N.
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold">
+                    Name of Industry / Organization Visited
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold">Class</th>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    No of Students
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {[
+                  {
+                    sn: "01",
+                    industries: [
+                      "NSTI Ramanthapur, Hyderabad",
+                      "ISRO NRSC Outreach Facility, Hyderabad",
+                      "Wonderla Solar & Water Purification Plant, Hyderabad",
+                    ],
+                    report:
+                      "/uploads/documents/entc/industrial-visits/entc_iv_2025_26_nsti_hyderabad.pdf",
+                    class: "3U1 & 3U2 (Third Year)",
+                    date: "18/01/2026 to 26/01/2026",
+                    students: "91",
+                  },
+                  {
+                    sn: "02",
+                    industries: [
+                      "GMRT, Khodad, Pune",
+                      "Wireless Police Training Centre, Pashan, Pune",
+                      "BSNL ZTTC (RTTC), Chinchwad, Pune",
+                    ],
+                    report:
+                      "/uploads/documents/entc/industrial-visits/entc_iv_2024_25_pune.pdf",
+                    class: "4U1 & 4U2 (Final Year)",
+                    date: "28/02/2025 to 04/03/2025",
+                    students: "72",
+                  },
+                  {
+                    sn: "03",
+                    industries: [
+                      "NSTI Ramanthapur, Hyderabad",
+                      "ISRO NRSC Outreach Facility, Hyderabad",
+                      "Wonderla Solar & Water Purification Plant, Hyderabad",
+                    ],
+                    report:
+                      "/uploads/documents/entc/industrial-visits/entc_iv_2024_25_isro.pdf",
+                    class: "3U1 & 3U2 (Third Year)",
+                    date: "27/02/2025 to 04/03/2025",
+                    students: "90",
+                  },
+                  {
+                    sn: "04",
+                    industries: [
+                      "NSTI Ramanthapur, Hyderabad",
+                      "ISRO NRSC Outreach Facility, Hyderabad",
+                      "Wonderla Solar & Water Purification Plant, Hyderabad",
+                    ],
+                    report:
+                      "/uploads/documents/entc/industrial-visits/entc_iv_2023_24_hyderabad.pdf",
+                    class: "3U1 & 3U2 (Third Year)",
+                    date: "25/02/2024 to 04/03/2024",
+                    students: "108",
+                  },
+                  {
+                    sn: "05",
+                    industries: [
+                      "S A Electronics, Pune",
+                      "Vigyan Ashram, Pabal, Pune",
+                    ],
+                    report:
+                      "/uploads/documents/entc/industrial-visits/entc_iv_2019_20.pdf",
+                    class: "4U1 & 4U2 (Final Year)",
+                    date: "02/03/2020 to 06/03/2020",
+                    students: "49",
+                  },
+                  {
+                    sn: "06",
+                    industries: [
+                      "Police Wireless Training Center, Pashan, Pune",
+                      "Renu Electronics, Baner Road, Pune",
+                    ],
+                    report:
+                      "/uploads/documents/entc/industrial-visits/entc_iv_2017_18.pdf",
+                    class: "4U1 & 4U2 (Final Year)",
+                    date: "15/01/2018 to 18/01/2018",
+                    students: "114",
+                  },
+                ].map((visit, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-900">
+                      {visit.sn}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        {visit.industries.map((ind, i) => (
+                          <div key={i} className="text-gray-700">
+                            {ind}
+                          </div>
+                        ))}
+                        {visit.report && (
+                          <a
+                            href={visit.report}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-ssgmce-blue hover:underline text-xs mt-1"
+                          >
+                            <FaFileAlt className="text-xs" />
+                            Details Report
+                          </a>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-gray-700">{visit.class}</td>
+                    <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                      {visit.date}
+                    </td>
+                    <td className="px-6 py-4 text-gray-700 text-center font-medium">
+                      {visit.students}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    ),
+
+    mous: (
+      <div className="space-y-8">
+        <div className="text-center mb-8">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">MoUs</h3>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Strategic partnerships with industry leaders and academic
+            institutions to enhance learning outcomes and provide students with
+            real-world exposure.
+          </p>
+        </div>
+
+        {/* Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-ssgmce-blue text-white">
+                <tr>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    Sr. No.
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold">
+                    Name of the Organization
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    MOU Signing Date
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                    MOU Copy / Report
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {[
+                  {
+                    no: "1.",
+                    org: "ADOLF SOLUTIONS (OPC) PVT. LTD",
+                    date: "05-April-2025",
+                    report:
+                      "/uploads/documents/entc_mous/MOU_Adolf_Solutions_2025.pdf",
+                  },
+                  {
+                    no: "2.",
+                    org: "DAccess IT Infra Pvt. Ltd., Pune",
+                    date: "05-April-2025",
+                    report:
+                      "/uploads/documents/entc_mous/MOU_DAccess_IT_Infra_2025.pdf",
+                  },
+                  {
+                    no: "3.",
+                    org: "Iravan Technologies., Pune",
+                    date: "05-April-2025",
+                    report:
+                      "/uploads/documents/entc_mous/MOU_Iravan_Technologies_2025.pdf",
+                  },
+                  {
+                    no: "4.",
+                    org: "SSG Embedded Solutions, Nagpur",
+                    date: "05-April-2025",
+                    report:
+                      "/uploads/documents/entc_mous/MOU_SSG_Embedded_Solutions_2025.pdf",
+                  },
+                  {
+                    no: "5.",
+                    org: "Symbiosis Institute of Technology, Pune",
+                    date: "15-Sept-2023",
+                    report:
+                      "/uploads/documents/entc_mous/MOU_Symbiosis_2023.pdf",
+                  },
+                  {
+                    no: "6.",
+                    org: "S M Technologies Pvt Ltd",
+                    date: "16-Apr-2022",
+                    report:
+                      "/uploads/documents/entc_mous/MOU_SM_Technologies_2022.pdf",
+                  },
+                  {
+                    no: "7.",
+                    org: "TOR VERGATA University of ROME",
+                    date: "11-Feb-2020",
+                    report:
+                      "/uploads/documents/entc_mous/MOU_Tor_Vergata_Rome_2020.pdf",
+                  },
+                  {
+                    no: "8.",
+                    org: "ioCare, Pune",
+                    date: "07-Feb-2020",
+                    report: "/uploads/documents/entc_mous/MOU_ioCare_2020.pdf",
+                  },
+                  {
+                    no: "9.",
+                    org: "SSGM Electronic Solutions Pvt. Ltd., Akola",
+                    date: "16-Sept-2019",
+                    report:
+                      "/uploads/documents/entc_mous/MOU_SSGM_Electronic_Solutions_2019.pdf",
+                  },
+                  {
+                    no: "10.",
+                    org: "Green Field Control Systems, Gandhinagar, Gujarat",
+                    date: "16-Sept-2019",
+                    report:
+                      "/uploads/documents/entc_mous/MOU_Green_Field_Control_2019.pdf",
+                  },
+                  {
+                    no: "11.",
+                    org: "Integral Power Solutions Pvt. Ltd., Nashik",
+                    date: "02-Aug-2019",
+                    report:
+                      "/uploads/documents/entc_mous/MOU_Integral_Power_Solutions_2019.pdf",
+                  },
+                  {
+                    no: "12.",
+                    org: "Scientech Tech Pvt. Ltd., Indore",
+                    date: "Jan-2019",
+                    report:
+                      "/uploads/documents/entc_mous/MOU_Scientech_2019.pdf",
+                  },
+                  {
+                    no: "13.",
+                    org: "V-Chip Technology Pvt. Ltd., Pune",
+                    date: "10-Aug-2018",
+                    report:
+                      "/uploads/documents/entc_mous/MOU_VChip_Technology_2018.pdf",
+                  },
+                  {
+                    no: "14.",
+                    org: "Dr. P.D.K.V., Akola",
+                    date: "25-Jul-2018",
+                    report:
+                      "/uploads/documents/entc_mous/MOU_PDKV_Akola_2018.pdf",
+                  },
+                ].map((mou, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-900">
+                      {mou.no}
+                    </td>
+                    <td className="px-6 py-4 text-gray-700">{mou.org}</td>
+                    <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                      {mou.date}
+                    </td>
+                    <td className="px-6 py-4">
+                      <a
+                        href={mou.report}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-orange font-semibold text-sm transition-colors"
+                      >
+                        <FaFileAlt className="mr-1.5" />
+                        View Document
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    ),
+    patents: (
+      <div className="space-y-8">
+        <div className="flex flex-wrap space-x-1 bg-gray-100 p-1 rounded-lg w-fit mb-6">
+          {[
+            "patents",
+            "publications",
+            "conferences",
+            "books",
+            "copyrights",
+          ].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setPatentSubTab(tab)}
+              className={`px-4 py-2 text-sm font-bold rounded-md transition-all capitalize ${patentSubTab === tab ? "bg-white text-ssgmce-blue shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              {tab === "patents"
+                ? "Patents"
+                : tab === "publications"
+                  ? "Publications"
+                  : tab === "conferences"
+                    ? "Conferences"
+                    : tab === "books"
+                      ? "Books"
+                      : "Copyrights"}
+            </button>
+          ))}
+        </div>
+
+        {/* Report PDFs Download Links */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+          <h4 className="text-sm font-bold text-ssgmce-blue mb-2 flex items-center">
+            <FaDownload className="mr-2" /> Year-wise Detailed Reports (PDF)
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {researchYears.map((year) => (
+              <a
+                key={year}
+                href={`/uploads/documents/entc_publications/ENTC_${year}_Patent_Publication_Data.pdf`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-3 py-1.5 text-xs font-bold bg-white text-ssgmce-blue rounded-lg border border-blue-200 hover:bg-ssgmce-blue hover:text-white transition-all"
+              >
+                <FaFileAlt className="mr-1.5" /> {year}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {patentSubTab === "patents" ? (
+            <motion.div
+              key="patents"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaLightbulb className="text-yellow-500 mr-2" />
+                  Patents Granted & Published
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultEntcPatents[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No patents recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider w-1/3">
+                            Title of Invention
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Application No.
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Inventors
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultEntcPatents[researchYear] || []).map(
+                          (pat, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-green-50/30 transition-colors group"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400 group-hover:text-green-600">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {pat.title}
+                                <span
+                                  className={`ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${pat.status === "Granted" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}
+                                >
+                                  {pat.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 font-mono text-xs text-gray-500 whitespace-nowrap text-right">
+                                {pat.id}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 italic text-right">
+                                {pat.inventors}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : patentSubTab === "publications" ? (
+            <motion.div
+              key="publications"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaChartLine className="text-ssgmce-orange mr-2" />
+                  Research Publications (Journals)
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultEntcPublications[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No publications recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Paper
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Authors
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Journal Details
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Link
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultEntcPublications[researchYear] || []).map(
+                          (pub, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-indigo-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {pub.title}
+                              </td>
+                              <td className="px-6 py-4 text-gray-600">
+                                {pub.authors}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 italic text-xs">
+                                {pub.journal}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                {pub.link ? (
+                                  <a
+                                    href={pub.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-dark-blue font-bold px-3 py-1 bg-blue-50 rounded-lg transition-colors border border-blue-100"
+                                  >
+                                    View{" "}
+                                    <FaExternalLinkAlt className="ml-2 text-[10px]" />
+                                  </a>
+                                ) : (
+                                  <span className="text-gray-400 text-xs">
+                                    -
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : patentSubTab === "conferences" ? (
+            <motion.div
+              key="conferences"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaChalkboardTeacher className="text-indigo-500 mr-2" />
+                  Conference Publications
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultEntcConferences[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No conference publications recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Paper
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Authors
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Conference Details
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Link
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultEntcConferences[researchYear] || []).map(
+                          (conf, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-indigo-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {conf.title}
+                              </td>
+                              <td className="px-6 py-4 text-gray-600">
+                                {conf.authors}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 italic text-xs">
+                                {conf.journal}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                {conf.link ? (
+                                  <a
+                                    href={conf.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-dark-blue font-bold px-3 py-1 bg-blue-50 rounded-lg transition-colors border border-blue-100"
+                                  >
+                                    View{" "}
+                                    <FaExternalLinkAlt className="ml-2 text-[10px]" />
+                                  </a>
+                                ) : (
+                                  <span className="text-gray-400 text-xs">
+                                    -
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : patentSubTab === "copyrights" ? (
+            <motion.div
+              key="copyrights"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaAward className="text-purple-500 mr-2" />
+                  Copyrights
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultEntcCopyrights[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No copyrights recorded for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Name of Faculty
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title of Work
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultEntcCopyrights[researchYear] || []).map(
+                          (cr, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-purple-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {cr.name}
+                              </td>
+                              <td className="px-6 py-4 text-gray-700">
+                                {cr.title}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700">
+                                  {cr.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : patentSubTab === "books" ? (
+            <motion.div
+              key="books"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
+                  <FaBook className="text-teal-500 mr-2" />
+                  Books / Book Chapters Published
+                </h3>
+                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  {researchYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setResearchYear(year)}
+                      className={`px-3 py-1 text-xs font-bold whitespace-nowrap rounded-full transition-all ${
+                        researchYear === year
+                          ? "bg-ssgmce-blue text-white shadow-md"
+                          : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(defaultEntcBooks[researchYear] || []).length === 0 ? (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+                  <p className="text-gray-500 text-sm">
+                    No books published for {researchYear}.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 font-black tracking-wider w-12 text-center">
+                            #
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Author(s)
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Title
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider">
+                            Publisher
+                          </th>
+                          <th className="px-6 py-4 font-black tracking-wider text-right">
+                            ISBN
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(defaultEntcBooks[researchYear] || []).map(
+                          (book, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-teal-50/30 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-center font-mono text-xs text-gray-400">
+                                {i + 1}
+                              </td>
+                              <td className="px-6 py-4 font-medium text-gray-800">
+                                {book.name}
+                                {book.coAuthors ? `, ${book.coAuthors}` : ""}
+                              </td>
+                              <td className="px-6 py-4 text-gray-700">
+                                {book.title}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 italic text-xs">
+                                {book.details}
+                              </td>
+                              <td className="px-6 py-4 font-mono text-xs text-gray-500 text-right">
+                                {book.isbn}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </div>
+    ),
+    internships: (
+      <div className="space-y-8">
+        <div className="text-center mb-8">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">
+            <EditableText
+              value={t("internshipsTitle", "Internship Record")}
+              onSave={(val) => updateData("internshipsTitle", val)}
+            />
+          </h3>
+          <div className="text-gray-600 max-w-2xl mx-auto">
+            <EditableText
+              value={t(
+                "internshipsSubtitle",
+                "Comprehensive internship training providing students with hands-on industry experience and professional development.",
+              )}
+              onSave={(val) => updateData("internshipsSubtitle", val)}
+              multiline
+            />
+          </div>
+        </div>
+
+        {/* Year Filter */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex bg-gray-100 rounded-lg p-1 shadow-sm">
+            <button
+              onClick={() => setInternshipYear("2024-25")}
+              className={`px-6 py-2 text-sm font-bold rounded-md transition-all ${
+                internshipYear === "2024-25"
+                  ? "bg-white text-ssgmce-blue shadow-md"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Session: 2024-25
+            </button>
+            <button
+              onClick={() => setInternshipYear("2023-24")}
+              className={`px-6 py-2 text-sm font-bold rounded-md transition-all ${
+                internshipYear === "2023-24"
+                  ? "bg-white text-ssgmce-blue shadow-md"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Session: 2023-24
+            </button>
+          </div>
+        </div>
+
+        {/* Internship Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-ssgmce-blue text-white">
+                <tr>
+                  <th className="px-4 py-4 text-left font-bold whitespace-nowrap">
+                    Sr. No.
+                  </th>
+                  <th className="px-4 py-4 text-left font-bold">
+                    Name of Student
+                  </th>
+                  <th className="px-4 py-4 text-left font-bold">Class</th>
+                  <th className="px-4 py-4 text-left font-bold">
+                    Name of Company
+                  </th>
+                  {internshipYear === "2024-25" && (
+                    <th className="px-4 py-4 text-left font-bold">Duration</th>
+                  )}
+                  <th className="px-4 py-4 text-left font-bold whitespace-nowrap">
+                    Start Date
+                  </th>
+                  <th className="px-4 py-4 text-left font-bold whitespace-nowrap">
+                    End Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {(
+                  t(
+                    `internships.${internshipYear}`,
+                    defaultInternships[internshipYear],
+                  ) || []
+                ).map((intern, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 font-medium text-gray-900">
+                      <EditableText
+                        value={intern.no}
+                        onSave={(val) =>
+                          updateInternship(internshipYear, idx, "no", val)
+                        }
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">
+                      <EditableText
+                        value={intern.name}
+                        onSave={(val) =>
+                          updateInternship(internshipYear, idx, "name", val)
+                        }
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-gray-700 text-center">
+                      <EditableText
+                        value={intern.class}
+                        onSave={(val) =>
+                          updateInternship(internshipYear, idx, "class", val)
+                        }
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">
+                      <EditableText
+                        value={intern.company}
+                        onSave={(val) =>
+                          updateInternship(internshipYear, idx, "company", val)
+                        }
+                        multiline
+                      />
+                    </td>
+                    {internshipYear === "2024-25" && (
+                      <td className="px-4 py-3 text-gray-700">
+                        <EditableText
+                          value={intern.duration}
+                          onSave={(val) =>
+                            updateInternship(
+                              internshipYear,
+                              idx,
+                              "duration",
+                              val,
+                            )
+                          }
+                        />
+                      </td>
+                    )}
+                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                      <EditableText
+                        value={intern.startDate}
+                        onSave={(val) =>
+                          updateInternship(
+                            internshipYear,
+                            idx,
+                            "startDate",
+                            val,
+                          )
+                        }
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                      <EditableText
+                        value={intern.endDate}
+                        onSave={(val) =>
+                          updateInternship(internshipYear, idx, "endDate", val)
+                        }
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     ),
   };

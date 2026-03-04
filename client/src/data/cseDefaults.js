@@ -4116,7 +4116,338 @@ export const defaultCourseMaterials = [
     link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/EjKQVWWFsq1MpKHdMhxDjl4BMTgQ0zuTSlWVrpIQP-ZPcg",
   },
 ];
-export const defaultInnovativePractices = [];
-export const defaultAchievements = [];
+export const defaultInnovativePractices = [
+  {
+    sn: "01",
+    faculty: "Dr. J. M. Patil",
+    subject: "Database Management Systems",
+    practice: "Power Point Presentation",
+    link: "/uploads/documents/cse_innovative/JMP_innovative.pdf",
+  },
+  {
+    sn: "02",
+    faculty: "Dr. N. M. Kandoi",
+    subject: "Block Chain Fundamentals",
+    practice:
+      "Mini/Term/Short Projects (Design/Fabrication/Simulation/Software/Hardware Development)",
+    link: "/uploads/documents/cse_innovative/Dr_NMK_innovative_learning_CSE.pdf",
+  },
+  {
+    sn: "03",
+    faculty: "C. M. Mankar",
+    subject: "Theory of Computation",
+    practice: "Power Point Presentation",
+    link: "/uploads/documents/cse_innovative/CMM_innovative.pdf",
+  },
+  {
+    sn: "04",
+    faculty: "V. S. Mahalle",
+    subject: "Object Oriented Programming Approach with Real-life Example",
+    practice: "Google AI Studio, Movavi Video Editor",
+    link: "https://youtu.be/lHzTvyNZi3o?si=V4hsCse-nnXcO_Tj",
+    isExternal: true,
+  },
+  {
+    sn: "05",
+    faculty: "Dr. P. K. Bharne",
+    subject: "Operating System",
+    practice: "Content based question making",
+    link: "/uploads/documents/cse_innovative/PKBInnovativePracticeCSE.pdf",
+  },
+  {
+    sn: "06",
+    faculty: "K. P. Sable",
+    subject: "Data Communication & Networking",
+    practice: "Learning through Survey/Case studies",
+    link: "/uploads/documents/cse_innovative/KPS_Innovative_Practice_DCN.pdf",
+  },
+  {
+    sn: "07",
+    faculty: "S. B. Pagrut",
+    subject: "Digital Forensics",
+    practice: "New Experiment development and testing",
+    link: "/uploads/documents/cse_innovative/SBP_InnovativePractice.pdf",
+  },
+  {
+    sn: "08",
+    faculty: "Dr. R. A. Zamare",
+    subject: "Big Data Analytics",
+    practice: "Learning through Industrial visit/field work and report writing",
+    link: "/uploads/documents/cse_innovative/RAZ_Innovative_Practice_Industrial_Visit_BDA.pdf",
+  },
+  {
+    sn: "09",
+    faculty: "P. R. Pohare",
+    subject: "AI",
+    practice: "Designing Quizzes",
+    link: "/uploads/documents/cse_innovative/PRP_Innovations.pdf",
+  },
+];
+export const defaultAchievements = {
+  faculty: [
+    {
+      name: "Dr. J. M. Patil",
+      achievement: "Research Supervisor",
+      description:
+        "Appointed as Research Supervisor at the Mansarovar Global University, Sehore (M.P).",
+      category: "Recognition",
+      image: "/uploads/images/achievements/cse/CSE_Achievement_JMP_RS.png",
+    },
+    {
+      name: "Dr. J. M. Patil",
+      achievement: "Global Achievement Award 2025",
+      description:
+        "Honored and bestowed Global Achievement Award 2025 at Rifacimento International.",
+      category: "Award",
+      image: "/uploads/images/achievements/cse/CSE_Achievement_JMP_GAA.png",
+    },
+    {
+      name: "Dr. J. M. Patil",
+      achievement: "Recognized as PG Teacher",
+      description:
+        "Recognized as PG Teacher in the Subject Computer Science & Engineering and Information Technology by SGBAU Amaravati.",
+      category: "Recognition",
+      image: "/uploads/images/achievements/cse/CSE_Achievement_JMP_PGT.png",
+    },
+    {
+      name: "Dr. J. M. Patil",
+      achievement: "NPTEL Certification (NATE)",
+      description:
+        "Successfully Completed NBA Accreditation and Teaching and Learning in Engineering (NATE) with score of 69% in Elite Category.",
+      category: "Certification",
+      image: "/uploads/images/achievements/cse/CSE_Achievement_JMP_NPTEL.png",
+    },
+    {
+      name: "Dr. J. M. Patil",
+      achievement: "Best Paper Award",
+      description:
+        "Awarded Best Paper at the International Conference on Emerging Trends in Science and Management (ICESM 2025), Nashik, Maharashtra.",
+      category: "Award",
+      image:
+        "/uploads/images/achievements/cse/CSE_Achievement_JMP_ICESM2025.png",
+    },
+    {
+      name: "Prof. K. P. Sable",
+      achievement: "Appreciation as SPOC",
+      description:
+        "Received Appreciation as SPOC (Single Point of Contact) of SSGMCE under the Swayam-NPTEL Local Chapter.",
+      category: "Recognition",
+      image: "/uploads/images/achievements/cse/CSE_Achievement_JMP_SPOC.png",
+    },
+    {
+      name: "Prof. K. P. Sable",
+      achievement: "Wipro Certified Faculty",
+      description:
+        "Certified as Wipro Certified Faculty for Java Full Stack development.",
+      category: "Certification",
+      image:
+        "/uploads/images/achievements/cse/CSE_Achievement_KPS_WiproFaculty.png",
+    },
+    {
+      name: "Prof. S. B. Pagrut",
+      achievement: "Wipro Certified Faculty",
+      description:
+        "Awarded the title of Wipro Certified Faculty in Database Solutions Expertise.",
+      category: "Certification",
+      image:
+        "/uploads/images/achievements/cse/CSE_Achievement_SBP_WiproFaculty.png",
+    },
+    {
+      name: "Prof. V. S. Mahalle",
+      achievement: "Best Researcher Award",
+      description:
+        "Honored with the Best Researcher Award at the International Conference on Data Analytics and Artificial Intelligence (ICDAAI 2024), held on August 30-31, 2024.",
+      category: "Award",
+      image: "/uploads/images/achievements/cse/CSE_Achievement_VSM_ICDAAI.png",
+    },
+    {
+      name: "Dr. R. A. Zamare",
+      achievement: "Best Paper Presentation Award",
+      description:
+        "Received the Best Paper Presentation Award at the 4th International Conference on ICT in Business, Industry, and Government (ICTBIG 2024), organized by Symbiosis University of Applied Sciences, Indore.",
+      category: "Award",
+      image: "/uploads/images/achievements/cse/CSE_Achievement_RAZ_ICTBIG.png",
+    },
+    {
+      name: "Dr. J. M. Patil",
+      achievement: "Ph.D. Awarded",
+      description:
+        "Successfully completed Ph.D. in Computer Science and Engineering from Sant Gadge Baba Amravati University.",
+      category: "Ph.D.",
+      image: "/uploads/images/achievements/cse/_JMP_Phd_Award.jpeg",
+    },
+    {
+      name: "Prof. C. M. Mankar",
+      achievement: "Patent Published",
+      description:
+        "Published Patent on 'MRI Tumour Image Classification System' (Date of Publication: 10/06/2023).",
+      category: "Patent",
+      image: "/uploads/images/achievements/cse/CSE_Achievement_cmm.jpg",
+    },
+    {
+      name: "Prof. V. S. Mahalle",
+      achievement: "International Reviewer",
+      description:
+        "Invited as a Reviewer for the 3rd International Conference on Data Science & Big Data Analytics (IDBA-ACMWIR 2023).",
+      category: "Recognition",
+      image:
+        "/uploads/images/achievements/cse/CSE_Achievement_vsm_reviewer.jpg",
+    },
+    {
+      name: "Prof. Pankaj Bharne",
+      achievement: "Ph.D. Awarded",
+      description:
+        "Successfully completed Ph.D. in Computer Science and Engineering from SGBAU Amravati.",
+      category: "Ph.D.",
+      image: "",
+    },
+    {
+      name: "Prof. Rupali Zamre",
+      achievement: "Ph.D. Awarded",
+      description:
+        "Successfully completed Ph.D. in Computer Science and Engineering from SGBAU Amravati.",
+      category: "Ph.D.",
+      image: "",
+    },
+    {
+      name: "Dr. J. M. Patil",
+      achievement: "Patent Published",
+      description:
+        "Published Patent on methodology for implementing algorithms over student performance evaluation using Machine Learning.",
+      category: "Patent",
+      image: "/uploads/images/achievements/cse/CSE_Achievement_jmp.jpg",
+    },
+    {
+      name: "Prof. P. V. Deshmukh",
+      achievement: "Patent Published",
+      description:
+        "Published Patent on an effective mechanism of data hiding for magnifying capacity.",
+      category: "Patent",
+      image: "/uploads/images/achievements/cse/PVD_Patents_aneffective.jpeg",
+    },
+    {
+      name: "Dr. J. M. Patil",
+      achievement: "SCI Research Paper",
+      description:
+        "Published Research Paper on high-capacity reversible data hiding in encrypted images using multi-MSB mechanism in Multimedia Tools and Applications (SCI Journal).",
+      category: "Publication",
+      image: "/uploads/images/achievements/cse/CSE_Achievement_PVDeshmukh.jpeg",
+    },
+    {
+      name: "Dr. N. M. Kandoi",
+      achievement: "Member Board of Studies",
+      description:
+        "Appointed as Member Board of Studies (Information Technology), Sant Gadge Baba Amravati University, Amravati.",
+      category: "Recognition",
+      image: "",
+    },
+  ],
+  students: [
+    {
+      name: "Ms. Sakshi Nimbolkar",
+      achievement: "Runner-up – IT Quiz Competition",
+      description:
+        "Secured Runner-up position in the IT Quiz Competition at the university level.",
+      category: "Competition",
+      image:
+        "/uploads/images/achievements/cse/CSE_Achievement_SakshiNimbolkar_20.jpeg",
+    },
+    {
+      name: "Piyush Agroya & Anikesh Gadekar",
+      achievement: "First Position – Avishkar",
+      description:
+        "Received First Position for their Co-Carr Project at the district-level Avishkar Project Competition (October 2024).",
+      category: "Competition",
+      image:
+        "/uploads/images/achievements/cse/CSE_Achievement_Student_Avishkar2024.png",
+    },
+    {
+      name: "Ms. Sakshi Nimbolkar",
+      achievement: "First Prize – Avishkar",
+      description:
+        "Received First Prize for project 'CLEAN CONNECT' at the district-level Avishkar Project Competition.",
+      category: "Competition",
+      image:
+        "/uploads/images/achievements/cse/CSE_Achievement_Student_W_Avishkar2024.png",
+    },
+    {
+      name: "Gaurav Chaudhari, Nishant Bayaskar, Subodh Munghate",
+      achievement: "Hackathon Winners – InnoVo24",
+      description:
+        "Winners in HACKATHON Competition at InnoVo24, SSGMCE Shegaon.",
+      category: "Hackathon",
+      image:
+        "/uploads/images/achievements/cse/CSE_Achievement_MukundAtram.jpeg",
+    },
+    {
+      name: "Om Kadu, Subodh Munghate, Anagha Badhe",
+      achievement: "First Prize – Tech-Tesseract Hackathon",
+      description:
+        "Won First Prize (Second Year Category) in Tech-Tesseract HACKATHON organized by Code Club & ACM-W CCEW.",
+      category: "Hackathon",
+      image: "/uploads/images/achievements/cse/CSE_Achievement_OmKadu.jpeg",
+    },
+    {
+      name: "Mr. Krishna Kolhekar",
+      achievement: "Cash Prize ₹15,000",
+      description:
+        "Won Cash Prize of Rs. 15,000/- in Vidarbha Level Project Competition.",
+      category: "Competition",
+      image:
+        "/uploads/images/achievements/cse/CSE_Achievement_KrishnaKolhekar_20.jpeg",
+    },
+    {
+      name: "Kamlesh Kasambe, Bhuwanesh Kale, Janvi Nakat",
+      achievement: "Industrial Internship",
+      description:
+        "Successfully completed Internship at Electric Loco Shed, Bhusaval.",
+      category: "Internship",
+      image:
+        "/uploads/images/achievements/cse/CSE_Achievement_KamleshKasambe.jpeg",
+    },
+    {
+      name: "Mukund Atram & Team",
+      achievement: "Third Place – InnoVo24",
+      description:
+        "Won Third Place in HACKATHON Competition at InnoVo24, SSGMCE Shegaon.",
+      category: "Hackathon",
+      image:
+        "/uploads/images/achievements/cse/CSE_Achievement_MukundAtram.jpeg",
+    },
+    {
+      name: "Kamlesh Kasambe",
+      achievement: "First Rank – KIMO Edge",
+      description:
+        "Secured First Rank in KIMO Edge Competition with a Cash Prize of Rs. 5,000/-.",
+      category: "Competition",
+      image: "/uploads/images/achievements/cse/CSE_SA_Kamleshkasambe.jpeg",
+    },
+    {
+      name: "Jay Joshi & Team",
+      achievement: "First Prize – ENTHUSIA",
+      description: "Won First Prize in National Level Competition ENTHUSIA.",
+      category: "Competition",
+      image:
+        "/uploads/images/achievements/cse/CSE_Achievement_JaiJoshi_20.jpeg",
+    },
+    {
+      name: "Aniket Gazalwar",
+      achievement: "University Color Holder",
+      description:
+        "Selected as University Color Holder in Table Tennis (SGBAU 2023-24).",
+      category: "Sports",
+      image:
+        "/uploads/images/achievements/cse/CSE_StudentAchivement2324_1.jpeg",
+    },
+    {
+      name: "Chinmay Harne",
+      achievement: "University Color Holder",
+      description:
+        "Selected as University Color Holder in Chess (SGBAU 2023-24).",
+      category: "Sports",
+      image: "/uploads/images/achievements/cse/CSE_SA_ChinmayHarne.jpeg",
+    },
+  ],
+};
 export const defaultPlacements = [];
 export const defaultStudentProjects = [];
