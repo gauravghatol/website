@@ -4,7 +4,7 @@ import axios from 'axios';
 import { EditProvider } from '../../contexts/EditContext';
 import GenericContentPage from '../../components/GenericContentPage';
 import AdminToolbar from '../../components/admin/AdminToolbar';
-import { FaSpinner } from 'react-icons/fa';
+import { FaSpinner, FaPlus } from 'react-icons/fa';
 import { useAuth } from '../../hooks/useAuth';
 import { ADMIN_ROUTE_PREFIX } from '../../config/adminAccess';
 import Electrical from '../../pages/departments/Electrical';
@@ -26,12 +26,25 @@ const DEPT_TO_PAGEID = {
   ASH: 'departments-applied-sciences',
 };
 
+/** Derive a human-readable title and category from a pageId slug */
+const derivePageMeta = (pageId) => {
+  const parts = pageId.split('-');
+  const category = parts[0]; // e.g. "placements", "iqac"
+  const titleWords = parts.slice(1).map((w) => w.charAt(0).toUpperCase() + w.slice(1));
+  const pageTitle = titleWords.join(' ') || pageId;
+  // Build a route: placements-about → /placements/about
+  const route = '/' + parts.join('/');
+  return { pageTitle, category, route };
+};
+
 const VisualPageEditor = () => {
   const { pageId } = useParams();
   const { isCoordinator, userDepartment } = useAuth();
   const [initialData, setInitialData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pageNotFound, setPageNotFound] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   // Coordinators may only edit their own department page
   if (isCoordinator && userDepartment !== 'All') {
@@ -46,16 +59,22 @@ const VisualPageEditor = () => {
       if (!pageId) return;
 
       setLoading(true);
+      setPageNotFound(false);
+      setError(null);
       try {
         const res = await axios.get(`/api/pages/${pageId}`);
         if (res.data.success) {
           setInitialData(res.data.data);
         } else {
           setError(res.data.message || 'Page not found');
+          setPageNotFound(true);
         }
       } catch (err) {
         console.error('Error fetching page for editor:', err);
-        setError(err.message);
+        if (err.response?.status === 404) {
+          setPageNotFound(true);
+        }
+        setError(err.response?.data?.message || err.message);
       } finally {
         setLoading(false);
       }
@@ -63,6 +82,35 @@ const VisualPageEditor = () => {
 
     fetchPageData();
   }, [pageId]);
+
+  /** Admin creates a brand-new empty page in the DB */
+  const handleCreatePage = async () => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      setError('You must be logged in as admin to create a page.');
+      return;
+    }
+    setCreating(true);
+    try {
+      const { pageTitle, category, route } = derivePageMeta(pageId);
+      const res = await axios.post(
+        '/api/pages',
+        { pageId, pageTitle, pageDescription: '', route, category, sections: [], template: 'generic' },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (res.data.success) {
+        setInitialData(res.data.data);
+        setError(null);
+        setPageNotFound(false);
+      } else {
+        setError(res.data.message || 'Failed to create page.');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message);
+    } finally {
+      setCreating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -75,13 +123,33 @@ const VisualPageEditor = () => {
     );
   }
 
-  if (error) {
+  if (error || pageNotFound) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
-          <h2 className="text-xl font-bold text-red-600 mb-2">Error</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <a href="/admin" className="text-blue-600 hover:underline">Back to Dashboard</a>
+          <h2 className="text-xl font-bold text-red-600 mb-2">
+            {pageNotFound ? 'Page Not Found in Database' : 'Error'}
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {pageNotFound
+              ? `The page "${pageId}" does not exist yet. You can create it now as an empty page and start adding content.`
+              : error}
+          </p>
+          {pageNotFound && (
+            <button
+              onClick={handleCreatePage}
+              disabled={creating}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60 mb-4 font-medium shadow"
+            >
+              {creating ? <FaSpinner className="animate-spin" /> : <FaPlus />}
+              {creating ? 'Creating…' : 'Create This Page'}
+            </button>
+          )}
+          <div>
+            <a href="/admin" className="text-blue-600 hover:underline text-sm">
+              ← Back to Dashboard
+            </a>
+          </div>
         </div>
       </div>
     );
