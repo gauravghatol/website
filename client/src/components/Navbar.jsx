@@ -152,7 +152,19 @@ const Navbar = () => {
         { name: 'e-Content Facility', path: '/iqac/econtent-facility' },
       ]
     },
-    { name: 'NIRF Ranking', path: '/nirf' },
+    {
+      name: 'NIRF Ranking',
+      path: '/nirf',
+      megaMenuImage: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&h=600&fit=crop',
+      megaMenuTitle: 'NIRF Rankings',
+      dropdown: [
+        { name: 'NIRF 2025-26', path: '/nirf?year=2025-26' },
+        { name: 'NIRF 2024-25', path: '/nirf?year=2024-25' },
+        { name: 'NIRF 2023-24', path: '/nirf?year=2023-24' },
+        { name: 'NIRF 2022-23', path: '/nirf?year=2022-23' },
+        { name: 'NIRF 2021-22', path: '/nirf?year=2021-22' },
+      ]
+    },
     {
       name: 'Documents',
       path: '/documents',
@@ -369,6 +381,10 @@ const Navbar = () => {
                                     ) : (
                                       <Link
                                         to={subItem.path}
+                                        onClick={() => {
+                                          setActiveDropdown(null);
+                                          setActiveSubDropdown(null);
+                                        }}
                                         className="block py-1.5 text-gray-700 hover:text-ssgmce-orange hover:underline transition-all text-base font-medium"
                                       >
                                         {subItem.name}
@@ -424,6 +440,10 @@ const Navbar = () => {
                                 <li key={nestedIndex}>
                                   <Link
                                     to={nestedItem.path}
+                                    onClick={() => {
+                                      setActiveDropdown(null);
+                                      setActiveSubDropdown(null);
+                                    }}
                                     className="block py-1.5 text-gray-600 hover:text-ssgmce-orange hover:underline transition-all text-base"
                                   >
                                     {nestedItem.name}
@@ -479,7 +499,11 @@ const Navbar = () => {
                                           <li key={nestedIndex}>
                                             <Link
                                               to={nestedItem.path}
-                                              onClick={() => setIsOpen(false)}
+                                              onClick={() => {
+                                                setIsOpen(false);
+                                                setActiveDropdown(null);
+                                                setActiveSubDropdown(null);
+                                              }}
                                               className="block px-3 py-1.5 text-gray-500 hover:bg-gray-50 rounded text-xs"
                                             >
                                               {nestedItem.name}
@@ -492,7 +516,11 @@ const Navbar = () => {
                                 ) : (
                                   <Link
                                     to={subItem.path}
-                                    onClick={() => setIsOpen(false)}
+                                    onClick={() => {
+                                      setIsOpen(false);
+                                      setActiveDropdown(null);
+                                      setActiveSubDropdown(null);
+                                    }}
                                     className="block px-3 py-1.5 text-gray-600 hover:bg-gray-50 rounded text-xs"
                                   >
                                     {subItem.name}
