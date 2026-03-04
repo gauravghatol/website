@@ -178,6 +178,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminIQAC from "./pages/admin/AdminIQAC";
 import AdminPlacements from "./pages/admin/AdminPlacements";
 import AdminRecruiters from "./pages/admin/AdminRecruiters";
+import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminNIRF from "./pages/admin/AdminNIRF";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import { AuthProvider } from "./hooks/useAuth";
@@ -216,6 +217,7 @@ function App() {
           <Route path="/admin/iqac" element={<ProtectedRoute><AdminIQAC /></ProtectedRoute>} />
           <Route path="/admin/placements" element={<ProtectedRoute><AdminPlacements /></ProtectedRoute>} />
           <Route path="/admin/recruiters" element={<ProtectedRoute><AdminRecruiters /></ProtectedRoute>} />
+          <Route path="/admin/testimonials" element={<ProtectedRoute><AdminTestimonials /></ProtectedRoute>} />
           <Route path="/admin/nirf" element={<ProtectedRoute><AdminNIRF /></ProtectedRoute>} />
           {/* System Routes */}
           <Route path="/admin/analytics" element={<ProtectedRoute><AdminAnalytics /></ProtectedRoute>} />
