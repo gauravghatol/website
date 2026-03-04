@@ -193,6 +193,19 @@ const EnTC = () => {
     }
   };
 
+  const resolveMagazineHref = (issue) => {
+    if (!issue || typeof issue !== "object") return "#";
+
+    const sourceUrl =
+      typeof issue.sourceUrl === "string" ? issue.sourceUrl.trim() : "";
+    const link = typeof issue.link === "string" ? issue.link.trim() : "";
+
+    // Prefer canonical source URL for magazine PDFs when available.
+    if (sourceUrl) return encodeURI(sourceUrl);
+    if (link && link !== "#") return link;
+    return "#";
+  };
+
   const getFacultyList = () => t("templateData.faculty.list", defaultFaculty);
 
   // Pride section helper functions
@@ -5236,9 +5249,8 @@ const EnTC = () => {
                   </td>
                   <td className="px-6 py-4 text-center">
                     <a
-                      href={t(
-                        "magazines.latest.link",
-                        defaultMagazines.latest.link || "#",
+                      href={resolveMagazineHref(
+                        t("magazines.latest", defaultMagazines.latest),
                       )}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -5278,7 +5290,7 @@ const EnTC = () => {
                       </td>
                       <td className="px-6 py-4 text-center">
                         <a
-                          href={issue.link || "#"}
+                          href={resolveMagazineHref(issue)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
