@@ -1,9 +1,13 @@
 import React from 'react';
 import GenericPage from '../../components/GenericPage';
+import AcademicsSidebar from '../../components/AcademicsSidebar';
+import { FaDownload } from 'react-icons/fa';
+
+const PDF_URL = 'https://www.ssgmce.ac.in/uploads/Incentive_Marks_Scheme-2023-24.pdf';
 
 const IncentiveMarks = () => {
   return (
-    <GenericPage title="Incentive Marks Scheme">
+    <GenericPage title="Incentive Marks Scheme" sidebar={<AcademicsSidebar />}>
       <div className="space-y-10">
         {/* Header Information */}
         <div className="bg-gradient-to-r from-blue-50 to-white p-6 rounded-xl border-l-4 border-blue-600">
@@ -260,6 +264,23 @@ const IncentiveMarks = () => {
             <div className="font-bold text-gray-800">Dr. S. B. Somani</div>
             <div className="text-gray-600 text-sm">Principal</div>
           </div>
+        </div>
+
+        {/* Download CTA */}
+        <div className="bg-gradient-to-r from-ssgmce-blue to-blue-800 rounded-xl p-6 text-center text-white">
+          <h3 className="text-lg font-bold mb-2">Download Incentive Marks Scheme</h3>
+          <p className="text-blue-100 mb-4 text-sm">
+            Complete guidelines for incentive marks for R&D activities, GATE, MOOC/NPTEL, sports, cultural activities, and more (Session 2023-24).
+          </p>
+          <a
+            href={PDF_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-white text-ssgmce-blue hover:bg-gray-100 px-6 py-3 rounded-lg transition-colors font-semibold shadow-md"
+          >
+            <FaDownload />
+            Download Full PDF
+          </a>
         </div>
       </div>
     </GenericPage>

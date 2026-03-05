@@ -1,9 +1,13 @@
 import React from 'react';
+import { FaDownload } from 'react-icons/fa';
 import GenericPage from '../../components/GenericPage';
+import AcademicsSidebar from '../../components/AcademicsSidebar';
 
-const TeachingLearning = () => {
+const PDF_URL = 'https://www.ssgmce.ac.in/uploads/Innovative%20Practice%20in%20teaching%20&%20learning.pdf';
+
+const InnovativePractices = () => {
   return (
-    <GenericPage title="Innovative Practices in teaching & learning">
+    <GenericPage title="Innovative Practices in teaching & learning" sidebar={<AcademicsSidebar />}>
       <div className="space-y-12">
         {/* Introduction */}
         <div className="bg-gradient-to-r from-blue-50 to-white p-8 rounded-xl border-l-4 border-blue-600">
@@ -180,9 +184,24 @@ const TeachingLearning = () => {
             <strong>The success of these practices results qualitatively as well as quantitatively.</strong> The qualitative factor improves student's curiosity and desire to learn. Also it changes student's perspective towards life. The quantitative factor improves academic performance and participation in co-curricular activities. Also Alumni of SSGMCE doing very well in corporate world.
           </p>
         </div>
+
+        {/* Download CTA */}
+        <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue rounded-xl p-8 text-center text-white">
+          <h3 className="text-xl font-bold mb-2">Download Full Document</h3>
+          <p className="text-blue-100 mb-5 text-sm">Innovative Practices in Teaching &amp; Learning — Complete PDF</p>
+          <a
+            href={PDF_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-ssgmce-orange hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+          >
+            <FaDownload />
+            Download Full PDF
+          </a>
+        </div>
       </div>
     </GenericPage>
   );
 };
 
-export default TeachingLearning;
+export default InnovativePractices;
