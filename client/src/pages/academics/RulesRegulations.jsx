@@ -1,9 +1,10 @@
 import React from 'react';
 import GenericPage from '../../components/GenericPage';
+import AcademicsSidebar from '../../components/AcademicsSidebar';
 
 const RulesRegulations = () => {
   return (
-    <GenericPage title="Rules & Regulations">
+    <GenericPage title="Rules & Regulations" sidebar={<AcademicsSidebar />}>
       <div className="space-y-10">
         {/* Introduction */}
         <div className="bg-gradient-to-r from-blue-50 to-white p-8 rounded-xl border-l-4 border-blue-600">

@@ -1,9 +1,13 @@
 import React from 'react';
+import { FaDownload } from 'react-icons/fa';
 import GenericPage from '../../components/GenericPage';
+import AcademicsSidebar from '../../components/AcademicsSidebar';
+
+const PDF_URL = 'https://www.ssgmce.ac.in/uploads/Notice%20for%20Students.pdf';
 
 const StudentNotices = () => {
   return (
-    <GenericPage title="Notices for Students">
+    <GenericPage title="Notices for Students" sidebar={<AcademicsSidebar />}>
       <div className="max-w-5xl mx-auto">
         {/* Notice Header */}
         <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white p-6 rounded-lg mb-8 text-center">
@@ -113,6 +117,21 @@ const StudentNotices = () => {
               <p className="font-semibold text-gray-800">Principal</p>
             </div>
           </div>
+        </div>
+
+        {/* Download CTA */}
+        <div className="mt-8 bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue rounded-xl p-8 text-center text-white">
+          <h3 className="text-xl font-bold mb-2">Download Official Notice</h3>
+          <p className="text-blue-100 mb-5 text-sm">Notice for Students — Attendance &amp; Academic Guidelines (PDF)</p>
+          <a
+            href={PDF_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-ssgmce-orange hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+          >
+            <FaDownload />
+            Download Full PDF
+          </a>
         </div>
       </div>
     </GenericPage>
