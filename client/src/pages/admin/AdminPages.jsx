@@ -2,14 +2,33 @@ import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import AdminLayout from "../../components/admin/AdminLayout";
-import {
-  FaEdit,
-  FaLayerGroup,
-  FaSearch,
-  FaExternalLinkAlt,
-  FaClock,
-  FaFilter,
-} from "react-icons/fa";
+import { FaSearch, FaChevronRight, FaChevronDown } from "react-icons/fa";
+
+const CATEGORY_ORDER = [
+  "about",
+  "academics",
+  "admissions",
+  "research",
+  "facilities",
+  "placements",
+  "iqac",
+  "documents",
+  "activities",
+  "departments",
+];
+
+const CATEGORY_COLORS = {
+  about: "#3b82f6",
+  academics: "#06b6d4",
+  admissions: "#a855f7",
+  research: "#ec4899",
+  facilities: "#10b981",
+  placements: "#f97316",
+  iqac: "#6366f1",
+  documents: "#64748b",
+  activities: "#8b5cf6",
+  departments: "#f59e0b",
+};
 
 const AdminPages = () => {
   const [searchParams] = useSearchParams();
@@ -19,6 +38,10 @@ const AdminPages = () => {
   const [categoryFilter, setCategoryFilter] = useState(
     searchParams.get("category") || "all"
   );
+  const [collapsed, setCollapsed] = useState({});
+
+  const toggleCategory = (cat) =>
+    setCollapsed((prev) => ({ ...prev, [cat]: !prev[cat] }));
 
   useEffect(() => {
     fetchPages();
@@ -37,13 +60,11 @@ const AdminPages = () => {
     }
   };
 
-  // Get unique categories
   const categories = [
     "all",
     ...new Set(pages.map((p) => p.category || "Uncategorized")),
   ];
 
-  // Filter and Group pages
   const filteredPages = pages.filter((page) => {
     const matchesSearch =
       page.pageTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -61,11 +82,10 @@ const AdminPages = () => {
   }, {});
 
   const formatDate = (dateString) => {
-    if (!dateString) return "Never";
+    if (!dateString) return "—";
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
-      year: "numeric",
     });
   };
 
@@ -73,7 +93,7 @@ const AdminPages = () => {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-500 dark:text-gray-400 animate-pulse text-lg">
+          <div className="text-gray-400 dark:text-gray-500 animate-pulse">
             Loading pages...
           </div>
         </div>
@@ -83,129 +103,91 @@ const AdminPages = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Pages Management</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Manage all website pages and content
-          </p>
-        </div>
-
-        {/* Filters and Search */}
-        <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1">
-              <div className="relative">
-                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
-                <input
-                  type="text"
-                  placeholder="Search pages by title or category..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-[#1a1a2e] text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
-                />
-              </div>
-            </div>
-
-            {/* Category Filter */}
-            <div className="md:w-64">
-              <div className="relative">
-                <FaFilter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white dark:bg-[#1a1a2e] text-gray-800 dark:text-gray-200"
-                >
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat === "all" ? "All Categories" : cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+          <div className="flex-1">
+            <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Pages</h1>
+            <p className="text-base text-gray-400 dark:text-gray-500 mt-0.5">
+              {filteredPages.length} of {pages.length} pages
+            </p>
           </div>
-
-          {/* Results Count */}
-          <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-            Showing{" "}
-            <span className="font-semibold text-gray-800 dark:text-gray-200">
-              {filteredPages.length}
-            </span>{" "}
-            of{" "}
-            <span className="font-semibold text-gray-800 dark:text-gray-200">{pages.length}</span>{" "}
-            pages
-          </div>
-        </div>
-
-        {/* Pages Grid */}
-        <div className="space-y-8">
-          {Object.entries(groupedPages).map(([category, categoryPages]) => (
-            <div
-              key={category}
-              className="bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 dark:text-gray-600 text-sm" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8 pr-3 py-2 text-base rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 w-52 focus:w-64 transition-all focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              />
+            </div>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="text-base rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none appearance-none pr-7"
             >
-              <div className="bg-gradient-to-r from-gray-50 dark:from-gray-800 to-gray-100 dark:to-gray-800/50 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
-                <div className="p-2 bg-white dark:bg-[#1a1a2e] rounded-lg border border-gray-200 dark:border-gray-700 text-blue-600 dark:text-blue-400 shadow-sm">
-                  <FaLayerGroup />
-                </div>
-                <h3 className="font-bold text-gray-800 dark:text-gray-200 capitalize text-lg tracking-tight">
-                  {category}
-                </h3>
-                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-bold px-2.5 py-1 rounded-full ml-auto">
-                  {categoryPages.length}
-                </span>
-              </div>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat === "all" ? "All" : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
-                {categoryPages.map((page) => (
-                  <Link
-                    key={page.pageId}
-                    to={`/admin/visual/${page.pageId}`}
-                    className="block bg-gray-50 dark:bg-gray-800/50 p-5 hover:shadow-lg transition-all border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 rounded-xl group relative hover:-translate-y-1"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-gray-800 dark:text-gray-200 group-hover:text-blue-600 transition-colors text-base mb-2 truncate">
+        {/* Table */}
+        <div className="bg-white dark:bg-[#1a1a2e] rounded-xl border border-gray-200/80 dark:border-gray-800 overflow-hidden">
+          {Object.entries(groupedPages)
+            .sort(([a], [b]) => {
+              const ai = CATEGORY_ORDER.indexOf(a.toLowerCase());
+              const bi = CATEGORY_ORDER.indexOf(b.toLowerCase());
+              return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+            })
+            .map(([category, categoryPages], idx) => {
+            const color = CATEGORY_COLORS[category.toLowerCase()] || "#6b7280";
+            const isCollapsed = collapsed[category];
+            return (
+              <div key={category}>
+                {/* Category Row */}
+                <button
+                  onClick={() => toggleCategory(category)}
+                  className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors ${idx > 0 ? "border-t border-gray-100 dark:border-gray-800" : ""}`}
+                >
+                  {isCollapsed
+                    ? <FaChevronRight className="text-xs text-gray-400 dark:text-gray-500" />
+                    : <FaChevronDown className="text-xs text-gray-400 dark:text-gray-500" />
+                  }
+                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                  <span className="text-base font-semibold text-gray-600 dark:text-gray-300 capitalize tracking-wide">{category}</span>
+                  <span className="text-sm text-gray-400 dark:text-gray-500 ml-1">{categoryPages.length}</span>
+                </button>
+
+                {/* Pages */}
+                {!isCollapsed && (
+                  <div className="grid grid-cols-2 gap-x-0 border-t border-gray-100 dark:border-gray-800/60">
+                    {categoryPages.map((page) => (
+                      <Link
+                        key={page.pageId}
+                        to={`/admin/visual/${page.pageId}`}
+                        className="flex items-center px-4 py-2 pl-11 border-b border-gray-50 dark:border-gray-800/40 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
+                      >
+                        <span className="flex-1 text-base text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
                           {page.pageTitle}
-                        </h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-mono bg-white dark:bg-[#1a1a2e] px-2 py-1 rounded border border-gray-200 dark:border-gray-700 w-fit truncate max-w-full">
-                          {page.route}
-                        </p>
-                      </div>
-                      <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ml-2 flex-shrink-0">
-                        <FaEdit />
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-3 border-t border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center gap-1.5">
-                        <FaClock />
-                        <span>{formatDate(page.updatedAt)}</span>
-                      </div>
-                      <span className="text-blue-600 dark:text-blue-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                        Edit <FaExternalLinkAlt className="text-[10px]" />
-                      </span>
-                    </div>
-                  </Link>
-                ))}
+                        </span>
+                        <FaChevronRight className="text-[10px] text-gray-200 dark:text-gray-700 group-hover:text-blue-400 ml-2 flex-shrink-0 transition-colors" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {Object.keys(groupedPages).length === 0 && (
-            <div className="text-center py-20 bg-white dark:bg-[#1a1a2e] rounded-2xl border border-gray-200 dark:border-gray-700">
-              <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400 dark:text-gray-500 text-3xl">
-                <FaSearch />
-              </div>
-              <h3 className="text-gray-800 dark:text-gray-200 font-bold text-xl">
-                No pages found
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 mt-2">
-                Try adjusting your search or filter criteria
-              </p>
+            <div className="text-center py-12">
+              <p className="text-sm text-gray-400 dark:text-gray-500">No pages match your search</p>
             </div>
           )}
         </div>
