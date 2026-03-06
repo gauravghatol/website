@@ -33,7 +33,7 @@ const PhDAdmissions = () => {
           {/* Main Content */}
           <div className="lg:col-span-9 space-y-12">
             {/* Introduction */}
-            <section className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl bg-gradient-to-r from-ssgmce-blue to-blue-800 p-8 text-white">
               <h2 className="text-2xl font-bold mb-4">About Ph.D. Program</h2>
               <p className="leading-relaxed mb-4">
                 The Ph.D. (Doctor of Philosophy) program at SSGMCE nurtures
@@ -69,7 +69,7 @@ const PhDAdmissions = () => {
             </section>
 
             {/* Research Areas */}
-            <section className="bg-white p-8 rounded-xl shadow-lg border-t-4 border-ssgmce-orange">
+            <section className="rounded-xl bg-white shadow-sm p-8 border-t-4 border-ssgmce-orange">
               <h2 className="text-2xl font-bold text-ssgmce-blue mb-6 flex items-center gap-3">
                 <FaFlask className="text-ssgmce-orange" />
                 Ph.D. Research Areas
@@ -139,7 +139,7 @@ const PhDAdmissions = () => {
                 ].map((item, idx) => (
                   <div
                     key={idx}
-                    className="border-2 border-gray-200 rounded-lg p-5 hover:border-ssgmce-orange hover:shadow-lg transition-all duration-300"
+                    className="rounded-xl border border-gray-200 bg-white shadow-sm p-5 hover:border-ssgmce-orange hover:shadow-md transition-all duration-300"
                   >
                     <h3 className="text-lg font-bold text-ssgmce-blue mb-3">
                       {item.dept}
@@ -163,7 +163,7 @@ const PhDAdmissions = () => {
                 <FaInfoCircle className="text-ssgmce-orange" />
                 Eligibility Criteria
               </h2>
-              <div className="bg-white p-8 rounded-xl shadow-lg border-t-4 border-ssgmce-blue">
+              <div className="rounded-xl bg-white shadow-sm p-8 border-t-4 border-ssgmce-blue">
                 <h3 className="text-2xl font-bold text-ssgmce-blue mb-6">
                   Ph.D. Admission Requirements
                 </h3>
@@ -196,7 +196,7 @@ const PhDAdmissions = () => {
                     </ul>
                   </div>
 
-                  <div className="bg-blue-50 p-5 rounded-lg border-l-4 border-ssgmce-blue">
+                  <div className="rounded-lg border border-blue-100 bg-blue-50 p-5">
                     <h4 className="font-bold text-ssgmce-blue mb-3">
                       Research Entrance Test (RET)
                     </h4>
@@ -238,21 +238,21 @@ const PhDAdmissions = () => {
             </section>
 
             {/* Full-Time vs Part-Time */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-2xl font-bold text-ssgmce-blue mb-6">
                 Ph.D. Program Types
               </h2>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-4 py-3 text-left">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Criteria
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-left">
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Full-Time Ph.D.
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-left">
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Part-Time Ph.D.
                       </th>
                     </tr>
@@ -319,7 +319,7 @@ const PhDAdmissions = () => {
             </section>
 
             {/* Admission Process */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-2xl font-bold text-ssgmce-blue mb-6 flex items-center gap-3">
                 <FaGraduationCap className="text-ssgmce-orange" />
                 Ph.D. Admission Process
@@ -386,7 +386,7 @@ const PhDAdmissions = () => {
             </section>
 
             {/* Documents Required */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-2xl font-bold text-ssgmce-blue mb-6 flex items-center gap-3">
                 <FaFileAlt className="text-ssgmce-orange" />
                 Documents Required for Ph.D. Admission
@@ -422,7 +422,7 @@ const PhDAdmissions = () => {
             </section>
 
             {/* Fellowship & Financial Support */}
-            <section className="bg-gradient-to-r from-blue-50 to-orange-50 p-8 rounded-xl shadow-lg border-l-4 border-ssgmce-blue">
+            <section className="rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-white p-8">
               <h2 className="text-2xl font-bold text-ssgmce-blue mb-6">
                 Fellowship & Financial Support
               </h2>
@@ -459,7 +459,7 @@ const PhDAdmissions = () => {
             </section>
 
             {/* Contact */}
-            <section className="bg-blue-50 border-l-4 border-ssgmce-blue p-6 rounded-lg">
+            <section className="rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-white p-6">
               <h3 className="text-lg font-bold text-ssgmce-blue mb-3">
                 Ph.D. Coordinator
               </h3>

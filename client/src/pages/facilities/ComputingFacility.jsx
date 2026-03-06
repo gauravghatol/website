@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import PageHeader from "../../components/PageHeader";
 import FacilitiesSidebar from "../../components/FacilitiesSidebar";
 import {
@@ -71,20 +71,20 @@ const ComputingFacility = () => {
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Department-wise Computer Labs
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                <table className="w-full border-collapse">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Department
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         No. of Labs
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Total Systems
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Key Software
                       </th>
                     </tr>
@@ -160,7 +160,7 @@ const ComputingFacility = () => {
                         AutoCAD, STAAD Pro, Primavera, ArcGIS, ETABS
                       </td>
                     </tr>
-                    <tr className="bg-ssgmce-blue text-white font-bold">
+                    <tr className="bg-gray-100 font-bold text-gray-800 border-t border-gray-300">
                       <td className="border border-gray-300 px-6 py-4">
                         Total
                       </td>

@@ -37,7 +37,7 @@ const PGAdmissions = () => {
           {/* Main Content */}
           <div className="lg:col-span-9 space-y-12">
             {/* Page Header Notice */}
-            <section className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white p-6 rounded-xl shadow-lg">
+            <section className="rounded-xl bg-gradient-to-r from-ssgmce-blue to-blue-800 p-6 text-white">
               <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
                 <FaUniversity className="text-3xl" />
                 IMPORTANT INSTRUCTIONS FOR THE STUDENTS THOSE WHO ARE REPORTING
@@ -46,7 +46,7 @@ const PGAdmissions = () => {
             </section>
 
             {/* Important Admission Documents */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-8 flex items-center gap-3">
                 <FaClipboardList className="text-ssgmce-orange" />
                 Important Admission Documents & Information
@@ -124,13 +124,13 @@ const PGAdmissions = () => {
             </section>
 
             {/* CAP Admission Instructions */}
-            <section className="bg-gradient-to-br from-blue-50 to-orange-50 p-8 rounded-xl shadow-lg border-l-4 border-ssgmce-blue">
+            <section className="rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-white p-8">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-6 flex items-center gap-3">
                 <FaUniversity className="text-ssgmce-orange" />
                 Important Instructions for CAP Admission 2025-26
               </h2>
               <div className="space-y-4">
-                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+                <div className="rounded-xl border-l-4 border-blue-500 bg-white shadow-sm p-6">
                   <p className="text-gray-800 leading-relaxed">
                     <span className="font-bold text-ssgmce-blue">
                       Read the following instructions carefully and accordingly
@@ -140,7 +140,7 @@ const PGAdmissions = () => {
                   </p>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-md">
+                <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6">
                   <div className="flex items-start gap-4">
                     <span className="flex-shrink-0 w-8 h-8 bg-ssgmce-blue text-white rounded-full flex items-center justify-center font-bold">
                       1
@@ -156,7 +156,7 @@ const PGAdmissions = () => {
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-md">
+                <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6">
                   <div className="flex items-start gap-4">
                     <span className="flex-shrink-0 w-8 h-8 bg-ssgmce-blue text-white rounded-full flex items-center justify-center font-bold">
                       2
@@ -180,7 +180,7 @@ const PGAdmissions = () => {
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-md">
+                <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6">
                   <div className="flex items-start gap-4">
                     <span className="flex-shrink-0 w-8 h-8 bg-ssgmce-blue text-white rounded-full flex items-center justify-center font-bold">
                       3
@@ -196,7 +196,7 @@ const PGAdmissions = () => {
             </section>
 
             {/* Required Original Documents */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-6 flex items-center gap-3">
                 <FaClipboardList className="text-ssgmce-orange" />
                 Required Original Documents for Admission
@@ -240,30 +240,30 @@ const PGAdmissions = () => {
             </section>
 
             {/* CAP Round Seat Matrix */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-6">
                 CAP Round 2025-26: Course-wise Seat Matrix
               </h2>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-4 py-3 text-left">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         SN
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-left">
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Course Name
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-center">
+                      <th className="px-4 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Year
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-center">
+                      <th className="px-4 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Total Intake
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-center">
+                      <th className="px-4 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Seats Available for CAP
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-center">
+                      <th className="px-4 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Choice Code
                       </th>
                     </tr>
@@ -347,13 +347,13 @@ const PGAdmissions = () => {
             </section>
 
             {/* Important Notes - Anti Capitation */}
-            <section className="bg-gradient-to-r from-red-50 to-orange-50 p-8 rounded-xl shadow-lg border-l-4 border-red-600">
+            <section className="rounded-xl border border-red-100 bg-red-50 p-8">
               <h2 className="text-3xl font-bold text-red-700 mb-6 flex items-center gap-3">
                 <FaExclamationTriangle className="text-red-600" />
                 Important Notice
               </h2>
               <div className="space-y-4">
-                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-ssgmce-blue">
+                <div className="rounded-xl border-l-4 border-ssgmce-blue bg-white shadow-sm p-6">
                   <div className="flex items-start gap-4">
                     <FaShieldAlt className="text-ssgmce-blue text-2xl flex-shrink-0 mt-1" />
                     <div>
@@ -378,7 +378,7 @@ const PGAdmissions = () => {
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-600">
+                <div className="rounded-xl border-l-4 border-red-600 bg-white shadow-sm p-6">
                   <div className="flex items-start gap-4">
                     <FaExclamationTriangle className="text-red-600 text-2xl flex-shrink-0 mt-1" />
                     <div>
@@ -401,7 +401,7 @@ const PGAdmissions = () => {
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-600">
+                <div className="rounded-xl border-l-4 border-green-600 bg-white shadow-sm p-6">
                   <div className="flex items-start gap-4">
                     <FaShieldAlt className="text-green-600 text-2xl flex-shrink-0 mt-1" />
                     <div>
@@ -419,7 +419,7 @@ const PGAdmissions = () => {
                   </div>
                 </div>
 
-                <div className="bg-ssgmce-blue text-white p-6 rounded-lg shadow-md text-center">
+                <div className="rounded-xl bg-ssgmce-blue text-white p-6 text-center">
                   <p className="font-bold text-xl">Dr. S. B. Somani</p>
                   <p className="text-lg">Principal</p>
                 </div>

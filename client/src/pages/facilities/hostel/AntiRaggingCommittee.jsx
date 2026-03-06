@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import PageHeader from "../../../components/PageHeader";
 import HostelSidebar from "../../../components/HostelSidebar";
 
@@ -37,17 +37,17 @@ const AntiRaggingCommittee = () => {
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Anti-Ragging Committee Members (2024-25)
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                <table className="w-full border-collapse">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Name & Designation
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Role in Committee
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Contact
                       </th>
                     </tr>
@@ -145,7 +145,7 @@ const AntiRaggingCommittee = () => {
                     UGC Toll-Free Helpline
                   </p>
                 </div>
-                <div className="bg-white p-6 rounded-xl shadow-lg border-t-4 border-ssgmce-orange">
+                <div className="rounded-xl border-l-4 border-ssgmce-orange bg-white shadow-sm p-6">
                   <h4 className="font-bold text-lg text-ssgmce-blue mb-3">
                     SSGMCE Contacts
                   </h4>
@@ -166,14 +166,14 @@ const AntiRaggingCommittee = () => {
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Punishments for Ragging (As per Act)
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                <table className="w-full border-collapse">
                   <thead>
                     <tr className="bg-gradient-to-r from-red-600 to-red-700 text-white">
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Offense Severity
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Punishment
                       </th>
                     </tr>

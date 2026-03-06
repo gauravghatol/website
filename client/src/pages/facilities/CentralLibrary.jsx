@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import PageHeader from "../../components/PageHeader";
 import LibrarySidebar from "../../components/LibrarySidebar";
 import {
@@ -72,17 +72,17 @@ const CentralLibrary = () => {
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Library Collection
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                <table className="w-full border-collapse">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Category
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Count
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Details
                       </th>
                     </tr>
@@ -210,7 +210,7 @@ const CentralLibrary = () => {
                 Services & Facilities
               </h3>
               <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-xl shadow-lg border-t-4 border-ssgmce-orange">
+                <div className="rounded-xl border-l-4 border-ssgmce-orange bg-white shadow-sm p-6">
                   <h4 className="font-bold text-lg text-ssgmce-blue mb-3">
                     📚 Book Lending
                   </h4>
@@ -220,7 +220,7 @@ const CentralLibrary = () => {
                     <li>• Easy renewal process available online</li>
                   </ul>
                 </div>
-                <div className="bg-white p-6 rounded-xl shadow-lg border-t-4 border-ssgmce-blue">
+                <div className="rounded-xl border-l-4 border-ssgmce-blue bg-white shadow-sm p-6">
                   <h4 className="font-bold text-lg text-ssgmce-blue mb-3">
                     💻 OPAC System
                   </h4>
@@ -230,7 +230,7 @@ const CentralLibrary = () => {
                     <li>• Check availability in real-time</li>
                   </ul>
                 </div>
-                <div className="bg-white p-6 rounded-xl shadow-lg border-t-4 border-ssgmce-orange">
+                <div className="rounded-xl border-l-4 border-ssgmce-orange bg-white shadow-sm p-6">
                   <h4 className="font-bold text-lg text-ssgmce-blue mb-3">
                     📖 Book Bank Scheme
                   </h4>
@@ -240,7 +240,7 @@ const CentralLibrary = () => {
                     <li>• Based on merit and need</li>
                   </ul>
                 </div>
-                <div className="bg-white p-6 rounded-xl shadow-lg border-t-4 border-ssgmce-blue">
+                <div className="rounded-xl border-l-4 border-ssgmce-blue bg-white shadow-sm p-6">
                   <h4 className="font-bold text-lg text-ssgmce-blue mb-3">
                     🏛️ Reading Hall
                   </h4>
@@ -254,21 +254,21 @@ const CentralLibrary = () => {
             </section>
 
             {/* Library Timings */}
-            <section className="bg-white p-6 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-6">
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Library Timings
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-orange to-orange-600 text-white">
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Day
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Circulation Section
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Reading Hall
                       </th>
                     </tr>

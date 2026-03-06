@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import PageHeader from "../../../components/PageHeader";
 import SportsSidebar from "../../../components/SportsSidebar";
 
@@ -20,7 +20,7 @@ const AboutSportDepartment = () => {
             <SportsSidebar />
           </div>
           <div className="lg:col-span-9 space-y-8">
-            <section className="bg-white p-8 rounded-xl shadow-md">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Vision & Mission
               </h3>

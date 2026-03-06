@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import PageHeader from "../../../components/PageHeader";
 import LibrarySidebar from "../../../components/LibrarySidebar";
 import { FaCheckCircle } from "react-icons/fa";
@@ -26,17 +26,17 @@ const LibraryFacilities = () => {
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Library Infrastructure Facilities
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                <table className="w-full border-collapse">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Facility
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Capacity/Quantity
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Features
                       </th>
                     </tr>
@@ -155,7 +155,7 @@ const LibraryFacilities = () => {
                     ],
                   },
                 ].map((section, idx) => (
-                  <div key={idx} className="bg-white p-6 rounded-lg shadow-md">
+                  <div key={idx} className="rounded-xl border border-gray-200 bg-white shadow-sm p-6">
                     <h4 className="font-bold text-lg text-ssgmce-blue mb-3">
                       {section.title}
                     </h4>
