@@ -167,7 +167,7 @@ const AdminPopupBanner = () => {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-500 animate-pulse text-lg">Loading...</div>
+          <div className="text-gray-500 dark:text-gray-400 animate-pulse text-lg">Loading...</div>
         </div>
       </AdminLayout>
     );
@@ -179,8 +179,8 @@ const AdminPopupBanner = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Popup Banner Manager</h1>
-            <p className="text-gray-500 mt-1">Manage home page popup announcements</p>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Popup Banner Manager</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">Manage home page popup announcements</p>
           </div>
           <button
             onClick={() => setShowForm(true)}
@@ -193,14 +193,14 @@ const AdminPopupBanner = () => {
         {/* Form Modal */}
         {showForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-800">
+            <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white dark:bg-[#1a1a2e] border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
                   {editingId ? "Edit Banner" : "Create New Banner"}
                 </h2>
                 <button
                   onClick={resetForm}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 transition-colors"
                 >
                   <FaTimes size={20} />
                 </button>
@@ -209,40 +209,40 @@ const AdminPopupBanner = () => {
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Banner Title *
                   </label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
                     required
                   />
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Description
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows="3"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
                   />
                 </div>
 
                 {/* Image Upload */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Banner Image *
                   </label>
                   <div className="space-y-3">
-                    <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#003366] transition-colors">
-                      <FaImage className="text-gray-400" />
-                      <span className="text-sm text-gray-600">
+                    <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-[#003366] transition-colors">
+                      <FaImage className="text-gray-400 dark:text-gray-500" />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
                         {uploading ? "Uploading..." : "Choose Image"}
                       </span>
                       <input
@@ -267,7 +267,7 @@ const AdminPopupBanner = () => {
 
                 {/* Link URL */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     <FaLink className="inline mr-2" />
                     Link URL (optional)
                   </label>
@@ -276,14 +276,14 @@ const AdminPopupBanner = () => {
                     value={formData.linkUrl}
                     onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
                     placeholder="https://example.com"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
                   />
                 </div>
 
                 {/* Date Range */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                       <FaCalendar className="inline mr-2" />
                       Start Date
                     </label>
@@ -291,11 +291,11 @@ const AdminPopupBanner = () => {
                       type="date"
                       value={formData.startDate}
                       onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                       <FaCalendar className="inline mr-2" />
                       End Date
                     </label>
@@ -303,20 +303,20 @@ const AdminPopupBanner = () => {
                       type="date"
                       value={formData.endDate}
                       onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
                     />
                   </div>
                 </div>
 
                 {/* Display Frequency */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Display Frequency
                   </label>
                   <select
                     value={formData.displayFrequency}
                     onChange={(e) => setFormData({ ...formData, displayFrequency: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
                   >
                     <option value="always">Always (Every Page Load)</option>
                     <option value="once-per-session">Once Per Session</option>
@@ -326,27 +326,27 @@ const AdminPopupBanner = () => {
 
                 {/* Priority */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Priority (Higher = Shows First)
                   </label>
                   <input
                     type="number"
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
                   />
                 </div>
 
                 {/* Active Toggle */}
-                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                   <input
                     type="checkbox"
                     id="isActive"
                     checked={formData.isActive}
                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="w-5 h-5 text-[#003366] border-gray-300 rounded focus:ring-[#003366]"
+                    className="w-5 h-5 text-[#003366] border-gray-300 dark:border-gray-600 rounded focus:ring-[#003366]"
                   />
-                  <label htmlFor="isActive" className="text-sm font-semibold text-gray-700">
+                  <label htmlFor="isActive" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                     Set as Active Banner
                   </label>
                 </div>
@@ -363,7 +363,7 @@ const AdminPopupBanner = () => {
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     Cancel
                   </button>
@@ -374,15 +374,15 @@ const AdminPopupBanner = () => {
         )}
 
         {/* Banners List */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-bold text-gray-800">All Banners</h2>
+        <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">All Banners</h2>
           </div>
 
           {banners.length === 0 ? (
             <div className="text-center py-12">
-              <FaEye className="text-4xl text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 mb-4">No popup banners yet</p>
+              <FaEye className="text-4xl text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-gray-500 dark:text-gray-400 mb-4">No popup banners yet</p>
               <button
                 onClick={() => setShowForm(true)}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-[#003366] text-white rounded-lg hover:bg-[#004080] transition-colors"
@@ -391,9 +391,9 @@ const AdminPopupBanner = () => {
               </button>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {banners.map((banner) => (
-                <div key={banner._id} className="p-6 hover:bg-gray-50 transition-colors">
+                <div key={banner._id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                   <div className="flex gap-4">
                     {/* Banner Image */}
                     <div className="flex-shrink-0">
@@ -408,9 +408,9 @@ const AdminPopupBanner = () => {
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="text-lg font-bold text-gray-800">{banner.title}</h3>
+                          <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">{banner.title}</h3>
                           {banner.description && (
-                            <p className="text-sm text-gray-600 mt-1">{banner.description}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{banner.description}</p>
                           )}
                           {banner.linkUrl && (
                             <a
@@ -423,7 +423,7 @@ const AdminPopupBanner = () => {
                               {banner.linkUrl}
                             </a>
                           )}
-                          <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+                          <div className="flex items-center gap-4 mt-3 text-xs text-gray-500 dark:text-gray-400">
                             <span>Priority: {banner.priority}</span>
                             <span>Frequency: {banner.displayFrequency}</span>
                             {banner.startDate && (
@@ -440,11 +440,11 @@ const AdminPopupBanner = () => {
                         {/* Status Badge */}
                         <div>
                           {banner.isActive ? (
-                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-xs font-semibold">
                               <FaEye /> Active
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-semibold">
+                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full text-xs font-semibold">
                               <FaEyeSlash /> Inactive
                             </span>
                           )}
@@ -457,7 +457,7 @@ const AdminPopupBanner = () => {
                           onClick={() => toggleActive(banner._id)}
                           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                             banner.isActive
-                              ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                              ? "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300"
                               : "bg-green-500 text-white hover:bg-green-600"
                           }`}
                         >

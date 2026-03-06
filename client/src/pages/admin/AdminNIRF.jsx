@@ -8,21 +8,21 @@ const AdminNIRF = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
               NIRF Data Management
             </h1>
-            <p className="text-gray-500 mt-1">Manage NIRF rankings and data</p>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">Manage NIRF rankings and data</p>
           </div>
           <button className="flex items-center gap-2 px-5 py-2.5 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors shadow-lg font-medium">
             <FaPlus /> Add NIRF Data
           </button>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-          <FaGraduationCap className="text-6xl text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-gray-800 mb-2">
+        <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <FaGraduationCap className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
             NIRF Data Management
           </h3>
-          <p className="text-gray-500">This feature is under development.</p>
+          <p className="text-gray-500 dark:text-gray-400">This feature is under development.</p>
         </div>
       </div>
     </AdminLayout>

@@ -139,7 +139,7 @@ const EditableImage = ({
       <img src={imageUrl} alt={alt} className={className} />
     ) : (
       <div
-        className={`flex items-center justify-center bg-gray-100 text-gray-400 ${className}`}
+        className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 ${className}`}
       >
         <span className="text-sm">No image</span>
       </div>
@@ -153,8 +153,8 @@ const EditableImage = ({
         <div
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
             dragOver
-              ? "border-blue-500 bg-blue-50"
-              : "border-gray-300 bg-gray-50"
+              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
+              : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50"
           } ${className}`}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -171,11 +171,11 @@ const EditableImage = ({
           {uploading ? (
             <div className="space-y-2">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-              <p className="text-sm text-gray-600">Uploading...</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Uploading...</p>
             </div>
           ) : (
             <div className="space-y-4">
-              <FaUpload className="mx-auto text-4xl text-gray-400" />
+              <FaUpload className="mx-auto text-4xl text-gray-400 dark:text-gray-500" />
               <div>
                 <button
                   onClick={() => fileInputRef.current?.click()}
@@ -183,16 +183,16 @@ const EditableImage = ({
                 >
                   Choose File
                 </button>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                   or drag and drop an image here
                 </p>
               </div>
-              <p className="text-xs text-gray-400">Maximum file size: 5MB</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">Maximum file size: 5MB</p>
             </div>
           )}
 
           {error && (
-            <div className="mt-4 text-red-600 text-sm bg-red-50 p-2 rounded">
+            <div className="mt-4 text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/30 p-2 rounded">
               {error}
             </div>
           )}
@@ -235,10 +235,10 @@ const EditableImage = ({
       ) : (
         <div
           onClick={() => setShowUploadUI(true)}
-          className={`flex flex-col items-center justify-center bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors ${className}`}
+          className={`flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 cursor-pointer transition-colors ${className}`}
         >
-          <FaUpload className="text-3xl text-gray-400 mb-2" />
-          <span className="text-sm text-gray-500">{placeholder}</span>
+          <FaUpload className="text-3xl text-gray-400 dark:text-gray-500 mb-2" />
+          <span className="text-sm text-gray-500 dark:text-gray-400">{placeholder}</span>
         </div>
       )}
     </div>

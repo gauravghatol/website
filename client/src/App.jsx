@@ -185,10 +185,12 @@ import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminNIRF from "./pages/admin/AdminNIRF";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import { AuthProvider } from "./hooks/useAuth";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 function App() {
   return (
     <AuthProvider>
+      <ThemeProvider>
       <Router>
         <ScrollToTop />
         <Routes>
@@ -1504,6 +1506,7 @@ function App() {
 
         </Routes>
       </Router>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

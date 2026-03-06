@@ -195,7 +195,7 @@ const RichTextEditor = ({
     return (
       <div
         onClick={() => setLocalEditing(true)}
-        className={`cursor-pointer hover:bg-blue-50 transition-colors rounded p-2 border-2 border-transparent hover:border-blue-200 ${className}`}
+        className={`cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors rounded p-2 border-2 border-transparent hover:border-blue-200 ${className}`}
       >
         <div
           className="ql-editor"
@@ -209,7 +209,7 @@ const RichTextEditor = ({
   return (
     <div className={`relative ${className}`}>
       <div
-        className="bg-white rounded-lg border-2 border-blue-500 shadow-lg"
+        className="bg-white dark:bg-[#1a1a2e] rounded-lg border-2 border-blue-500 shadow-lg"
         style={{ minHeight }}
       >
         <ReactQuill
@@ -234,7 +234,7 @@ const RichTextEditor = ({
         </button>
         <button
           onClick={handleCancel}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-semibold text-sm shadow-md"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-800/500 text-white rounded-lg hover:bg-gray-600 transition-colors font-semibold text-sm shadow-md"
         >
           <FaTimes /> Cancel
         </button>
