@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import PageHeader from "../../components/PageHeader";
 import FacilitiesSidebar from "../../components/FacilitiesSidebar";
 import {
@@ -48,20 +48,20 @@ const AdministrativeOffice = () => {
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Administrative Departments & Services
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                <table className="w-full border-collapse">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Department
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Services Provided
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Office Hours
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Contact
                       </th>
                     </tr>
@@ -214,7 +214,7 @@ const AdministrativeOffice = () => {
                 ].map((category, idx) => (
                   <div
                     key={idx}
-                    className="bg-white p-6 rounded-xl shadow-lg border-t-4 border-ssgmce-orange"
+                    className="rounded-xl border-l-4 border-ssgmce-orange bg-white shadow-sm p-6"
                   >
                     <h4 className="font-bold text-lg text-ssgmce-blue mb-4">
                       {category.title}
@@ -241,7 +241,7 @@ const AdministrativeOffice = () => {
                 Contact Administrative Office
               </h3>
               <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-lg shadow-md">
+                <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6">
                   <h4 className="font-bold text-ssgmce-blue mb-4 flex items-center gap-2">
                     <FaPhone className="text-ssgmce-orange" />
                     Phone Directory
@@ -262,7 +262,7 @@ const AdministrativeOffice = () => {
                     </p>
                   </div>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-md">
+                <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6">
                   <h4 className="font-bold text-ssgmce-blue mb-4 flex items-center gap-2">
                     <FaEnvelope className="text-ssgmce-orange" />
                     Email Directory

@@ -26,7 +26,7 @@ const FeeStructure = () => {
           {/* Main Content */}
           <div className="lg:col-span-9 space-y-12">
             {/* Header Note */}
-            <div className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white p-6 rounded-xl shadow-lg">
+            <div className="rounded-xl bg-gradient-to-r from-ssgmce-blue to-blue-800 p-6 text-white">
               <h3 className="text-xl font-bold mb-2">
                 Fee Structure for Academic Year 2025-26
               </h3>
@@ -38,7 +38,7 @@ const FeeStructure = () => {
             </div>
 
             {/* First Year B.E. Fee Structure */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-6">
                 First Year Bachelor of Engineering (B.E.)
               </h2>
@@ -47,25 +47,25 @@ const FeeStructure = () => {
               </p>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-4 py-3 text-left">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Particulars / विवरण
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-right">
+                      <th className="px-4 py-3 text-right text-sm font-bold text-gray-700 border border-gray-300">
                         Open/Against CAP
                         <br />
                         (खुला/कॅप विरुध्द)
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-right">
+                      <th className="px-4 py-3 text-right text-sm font-bold text-gray-700 border border-gray-300">
                         OBC/EBC/EWS/SEBC
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-right">
+                      <th className="px-4 py-3 text-right text-sm font-bold text-gray-700 border border-gray-300">
                         VJ/NT/SBC/TFWS
                         <br />
                         (Girls/OBC/EWS/SEBC)
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-right">
+                      <th className="px-4 py-3 text-right text-sm font-bold text-gray-700 border border-gray-300">
                         SC/ST
                         <br />
                         (अजा/अजजा)
@@ -115,7 +115,7 @@ const FeeStructure = () => {
                         00.00
                       </td>
                     </tr>
-                    <tr className="bg-ssgmce-blue text-white font-bold">
+                    <tr className="bg-gray-100 font-bold text-gray-800 border-t border-gray-300">
                       <td className="border border-gray-300 px-4 py-3">
                         Total / एकूण
                       </td>
@@ -138,7 +138,7 @@ const FeeStructure = () => {
             </section>
 
             {/* Direct Second Year B.E. Fee Structure */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-6">
                 Direct Second Year Bachelor of Engineering (B.E.)
               </h2>
@@ -147,25 +147,25 @@ const FeeStructure = () => {
               </p>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-4 py-3 text-left">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Particulars / विवरण
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-right">
+                      <th className="px-4 py-3 text-right text-sm font-bold text-gray-700 border border-gray-300">
                         Open/Against CAP
                         <br />
                         (खुला/कॅप विरुध्द)
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-right">
+                      <th className="px-4 py-3 text-right text-sm font-bold text-gray-700 border border-gray-300">
                         OBC/EBC/EWS/SEBC
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-right">
+                      <th className="px-4 py-3 text-right text-sm font-bold text-gray-700 border border-gray-300">
                         VJ/NT/SBC/TFWS
                         <br />
                         (Girls/OBC/EWS/SEBC)
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-right">
+                      <th className="px-4 py-3 text-right text-sm font-bold text-gray-700 border border-gray-300">
                         SC/ST
                         <br />
                         (अजा/अजजा)
@@ -215,7 +215,7 @@ const FeeStructure = () => {
                         00.00
                       </td>
                     </tr>
-                    <tr className="bg-ssgmce-blue text-white font-bold">
+                    <tr className="bg-gray-100 font-bold text-gray-800 border-t border-gray-300">
                       <td className="border border-gray-300 px-4 py-3">
                         Total / एकूण
                       </td>
@@ -238,7 +238,7 @@ const FeeStructure = () => {
             </section>
 
             {/* MBA Fee Structure */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-6">
                 First Year Master in Business Administration (MBA)
               </h2>
@@ -247,23 +247,23 @@ const FeeStructure = () => {
               </p>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-4 py-3 text-left">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Particulars / विवरण
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-right">
+                      <th className="px-4 py-3 text-right text-sm font-bold text-gray-700 border border-gray-300">
                         Open/Against CAP
                         <br />
                         (खुला/कॅप विरुध्द)
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-right">
+                      <th className="px-4 py-3 text-right text-sm font-bold text-gray-700 border border-gray-300">
                         OBC/EBC/EWS/SEBC
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-right">
+                      <th className="px-4 py-3 text-right text-sm font-bold text-gray-700 border border-gray-300">
                         VJ/NT/SBC/TFWS/EWS/SEBC
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-right">
+                      <th className="px-4 py-3 text-right text-sm font-bold text-gray-700 border border-gray-300">
                         SC/ST
                         <br />
                         (अजा/अजजा)
@@ -313,7 +313,7 @@ const FeeStructure = () => {
                         00.00
                       </td>
                     </tr>
-                    <tr className="bg-ssgmce-blue text-white font-bold">
+                    <tr className="bg-gray-100 font-bold text-gray-800 border-t border-gray-300">
                       <td className="border border-gray-300 px-4 py-3">
                         Total / एकूण
                       </td>
@@ -336,7 +336,7 @@ const FeeStructure = () => {
             </section>
 
             {/* M.E. Fee Structure */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-6">
                 First Year Master in Engineering (PG-M.E.)
               </h2>
@@ -345,17 +345,17 @@ const FeeStructure = () => {
               </p>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-4 py-3 text-left">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Particulars / विवरण
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-right">
+                      <th className="px-4 py-3 text-right text-sm font-bold text-gray-700 border border-gray-300">
                         Open/OBC/SBC/VJ/NT/ST
                         <br />
                         Against CAP
                       </th>
-                      <th className="border border-gray-300 px-4 py-3 text-right">
+                      <th className="px-4 py-3 text-right text-sm font-bold text-gray-700 border border-gray-300">
                         SC
                         <br />
                         (CAP Scholarship Only)
@@ -393,7 +393,7 @@ const FeeStructure = () => {
                         00.00
                       </td>
                     </tr>
-                    <tr className="bg-ssgmce-blue text-white font-bold">
+                    <tr className="bg-gray-100 font-bold text-gray-800 border-t border-gray-300">
                       <td className="border border-gray-300 px-4 py-3">
                         Total / एकूण
                       </td>
@@ -410,7 +410,7 @@ const FeeStructure = () => {
             </section>
 
             {/* Additional Information */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-2xl font-bold text-ssgmce-blue mb-6">
                 Important Information
               </h2>
@@ -459,7 +459,7 @@ const FeeStructure = () => {
             </section>
 
             {/* Contact */}
-            <section className="bg-blue-50 border-l-4 border-ssgmce-blue p-6 rounded-lg">
+            <section className="rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-white p-6">
               <h3 className="text-lg font-bold text-ssgmce-blue mb-3">
                 Have Questions About Fees?
               </h3>

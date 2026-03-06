@@ -38,7 +38,7 @@ const InstituteBrochure = () => {
           {/* Main Content */}
           <div className="lg:col-span-9 space-y-12">
             {/* Download Brochure Section */}
-            <section className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl bg-gradient-to-r from-ssgmce-blue to-blue-800 text-white p-8 shadow-sm">
               <div className="flex items-center justify-between flex-wrap gap-6">
                 <div className="flex-1">
                   <h2 className="text-3xl font-bold mb-3">
@@ -79,7 +79,7 @@ const InstituteBrochure = () => {
             </section>
 
             {/* About SSGMCE */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-6 flex items-center gap-3">
                 <FaUniversity className="text-ssgmce-orange" />
                 About SSGMCE
@@ -115,7 +115,7 @@ const InstituteBrochure = () => {
             </section>
 
             {/* Key Highlights */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-8">
                 Key Highlights
               </h2>
@@ -205,7 +205,7 @@ const InstituteBrochure = () => {
             </section>
 
             {/* Programs Offered */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-8">
                 Programs Offered
               </h2>
@@ -217,18 +217,18 @@ const InstituteBrochure = () => {
                 </h3>
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                        <th className="border border-gray-300 px-4 py-3 text-left">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                           Branch
                         </th>
-                        <th className="border border-gray-300 px-4 py-3 text-center">
+                        <th className="px-4 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                           Duration
                         </th>
-                        <th className="border border-gray-300 px-4 py-3 text-center">
+                        <th className="px-4 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                           Intake
                         </th>
-                        <th className="border border-gray-300 px-4 py-3 text-center">
+                        <th className="px-4 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                           Accreditation
                         </th>
                       </tr>
@@ -294,7 +294,7 @@ const InstituteBrochure = () => {
                           </td>
                         </tr>
                       ))}
-                      <tr className="bg-ssgmce-blue text-white font-bold">
+                      <tr className="bg-gray-100 font-bold text-gray-800 border-t border-gray-300">
                         <td className="border border-gray-300 px-4 py-3">
                           Total UG Intake
                         </td>
@@ -320,15 +320,15 @@ const InstituteBrochure = () => {
                 </h3>
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-gradient-to-r from-ssgmce-orange to-orange-600 text-white">
-                        <th className="border border-gray-300 px-4 py-3 text-left">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                           Specialization
                         </th>
-                        <th className="border border-gray-300 px-4 py-3 text-center">
+                        <th className="px-4 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                           Duration
                         </th>
-                        <th className="border border-gray-300 px-4 py-3 text-center">
+                        <th className="px-4 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                           Intake
                         </th>
                       </tr>
@@ -368,7 +368,7 @@ const InstituteBrochure = () => {
                           </td>
                         </tr>
                       ))}
-                      <tr className="bg-ssgmce-orange text-white font-bold">
+                      <tr className="bg-gray-100 font-bold text-gray-800 border-t border-gray-300">
                         <td className="border border-gray-300 px-4 py-3">
                           Total PG Intake
                         </td>
@@ -389,7 +389,7 @@ const InstituteBrochure = () => {
                 <h3 className="text-xl font-bold text-ssgmce-blue mb-4 border-b-2 border-ssgmce-orange pb-2">
                   Management Program
                 </h3>
-                <div className="bg-gradient-to-r from-blue-50 to-orange-50 p-6 rounded-lg border-2 border-ssgmce-blue">
+                <div className="rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-white p-6">
                   <div className="flex items-center justify-between flex-wrap gap-4">
                     <div>
                       <h4 className="text-xl font-bold text-ssgmce-blue mb-2">
@@ -410,7 +410,7 @@ const InstituteBrochure = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="text-center bg-white px-6 py-4 rounded-lg shadow-md">
+                    <div className="rounded-xl border border-gray-200 bg-white shadow-sm px-6 py-4 text-center">
                       <div className="text-4xl font-bold text-ssgmce-orange">
                         60
                       </div>
@@ -422,7 +422,7 @@ const InstituteBrochure = () => {
             </section>
 
             {/* Infrastructure & Facilities */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-8">
                 Infrastructure & Facilities
               </h2>
@@ -485,7 +485,7 @@ const InstituteBrochure = () => {
                 ].map((facility, idx) => (
                   <div
                     key={idx}
-                    className="border-2 border-gray-200 rounded-lg p-6 hover:border-ssgmce-orange hover:shadow-lg transition-all duration-300"
+                    className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 hover:border-ssgmce-orange hover:shadow-md transition-all duration-300"
                   >
                     <h3 className="text-lg font-bold text-ssgmce-blue mb-4 flex items-center gap-2">
                       <span className="text-ssgmce-orange">▸</span>
@@ -508,12 +508,12 @@ const InstituteBrochure = () => {
             </section>
 
             {/* Accreditations & Approvals */}
-            <section className="bg-gradient-to-r from-blue-50 to-orange-50 p-8 rounded-xl shadow-lg border-l-4 border-ssgmce-blue">
+            <section className="rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-white p-8">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-8">
                 Accreditations & Approvals
               </h2>
               <div className="grid md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-lg shadow-md text-center">
+                <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 text-center">
                   <div className="text-5xl mb-4">✅</div>
                   <h3 className="font-bold text-lg text-ssgmce-blue mb-2">
                     AICTE Approved
@@ -522,7 +522,7 @@ const InstituteBrochure = () => {
                     All India Council for Technical Education
                   </p>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-md text-center">
+                <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 text-center">
                   <div className="text-5xl mb-4">🎓</div>
                   <h3 className="font-bold text-lg text-ssgmce-blue mb-2">
                     SGBAU Affiliated
@@ -531,7 +531,7 @@ const InstituteBrochure = () => {
                     Sant Gadge Baba Amravati University
                   </p>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-md text-center">
+                <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 text-center">
                   <div className="text-5xl mb-4">🏆</div>
                   <h3 className="font-bold text-lg text-ssgmce-blue mb-2">
                     NAAC A+ Accredited
@@ -540,14 +540,14 @@ const InstituteBrochure = () => {
                     National Assessment & Accreditation Council
                   </p>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-md text-center">
+                <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 text-center">
                   <div className="text-5xl mb-4">⭐</div>
                   <h3 className="font-bold text-lg text-ssgmce-blue mb-2">
                     NBA Accredited
                   </h3>
                   <p className="text-sm text-gray-600">4 UG Programs</p>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-md text-center">
+                <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 text-center">
                   <div className="text-5xl mb-4">📜</div>
                   <h3 className="font-bold text-lg text-ssgmce-blue mb-2">
                     DTE Recognized
@@ -556,7 +556,7 @@ const InstituteBrochure = () => {
                     Directorate of Technical Education, Maharashtra
                   </p>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-md text-center">
+                <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 text-center">
                   <div className="text-5xl mb-4">🔬</div>
                   <h3 className="font-bold text-lg text-ssgmce-blue mb-2">
                     Research Center
@@ -569,7 +569,7 @@ const InstituteBrochure = () => {
             </section>
 
             {/* Placements 2023-24 */}
-            <section className="bg-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h2 className="text-3xl font-bold text-ssgmce-blue mb-8">
                 Placement Highlights 2023-24
               </h2>
@@ -628,7 +628,7 @@ const InstituteBrochure = () => {
             </section>
 
             {/* Contact Information */}
-            <section className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white p-8 rounded-xl shadow-lg">
+            <section className="rounded-xl bg-gradient-to-r from-ssgmce-blue to-blue-800 p-8 text-white">
               <h2 className="text-2xl font-bold mb-6">Contact Information</h2>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>

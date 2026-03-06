@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import PageHeader from "../../../components/PageHeader";
 import LibrarySidebar from "../../../components/LibrarySidebar";
 
@@ -21,7 +21,7 @@ const Coursera = () => {
             <LibrarySidebar />
           </div>
           <div className="lg:col-span-9 space-y-8">
-            <section className="bg-white p-8 rounded-xl shadow-md">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 About Coursera Partnership
               </h3>
@@ -37,23 +37,23 @@ const Coursera = () => {
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Popular Coursera Specializations
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                <table className="w-full border-collapse">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Specialization
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Offered By
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Courses
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Duration
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Enrollments
                       </th>
                     </tr>
