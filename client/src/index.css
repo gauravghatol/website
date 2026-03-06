@@ -26,20 +26,63 @@
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #003366;
-  border-radius: 5px;
+  background: #c1c1c1;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #002244;
+  background: #999;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track,
+.dark::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb,
+.dark::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover,
+.dark::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* Dark mode native select options */
+.dark select option {
+  background-color: #1e1e2f;
+  color: #e5e7eb;
+}
+
+/* Dark mode form elements */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]),
+.dark textarea,
+.dark select {
+  background-color: #1a1a2e;
+  color: #e5e7eb;
+  border-color: #374151;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #6b7280;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #3b82f6;
 }
 
 /* Smooth scroll */

@@ -114,10 +114,10 @@ const VisualPageEditor = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-800/50">
         <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-500">Loading editor...</p>
+          <FaSpinner className="animate-spin text-4xl text-blue-600 dark:text-blue-400 mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-gray-400">Loading editor...</p>
         </div>
       </div>
     );
@@ -125,12 +125,12 @@ const VisualPageEditor = () => {
 
   if (error || pageNotFound) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
-          <h2 className="text-xl font-bold text-red-600 mb-2">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-800/50">
+        <div className="bg-white dark:bg-[#1a1a2e] p-8 rounded-lg shadow-lg text-center max-w-md">
+          <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">
             {pageNotFound ? 'Page Not Found in Database' : 'Error'}
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             {pageNotFound
               ? `The page "${pageId}" does not exist yet. You can create it now as an empty page and start adding content.`
               : error}
@@ -146,7 +146,7 @@ const VisualPageEditor = () => {
             </button>
           )}
           <div>
-            <a href="/admin" className="text-blue-600 hover:underline text-sm">
+            <a href="/admin" className="text-blue-600 dark:text-blue-400 hover:underline text-sm">
               ← Back to Dashboard
             </a>
           </div>

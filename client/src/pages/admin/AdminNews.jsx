@@ -103,7 +103,7 @@ const AdminNews = () => {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-500 animate-pulse text-lg">
+          <div className="text-gray-500 dark:text-gray-400 animate-pulse text-lg">
             Loading news...
           </div>
         </div>
@@ -117,10 +117,10 @@ const AdminNews = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
               News Management
             </h1>
-            <p className="text-gray-500 mt-1">
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
               Manage news articles and updates
             </p>
           </div>
@@ -145,13 +145,13 @@ const AdminNews = () => {
 
         {/* Form */}
         {showForm && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
+          <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">
               {editingId ? "Edit News" : "Add New News"}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Title
                 </label>
                 <input
@@ -160,12 +160,12 @@ const AdminNews = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, title: e.target.value })
                   }
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Content
                 </label>
                 <textarea
@@ -174,13 +174,13 @@ const AdminNews = () => {
                     setFormData({ ...formData, content: e.target.value })
                   }
                   rows="4"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Category
                   </label>
                   <select
@@ -188,7 +188,7 @@ const AdminNews = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, category: e.target.value })
                     }
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option>Academic</option>
                     <option>Events</option>
@@ -197,7 +197,7 @@ const AdminNews = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Status
                   </label>
                   <select
@@ -208,7 +208,7 @@ const AdminNews = () => {
                         isActive: e.target.value === "true",
                       })
                     }
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="true">Active</option>
                     <option value="false">Inactive</option>
@@ -234,7 +234,7 @@ const AdminNews = () => {
                       isActive: true,
                     });
                   }}
-                  className="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                  className="px-6 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 transition-colors font-medium"
                 >
                   Cancel
                 </button>
@@ -244,67 +244,67 @@ const AdminNews = () => {
         )}
 
         {/* News List */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Title
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Category
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {news.map((item) => (
                   <tr
                     key={item._id}
-                    className="hover:bg-gray-50 transition-colors"
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <FaNewspaper className="text-blue-600" />
+                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <FaNewspaper className="text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-800">
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">
                             {item.title}
                           </p>
-                          <p className="text-sm text-gray-500 line-clamp-1">
+                          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
                             {item.content}
                           </p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                      <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded-full">
                         {item.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                       <div className="flex items-center gap-1.5">
-                        <FaClock className="text-gray-400" />
+                        <FaClock className="text-gray-400 dark:text-gray-500" />
                         {formatDate(item.createdAt)}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       {item.isActive ? (
-                        <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium">
+                        <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400 text-sm font-medium">
                           <FaEye /> Active
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1.5 text-gray-500 text-sm font-medium">
+                        <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 text-sm font-medium">
                           <FaEyeSlash /> Inactive
                         </span>
                       )}
@@ -313,14 +313,14 @@ const AdminNews = () => {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleEdit(item)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                           title="Edit"
                         >
                           <FaEdit />
                         </button>
                         <button
                           onClick={() => handleDelete(item._id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                           title="Delete"
                         >
                           <FaTrash />
@@ -334,8 +334,8 @@ const AdminNews = () => {
           </div>
           {news.length === 0 && (
             <div className="text-center py-12">
-              <FaNewspaper className="text-5xl text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">No news articles found</p>
+              <FaNewspaper className="text-5xl text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-gray-500 dark:text-gray-400">No news articles found</p>
             </div>
           )}
         </div>
