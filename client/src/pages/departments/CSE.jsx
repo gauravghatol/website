@@ -125,6 +125,7 @@ const CSE = () => {
     "2018-19",
   ];
   const [projectYear, setProjectYear] = useState("2024-25");
+  const [studentProjectYear, setStudentProjectYear] = useState("2024-25");
   const [researchYear, setResearchYear] = useState("2024-25");
   const [placementYear, setPlacementYear] = useState(null);
   const [internshipYear, setInternshipYear] = useState("2024-25");
@@ -251,11 +252,11 @@ const CSE = () => {
     }
   };
 
-  // Reset project year when switching to student-projects tab
+  // Reset Student's Best Projects year when switching to that tab
   useEffect(() => {
     if (activeTab === "student-projects") {
       window.scrollTo(0, 0);
-      setProjectYear("2024-25");
+      setStudentProjectYear("2024-25");
     }
     if (activeTab === "activities") {
       setActivitiesVisible(6);
@@ -1996,9 +1997,11 @@ const CSE = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {t(
-                  `ugProjects.records.${projectYear}`,
-                  defaultUgProjects[projectYear],
+                {(
+                  t(
+                    `ugProjects.records.${projectYear}`,
+                    defaultUgProjects[projectYear],
+                  ) || []
                 ).map((project, i) => (
                   <tr key={i} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-center font-mono text-gray-400 text-xs">
@@ -5122,9 +5125,9 @@ const CSE = () => {
             {["2024-25", "2023-24", "2022-23", "2021-22"].map((year) => (
               <button
                 key={year}
-                onClick={() => setProjectYear(year)}
+                onClick={() => setStudentProjectYear(year)}
                 className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${
-                  projectYear === year
+                  studentProjectYear === year
                     ? "bg-white text-ssgmce-blue shadow-md"
                     : "text-gray-600 hover:text-gray-800"
                 }`}
@@ -5154,7 +5157,7 @@ const CSE = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {projectYear === "2024-25" &&
+                {studentProjectYear === "2024-25" &&
                   [
                     {
                       no: 1,
@@ -5193,7 +5196,7 @@ const CSE = () => {
                     </tr>
                   ))}
 
-                {projectYear === "2023-24" &&
+                {studentProjectYear === "2023-24" &&
                   [
                     {
                       no: 1,
@@ -5231,7 +5234,7 @@ const CSE = () => {
                     </tr>
                   ))}
 
-                {projectYear === "2022-23" &&
+                {studentProjectYear === "2022-23" &&
                   [
                     {
                       no: 1,
@@ -5268,18 +5271,17 @@ const CSE = () => {
                     </tr>
                   ))}
 
-                {projectYear === "2021-22" &&
+                {studentProjectYear === "2021-22" &&
                   [
                     {
                       no: 1,
-                      title:
-                        "Autonomous Robotics using VSLAM Technology and Implementation using ARM architecture",
-                      guide: "Prof.VS Mahalle",
+                      title: "Autonomous Robotics Using VSLAM Technology and Implementation Using ARM Architecture.",
+                      guide: "Prof. V. S. Mahalle",
                       award: "1st Rank",
                     },
                     {
                       no: 2,
-                      title: "Sentiment Analysis Of Marathi Language",
+                      title: "Sentiment Analysis of Marathi Language.",
                       guide: "Prof. KP Sable",
                       award: "2nd Rank",
                     },

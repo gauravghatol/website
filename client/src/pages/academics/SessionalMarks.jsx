@@ -1,9 +1,13 @@
 import React from 'react';
 import GenericPage from '../../components/GenericPage';
+import AcademicsSidebar from '../../components/AcademicsSidebar';
+import { FaDownload } from 'react-icons/fa';
+
+const PDF_URL = 'https://www.ssgmce.ac.in/uploads/Sessional%20Marks%20Evaluations%20scheme%20for%20UG-%20PG%20Session-2025-2026.pdf';
 
 const SessionalMarks = () => {
   return (
-    <GenericPage title="Sessional Marks Evaluation">
+    <GenericPage title="Sessional Marks Evaluation" sidebar={<AcademicsSidebar />}>
       <div className="space-y-10">
         {/* Header Information */}
         <div className="bg-gradient-to-r from-blue-50 to-white p-6 rounded-xl border-l-4 border-blue-600">
@@ -285,6 +289,23 @@ const SessionalMarks = () => {
             <li>M.R.ISO/ Exam Section for necessary noting.</li>
             <li>IQAC Coordinator.</li>
           </ol>
+        </div>
+
+        {/* Download CTA */}
+        <div className="bg-gradient-to-r from-ssgmce-blue to-blue-800 rounded-xl p-6 text-center text-white">
+          <h3 className="text-lg font-bold mb-2">Download Sessional Marks Evaluation Scheme</h3>
+          <p className="text-blue-100 mb-4 text-sm">
+            Complete evaluation scheme for UG & PG programs — Session 2025-2026 & onward
+          </p>
+          <a
+            href={PDF_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-white text-ssgmce-blue hover:bg-gray-100 px-6 py-3 rounded-lg transition-colors font-semibold shadow-md"
+          >
+            <FaDownload />
+            Download Full PDF
+          </a>
         </div>
       </div>
     </GenericPage>
