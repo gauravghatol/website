@@ -1,10 +1,7 @@
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaChevronRight } from "react-icons/fa";
+import { FaBook, FaChevronRight } from "react-icons/fa";
 
-/**
- * LibrarySidebar Component
- * Displays navigation menu for library-related pages
- */
 const LibrarySidebar = () => {
   const location = useLocation();
 
@@ -29,43 +26,40 @@ const LibrarySidebar = () => {
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden sticky top-24">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white p-4 border-b-4 border-ssgmce-orange">
-        <h2 className="text-xl font-bold">About Library</h2>
+    <div className="sticky top-24 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">
+        <h3 className="flex items-center text-lg font-bold text-white">
+          <FaBook className="mr-2" /> Library
+        </h3>
       </div>
 
-      {/* Navigation Links */}
-      <nav className="divide-y divide-gray-200">
-        {menuItems.map((item, index) => {
-          const isActive = location.pathname === item.path;
+      <div className="p-3">
+        <nav>
+          <ul className="space-y-1.5">
+            {menuItems.map((item, index) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <li key={index}>
+                  <Link
+                    to={item.path}
+                    className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm leading-snug transition-colors ${
+                      isActive
+                        ? "border-l-2 border-ssgmce-orange bg-orange-50 font-semibold text-ssgmce-blue"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <span className="whitespace-normal">{item.title}</span>
+                    <FaChevronRight className="shrink-0 text-[10px] text-gray-400" />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </div>
 
-          return (
-            <Link
-              key={index}
-              to={item.path}
-              className={`block px-4 py-3 transition-all duration-200 group ${
-                isActive
-                  ? "bg-ssgmce-orange text-white font-semibold"
-                  : "text-gray-700 hover:bg-blue-50 hover:text-ssgmce-blue hover:pl-6"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className={`${isActive ? "font-semibold" : ""}`}>
-                  {item.title}
-                </span>
-                {!isActive && (
-                  <FaChevronRight className="text-gray-400 group-hover:text-ssgmce-orange opacity-0 group-hover:opacity-100 transition-all duration-200" />
-                )}
-              </div>
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Quick Contact */}
-      <div className="bg-gray-50 p-4 border-t-2 border-gray-200">
-        <p className="text-xs text-gray-600 mb-2 font-semibold">
+      <div className="border-t border-gray-100 bg-gray-50 px-4 py-3">
+        <p className="mb-1 text-xs font-semibold text-gray-500">
           Library Contact
         </p>
         <p className="text-xs text-ssgmce-blue">📧 library@ssgmce.ac.in</p>

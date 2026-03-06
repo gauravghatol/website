@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import PageHeader from "../../../components/PageHeader";
 import SportsSidebar from "../../../components/SportsSidebar";
 
@@ -24,17 +24,17 @@ const SportsCouncil = () => {
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Sports Council Members (2024-25)
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                <table className="w-full border-collapse">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Name & Designation
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Role in Council
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Responsibilities
                       </th>
                     </tr>

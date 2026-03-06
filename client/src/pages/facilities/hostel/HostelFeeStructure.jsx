@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import PageHeader from "../../../components/PageHeader";
 import HostelSidebar from "../../../components/HostelSidebar";
 
@@ -25,20 +25,20 @@ const HostelFeeStructure = () => {
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Annual Hostel Fee Breakdown
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                <table className="w-full border-collapse">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Fee Component
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Amount (₹)
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Details
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Refundable
                       </th>
                     </tr>
@@ -110,7 +110,7 @@ const HostelFeeStructure = () => {
                         </td>
                       </tr>
                     ))}
-                    <tr className="bg-ssgmce-blue text-white font-bold">
+                    <tr className="bg-gray-100 font-bold text-gray-800 border-t border-gray-300">
                       <td className="border border-gray-300 px-6 py-4">
                         TOTAL (First Year)
                       </td>
@@ -124,7 +124,7 @@ const HostelFeeStructure = () => {
                         Includes all charges
                       </td>
                     </tr>
-                    <tr className="bg-ssgmce-orange text-white font-bold">
+                    <tr className="bg-gray-100 font-bold text-gray-800 border-t border-gray-300">
                       <td className="border border-gray-300 px-6 py-4">
                         TOTAL (Subsequent Years)
                       </td>
@@ -151,20 +151,20 @@ const HostelFeeStructure = () => {
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Mess Charges (Optional)
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-orange to-orange-600 text-white">
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                <table className="w-full border-collapse">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Mess Type
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Monthly Charges
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Meal Times
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Menu Type
                       </th>
                     </tr>

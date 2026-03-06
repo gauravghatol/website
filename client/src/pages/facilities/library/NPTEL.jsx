@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import PageHeader from "../../../components/PageHeader";
 import LibrarySidebar from "../../../components/LibrarySidebar";
 
@@ -21,7 +21,7 @@ const NPTEL = () => {
             <LibrarySidebar />
           </div>
           <div className="lg:col-span-9 space-y-8">
-            <section className="bg-white p-8 rounded-xl shadow-md">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 About NPTEL at SSGMCE
               </h3>
@@ -37,23 +37,23 @@ const NPTEL = () => {
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Course Enrollment Statistics (2023-24)
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                <table className="w-full border-collapse">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Semester
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Students Enrolled
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Faculty Enrolled
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Courses
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Certificates Earned
                       </th>
                     </tr>
@@ -110,7 +110,7 @@ const NPTEL = () => {
                         </td>
                       </tr>
                     ))}
-                    <tr className="bg-ssgmce-blue text-white font-bold">
+                    <tr className="bg-gray-100 font-bold text-gray-800 border-t border-gray-300">
                       <td className="border border-gray-300 px-6 py-4">
                         TOTAL
                       </td>
@@ -136,17 +136,17 @@ const NPTEL = () => {
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Popular NPTEL Courses
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-orange to-orange-600 text-white">
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                <table className="w-full border-collapse">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Course Name
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Offered By
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Enrollments (2023-24)
                       </th>
                     </tr>

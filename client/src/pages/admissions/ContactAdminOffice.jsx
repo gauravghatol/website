@@ -26,7 +26,7 @@ const ContactAdminOffice = () => {
           <div className="lg:col-span-9 space-y-8">
             {/* Quick Contact Cards */}
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-gradient-to-br from-ssgmce-blue to-blue-700 text-white p-6 rounded-xl shadow-lg">
+              <div className="rounded-xl bg-gradient-to-br from-ssgmce-blue to-blue-800 text-white p-6 shadow-sm">
                 <div className="flex items-center gap-3 mb-3">
                   <FaPhone className="text-3xl" />
                   <h3 className="text-xl font-bold">Call Us</h3>
@@ -37,7 +37,7 @@ const ContactAdminOffice = () => {
                 <p className="text-sm opacity-90">Admission Desk Direct</p>
               </div>
 
-              <div className="bg-gradient-to-br from-ssgmce-orange to-orange-600 text-white p-6 rounded-xl shadow-lg">
+              <div className="rounded-xl bg-gradient-to-br from-ssgmce-orange to-orange-700 text-white p-6 shadow-sm">
                 <div className="flex items-center gap-3 mb-3">
                   <FaEnvelope className="text-3xl" />
                   <h3 className="text-xl font-bold">Email Us</h3>
@@ -48,7 +48,7 @@ const ContactAdminOffice = () => {
                 <p className="text-sm opacity-90">General Information</p>
               </div>
 
-              <div className="bg-gradient-to-br from-green-600 to-green-700 text-white p-6 rounded-xl shadow-lg">
+              <div className="rounded-xl bg-gradient-to-br from-green-600 to-green-700 text-white p-6 shadow-sm">
                 <div className="flex items-center gap-3 mb-3">
                   <FaClock className="text-3xl" />
                   <h3 className="text-xl font-bold">Office Hours</h3>
@@ -62,7 +62,7 @@ const ContactAdminOffice = () => {
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-purple-600 to-purple-700 text-white p-6 rounded-xl shadow-lg">
+              <div className="rounded-xl bg-gradient-to-br from-ssgmce-dark-blue to-ssgmce-blue text-white p-6 shadow-sm">
                 <div className="flex items-center gap-3 mb-3">
                   <FaMapMarkerAlt className="text-3xl" />
                   <h3 className="text-xl font-bold">Visit Us</h3>
@@ -81,20 +81,20 @@ const ContactAdminOffice = () => {
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Admission Office - Staff Directory
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white">
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                <table className="w-full border-collapse">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Name & Designation
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Responsibilities
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-left">
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border border-gray-300">
                         Contact
                       </th>
-                      <th className="border border-gray-300 px-6 py-3 text-center">
+                      <th className="px-6 py-3 text-center text-sm font-bold text-gray-700 border border-gray-300">
                         Availability
                       </th>
                     </tr>
@@ -167,7 +167,7 @@ const ContactAdminOffice = () => {
             </section>
 
             {/* Important Notices */}
-            <section className="bg-yellow-50 border-l-4 border-yellow-600 p-6 rounded-r-lg">
+            <section className="rounded-xl border border-yellow-100 bg-yellow-50 p-6">
               <h3 className="text-xl font-bold text-yellow-800 mb-3">
                 Important Information
               </h3>
@@ -199,7 +199,7 @@ const ContactAdminOffice = () => {
             </section>
 
             {/* Location Map Placeholder */}
-            <section className="bg-white p-6 rounded-xl shadow-md">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-6">
               <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">
                 Campus Location
               </h3>

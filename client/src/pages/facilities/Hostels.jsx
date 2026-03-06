@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import PageHeader from "../../components/PageHeader";
 import HostelSidebar from "../../components/HostelSidebar";
 import {
@@ -97,7 +97,7 @@ const Hostels = () => {
             {/* Introduction */}
             <section className="relative">
               <div className="absolute top-0 left-0 w-24 h-24 bg-blue-100 rounded-full -translate-x-1/2 -translate-y-1/2 opacity-50"></div>
-              <div className="relative bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+              <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
                 <div className="flex items-start gap-4 mb-6">
                   <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center flex-shrink-0">
                     <FaBed className="text-2xl text-white" />
@@ -290,7 +290,7 @@ const Hostels = () => {
             </section>
 
             {/* Contact CTA */}
-            <section className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-6">
               <div className="flex flex-wrap items-center justify-between gap-6">
                 <div>
                   <h3 className="text-xl font-bold text-gray-800 mb-1">

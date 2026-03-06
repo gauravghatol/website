@@ -109,7 +109,7 @@ const AdmissionProcess = () => {
           <div className="lg:col-span-9 space-y-10">
             {/* Hero Stats */}
             <section className="grid md:grid-cols-3 gap-6">
-              <div className="bg-gradient-to-br from-ssgmce-dark-blue to-ssgmce-blue text-white p-6 rounded-2xl shadow-xl">
+              <div className="bg-gradient-to-br from-ssgmce-dark-blue to-ssgmce-blue text-white p-6 rounded-xl shadow-sm">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
                     <FaCalendarAlt className="text-2xl" />
@@ -120,7 +120,7 @@ const AdmissionProcess = () => {
                   </div>
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-2xl shadow-xl">
+              <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-xl shadow-sm">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
                     <FaUniversity className="text-2xl" />
@@ -131,7 +131,7 @@ const AdmissionProcess = () => {
                   </div>
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-green-600 to-green-700 text-white p-6 rounded-2xl shadow-xl">
+              <div className="bg-gradient-to-br from-green-600 to-green-700 text-white p-6 rounded-xl shadow-sm">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
                     <FaCheckCircle className="text-2xl" />
@@ -178,10 +178,10 @@ const AdmissionProcess = () => {
 
                         {/* Content Card */}
                         <div
-                          className={`flex-1 bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border-l-4 ${
+                          className={`flex-1 bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 border-l-4 ${
                             step.color === "blue"
-                              ? "border-blue-600"
-                              : "border-orange-500"
+                              ? "border-l-blue-600"
+                              : "border-l-orange-500"
                           }`}
                         >
                           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -217,7 +217,7 @@ const AdmissionProcess = () => {
             </section>
 
             {/* Eligibility Criteria */}
-            <section className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+            <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
                   <FaCheckCircle className="text-2xl text-green-600" />
@@ -231,7 +231,7 @@ const AdmissionProcess = () => {
               </div>
 
               <div className="grid md:grid-cols-2 gap-8">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl">
+                <div className="rounded-lg border border-blue-100 bg-blue-50 p-6">
                   <h4 className="font-bold text-lg text-blue-800 mb-4 flex items-center gap-2">
                     <span className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm">
                       1
@@ -253,7 +253,7 @@ const AdmissionProcess = () => {
                   </ul>
                 </div>
 
-                <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl">
+                <div className="rounded-lg border border-orange-100 bg-orange-50 p-6">
                   <h4 className="font-bold text-lg text-orange-800 mb-4 flex items-center gap-2">
                     <span className="w-8 h-8 bg-orange-500 text-white rounded-lg flex items-center justify-center text-sm">
                       2
@@ -314,7 +314,7 @@ const AdmissionProcess = () => {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between bg-white p-5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group border border-gray-100 hover:border-blue-200"
+                    className="flex items-center justify-between rounded-xl border border-gray-200 bg-white shadow-sm p-5 hover:shadow-md hover:border-blue-300 transition-all duration-300 group"
                   >
                     <div>
                       <h4 className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
@@ -331,7 +331,7 @@ const AdmissionProcess = () => {
             </section>
 
             {/* Important Notes */}
-            <section className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 p-6 rounded-2xl">
+            <section className="rounded-xl border border-red-100 bg-red-50 p-6">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
                   <FaExclamationTriangle className="text-2xl text-red-600" />
@@ -359,7 +359,7 @@ const AdmissionProcess = () => {
             </section>
 
             {/* CTA */}
-            <section className="bg-gradient-to-r from-ssgmce-dark-blue to-ssgmce-blue p-8 rounded-2xl text-white text-center">
+            <section className="rounded-xl bg-gradient-to-r from-ssgmce-blue to-blue-800 p-8 text-white text-center">
               <h3 className="text-2xl font-bold mb-3">
                 Ready to Begin Your Journey?
               </h3>
