@@ -124,7 +124,7 @@ const EditableText = ({
             onChange={(e) => setCurrentValue(e.target.value)}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
-            className={`w-full bg-white text-gray-900 p-2 rounded border-2 border-blue-500 outline-none shadow-lg z-10 relative ${className}`}
+            className={`w-full bg-white dark:bg-[#1a1a2e] text-gray-900 dark:text-white p-2 rounded border-2 border-blue-500 outline-none shadow-lg z-10 relative ${className}`}
             rows={4}
             autoFocus
           />
@@ -136,7 +136,7 @@ const EditableText = ({
             onChange={(e) => setCurrentValue(e.target.value)}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
-            className={`w-full bg-white text-gray-900 px-2 py-1 rounded border-2 border-blue-500 outline-none shadow-lg z-10 relative ${className}`}
+            className={`w-full bg-white dark:bg-[#1a1a2e] text-gray-900 dark:text-white px-2 py-1 rounded border-2 border-blue-500 outline-none shadow-lg z-10 relative ${className}`}
             autoFocus
           />
         )}
@@ -172,13 +172,13 @@ const EditableText = ({
         e.stopPropagation();
         setLocalEditing(true);
       }}
-      className={`relative group cursor-pointer border-2 border-transparent hover:border-blue-400 hover:bg-blue-50/10 rounded transition-all px-1 -mx-1 ${className}`}
+      className={`relative group cursor-pointer border-2 border-transparent hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-all px-1 -mx-1 ${className}`}
       title={path ? `Edit ${path}` : "Edit Text"}
     >
       {displayValue ? (
         <Tag>{displayValue}</Tag>
       ) : (
-        <span className="text-gray-400 italic bg-gray-100 px-2 rounded text-sm select-none">
+        <span className="text-gray-400 dark:text-gray-500 italic bg-gray-100 dark:bg-gray-800 px-2 rounded text-sm select-none">
           {placeholder}
         </span>
       )}

@@ -341,10 +341,10 @@ const AdminResearch = () => {
         {/* ── Header ────────────────────────────────────────────── */}
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
               Research Management
             </h1>
-            <p className="text-gray-500 mt-1">
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
               {isCoordinator
                 ? `Manage research data for the ${userDepartment} department`
                 : "Manage research publications, patents, projects & areas"}
@@ -371,18 +371,18 @@ const AdminResearch = () => {
 
         {/* Alerts */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg">
             {error}
           </div>
         )}
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-lg">
             {success}
           </div>
         )}
 
         {/* ── Tabs ──────────────────────────────────────────────── */}
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg overflow-x-auto">
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg overflow-x-auto">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -391,8 +391,8 @@ const AdminResearch = () => {
                 onClick={() => handleTabChange(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all whitespace-nowrap ${
                   activeTab === tab.id
-                    ? "bg-white text-[#003366] shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "bg-white dark:bg-[#1a1a2e] text-[#003366] shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
                 <Icon className="text-sm" />
@@ -404,9 +404,9 @@ const AdminResearch = () => {
 
         {/* ── Form ──────────────────────────────────────────────── */}
         {showForm && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                 {editingId ? "Edit" : "Add"}{" "}
                 {activeTab === "publications"
                   ? "Publication"
@@ -418,7 +418,7 @@ const AdminResearch = () => {
               </h2>
               <button
                 onClick={resetForm}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600"
               >
                 <FaTimes />
               </button>
@@ -430,7 +430,7 @@ const AdminResearch = () => {
                 {activeTab === "publications" && (
                   <>
                     <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Title *
                       </label>
                       <input
@@ -438,12 +438,12 @@ const AdminResearch = () => {
                         required
                         value={formData.title || ""}
                         onChange={(e) => setField("title", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     {renderDeptField()}
                     <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Authors * (comma separated)
                       </label>
                       <input
@@ -451,12 +451,12 @@ const AdminResearch = () => {
                         required
                         value={formData.authors || ""}
                         onChange={(e) => setField("authors", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                         placeholder="Dr. A. Patil, Prof. B. Sharma"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Year *
                       </label>
                       <input
@@ -466,17 +466,17 @@ const AdminResearch = () => {
                         onChange={(e) =>
                           setField("year", parseInt(e.target.value))
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Type
                       </label>
                       <select
                         value={formData.type || "journal"}
                         onChange={(e) => setField("type", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       >
                         <option value="journal">Journal</option>
                         <option value="conference">Conference</option>
@@ -485,18 +485,18 @@ const AdminResearch = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Publisher
                       </label>
                       <input
                         type="text"
                         value={formData.publisher || ""}
                         onChange={(e) => setField("publisher", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Journal / Conference
                       </label>
                       <input
@@ -505,63 +505,63 @@ const AdminResearch = () => {
                         onChange={(e) =>
                           setField("journalName", e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         DOI
                       </label>
                       <input
                         type="text"
                         value={formData.doi || ""}
                         onChange={(e) => setField("doi", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Volume
                       </label>
                       <input
                         type="text"
                         value={formData.volume || ""}
                         onChange={(e) => setField("volume", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Pages
                       </label>
                       <input
                         type="text"
                         value={formData.pages || ""}
                         onChange={(e) => setField("pages", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div className="lg:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Keywords (comma separated)
                       </label>
                       <input
                         type="text"
                         value={formData.keywords || ""}
                         onChange={(e) => setField("keywords", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                         placeholder="Machine Learning, AI, IoT"
                       />
                     </div>
                     <div className="lg:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Abstract
                       </label>
                       <textarea
                         rows={3}
                         value={formData.abstract || ""}
                         onChange={(e) => setField("abstract", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                   </>
@@ -571,7 +571,7 @@ const AdminResearch = () => {
                 {activeTab === "patents" && (
                   <>
                     <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Title *
                       </label>
                       <input
@@ -579,12 +579,12 @@ const AdminResearch = () => {
                         required
                         value={formData.title || ""}
                         onChange={(e) => setField("title", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     {renderDeptField()}
                     <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Inventors * (comma separated)
                       </label>
                       <input
@@ -592,17 +592,17 @@ const AdminResearch = () => {
                         required
                         value={formData.inventors || ""}
                         onChange={(e) => setField("inventors", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         IP Type
                       </label>
                       <select
                         value={formData.type || "patent"}
                         onChange={(e) => setField("type", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       >
                         <option value="patent">Patent</option>
                         <option value="copyright">Copyright</option>
@@ -611,13 +611,13 @@ const AdminResearch = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Status
                       </label>
                       <select
                         value={formData.status || "filed"}
                         onChange={(e) => setField("status", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       >
                         <option value="filed">Filed</option>
                         <option value="published">Published</option>
@@ -626,7 +626,7 @@ const AdminResearch = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Application No.
                       </label>
                       <input
@@ -635,11 +635,11 @@ const AdminResearch = () => {
                         onChange={(e) =>
                           setField("applicationNumber", e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Patent No.
                       </label>
                       <input
@@ -648,11 +648,11 @@ const AdminResearch = () => {
                         onChange={(e) =>
                           setField("patentNumber", e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Filing Date
                       </label>
                       <input
@@ -661,11 +661,11 @@ const AdminResearch = () => {
                         onChange={(e) =>
                           setField("filingDate", e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Grant Date
                       </label>
                       <input
@@ -674,22 +674,22 @@ const AdminResearch = () => {
                         onChange={(e) =>
                           setField("grantDate", e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Category
                       </label>
                       <input
                         type="text"
                         value={formData.category || ""}
                         onChange={(e) => setField("category", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div className="lg:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Description
                       </label>
                       <textarea
@@ -698,7 +698,7 @@ const AdminResearch = () => {
                         onChange={(e) =>
                           setField("description", e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                   </>
@@ -708,7 +708,7 @@ const AdminResearch = () => {
                 {activeTab === "projects" && (
                   <>
                     <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Title *
                       </label>
                       <input
@@ -716,12 +716,12 @@ const AdminResearch = () => {
                         required
                         value={formData.title || ""}
                         onChange={(e) => setField("title", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     {renderDeptField()}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Principal Investigator *
                       </label>
                       <input
@@ -731,11 +731,11 @@ const AdminResearch = () => {
                         onChange={(e) =>
                           setField("principalInvestigator", e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Co-PIs (comma separated)
                       </label>
                       <input
@@ -744,11 +744,11 @@ const AdminResearch = () => {
                         onChange={(e) =>
                           setField("coPrincipalInvestigators", e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Funding Agency *
                       </label>
                       <input
@@ -758,29 +758,29 @@ const AdminResearch = () => {
                         onChange={(e) =>
                           setField("fundingAgency", e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                         placeholder="AICTE, DST, UGC..."
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Amount (₹)
                       </label>
                       <input
                         type="number"
                         value={formData.amount || ""}
                         onChange={(e) => setField("amount", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Status
                       </label>
                       <select
                         value={formData.status || "ongoing"}
                         onChange={(e) => setField("status", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       >
                         <option value="ongoing">Ongoing</option>
                         <option value="completed">Completed</option>
@@ -788,7 +788,7 @@ const AdminResearch = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Start Date
                       </label>
                       <input
@@ -797,34 +797,34 @@ const AdminResearch = () => {
                         onChange={(e) =>
                           setField("startDate", e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         End Date
                       </label>
                       <input
                         type="date"
                         value={formData.endDate || ""}
                         onChange={(e) => setField("endDate", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Duration
                       </label>
                       <input
                         type="text"
                         value={formData.duration || ""}
                         onChange={(e) => setField("duration", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                         placeholder="3 Years"
                       />
                     </div>
                     <div className="lg:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Description
                       </label>
                       <textarea
@@ -833,7 +833,7 @@ const AdminResearch = () => {
                         onChange={(e) =>
                           setField("description", e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                   </>
@@ -843,7 +843,7 @@ const AdminResearch = () => {
                 {activeTab === "areas" && (
                   <>
                     <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Name *
                       </label>
                       <input
@@ -851,12 +851,12 @@ const AdminResearch = () => {
                         required
                         value={formData.name || ""}
                         onChange={(e) => setField("name", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     {renderDeptField()}
                     <div className="lg:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Description
                       </label>
                       <textarea
@@ -865,29 +865,29 @@ const AdminResearch = () => {
                         onChange={(e) =>
                           setField("description", e.target.value)
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Keywords (comma separated)
                       </label>
                       <input
                         type="text"
                         value={formData.keywords || ""}
                         onChange={(e) => setField("keywords", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Icon (React Icon name)
                       </label>
                       <input
                         type="text"
                         value={formData.icon || ""}
                         onChange={(e) => setField("icon", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                         placeholder="FaBrain"
                       />
                     </div>
@@ -897,7 +897,7 @@ const AdminResearch = () => {
 
               {/* Published / Active toggle */}
               {editingId && (
-                <label className="flex items-center gap-2 text-sm text-gray-700">
+                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                   <input
                     type="checkbox"
                     checked={
@@ -927,7 +927,7 @@ const AdminResearch = () => {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  className="px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium"
                 >
                   Cancel
                 </button>
@@ -939,20 +939,20 @@ const AdminResearch = () => {
         {/* ── Filters ───────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>
           {isSuperAdmin && (
             <select
               value={filterDept}
               onChange={(e) => setFilterDept(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none min-w-[180px]"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none min-w-[180px]"
             >
               <option value="">All Departments</option>
               {RESEARCH_DEPARTMENTS.map((d) => (
@@ -966,79 +966,79 @@ const AdminResearch = () => {
 
         {/* ── Table ──────────────────────────────────────────────── */}
         {loading ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+          <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600 mx-auto mb-4" />
-            <p className="text-gray-500">Loading...</p>
+            <p className="text-gray-500 dark:text-gray-400">Loading...</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-            <FaFlask className="text-6xl text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-800 mb-2">
+          <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+            <FaFlask className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
               No Data Found
             </h3>
-            <p className="text-gray-500">
+            <p className="text-gray-500 dark:text-gray-400">
               {searchTerm
                 ? "No results match your search."
                 : 'Click "Add" to create a new entry.'}
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
                   <tr>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       {activeTab === "areas" ? "Name" : "Title"}
                     </th>
                     {activeTab === "publications" && (
-                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Authors
                       </th>
                     )}
                     {activeTab === "patents" && (
-                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Inventors
                       </th>
                     )}
                     {activeTab === "projects" && (
-                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         PI
                       </th>
                     )}
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Department
                     </th>
                     {activeTab === "publications" && (
-                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Year
                       </th>
                     )}
                     {(activeTab === "patents" ||
                       activeTab === "projects") && (
-                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Status
                       </th>
                     )}
-                    <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                   {filtered.map((item) => (
-                    <tr key={item._id} className="hover:bg-gray-50">
+                    <tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="px-6 py-4 max-w-xs">
-                        <p className="font-medium text-gray-800 truncate">
+                        <p className="font-medium text-gray-800 dark:text-gray-200 truncate">
                           {item.title || item.name}
                         </p>
                         {activeTab === "publications" && item.journalName && (
-                          <p className="text-xs text-gray-400 truncate">
+                          <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
                             {item.journalName}
                           </p>
                         )}
                         {activeTab === "projects" && item.fundingAgency && (
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-gray-400 dark:text-gray-500">
                             {item.fundingAgency}
                             {item.amount
                               ? ` — ₹${(item.amount / 100000).toFixed(1)}L`
@@ -1047,31 +1047,31 @@ const AdminResearch = () => {
                         )}
                       </td>
                       {activeTab === "publications" && (
-                        <td className="px-6 py-4 text-gray-600 text-sm max-w-[200px] truncate">
+                        <td className="px-6 py-4 text-gray-600 dark:text-gray-400 text-sm max-w-[200px] truncate">
                           {Array.isArray(item.authors)
                             ? item.authors.join(", ")
                             : ""}
                         </td>
                       )}
                       {activeTab === "patents" && (
-                        <td className="px-6 py-4 text-gray-600 text-sm max-w-[200px] truncate">
+                        <td className="px-6 py-4 text-gray-600 dark:text-gray-400 text-sm max-w-[200px] truncate">
                           {Array.isArray(item.inventors)
                             ? item.inventors.join(", ")
                             : ""}
                         </td>
                       )}
                       {activeTab === "projects" && (
-                        <td className="px-6 py-4 text-gray-600 text-sm">
+                        <td className="px-6 py-4 text-gray-600 dark:text-gray-400 text-sm">
                           {item.principalInvestigator}
                         </td>
                       )}
                       <td className="px-6 py-4">
-                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
                           {item.department || "—"}
                         </span>
                       </td>
                       {activeTab === "publications" && (
-                        <td className="px-6 py-4 text-gray-600 text-sm">
+                        <td className="px-6 py-4 text-gray-600 dark:text-gray-400 text-sm">
                           {item.year}
                         </td>
                       )}
@@ -1082,10 +1082,10 @@ const AdminResearch = () => {
                             className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                               item.status === "granted" ||
                               item.status === "completed"
-                                ? "bg-green-100 text-green-700"
+                                ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
                                 : item.status === "ongoing"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-gray-100 text-gray-600"
+                                ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
+                                : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
                             }`}
                           >
                             {item.status}
@@ -1096,14 +1096,14 @@ const AdminResearch = () => {
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => handleEdit(item)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                             title="Edit"
                           >
                             <FaEdit />
                           </button>
                           <button
                             onClick={() => handleDelete(item._id)}
-                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                             title="Delete"
                           >
                             <FaTrash />
@@ -1115,7 +1115,7 @@ const AdminResearch = () => {
                 </tbody>
               </table>
             </div>
-            <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 text-sm text-gray-500">
+            <div className="px-6 py-3 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
               Showing {filtered.length}{" "}
               {activeTab === "areas" ? "area" : "item"}
               {filtered.length !== 1 ? "s" : ""}
@@ -1130,7 +1130,7 @@ const AdminResearch = () => {
   function renderDeptField() {
     return (
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Department
         </label>
         {isCoordinator ? (
@@ -1138,13 +1138,13 @@ const AdminResearch = () => {
             type="text"
             readOnly
             value={coordResearchDept}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-600 cursor-not-allowed"
+            className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 cursor-not-allowed"
           />
         ) : (
           <select
             value={formData.department || ""}
             onChange={(e) => setField("department", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
           >
             {RESEARCH_DEPARTMENTS.map((d) => (
               <option key={d} value={d}>

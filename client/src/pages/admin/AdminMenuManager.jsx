@@ -111,7 +111,7 @@ const AdminMenuManager = () => {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-500 animate-pulse text-lg">Loading...</div>
+          <div className="text-gray-500 dark:text-gray-400 animate-pulse text-lg">Loading...</div>
         </div>
       </AdminLayout>
     );
@@ -122,8 +122,8 @@ const AdminMenuManager = () => {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Menu Manager</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Menu Manager</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">
             Organize pages into navigation menus and dropdowns
           </p>
         </div>
@@ -131,9 +131,9 @@ const AdminMenuManager = () => {
         {/* Edit Modal */}
         {selectedPage && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full">
-              <div className="border-b border-gray-200 px-6 py-4">
-                <h2 className="text-xl font-bold text-gray-800">
+            <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-2xl max-w-lg w-full">
+              <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
                   Edit Menu Settings: {selectedPage.pageTitle}
                 </h2>
               </div>
@@ -141,7 +141,7 @@ const AdminMenuManager = () => {
               <div className="p-6 space-y-4">
                 {/* Parent Menu */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Parent Menu
                   </label>
                   <select
@@ -149,7 +149,7 @@ const AdminMenuManager = () => {
                     onChange={(e) =>
                       setEditForm({ ...editForm, parentMenu: e.target.value })
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
                   >
                     {menuCategories.map((cat) => (
                       <option key={cat.value} value={cat.value}>
@@ -157,14 +157,14 @@ const AdminMenuManager = () => {
                       </option>
                     ))}
                   </select>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Select which dropdown menu this page appears under
                   </p>
                 </div>
 
                 {/* Menu Label */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Menu Label (optional)
                   </label>
                   <input
@@ -174,16 +174,16 @@ const AdminMenuManager = () => {
                       setEditForm({ ...editForm, menuLabel: e.target.value })
                     }
                     placeholder={selectedPage.pageTitle}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Custom label for menu (leave empty to use page title)
                   </p>
                 </div>
 
                 {/* Menu Order */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Menu Order
                   </label>
                   <input
@@ -195,15 +195,15 @@ const AdminMenuManager = () => {
                         menuOrder: parseInt(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Lower numbers appear first
                   </p>
                 </div>
 
                 {/* Show in Menu */}
-                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                   <input
                     type="checkbox"
                     id="showInMenu"
@@ -211,9 +211,9 @@ const AdminMenuManager = () => {
                     onChange={(e) =>
                       setEditForm({ ...editForm, showInMenu: e.target.checked })
                     }
-                    className="w-5 h-5 text-[#003366] border-gray-300 rounded focus:ring-[#003366]"
+                    className="w-5 h-5 text-[#003366] border-gray-300 dark:border-gray-600 rounded focus:ring-[#003366]"
                   />
-                  <label htmlFor="showInMenu" className="text-sm font-semibold text-gray-700">
+                  <label htmlFor="showInMenu" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                     Show in Navigation Menu
                   </label>
                 </div>
@@ -229,7 +229,7 @@ const AdminMenuManager = () => {
                   </button>
                   <button
                     onClick={() => setSelectedPage(null)}
-                    className="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     Cancel
                   </button>
@@ -248,15 +248,15 @@ const AdminMenuManager = () => {
             return (
               <div
                 key={category.value}
-                className="bg-white rounded-xl shadow-sm border border-gray-200"
+                className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
               >
-                <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-3">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
                   <div className="w-10 h-10 bg-[#003366] bg-opacity-10 rounded-lg flex items-center justify-center">
                     <FaBars className="text-[#003366]" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-800">{category.label}</h3>
-                    <p className="text-xs text-gray-500">
+                    <h3 className="font-bold text-gray-800 dark:text-gray-200">{category.label}</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {categoryPages.length} page(s)
                     </p>
                   </div>
@@ -264,7 +264,7 @@ const AdminMenuManager = () => {
 
                 <div className="p-4">
                   {categoryPages.length === 0 ? (
-                    <p className="text-gray-400 text-sm text-center py-8">
+                    <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-8">
                       No pages in this menu
                     </p>
                   ) : (
@@ -276,31 +276,31 @@ const AdminMenuManager = () => {
                         return (
                           <div
                             key={page.pageId}
-                            className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg group"
+                            className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg group"
                           >
                             <div className="flex items-center gap-3">
-                              <span className="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                              <span className="text-xs font-mono text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
                                 {page.order}
                               </span>
                               <div>
-                                <p className="font-semibold text-gray-800 text-sm">
+                                <p className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
                                   {page.title}
                                 </p>
-                                <p className="text-xs text-gray-500">{page.route}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{page.route}</p>
                               </div>
                             </div>
 
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
                                 onClick={() => movePageOrder(fullPage, "up")}
-                                className="p-1.5 text-gray-600 hover:bg-gray-200 rounded transition-colors"
+                                className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 rounded transition-colors"
                                 title="Move up"
                               >
                                 <FaArrowUp size={12} />
                               </button>
                               <button
                                 onClick={() => movePageOrder(fullPage, "down")}
-                                className="p-1.5 text-gray-600 hover:bg-gray-200 rounded transition-colors"
+                                className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 rounded transition-colors"
                                 title="Move down"
                               >
                                 <FaArrowDown size={12} />
@@ -325,10 +325,10 @@ const AdminMenuManager = () => {
         </div>
 
         {/* All Pages List */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-bold text-gray-800">All Pages</h2>
-            <p className="text-xs text-gray-500 mt-1">
+        <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">All Pages</h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Click edit to assign pages to menus
             </p>
           </div>
@@ -338,17 +338,17 @@ const AdminMenuManager = () => {
               {pages.map((page) => (
                 <div
                   key={page.pageId}
-                  className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"
                 >
                   <div className="flex items-center gap-3">
                     {page.showInMenu !== false ? (
-                      <FaEye className="text-green-600" />
+                      <FaEye className="text-green-600 dark:text-green-400" />
                     ) : (
-                      <FaEyeSlash className="text-gray-400" />
+                      <FaEyeSlash className="text-gray-400 dark:text-gray-500" />
                     )}
                     <div>
-                      <p className="font-semibold text-gray-800">{page.pageTitle}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="font-semibold text-gray-800 dark:text-gray-200">{page.pageTitle}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {page.route} •{" "}
                         {menuCategories.find((c) => c.value === page.parentMenu)?.label ||
                           "No Menu"}
