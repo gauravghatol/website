@@ -47,42 +47,42 @@ const AdminToolbar = ({ title = "Page Editor" }) => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1a1a2e] border-t-2 border-blue-500 shadow-lg z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-blue-500 shadow-lg z-50">
       <div className="max-w-7xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Left: Title and Status */}
           <div className="flex items-center gap-4">
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <FaArrowLeft />
               <span className="hidden sm:inline">Back to Admin</span>
             </button>
 
-            <div className="border-l border-gray-300 dark:border-gray-600 pl-4">
-              <h3 className="font-semibold text-gray-800 dark:text-gray-200">{title}</h3>
+            <div className="border-l border-gray-300 pl-4">
+              <h3 className="font-semibold text-gray-800">{title}</h3>
               <div className="flex items-center gap-2 text-sm">
                 {hasChanges && (
-                  <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
+                  <span className="flex items-center gap-1 text-orange-600">
                     <FaExclamationTriangle className="text-xs" />
                     Unsaved changes
                   </span>
                 )}
                 {saveStatus === "success" && (
-                  <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                  <span className="flex items-center gap-1 text-green-600">
                     <FaCheck className="text-xs" />
                     Saved successfully
                   </span>
                 )}
                 {saveStatus === "error" && (
-                  <span className="flex items-center gap-1 text-red-600 dark:text-red-400">
+                  <span className="flex items-center gap-1 text-red-600">
                     <FaExclamationTriangle className="text-xs" />
                     Save failed
                   </span>
                 )}
                 {!hasChanges && !saveStatus && (
-                  <span className="text-gray-500 dark:text-gray-400">All changes saved</span>
+                  <span className="text-gray-500">All changes saved</span>
                 )}
               </div>
             </div>
@@ -98,7 +98,7 @@ const AdminToolbar = ({ title = "Page Editor" }) => {
                 ${
                   hasChanges && !saving
                     ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
-                    : "bg-gray-300 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }
               `}
             >
