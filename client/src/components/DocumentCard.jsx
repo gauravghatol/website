@@ -1,12 +1,17 @@
-import { FaDownload, FaEye, FaFilePdf, FaFileWord, FaFileExcel, FaFilePowerpoint, FaFileAlt, FaFileImage, FaFileArchive } from "react-icons/fa";
+import { useState } from "react";
+import { FaDownload, FaEye, FaFilePdf, FaFileWord, FaFileExcel, FaFilePowerpoint, FaFileAlt, FaFileImage, FaFileArchive, FaTimes, FaExternalLinkAlt, FaInfoCircle } from "react-icons/fa";
 import axios from "axios";
 
 /**
  * DocumentCard Component
  * Displays a single document with download/view options
+ * For PDFs: shows summary modal with embedded viewer and download button
  */
 const DocumentCard = ({ document }) => {
   const { _id, title, description, fileUrl, fileSize, fileType, year, uploadDate, subcategory } = document;
+  const [showPDFModal, setShowPDFModal] = useState(false);
+
+  const isPDF = fileType === 'pdf' || fileUrl?.toLowerCase().endsWith('.pdf');
 
   // Get file icon based on type
   const getFileIcon = () => {
@@ -102,15 +107,25 @@ const DocumentCard = ({ document }) => {
 
       {/* Action Buttons */}
       <div className="p-4 flex gap-3">
-        <a
-          href={fileUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 px-4 rounded-lg transition-colors font-medium text-sm"
-        >
-          <FaEye />
-          View
-        </a>
+        {isPDF ? (
+          <button
+            onClick={() => setShowPDFModal(true)}
+            className="flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 px-4 rounded-lg transition-colors font-medium text-sm"
+          >
+            <FaEye />
+            View Summary
+          </button>
+        ) : (
+          <a
+            href={fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 px-4 rounded-lg transition-colors font-medium text-sm"
+          >
+            <FaEye />
+            View
+          </a>
+        )}
         <button
           onClick={handleDownload}
           className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-ssgmce-blue to-blue-700 hover:from-blue-700 hover:to-ssgmce-blue text-white py-2.5 px-4 rounded-lg transition-all font-medium text-sm"
@@ -119,6 +134,79 @@ const DocumentCard = ({ document }) => {
           Download
         </button>
       </div>
+
+      {/* PDF Summary Modal */}
+      {showPDFModal && isPDF && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowPDFModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-red-50 to-orange-50 p-5 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FaFilePdf className="text-2xl text-red-500" />
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">{title}</h3>
+                  <div className="flex items-center gap-2 text-sm text-gray-500 mt-0.5">
+                    {year && <span className="text-blue-600 font-medium">{year}</span>}
+                    {fileSize && <span>• {fileSize}</span>}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPDFModal(false)}
+                className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+              >
+                <FaTimes className="text-gray-500" />
+              </button>
+            </div>
+
+            {/* Modal Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Summary */}
+              {description && (
+                <div className="p-5 border-b border-gray-100">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FaInfoCircle className="text-blue-600" />
+                    <h4 className="font-semibold text-gray-700">Document Summary</h4>
+                  </div>
+                  <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
+                </div>
+              )}
+
+              {/* PDF Viewer */}
+              <div className="p-5">
+                <h4 className="font-semibold text-gray-700 mb-3">Document Preview</h4>
+                <div className="w-full h-[500px] bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                  <iframe
+                    src={`${fileUrl}#toolbar=1&navpanes=0`}
+                    className="w-full h-full"
+                    title={title}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer - Download */}
+            <div className="p-5 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleDownload}
+                className="flex-1 flex items-center justify-center gap-2 bg-ssgmce-blue hover:bg-ssgmce-dark-blue text-white py-3 px-6 rounded-lg transition-colors font-medium shadow-md"
+              >
+                <FaDownload />
+                Download PDF
+              </button>
+              <a
+                href={fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-gray-700 py-3 px-6 rounded-lg transition-colors font-medium border border-gray-200"
+              >
+                <FaExternalLinkAlt />
+                Open in New Tab
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

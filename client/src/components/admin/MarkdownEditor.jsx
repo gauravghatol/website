@@ -31,31 +31,53 @@ import {
 /** Tailwind-styled renderers for ReactMarkdown — no color overrides, clean & consistent */
 const MD_COMPONENTS = {
   h1: ({ children }) => (
-    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 mt-6 first:mt-0">{children}</h1>
+    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 mt-6 first:mt-0">
+      {children}
+    </h1>
   ),
   h2: ({ children }) => (
-    <h2 className="text-xl font-bold text-ssgmce-blue mb-3 mt-5 first:mt-0">{children}</h2>
+    <h2 className="text-xl font-bold text-ssgmce-blue mb-3 mt-5 first:mt-0">
+      {children}
+    </h2>
   ),
   h3: ({ children }) => (
-    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 mt-4 first:mt-0">{children}</h3>
+    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 mt-4 first:mt-0">
+      {children}
+    </h3>
   ),
   h4: ({ children }) => (
-    <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-2 mt-3 first:mt-0">{children}</h4>
+    <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-2 mt-3 first:mt-0">
+      {children}
+    </h4>
   ),
   p: ({ children }) => (
-    <p className="text-gray-700 dark:text-gray-300 mb-3 leading-relaxed last:mb-0">{children}</p>
+    <p className="text-gray-700 dark:text-gray-300 mb-3 leading-relaxed last:mb-0">
+      {children}
+    </p>
   ),
   ul: ({ children }) => (
-    <ul className="list-disc pl-6 space-y-1 mb-3 text-gray-700 dark:text-gray-300">{children}</ul>
+    <ul className="list-disc pl-6 space-y-1 mb-3 text-gray-700 dark:text-gray-300">
+      {children}
+    </ul>
   ),
   ol: ({ children }) => (
-    <ol className="list-decimal pl-6 space-y-1 mb-3 text-gray-700 dark:text-gray-300">{children}</ol>
+    <ol className="list-decimal pl-6 space-y-1 mb-3 text-gray-700 dark:text-gray-300">
+      {children}
+    </ol>
   ),
-  li: ({ children }) => <li className="text-gray-700 dark:text-gray-300 leading-relaxed">{children}</li>,
+  li: ({ children }) => (
+    <li className="text-gray-700 dark:text-gray-300 leading-relaxed">
+      {children}
+    </li>
+  ),
   strong: ({ children }) => (
-    <strong className="font-semibold text-gray-900 dark:text-white">{children}</strong>
+    <strong className="font-semibold text-gray-900 dark:text-white">
+      {children}
+    </strong>
   ),
-  em: ({ children }) => <em className="italic text-gray-600 dark:text-gray-400">{children}</em>,
+  em: ({ children }) => (
+    <em className="italic text-gray-600 dark:text-gray-400">{children}</em>
+  ),
   blockquote: ({ children }) => (
     <blockquote className="border-l-4 border-ssgmce-orange pl-4 italic text-gray-600 dark:text-gray-400 my-4 bg-orange-50 dark:bg-orange-900/30 py-2 pr-3 rounded-r">
       {children}
@@ -93,18 +115,24 @@ const MD_COMPONENTS = {
     <thead className="bg-ssgmce-blue text-white">{children}</thead>
   ),
   tbody: ({ children }) => (
-    <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-[#1a1a2e]">{children}</tbody>
+    <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-[#1a1a2e]">
+      {children}
+    </tbody>
   ),
   th: ({ children }) => (
     <th className="px-4 py-3 text-left text-sm font-semibold">{children}</th>
   ),
   td: ({ children }) => (
-    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{children}</td>
+    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+      {children}
+    </td>
   ),
   tr: ({ children }) => <tr className="even:bg-gray-50">{children}</tr>,
   // Support raw HTML for column layouts
   div: ({ className, children, ...props }) => (
-    <div className={className} {...props}>{children}</div>
+    <div className={className} {...props}>
+      {children}
+    </div>
   ),
 };
 
@@ -112,7 +140,15 @@ const MD_COMPONENTS = {
 const Sep = () => <div className="w-px h-5 bg-gray-300 mx-0.5" />;
 
 /* ── Single toolbar button ────────────────────────────────────── */
-const TBtn = ({ icon: Icon, label, title, onClick, accent, disabled, uploading }) => (
+const TBtn = ({
+  icon: Icon,
+  label,
+  title,
+  onClick,
+  accent,
+  disabled,
+  uploading,
+}) => (
   <button
     type="button"
     title={title}
@@ -164,8 +200,8 @@ const MarkdownEditor = ({
     value !== undefined ? value : path ? getValueFromPath(data, path) : "";
 
   const [currentValue, setCurrentValue] = useState(displayValue || "");
-  const [localEditing, setLocalEditing]   = useState(false);
-  const [preview, setPreview]             = useState(false);
+  const [localEditing, setLocalEditing] = useState(false);
+  const [preview, setPreview] = useState(false);
 
   useEffect(() => {
     setCurrentValue(displayValue || "");
@@ -212,8 +248,9 @@ const MarkdownEditor = ({
       pushUndo();
       const el = textareaRef.current;
       const start = el ? el.selectionStart : currentValue.length;
-      const end   = el ? el.selectionEnd   : currentValue.length;
-      const next = currentValue.substring(0, start) + text + currentValue.substring(end);
+      const end = el ? el.selectionEnd : currentValue.length;
+      const next =
+        currentValue.substring(0, start) + text + currentValue.substring(end);
       setCurrentValue(next);
       setTimeout(() => {
         if (el) {
@@ -232,16 +269,22 @@ const MarkdownEditor = ({
       pushUndo();
       const el = textareaRef.current;
       const start = el ? el.selectionStart : currentValue.length;
-      const end   = el ? el.selectionEnd   : currentValue.length;
+      const end = el ? el.selectionEnd : currentValue.length;
       const selected = currentValue.substring(start, end) || defaultText;
       const replacement = before + selected + after;
-      const next = currentValue.substring(0, start) + replacement + currentValue.substring(end);
+      const next =
+        currentValue.substring(0, start) +
+        replacement +
+        currentValue.substring(end);
       setCurrentValue(next);
       setTimeout(() => {
         if (el) {
           el.focus();
           // Select the text inside the wrapping
-          el.setSelectionRange(start + before.length, start + before.length + selected.length);
+          el.setSelectionRange(
+            start + before.length,
+            start + before.length + selected.length,
+          );
         }
       }, 0);
     },
@@ -254,13 +297,16 @@ const MarkdownEditor = ({
       pushUndo();
       const el = textareaRef.current;
       const start = el ? el.selectionStart : currentValue.length;
-      const end   = el ? el.selectionEnd   : currentValue.length;
+      const end = el ? el.selectionEnd : currentValue.length;
       const selected = currentValue.substring(start, end) || defaultText;
       const prefixed = selected
         .split("\n")
         .map((line) => prefix + line)
         .join("\n");
-      const next = currentValue.substring(0, start) + prefixed + currentValue.substring(end);
+      const next =
+        currentValue.substring(0, start) +
+        prefixed +
+        currentValue.substring(end);
       setCurrentValue(next);
       setTimeout(() => {
         if (el) {
@@ -281,13 +327,18 @@ const MarkdownEditor = ({
       formData.append("image", file);
       const token = localStorage.getItem("adminToken");
       const res = await axios.post("/api/upload/image", formData, {
-        headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
       });
       const url = res.data.fileUrl || res.data.url;
       if (url) insertAtCursor(`\n![${file.name}](${url})\n`);
     } catch (err) {
       console.error("Image upload failed:", err);
-      alert("Image upload failed: " + (err.response?.data?.message || err.message));
+      alert(
+        "Image upload failed: " + (err.response?.data?.message || err.message),
+      );
     } finally {
       setUploadingImage(false);
     }
@@ -301,14 +352,19 @@ const MarkdownEditor = ({
       formData.append("file", file);
       const token = localStorage.getItem("adminToken");
       const res = await axios.post("/api/upload/file", formData, {
-        headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
       });
       const url = res.data.fileUrl || res.data.url;
       const name = res.data.originalName || file.name;
       if (url) insertAtCursor(`\n[📄 ${name}](${url})\n`);
     } catch (err) {
       console.error("File upload failed:", err);
-      alert("File upload failed: " + (err.response?.data?.message || err.message));
+      alert(
+        "File upload failed: " + (err.response?.data?.message || err.message),
+      );
     } finally {
       setUploadingFile(false);
     }
@@ -318,11 +374,22 @@ const MarkdownEditor = ({
   const handleKeyDown = useCallback(
     (e) => {
       const mod = e.ctrlKey || e.metaKey;
-      if (mod && e.key === "b") { e.preventDefault(); wrapSelection("**", "**", "bold text"); }
-      else if (mod && e.key === "i") { e.preventDefault(); wrapSelection("_", "_", "italic"); }
-      else if (mod && e.key === "k") { e.preventDefault(); wrapSelection("[", "](url)", "link text"); }
-      else if (mod && e.key === "z" && !e.shiftKey) { e.preventDefault(); handleUndo(); }
-      else if (mod && (e.key === "y" || (e.key === "z" && e.shiftKey))) { e.preventDefault(); handleRedo(); }
+      if (mod && e.key === "b") {
+        e.preventDefault();
+        wrapSelection("**", "**", "bold text");
+      } else if (mod && e.key === "i") {
+        e.preventDefault();
+        wrapSelection("_", "_", "italic");
+      } else if (mod && e.key === "k") {
+        e.preventDefault();
+        wrapSelection("[", "](url)", "link text");
+      } else if (mod && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      } else if (mod && (e.key === "y" || (e.key === "z" && e.shiftKey))) {
+        e.preventDefault();
+        handleRedo();
+      }
     },
     [wrapSelection, handleUndo, handleRedo],
   );
@@ -332,7 +399,11 @@ const MarkdownEditor = ({
     return (
       <div className={className}>
         {displayValue ? (
-          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={MD_COMPONENTS}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={MD_COMPONENTS}
+          >
             {displayValue}
           </ReactMarkdown>
         ) : null}
@@ -349,11 +420,17 @@ const MarkdownEditor = ({
         title="Click to edit (Markdown supported)"
       >
         {displayValue ? (
-          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={MD_COMPONENTS}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={MD_COMPONENTS}
+          >
             {displayValue}
           </ReactMarkdown>
         ) : (
-          <span className="text-gray-400 dark:text-gray-500 italic text-sm">{placeholder}</span>
+          <span className="text-gray-400 dark:text-gray-500 italic text-sm">
+            {placeholder}
+          </span>
         )}
       </div>
     );
@@ -363,54 +440,160 @@ const MarkdownEditor = ({
   return (
     <div className={`relative ${className}`}>
       {/* Hidden file inputs */}
-      <input ref={imageInputRef} type="file" accept="image/*" className="hidden"
-        onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0]); e.target.value = ""; }} />
-      <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt" className="hidden"
-        onChange={(e) => { if (e.target.files[0]) handleFileUpload(e.target.files[0]); e.target.value = ""; }} />
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files[0]) handleImageUpload(e.target.files[0]);
+          e.target.value = "";
+        }}
+      />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt"
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files[0]) handleFileUpload(e.target.files[0]);
+          e.target.value = "";
+        }}
+      />
 
       {/* Toolbar */}
       <div className="flex items-center gap-1 px-3 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg flex-wrap">
         {/* ── Text formatting ── */}
-        <TBtn icon={FaBold} title="Bold (Ctrl+B)" onClick={() => wrapSelection("**", "**", "bold text")} />
-        <TBtn icon={FaItalic} title="Italic (Ctrl+I)" onClick={() => wrapSelection("_", "_", "italic")} />
-        <TBtn icon={FaStrikethrough} title="Strikethrough" onClick={() => wrapSelection("~~", "~~", "strikethrough")} />
-        <TBtn icon={FaCode} title="Inline code" onClick={() => wrapSelection("`", "`", "code")} />
+        <TBtn
+          icon={FaBold}
+          title="Bold (Ctrl+B)"
+          onClick={() => wrapSelection("**", "**", "bold text")}
+        />
+        <TBtn
+          icon={FaItalic}
+          title="Italic (Ctrl+I)"
+          onClick={() => wrapSelection("_", "_", "italic")}
+        />
+        <TBtn
+          icon={FaStrikethrough}
+          title="Strikethrough"
+          onClick={() => wrapSelection("~~", "~~", "strikethrough")}
+        />
+        <TBtn
+          icon={FaCode}
+          title="Inline code"
+          onClick={() => wrapSelection("`", "`", "code")}
+        />
 
         <Sep />
 
         {/* ── Headings ── */}
-        <TBtn icon={FaHeading} label="2" title="Heading 2" onClick={() => insertAtCursor("\n## Heading\n")} />
-        <TBtn icon={FaHeading} label="3" title="Heading 3" onClick={() => insertAtCursor("\n### Sub-heading\n")} />
+        <TBtn
+          icon={FaHeading}
+          label="2"
+          title="Heading 2"
+          onClick={() => insertAtCursor("\n## Heading\n")}
+        />
+        <TBtn
+          icon={FaHeading}
+          label="3"
+          title="Heading 3"
+          onClick={() => insertAtCursor("\n### Sub-heading\n")}
+        />
 
         <Sep />
 
         {/* ── Lists ── */}
-        <TBtn icon={FaListUl} title="Bullet list" onClick={() => insertAtCursor("\n- Item 1\n- Item 2\n- Item 3\n")} />
-        <TBtn icon={FaListOl} title="Numbered list" onClick={() => insertAtCursor("\n1. Item 1\n2. Item 2\n3. Item 3\n")} />
-        <TBtn icon={FaCheckSquare} title="Checklist / task list" onClick={() => insertAtCursor("\n- [ ] Task 1\n- [ ] Task 2\n- [x] Completed task\n")} />
+        <TBtn
+          icon={FaListUl}
+          title="Bullet list"
+          onClick={() => insertAtCursor("\n- Item 1\n- Item 2\n- Item 3\n")}
+        />
+        <TBtn
+          icon={FaListOl}
+          title="Numbered list"
+          onClick={() => insertAtCursor("\n1. Item 1\n2. Item 2\n3. Item 3\n")}
+        />
+        <TBtn
+          icon={FaCheckSquare}
+          title="Checklist / task list"
+          onClick={() =>
+            insertAtCursor(
+              "\n- [ ] Task 1\n- [ ] Task 2\n- [x] Completed task\n",
+            )
+          }
+        />
 
         <Sep />
 
         {/* ── Structure ── */}
-        <TBtn icon={FaTable} title="Insert table" onClick={() => insertAtCursor("\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Cell     | Cell     | Cell     |\n")} />
-        <TBtn icon={FaColumns} title="2-column layout" onClick={() => insertAtCursor('\n<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">\n<div>\n\n**Left Column**\n\nContent here...\n\n</div>\n<div>\n\n**Right Column**\n\nContent here...\n\n</div>\n</div>\n')} />
-        <TBtn icon={FaQuoteRight} title="Blockquote" onClick={() => prefixLines("> ", "Quote text")} />
-        <TBtn icon={FaMinus} title="Horizontal rule" onClick={() => insertAtCursor("\n---\n")} />
+        <TBtn
+          icon={FaTable}
+          title="Insert table"
+          onClick={() =>
+            insertAtCursor(
+              "\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Cell     | Cell     | Cell     |\n",
+            )
+          }
+        />
+        <TBtn
+          icon={FaColumns}
+          title="2-column layout"
+          onClick={() =>
+            insertAtCursor(
+              '\n<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">\n<div>\n\n**Left Column**\n\nContent here...\n\n</div>\n<div>\n\n**Right Column**\n\nContent here...\n\n</div>\n</div>\n',
+            )
+          }
+        />
+        <TBtn
+          icon={FaQuoteRight}
+          title="Blockquote"
+          onClick={() => prefixLines("> ", "Quote text")}
+        />
+        <TBtn
+          icon={FaMinus}
+          title="Horizontal rule"
+          onClick={() => insertAtCursor("\n---\n")}
+        />
 
         <Sep />
 
         {/* ── Media & Links ── */}
-        <TBtn icon={FaLink} title="Insert link (Ctrl+K)" onClick={() => wrapSelection("[", "](https://)", "link text")} />
-        <TBtn icon={FaImage} title="Upload image" uploading={uploadingImage} disabled={uploadingImage}
-          onClick={() => imageInputRef.current?.click()} />
-        <TBtn icon={FaFileUpload} title="Upload file (PDF, Word, etc.)" uploading={uploadingFile} disabled={uploadingFile}
-          onClick={() => fileInputRef.current?.click()} />
+        <TBtn
+          icon={FaLink}
+          title="Insert link (Ctrl+K)"
+          onClick={() => wrapSelection("[", "](https://)", "link text")}
+        />
+        <TBtn
+          icon={FaImage}
+          title="Upload image"
+          uploading={uploadingImage}
+          disabled={uploadingImage}
+          onClick={() => imageInputRef.current?.click()}
+        />
+        <TBtn
+          icon={FaFileUpload}
+          title="Upload file (PDF, Word, etc.)"
+          uploading={uploadingFile}
+          disabled={uploadingFile}
+          onClick={() => fileInputRef.current?.click()}
+        />
 
         <Sep />
 
         {/* ── Undo / Redo ── */}
-        <TBtn icon={FaUndo} title="Undo (Ctrl+Z)" disabled={undoStack.length === 0} onClick={handleUndo} />
-        <TBtn icon={FaRedo} title="Redo (Ctrl+Y)" disabled={redoStack.length === 0} onClick={handleRedo} />
+        <TBtn
+          icon={FaUndo}
+          title="Undo (Ctrl+Z)"
+          disabled={undoStack.length === 0}
+          onClick={handleUndo}
+        />
+        <TBtn
+          icon={FaRedo}
+          title="Redo (Ctrl+Y)"
+          disabled={redoStack.length === 0}
+          onClick={handleRedo}
+        />
 
         {/* ── Preview toggle (push right) ── */}
         <div className="flex-1" />
@@ -427,9 +610,13 @@ const MarkdownEditor = ({
           }`}
         >
           {preview ? (
-            <><FaEdit size={10} /> Edit</>
+            <>
+              <FaEdit size={10} /> Edit
+            </>
           ) : (
-            <><FaEye size={10} /> Preview</>
+            <>
+              <FaEye size={10} /> Preview
+            </>
           )}
         </button>
       </div>
@@ -437,7 +624,11 @@ const MarkdownEditor = ({
       {/* Editor / Preview pane */}
       {preview ? (
         <div className="border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg p-5 min-h-[240px] bg-white dark:bg-[#1a1a2e] overflow-auto">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={MD_COMPONENTS}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={MD_COMPONENTS}
+          >
             {currentValue || "*Nothing to preview yet…*"}
           </ReactMarkdown>
         </div>

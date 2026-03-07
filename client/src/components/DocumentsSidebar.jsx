@@ -6,17 +6,17 @@ const DocumentsSidebar = () => {
   const location = useLocation();
 
   const links = [
+    { path: "/documents/policies", label: "Policies and Procedure" },
+    { path: "/documents/disclosure", label: "Mandatory Disclosure" },
     { path: "/documents/naac", label: "NAAC" },
     { path: "/documents/nba", label: "NBA" },
     { path: "/documents/iso", label: "ISO" },
     { path: "/documents/nirf", label: "NIRF" },
-    { path: "/documents/aicte", label: "AICTE Approval" },
-    { path: "/documents/policies", label: "Policies & Procedure" },
-    { path: "/documents/disclosure", label: "Mandatory Disclosure" },
     { path: "/documents/audit", label: "Sustainable Audit" },
+    { path: "/documents/aicte", label: "AICTE Approval" },
     { path: "/documents/financial", label: "Financial Statements" },
     { path: "/documents/newsletter", label: "News Letters" },
-    { path: "/documents/tattwadarshi", label: "Tattwadarshi" },
+    { path: "/documents/tattwadarshi", label: "e-Tattwadarshi" },
   ];
 
   return (

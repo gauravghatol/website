@@ -1,13 +1,19 @@
 import { Link, useLocation } from "react-router-dom";
 import { FaGraduationCap, FaChevronRight } from "react-icons/fa";
+import { useEdit } from "../contexts/EditContext";
+
+/** Convert a public path to a pageId slug: /admissions/ug → admissions-ug */
+const pathToPageId = (path) => path.replace(/^\//, "").replace(/\//g, "-");
 
 const AdmissionsSidebar = () => {
   const location = useLocation();
+  const { isEditing } = useEdit();
 
   const menuItems = [
     { title: "Institute Brochure", path: "/admissions/brochure" },
     { title: "Under-Graduate Program (UG)", path: "/admissions/ug" },
     { title: "Post-Graduate Program (PG)", path: "/admissions/pg" },
+    { title: "PhD Admissions", path: "/admissions/phd" },
     { title: "Direct Second Year Engineering (DSE)", path: "/admissions/dse" },
     { title: "MBA", path: "/admissions/mba" },
     { title: "Fee Structure", path: "/admissions/fees" },
@@ -34,11 +40,15 @@ const AdmissionsSidebar = () => {
         <nav>
           <ul className="space-y-1.5">
             {menuItems.map((item, index) => {
-              const isActive = location.pathname === item.path;
+              const pageId = pathToPageId(item.path);
+              const to = isEditing ? `/admin/visual/${pageId}` : item.path;
+              const isActive =
+                location.pathname === item.path ||
+                (isEditing && location.pathname === `/admin/visual/${pageId}`);
               return (
                 <li key={index}>
                   <Link
-                    to={item.path}
+                    to={to}
                     className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm leading-snug transition-colors ${
                       isActive
                         ? "border-l-2 border-ssgmce-orange bg-orange-50 font-semibold text-ssgmce-blue"
