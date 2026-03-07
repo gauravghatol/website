@@ -1,6 +1,18 @@
 // Default data for EnTC Department
 // These are fallback values when database data is not available
 
+import dspLabImg from "../assets/images/departments/electronics/labs/DSP_LAB.JPG";
+import micLabImg from "../assets/images/departments/electronics/labs/MIC_LAB.JPG";
+import peLabImg from "../assets/images/departments/electronics/labs/PE_LAB.JPG";
+import analogDicLabImg from "../assets/images/departments/electronics/labs/Analog_and_digital_IC_laboratory.jpg";
+import edcLabImg from "../assets/images/departments/electronics/labs/Electronics_and_devices_circuit_lab.jpg";
+import commLabImg from "../assets/images/departments/electronics/labs/Communication_Engineering_lab.jpg";
+import workshopLabImg from "../assets/images/departments/electronics/labs/Workshop_Lab.jpg";
+import projectLabImg from "../assets/images/departments/electronics/labs/Project_LAB.JPG";
+import vlsiLabImg from "../assets/images/departments/electronics/labs/EXTC_Lab_Cadence.jpg";
+import pgLabImg from "../assets/images/departments/electronics/labs/me_VLSI__ESD_lab.jpg";
+import aimlLabImg from "../assets/images/departments/electronics/labs/EXTC_AIMLLAB.jpg";
+
 export const defaultVision =
   "To impart quality education and excel in Electronics and Telecommunication Engineering research to serve the global society.";
 
@@ -104,63 +116,63 @@ export const defaultHodMessage = {
 export const defaultLabs = [
   {
     name: "Digital Signal Processing Laboratory",
-    image: "",
+    image: dspLabImg,
     resources:
       "Universal trainer kit for CPLD/FPGA, TK based universal programmer, DM 642 EVM Based Board for DSP, IBM e-server 226, DSO 60 MHz, arbitrary waveform generator, TMS 320C6711, 320C6713 DSP kit and ADC THS 1206 EVM, TMS DSP processor kits, PMOD WiFi I/F Card, Nexys 3 Spartan Board, Cranes MSP Starter Kit, Virtex II xilinx Board with Xilinx & Sysgen Software, Fingerprint Daughter Card, Dskeye Module, PMOD DA2 I/F Card, PMOD A2D I/F Card, PMOD Stepper Motor I/F Card.",
     facilities: "Area: 65.45 Sq.Mtrs | Systems: 22 PC | UPS: 10 KVA",
   },
   {
     name: "Microprocessor & Microcontroller Laboratory",
-    image: "",
+    image: micLabImg,
     resources:
       "Virtex II board with Xilinx and sysgen, SP3, SP6 software, ARM processor titan board, ARM processor metis board, ARM processor explorer board, ARM processor voyager board, atmega 16 board, 8085 and 8051 development boards.",
     facilities: "Area: 99.255 Sq.Mtrs | Systems: 22 PC | UPS: 5 KVA",
   },
   {
     name: "Power Electronics / Instrumentation Laboratory",
-    image: "",
+    image: peLabImg,
     resources:
       "AC and DC drives, inverters, converters, cyclo converter, chopper, drives, UPS, different power electronics kits, PC based instrumentation trainer, educational PLCs, DSP kit TMS320, CRO 60 MHz, PCB machine, MCK 28335 pro-SCIM, 3 phase converter (6 SCR), 3 phase induction motor control, 3 phase thyristor bridge and SCR firing unit.",
     facilities: "Area: 84.23 Sq.Mtrs | Systems: 05 PC | UPS: 3 KVA",
   },
   {
     name: "Analog and Digital IC Laboratory",
-    image: "",
+    image: analogDicLabImg,
     resources:
       "Digital CRO, function generator, IC tester, CD system, multimeter, Analog & Digital Ckt. Devp. Platform, Analog & Digital Trainer, CRO 30MHZ, LCRQ Meter, Digital Nanometer, Power Supply, IC Tester (Digital), Dimmerstat, power supply, UPS and computer.",
     facilities: "Area: 90.168 Sq.Mtrs | Systems: 05 PC | UPS: 5 KVA",
   },
   {
     name: "Electronic Device and Circuit Laboratory",
-    image: "",
+    image: edcLabImg,
     resources:
       "Digital CRO, function generator, multimeters, IC tester, CD system, Analog & Digital Ckt. Devp. Platform, Analog & Digital Trainer, CRO 30MHZ, Digital Nanometer, Power Supply, IC Tester (Digital), Dimmerstat, Digital Storage Oscilloscope 100 MHz, LCR Meter, Phase Lock Loop Trainer Kit, Adv. Digital Trainer Kit, Curve Tracer Kit, Linear Op-Amp Trainer Kit, Transistor Ckt. Trainer Kit, Pulse Generator, Frequency Counter.",
     facilities: "Area: 60.48 Sq.Mtrs | Systems: 05 PC | UPS: 5 KVA",
   },
   {
     name: "Communication Engineering Laboratory",
-    image: "",
+    image: commLabImg,
     resources:
       "Spectrum analyzer, signal generator, synthesized function generator, fiber optic trainer, antenna trainer unit, GSM evaluation kit, satellite communication trainer, CDMA direct sequence spread spectrum, EPABX m/c with UPS, microstrip trainer, microwave training system, wave and Propagation Trainer, CA System, Microwave bench, Fiber Optic Connectorization Kit, CRO 100MHz and 60MHz, Vector Network Analyser.",
     facilities: "Area: 90.168 Sq.Mtrs | Systems: 12 PC | UPS: 10 KVA",
   },
   {
     name: "Electronics Workshop Laboratory",
-    image: "",
+    image: workshopLabImg,
     resources:
       "LCD projector (NEC), Discrete component tester, PCB prototype machine (EP-2002), Power Drill Machine with stand, Dual Power supply, LCR meter, IC Tester (Linear), Digital IC Tester, Diode and Transistor Tester, Soldering & Desoldering Practice Trainer, Analog Multimeter, Digital Multimeter, Digital/Analog Ckt Trainer, Oscilloscope 30MHz 2-channel.",
     facilities: "Area: 70.7 Sq.Mtrs | Systems: 05 PC | UPS: 5 KVA",
   },
   {
     name: "Project Laboratory",
-    image: "",
+    image: projectLabImg,
     resources:
       "Function generator, digital CRO, CD system, multimeters, lux meter, tachometers, thermometers, ARM Processor Embedded Development system, CRO 20 MHz, CRO with Digital Voltmeter & Function Generator, Conductivity measurement trainer, Digital Storage Type CRO, Educational PLC, Fuzzy logic kit, Frequency counter, Magnetic amplifier, Pulse generator.",
     facilities: "Area: 84.23 Sq.Mtrs | Systems: 16 PC | UPS: 10 KVA",
   },
   {
     name: "VLSI & Embedded System Design Center",
-    image: "",
+    image: vlsiLabImg,
     resources:
       'Complete Cadence Suite with Synopsis Tools. PC with LED monitor 17" and Intel i3 processor with 4GB RAM. Cadence IC 6.14, analog/RF/digital mixed signal EDA tools, virtuoso ADE verifier, virtuoso analog design environment, virtuoso space-based router.',
     facilities:
@@ -168,14 +180,14 @@ export const defaultLabs = [
   },
   {
     name: "PG Laboratory I",
-    image: "",
+    image: pgLabImg,
     resources:
       "Universal trainer kit for CPLD/FPGA, TK based TMS 320C6713 DSP starter kit, Cranes MSP-430 starter kit, Xilinx 13.4 and sysgen software.",
     facilities: "Area: 65.45 Sq.Mtrs | Systems: 14 PC | UPS: 10 KVA",
   },
   {
     name: "YOGI-DIGI AIML Laboratory",
-    image: "",
+    image: aimlLabImg,
     resources:
       "Server with 5th Generation Intel Xeon Scalable Processors, one compute node and one master node. Compute Node: Total Cores 32, Total Threads 64, Intel UPI Speed 20 GT/s, Processor Base Frequency 2.1 GHz. Master Node: Total Cores 12, Total Threads 24, Intel UPI Speed 16 GT/s, Processor Base Frequency 2.40 GHz. Smart Board, Jupyter Notebook Software.",
     facilities:
