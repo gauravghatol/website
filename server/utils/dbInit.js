@@ -3,6 +3,8 @@
  * This module handles database initialization tasks when the server starts
  */
 
+const { autoSeedMissingPages } = require("../controllers/pageContentController");
+
 /**
  * Initialize database - performs any necessary setup tasks
  * Can be extended to:
@@ -14,12 +16,10 @@
 async function initializeDatabase() {
   try {
     // Add any database initialization logic here
-    // For now, this is a placeholder that can be extended as needed
     console.log("[DB Init] Database initialization started...");
     
-    // Example: You can add index creation, data seeding, etc.
-    // await createIndexes();
-    // await seedDefaultData();
+    // Keep PageContent aligned with seed data while preserving admin edits.
+    await autoSeedMissingPages();
     
     console.log("[DB Init] Database initialization completed");
     return true;

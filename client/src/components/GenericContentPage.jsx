@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+﻿import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import GenericPage from "./GenericPage";
 import PlacementSidebar from "./PlacementSidebar";
@@ -40,6 +40,20 @@ const GenericContentPage = ({ pageId }) => {
   const sections = Array.isArray(displayPage?.sections)
     ? displayPage.sections
     : [];
+  const admissionsThemePages = useMemo(
+    () =>
+      new Set([
+        "admissions-brochure",
+        "admissions-ug",
+        "admissions-pg",
+        "admissions-dse",
+        "admissions-mba",
+        "admissions-phd",
+        "admissions-fees",
+      ]),
+    [],
+  );
+  const isAdmissionsThemePage = admissionsThemePages.has(pageId);
 
   useEffect(() => {
     const fetchPageData = async () => {
@@ -128,7 +142,7 @@ const GenericContentPage = ({ pageId }) => {
             </div>
           ) : null}
 
-          <div className="space-y-8">
+          <div className={isAdmissionsThemePage ? "space-y-6" : "space-y-8"}>
             {sections
               .sort((a, b) => a.order - b.order)
               .map((section, index) => (
@@ -137,7 +151,14 @@ const GenericContentPage = ({ pageId }) => {
                   index={index}
                   title={section.type}
                 >
-                  <div className="page-section" id={section.sectionId}>
+                  <div
+                    className={`page-section ${
+                      isAdmissionsThemePage
+                        ? "rounded-xl border border-gray-200 bg-white/95 p-5 shadow-sm"
+                        : ""
+                    }`}
+                    id={section.sectionId}
+                  >
                     {/* Section Title */}
                     {section.title &&
                       section.title !== "Intro" &&
@@ -146,13 +167,21 @@ const GenericContentPage = ({ pageId }) => {
                           value={section.title}
                           path={`sections[${index}].title`}
                           element="h3"
-                          className="text-2xl font-bold text-ssgmce-orange mb-4 pb-2 border-b border-gray-200"
+                          className={
+                            isAdmissionsThemePage
+                              ? "text-xl md:text-2xl font-semibold text-ssgmce-blue mb-4 pb-2 border-b border-gray-200"
+                              : "text-2xl font-bold text-ssgmce-orange mb-4 pb-2 border-b border-gray-200"
+                          }
                         />
                       )}
 
                     {/* Text Section */}
                     {section.type === "text" && (
-                      <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">
+                      <div
+                        className={`prose max-w-none text-gray-700 whitespace-pre-wrap ${
+                          isAdmissionsThemePage ? "leading-7" : ""
+                        }`}
+                      >
                         <EditableText
                           value={section.content.text}
                           path={`sections[${index}].content.text`}
@@ -163,7 +192,11 @@ const GenericContentPage = ({ pageId }) => {
 
                     {/* RichText Section - uses inline WYSIWYG editor in edit mode */}
                     {section.type === "richtext" && (
-                      <div className="prose max-w-none text-gray-700">
+                      <div
+                        className={`prose max-w-none text-gray-700 ${
+                          isAdmissionsThemePage ? "leading-7" : ""
+                        }`}
+                      >
                         <EditableText
                           value={section.content.text}
                           path={`sections[${index}].content.text`}
@@ -178,6 +211,7 @@ const GenericContentPage = ({ pageId }) => {
                       <MarkdownEditor
                         value={section.content.text}
                         path={`sections[${index}].content.text`}
+                        className={isAdmissionsThemePage ? "leading-7" : ""}
                       />
                     )}
 
@@ -187,7 +221,11 @@ const GenericContentPage = ({ pageId }) => {
                         {section.content.stats.map((stat, idx) => (
                           <div
                             key={idx}
-                            className={`bg-white rounded-lg shadow p-4 text-center border-t-4 ${stat.color === "orange" ? "border-ssgmce-orange" : "border-ssgmce-blue"}`}
+                            className={`rounded-lg p-4 text-center ${
+                              isAdmissionsThemePage
+                                ? "bg-gray-50 border border-gray-200 shadow-sm"
+                                : `bg-white shadow border-t-4 ${stat.color === "orange" ? "border-ssgmce-orange" : "border-ssgmce-blue"}`
+                            }`}
                           >
                             <div
                               className={`text-2xl font-bold ${stat.color === "orange" ? "text-ssgmce-orange" : "text-ssgmce-blue"}`}
@@ -204,19 +242,54 @@ const GenericContentPage = ({ pageId }) => {
 
                     {/* Timeline Section */}
                     {section.type === "timeline" && section.content.events && (
-                      <div className="relative border-l-2 border-ssgmce-blue ml-4 space-y-6">
+                      <div
+                        className={`relative ${
+                          isAdmissionsThemePage
+                            ? "border-l border-gray-300 ml-3 space-y-4"
+                            : "border-l-2 border-ssgmce-blue ml-4 space-y-6"
+                        }`}
+                      >
                         {section.content.events.map((event, idx) => (
-                          <div key={idx} className="relative pl-8">
-                            <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-ssgmce-orange border-2 border-white shadow"></div>
-                            <div className="bg-gray-50 rounded-lg p-4 shadow-sm">
-                              <span className="text-sm font-bold text-ssgmce-blue">
+                          <div
+                            key={idx}
+                            className={`relative ${
+                              isAdmissionsThemePage ? "pl-6" : "pl-8"
+                            }`}
+                          >
+                            <div
+                              className={`absolute rounded-full top-2 ${
+                                isAdmissionsThemePage
+                                  ? "-left-[6px] h-2.5 w-2.5 bg-ssgmce-blue border border-white"
+                                  : "-left-[9px] w-4 h-4 bg-ssgmce-orange border-2 border-white shadow"
+                              }`}
+                            ></div>
+                            <div
+                              className={
+                                isAdmissionsThemePage
+                                  ? "rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+                                  : "bg-gray-50 rounded-lg p-4 shadow-sm"
+                              }
+                            >
+                              <span
+                                className={`text-sm font-semibold ${
+                                  isAdmissionsThemePage
+                                    ? "text-gray-500 uppercase tracking-wide"
+                                    : "text-ssgmce-blue"
+                                }`}
+                              >
                                 {event.year}
                               </span>
-                              <h4 className="font-semibold text-gray-900">
+                              <h4
+                                className={`text-gray-900 ${
+                                  isAdmissionsThemePage
+                                    ? "font-semibold mt-1"
+                                    : "font-semibold"
+                                }`}
+                              >
                                 {event.title}
                               </h4>
                               {event.description && (
-                                <p className="text-sm text-gray-600 mt-1">
+                                <p className="text-sm text-gray-600 mt-1 leading-relaxed">
                                   {event.description}
                                 </p>
                               )}
@@ -232,7 +305,11 @@ const GenericContentPage = ({ pageId }) => {
                         {section.content.cards.map((card, idx) => (
                           <div
                             key={idx}
-                            className={`bg-white rounded-lg shadow p-5 border-l-4 ${card.color === "orange" ? "border-ssgmce-orange" : "border-ssgmce-blue"}`}
+                            className={`rounded-lg p-5 ${
+                              isAdmissionsThemePage
+                                ? "bg-white border border-gray-200 shadow-sm"
+                                : `bg-white rounded-lg shadow p-5 border-l-4 ${card.color === "orange" ? "border-ssgmce-orange" : "border-ssgmce-blue"}`
+                            }`}
                           >
                             <h4 className="font-bold text-gray-900 mb-1">
                               {card.title}
@@ -245,18 +322,24 @@ const GenericContentPage = ({ pageId }) => {
                       </div>
                     )}
 
-                    {/* Table Section (structured – admissions, research etc. that aren't yet in markdown) */}
+                    {/* Table Section (structured - admissions, research etc. that aren't yet in markdown) */}
                     {section.type === "table" &&
                       section.content.headers &&
                       section.content.rows && (
-                        <div className="overflow-x-auto">
-                          <table className="min-w-full divide-y divide-gray-200 border">
-                            <thead className="bg-ssgmce-blue text-white">
+                        <div className="overflow-x-auto rounded-xl border border-gray-200">
+                          <table className="min-w-full divide-y divide-gray-200 bg-white">
+                            <thead
+                              className={
+                                isAdmissionsThemePage
+                                  ? "bg-gray-100 text-gray-800"
+                                  : "bg-ssgmce-blue text-white"
+                              }
+                            >
                               <tr>
                                 {section.content.headers.map((h, hIdx) => (
                                   <th
                                     key={hIdx}
-                                    className="px-4 py-3 text-left text-sm font-semibold"
+                                    className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap"
                                   >
                                     {h}
                                   </th>
@@ -274,7 +357,7 @@ const GenericContentPage = ({ pageId }) => {
                                   {row.map((cell, cIdx) => (
                                     <td
                                       key={cIdx}
-                                      className="px-4 py-3 text-sm text-gray-700"
+                                      className="px-4 py-3 text-sm text-gray-700 align-top"
                                     >
                                       {cell}
                                     </td>
@@ -298,12 +381,16 @@ const GenericContentPage = ({ pageId }) => {
                         {section.content.items.map((item, idx) => (
                           <details
                             key={idx}
-                            className="bg-white border rounded-lg shadow-sm group"
+                            className={`border rounded-lg group ${
+                              isAdmissionsThemePage
+                                ? "bg-white border-gray-200 shadow-sm"
+                                : "bg-white border rounded-lg shadow-sm"
+                            }`}
                           >
                             <summary className="px-4 py-3 cursor-pointer font-medium text-gray-900 hover:bg-gray-50 list-none flex justify-between items-center">
                               {item.title}
                               <span className="text-gray-400 group-open:rotate-180 transition-transform">
-                                ▼
+                                v
                               </span>
                             </summary>
                             <div className="px-4 py-3 text-gray-700 border-t text-sm">
@@ -329,18 +416,34 @@ const GenericContentPage = ({ pageId }) => {
                           href={section.content.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center px-4 py-2 bg-ssgmce-blue text-white rounded hover:bg-blue-800 transition"
+                          className="inline-flex items-center px-4 py-2 rounded-md bg-ssgmce-blue text-white font-medium hover:bg-blue-800 transition"
                         >
-                          📄 {section.content.label || "View PDF Document"}
+                          {section.content.label || "View PDF Document"}
                         </a>
                       </div>
                     )}
 
                     {/* List Section */}
                     {section.type === "list" && (
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700">
+                      <ul
+                        className={
+                          isAdmissionsThemePage
+                            ? "space-y-2"
+                            : "list-disc pl-6 space-y-2 text-gray-700"
+                        }
+                      >
                         {section.content.items?.map((item, idx) => (
-                          <li key={idx}>
+                          <li
+                            key={idx}
+                            className={
+                              isAdmissionsThemePage
+                                ? "flex items-start gap-2 text-gray-700 leading-relaxed"
+                                : ""
+                            }
+                          >
+                            {isAdmissionsThemePage ? (
+                              <span className="mt-2 inline-block h-2 w-2 rounded-full bg-ssgmce-blue flex-shrink-0"></span>
+                            ) : null}
                             <EditableText
                               value={item}
                               path={`sections[${index}].content.items[${idx}]`}
@@ -378,7 +481,11 @@ const GenericContentPage = ({ pageId }) => {
                         <EditableText
                           value={section.content.url}
                           path={`sections[${index}].content.url`}
-                          className="text-blue-600 hover:text-blue-800 underline font-medium block"
+                          className={
+                            isAdmissionsThemePage
+                              ? "inline-flex items-center rounded-md bg-blue-50 text-ssgmce-blue px-3 py-2 hover:bg-blue-100 font-medium transition"
+                              : "text-blue-600 hover:text-blue-800 underline font-medium block"
+                          }
                         />
                       </div>
                     )}
@@ -401,3 +508,4 @@ const GenericContentPage = ({ pageId }) => {
 };
 
 export default GenericContentPage;
+
