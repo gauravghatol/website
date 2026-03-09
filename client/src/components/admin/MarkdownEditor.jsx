@@ -29,9 +29,604 @@ import {
 } from "react-icons/fa";
 
 /** Tailwind-styled renderers for ReactMarkdown — no color overrides, clean & consistent */
+const getChildrenText = (children) =>
+  React.Children.toArray(children)
+    .map((child) => {
+      if (typeof child === "string" || typeof child === "number") {
+        return String(child);
+      }
+      if (React.isValidElement(child)) {
+        return getChildrenText(child.props?.children);
+      }
+      return "";
+    })
+    .join("")
+    .trim();
+
+const isLikelyImageUrl = (href = "") =>
+  /(\.png|\.jpe?g|\.gif|\.webp|\.bmp|\.svg|\.avif)(\?.*)?$/i.test(href) ||
+  /\/images\//i.test(href);
+
+const findFirstAnchor = (node) => {
+  if (!React.isValidElement(node)) return null;
+  if (typeof node.props?.href === "string") return node;
+
+  const children = React.Children.toArray(node.props?.children);
+  for (const child of children) {
+    const anchor = findFirstAnchor(child);
+    if (anchor) return anchor;
+  }
+  return null;
+};
+
+const extractLinkFromListItem = (listItemNode) => {
+  const anchor = findFirstAnchor(listItemNode);
+  if (!anchor) return null;
+  return {
+    href: anchor.props.href,
+    label: getChildrenText(anchor.props.children),
+  };
+};
+
+const parseFacilityGridMarkdown = (markdownText = "") => {
+  if (typeof markdownText !== "string" || !markdownText.trim()) return null;
+
+  const hasFacilitySignals =
+    /\[View Detailed Report\]\(([^)]+)\)/i.test(markdownText) &&
+    /\[Reference Image\]\(([^)]+)\)/i.test(markdownText) &&
+    /^\s*###\s+/m.test(markdownText);
+
+  if (!hasFacilitySignals) return null;
+
+  const firstHeadingMatch = markdownText.match(/^\s*###\s+/m);
+  if (!firstHeadingMatch || firstHeadingMatch.index === undefined) return null;
+
+  const intro = markdownText.slice(0, firstHeadingMatch.index).trim();
+  const facilityPart = markdownText.slice(firstHeadingMatch.index);
+  const facilityRegex = /###\s+([^\n]+)\n([\s\S]*?)(?=(?:\n###\s+)|$)/g;
+
+  const facilities = [];
+  let match;
+
+  while ((match = facilityRegex.exec(facilityPart)) !== null) {
+    const title = (match[1] || "").trim();
+    const body = (match[2] || "").trim();
+    const departmentMatch = body.match(/\*\*Department:\*\*\s*([^\n]+)/i);
+    const reportMatch = body.match(/\[View Detailed Report\]\(([^)]+)\)/i);
+    const imageMatch = body.match(/\[Reference Image\]\(([^)]+)\)/i);
+
+    if (!title || !reportMatch || !imageMatch || !isLikelyImageUrl(imageMatch[1])) {
+      continue;
+    }
+
+    const description = body
+      .replace(/\*\*Department:\*\*\s*[^\n]+\n?/i, "")
+      .replace(/-\s*\[View Detailed Report\]\([^)]+\)\s*\n?/i, "")
+      .replace(/-\s*\[Reference Image\]\([^)]+\)\s*\n?/i, "")
+      .trim();
+
+    facilities.push({
+      title,
+      department: departmentMatch ? departmentMatch[1].trim() : "",
+      description,
+      reportUrl: reportMatch[1].trim(),
+      imageUrl: imageMatch[1].trim(),
+    });
+  }
+
+  if (facilities.length < 2) return null;
+  return { intro, facilities };
+};
+
+const parseResearchScholarMarkdown = (markdownText = "") => {
+  if (typeof markdownText !== "string" || !markdownText.trim()) return null;
+
+  const itemRegex =
+    /(?:^|\n)\s*(\d+)\.\s+\*\*([^\n*]+)\*\*\s*\n([\s\S]*?)(?=\n\s*\d+\.\s+\*\*|$)/g;
+
+  const scholars = [];
+  let match;
+
+  while ((match = itemRegex.exec(markdownText)) !== null) {
+    const serial = (match[1] || "").trim();
+    const name = (match[2] || "").trim();
+    const body = (match[3] || "").trim();
+
+    if (!name || !body) continue;
+
+    const fields = [];
+    const fieldRegex = /^\s*-\s*([^:\n]+):\s*(.+)\s*$/gm;
+    let fieldMatch;
+
+    while ((fieldMatch = fieldRegex.exec(body)) !== null) {
+      fields.push({
+        label: fieldMatch[1].trim(),
+        value: fieldMatch[2].trim(),
+      });
+    }
+
+    if (!fields.length) continue;
+
+    const labels = fields.map((field) => field.label.toLowerCase());
+    const isScholarPattern =
+      labels.some((label) => label.includes("registration")) &&
+      labels.some((label) => label.includes("research topic")) &&
+      labels.some((label) => label.includes("status"));
+
+    if (!isScholarPattern) continue;
+
+    scholars.push({ serial, name, fields });
+  }
+
+  if (scholars.length < 1) return null;
+  return scholars;
+};
+
+const getScholarStatusClass = (statusValue = "") => {
+  const status = statusValue.toLowerCase();
+  if (status.includes("completed")) {
+    return "bg-green-50 text-green-700 border-green-200";
+  }
+  if (status.includes("thesis submitted")) {
+    return "bg-amber-50 text-amber-700 border-amber-200";
+  }
+  return "bg-blue-50 text-blue-700 border-blue-200";
+};
+
+const extractMarkdownLinks = (text = "") => {
+  const links = [];
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let match;
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    links.push({
+      label: (match[1] || "").trim(),
+      href: (match[2] || "").trim(),
+    });
+  }
+
+  return links;
+};
+
+const parseDepartmentPageLink = (markdownText = "") => {
+  const pattern =
+    /^\s*\*\*Department Page:\*\*\s*\[([^\]]+)\]\(([^)]+)\)\s*(?:\n|$)/i;
+  const match = markdownText.match(pattern);
+
+  if (!match) {
+    return {
+      departmentLink: null,
+      content: markdownText,
+    };
+  }
+
+  const content = markdownText.slice(match[0].length).replace(/^\s+/, "");
+  return {
+    departmentLink: {
+      label: match[1].trim(),
+      href: match[2].trim(),
+    },
+    content,
+  };
+};
+
+const splitByH2Sections = (markdownText = "") => {
+  const headingRegex = /^##\s+(.+)$/gm;
+  const matches = Array.from(markdownText.matchAll(headingRegex));
+
+  if (!matches.length) return null;
+
+  const sections = [];
+  for (let i = 0; i < matches.length; i += 1) {
+    const current = matches[i];
+    const start = current.index + current[0].length;
+    const end = i + 1 < matches.length ? matches[i + 1].index : markdownText.length;
+    sections.push({
+      title: (current[1] || "").trim(),
+      content: markdownText.slice(start, end).trim(),
+    });
+  }
+
+  return {
+    intro: markdownText.slice(0, matches[0].index).trim(),
+    sections,
+  };
+};
+
+const parseNumberedEntries = (markdownText = "") => {
+  const itemRegex = /(?:^|\n)\s*(\d+)\.\s+([^\n]+)\n?([\s\S]*?)(?=(?:\n\s*\d+\.\s+[^\n]+)|$)/g;
+  const entries = [];
+  let match;
+
+  while ((match = itemRegex.exec(markdownText)) !== null) {
+    const serial = (match[1] || "").trim();
+    let title = (match[2] || "").trim();
+    const body = (match[3] || "").trim();
+
+    const boldTitle = title.match(/^\*\*(.+)\*\*$/);
+    if (boldTitle) {
+      title = boldTitle[1].trim();
+    }
+
+    const fields = [];
+    const fieldRegex = /^\s*-\s*([^:\n]+):\s*(.+)\s*$/gm;
+    let fieldMatch;
+
+    while ((fieldMatch = fieldRegex.exec(body)) !== null) {
+      fields.push({
+        label: fieldMatch[1].trim(),
+        value: fieldMatch[2].trim(),
+      });
+    }
+
+    const freeText = body
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line && !/^-+\s*[^:\n]+:\s*.+$/.test(line));
+
+    entries.push({
+      serial,
+      title,
+      fields,
+      freeText,
+    });
+  }
+
+  return entries.length ? entries : null;
+};
+
+const parseDocumentCardItems = (markdownText = "") => {
+  const bulletLines = (markdownText.match(/^\s*-\s+.+$/gm) || []).map((line) =>
+    line.trim(),
+  );
+
+  if (bulletLines.length < 2) return null;
+
+  const items = [];
+  for (const line of bulletLines) {
+    const body = line.replace(/^\s*-\s+/, "").trim();
+    const links = extractMarkdownLinks(body);
+    if (!links.length) return null;
+
+    const boldTitle = body.match(/\*\*([^*]+)\*\*/);
+    const primaryLink = links[links.length - 1];
+    const title = (boldTitle ? boldTitle[1] : primaryLink.label).trim();
+    const description = body
+      .replace(/\*\*[^*]+\*\*:?\s*/g, "")
+      .replace(/\[[^\]]+\]\([^)]+\)/g, "")
+      .replace(/\s{2,}/g, " ")
+      .replace(/^[\s:-]+|[\s:-]+$/g, "")
+      .trim();
+
+    items.push({
+      title,
+      description,
+      linkLabel: primaryLink.label || "View document",
+      href: primaryLink.href,
+    });
+  }
+
+  if (items.length !== bulletLines.length) return null;
+  return items;
+};
+
+const getMetaChipClass = (label = "", value = "") => {
+  const labelLower = label.toLowerCase();
+  if (labelLower.includes("status")) {
+    return getScholarStatusClass(value);
+  }
+  if (labelLower.includes("date") || labelLower.includes("w.e.f")) {
+    return "bg-gray-50 text-gray-700 border-gray-200";
+  }
+  if (labelLower.includes("type")) {
+    return "bg-blue-50 text-blue-700 border-blue-200";
+  }
+  if (labelLower.includes("indexing")) {
+    return "bg-cyan-50 text-cyan-700 border-cyan-200";
+  }
+  return "bg-slate-50 text-slate-700 border-slate-200";
+};
+
+const DepartmentLinkCard = ({ link }) => {
+  if (!link) return null;
+  return (
+    <div className="mb-4 rounded-lg border border-blue-100 bg-blue-50/50 px-3 py-2">
+      <a
+        href={link.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 text-sm font-medium text-ssgmce-blue hover:text-blue-800 transition-colors"
+      >
+        {link.label}
+      </a>
+    </div>
+  );
+};
+
+const DocumentCards = ({ items }) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+    {items.map((item, idx) => (
+      <article
+        key={`${item.title}-${idx}`}
+        className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+      >
+        <h4 className="text-base font-semibold text-gray-900 leading-snug">
+          {item.title}
+        </h4>
+        {item.description ? (
+          <p className="mt-1 text-sm text-gray-600 leading-relaxed">{item.description}</p>
+        ) : null}
+        <a
+          href={item.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex items-center justify-center rounded-md bg-ssgmce-blue px-3 py-2 text-xs font-semibold text-white hover:bg-blue-800 transition-colors"
+        >
+          {item.linkLabel}
+        </a>
+      </article>
+    ))}
+  </div>
+);
+
+const StructuredRecordCards = ({ entries }) => (
+  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+    {entries.map((entry, idx) => {
+      const metaFields = entry.fields.filter((field) =>
+        /status|date|w\.e\.f|type|indexing/i.test(field.label),
+      );
+      const detailFields = entry.fields.filter(
+        (field) => !/status|date|w\.e\.f|type|indexing/i.test(field.label),
+      );
+
+      return (
+        <article
+          key={`${entry.serial}-${entry.title}-${idx}`}
+          className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+        >
+          <h4 className="text-base font-semibold text-gray-900 leading-snug">
+            {entry.serial ? `${entry.serial}. ` : ""}
+            {entry.title}
+          </h4>
+
+          {metaFields.length ? (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {metaFields.map((field, fieldIdx) => (
+                <span
+                  key={`${entry.title}-${field.label}-${fieldIdx}`}
+                  className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium ${getMetaChipClass(field.label, field.value)}`}
+                >
+                  {field.value}
+                </span>
+              ))}
+            </div>
+          ) : null}
+
+          {detailFields.length ? (
+            <dl className="mt-3 space-y-2">
+              {detailFields.map((field, fieldIdx) => (
+                <div
+                  key={`${entry.title}-${field.label}-${fieldIdx}-detail`}
+                  className="border-t border-gray-100 pt-2 first:border-t-0 first:pt-0"
+                >
+                  <dt className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">
+                    {field.label}
+                  </dt>
+                  <dd className="mt-0.5 text-sm text-gray-700 leading-relaxed">
+                    {field.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
+
+          {entry.freeText.length ? (
+            <ul className="mt-3 space-y-1">
+              {entry.freeText.map((line, lineIdx) => (
+                <li
+                  key={`${entry.title}-line-${lineIdx}`}
+                  className="text-sm text-gray-700 leading-relaxed"
+                >
+                  {line}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </article>
+      );
+    })}
+  </div>
+);
+
+const PlainNumberedGrid = ({ entries }) => (
+  <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+      {entries.map((entry, idx) => (
+        <div key={`${entry.serial}-${idx}`} className="flex items-start gap-2">
+          <span className="min-w-[1.5rem] text-sm font-semibold text-gray-400">
+            {entry.serial}.
+          </span>
+          <p className="text-sm text-gray-700 leading-relaxed">{entry.title}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const FacilityGridLayout = ({ markdownText }) => {
+  const renderMarkdown = (content) => (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeRaw]}
+      components={MD_COMPONENTS}
+    >
+      {content}
+    </ReactMarkdown>
+  );
+
+  const facilityParsed = parseFacilityGridMarkdown(markdownText);
+  if (facilityParsed) {
+    return (
+      <div className="space-y-5">
+        {facilityParsed.intro ? renderMarkdown(facilityParsed.intro) : null}
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          {facilityParsed.facilities.map((facility, idx) => (
+            <article
+              key={`${facility.title}-${idx}`}
+              className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+            >
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                {facility.title}
+              </h3>
+
+              {facility.department ? (
+                <p className="text-sm text-gray-700 mb-2">
+                  <span className="font-semibold">Department:</span>{" "}
+                  {facility.department}
+                </p>
+              ) : null}
+
+              {facility.description ? renderMarkdown(facility.description) : null}
+
+              <div className="mt-3 flex flex-col items-start gap-2.5">
+                <a
+                  href={facility.reportUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center px-4 py-2 rounded-md bg-ssgmce-blue text-white font-medium hover:bg-blue-800 transition-colors w-fit"
+                >
+                  Download Detailed Report
+                </a>
+
+                <a
+                  href={facility.imageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full max-w-[200px]"
+                >
+                  <img
+                    src={facility.imageUrl}
+                    alt={`${facility.title} reference`}
+                    loading="lazy"
+                    className="w-full h-28 object-cover rounded-lg border border-gray-200 shadow-sm"
+                  />
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const scholarParsed = parseResearchScholarMarkdown(markdownText);
+  if (scholarParsed) {
+    const scholarEntries = scholarParsed.map((scholar) => ({
+      serial: scholar.serial,
+      title: scholar.name,
+      fields: scholar.fields,
+      freeText: [],
+    }));
+
+    return <StructuredRecordCards entries={scholarEntries} />;
+  }
+
+  const { departmentLink, content } = parseDepartmentPageLink(markdownText);
+  const sectioned = splitByH2Sections(content);
+
+  if (sectioned) {
+    const classifiedSections = sectioned.sections.map((section) => {
+      const docs = parseDocumentCardItems(section.content);
+      if (docs) return { ...section, kind: "docs", docs };
+
+      const entries = parseNumberedEntries(section.content);
+      if (entries && entries.some((entry) => entry.fields.length > 0)) {
+        return { ...section, kind: "structured", entries };
+      }
+
+      const isYearSection = /^\d{4}-\d{2}$/.test(section.title);
+      if (
+        entries &&
+        isYearSection &&
+        entries.every((entry) => entry.fields.length === 0 && !entry.freeText.length)
+      ) {
+        return { ...section, kind: "plain-numbered", entries };
+      }
+
+      return { ...section, kind: "markdown" };
+    });
+
+    const hasCustomSection = classifiedSections.some(
+      (section) => section.kind !== "markdown",
+    );
+
+    if (hasCustomSection) {
+      return (
+        <div className="space-y-5">
+          <DepartmentLinkCard link={departmentLink} />
+
+          {sectioned.intro ? renderMarkdown(sectioned.intro) : null}
+
+          {classifiedSections.map((section, idx) => (
+            <section key={`${section.title}-${idx}`} className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-lg font-semibold text-ssgmce-blue border-b border-gray-200 pb-1">
+                  {section.title}
+                </h3>
+                {section.kind === "plain-numbered" ? (
+                  <span className="text-xs font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded-full px-2.5 py-1">
+                    {section.entries.length} items
+                  </span>
+                ) : null}
+              </div>
+
+              {section.kind === "docs" ? <DocumentCards items={section.docs} /> : null}
+              {section.kind === "structured" ? (
+                <StructuredRecordCards entries={section.entries} />
+              ) : null}
+              {section.kind === "plain-numbered" ? (
+                <PlainNumberedGrid entries={section.entries} />
+              ) : null}
+              {section.kind === "markdown" ? renderMarkdown(section.content) : null}
+            </section>
+          ))}
+        </div>
+      );
+    }
+  }
+
+  const docsOnly = parseDocumentCardItems(content);
+  if (docsOnly) {
+    return (
+      <div className="space-y-4">
+        <DepartmentLinkCard link={departmentLink} />
+        <DocumentCards items={docsOnly} />
+      </div>
+    );
+  }
+
+  const entriesOnly = parseNumberedEntries(content);
+  if (entriesOnly && entriesOnly.some((entry) => entry.fields.length > 0)) {
+    return (
+      <div className="space-y-4">
+        <DepartmentLinkCard link={departmentLink} />
+        <StructuredRecordCards entries={entriesOnly} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <DepartmentLinkCard link={departmentLink} />
+      {renderMarkdown(content)}
+    </div>
+  );
+};
+
 const MD_COMPONENTS = {
   h1: ({ children }) => (
-    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 mt-6 first:mt-0">
+    <h1 className="text-2xl font-bold text-gray-900 mb-4 mt-6 first:mt-0">
       {children}
     </h1>
   ),
@@ -41,52 +636,93 @@ const MD_COMPONENTS = {
     </h2>
   ),
   h3: ({ children }) => (
-    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 mt-4 first:mt-0">
+    <h3 className="text-lg font-semibold text-gray-800 mb-2 mt-4 first:mt-0">
       {children}
     </h3>
   ),
   h4: ({ children }) => (
-    <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-2 mt-3 first:mt-0">
+    <h4 className="text-base font-semibold text-gray-800 mb-2 mt-3 first:mt-0">
       {children}
     </h4>
   ),
   p: ({ children }) => (
-    <p className="text-gray-700 dark:text-gray-300 mb-3 leading-relaxed last:mb-0">
+    <p className="text-gray-700 mb-3 leading-relaxed last:mb-0">
       {children}
     </p>
   ),
-  ul: ({ children }) => (
-    <ul className="list-disc pl-6 space-y-1 mb-3 text-gray-700 dark:text-gray-300">
-      {children}
-    </ul>
-  ),
+  ul: ({ children }) => {
+    const rawItems = React.Children.toArray(children).filter((child) =>
+      React.isValidElement(child),
+    );
+    const links = rawItems.map(extractLinkFromListItem).filter(Boolean);
+    const reportLink = links.find((item) =>
+      /view detailed report|detailed report/i.test(item.label),
+    );
+    const imageLink = links.find(
+      (item) =>
+        /reference image/i.test(item.label) && isLikelyImageUrl(item.href),
+    );
+
+    if (rawItems.length === 2 && reportLink && imageLink) {
+      return (
+        <div className="my-3 flex flex-col items-start gap-2.5">
+          <a
+            href={reportLink.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center px-4 py-2 rounded-md bg-ssgmce-blue text-white font-medium hover:bg-blue-800 transition-colors w-fit"
+          >
+            Download Detailed Report
+          </a>
+
+          <a
+            href={imageLink.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full max-w-[200px]"
+          >
+            <img
+              src={imageLink.href}
+              alt={imageLink.label || "Reference image"}
+              loading="lazy"
+              className="w-full h-28 object-cover rounded-lg border border-gray-200 shadow-sm"
+            />
+          </a>
+        </div>
+      );
+    }
+
+    return (
+      <ul className="list-disc pl-6 space-y-1 mb-3 text-gray-700">
+        {children}
+      </ul>
+    );
+  },
   ol: ({ children }) => (
-    <ol className="list-decimal pl-6 space-y-1 mb-3 text-gray-700 dark:text-gray-300">
+    <ol className="list-decimal pl-6 space-y-1 mb-3 text-gray-700">
       {children}
     </ol>
   ),
   li: ({ children }) => (
-    <li className="text-gray-700 dark:text-gray-300 leading-relaxed">
+    <li className="text-gray-700 leading-relaxed">
       {children}
     </li>
   ),
   strong: ({ children }) => (
-    <strong className="font-semibold text-gray-900 dark:text-white">
+    <strong className="font-semibold text-gray-900">
       {children}
     </strong>
   ),
-  em: ({ children }) => (
-    <em className="italic text-gray-600 dark:text-gray-400">{children}</em>
-  ),
+  em: ({ children }) => <em className="italic text-gray-600">{children}</em>,
   blockquote: ({ children }) => (
-    <blockquote className="border-l-4 border-ssgmce-orange pl-4 italic text-gray-600 dark:text-gray-400 my-4 bg-orange-50 dark:bg-orange-900/30 py-2 pr-3 rounded-r">
+    <blockquote className="border-l-4 border-ssgmce-orange pl-4 italic text-gray-600 my-4 bg-orange-50 py-2 pr-3 rounded-r">
       {children}
     </blockquote>
   ),
-  hr: () => <hr className="border-gray-200 dark:border-gray-700 my-6" />,
+  hr: () => <hr className="border-gray-200 my-6" />,
   code: ({ inline, children }) =>
     inline ? (
-      <code className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800 dark:text-gray-200">
+      <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800">
         {children}
       </code>
     ) : (
@@ -106,7 +742,7 @@ const MD_COMPONENTS = {
   ),
   table: ({ children }) => (
     <div className="overflow-x-auto my-4">
-      <table className="min-w-full border divide-y divide-gray-200 dark:divide-gray-700 rounded overflow-hidden">
+      <table className="min-w-full border divide-y divide-gray-200 rounded overflow-hidden">
         {children}
       </table>
     </div>
@@ -115,7 +751,7 @@ const MD_COMPONENTS = {
     <thead className="bg-ssgmce-blue text-white">{children}</thead>
   ),
   tbody: ({ children }) => (
-    <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-[#1a1a2e]">
+    <tbody className="divide-y divide-gray-200 bg-white">
       {children}
     </tbody>
   ),
@@ -123,7 +759,7 @@ const MD_COMPONENTS = {
     <th className="px-4 py-3 text-left text-sm font-semibold">{children}</th>
   ),
   td: ({ children }) => (
-    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+    <td className="px-4 py-3 text-sm text-gray-700">
       {children}
     </td>
   ),
@@ -399,13 +1035,7 @@ const MarkdownEditor = ({
     return (
       <div className={className}>
         {displayValue ? (
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeRaw]}
-            components={MD_COMPONENTS}
-          >
-            {displayValue}
-          </ReactMarkdown>
+          <FacilityGridLayout markdownText={displayValue} />
         ) : null}
       </div>
     );
@@ -420,13 +1050,7 @@ const MarkdownEditor = ({
         title="Click to edit (Markdown supported)"
       >
         {displayValue ? (
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeRaw]}
-            components={MD_COMPONENTS}
-          >
-            {displayValue}
-          </ReactMarkdown>
+          <FacilityGridLayout markdownText={displayValue} />
         ) : (
           <span className="text-gray-400 dark:text-gray-500 italic text-sm">
             {placeholder}
@@ -624,13 +1248,9 @@ const MarkdownEditor = ({
       {/* Editor / Preview pane */}
       {preview ? (
         <div className="border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg p-5 min-h-[240px] bg-white dark:bg-[#1a1a2e] overflow-auto">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeRaw]}
-            components={MD_COMPONENTS}
-          >
-            {currentValue || "*Nothing to preview yet…*"}
-          </ReactMarkdown>
+          <FacilityGridLayout
+            markdownText={currentValue || "*Nothing to preview yet…*"}
+          />
         </div>
       ) : (
         <textarea
@@ -661,7 +1281,7 @@ const MarkdownEditor = ({
             e.preventDefault();
             handleCancel();
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-800/500 text-white rounded-lg hover:bg-gray-600 font-semibold text-sm shadow-md transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 font-semibold text-sm shadow-md transition-colors"
         >
           <FaTimes /> Cancel
         </button>

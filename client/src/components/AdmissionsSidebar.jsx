@@ -1,8 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
+﻿import { Link, useLocation } from "react-router-dom";
 import { FaGraduationCap, FaChevronRight } from "react-icons/fa";
 import { useEdit } from "../contexts/EditContext";
 
-/** Convert a public path to a pageId slug: /admissions/ug → admissions-ug */
+/** Convert a public path to a pageId slug: /admissions/ug -> admissions-ug */
 const pathToPageId = (path) => path.replace(/^\//, "").replace(/\//g, "-");
 
 const AdmissionsSidebar = () => {
@@ -13,9 +13,9 @@ const AdmissionsSidebar = () => {
     { title: "Institute Brochure", path: "/admissions/brochure" },
     { title: "Under-Graduate Program (UG)", path: "/admissions/ug" },
     { title: "Post-Graduate Program (PG)", path: "/admissions/pg" },
-    { title: "PhD Admissions", path: "/admissions/phd" },
     { title: "Direct Second Year Engineering (DSE)", path: "/admissions/dse" },
-    { title: "MBA", path: "/admissions/mba" },
+    { title: "MBA Program", path: "/admissions/mba" },
+    { title: "Ph. D. Program", path: "/admissions/phd" },
     { title: "Fee Structure", path: "/admissions/fees" },
     { title: "Admission Process", path: "/admissions/process" },
     { title: "Seat Matrix", path: "/admissions/seat-matrix" },
@@ -68,11 +68,12 @@ const AdmissionsSidebar = () => {
       {/* Quick Contact */}
       <div className="border-t border-gray-100 bg-gray-50 px-4 py-3">
         <p className="mb-1 text-xs font-semibold text-gray-500">Need Help?</p>
-        <p className="text-xs text-ssgmce-blue">📞 +91-7265-252274</p>
-        <p className="text-xs text-ssgmce-blue">✉️ admission@ssgmce.ac.in</p>
+        <p className="text-xs text-ssgmce-blue">Phone: +91-7265-252274</p>
+        <p className="text-xs text-ssgmce-blue">Email: admission@ssgmce.ac.in</p>
       </div>
     </div>
   );
 };
 
 export default AdmissionsSidebar;
+

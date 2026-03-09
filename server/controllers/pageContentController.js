@@ -1955,8 +1955,48 @@ const defaultPages = [...basePages, ...departmentPages, ...supplementalPages];
 
 // Import comprehensive nav pages data
 const allNavPages = require("../data/allNavPages");
+const { RESEARCH_MARKDOWN_PAGE_IDS } = require("../data/researchMarkdownContent");
 
 const getDefaultPages = () => defaultPages;
+
+const hasMarkdownSections = (page) =>
+  Array.isArray(page?.sections) && page.sections.some((section) => section.type === "markdown");
+
+const isResearchMarkdownPlaceholderPage = (page) => {
+  if (!RESEARCH_MARKDOWN_PAGE_IDS.includes(page?.pageId)) return false;
+  if (!Array.isArray(page?.sections) || page.sections.length === 0) return false;
+
+  return page.sections.some((section) => {
+    const text = String(section?.content?.text || "").trim();
+    return (
+      text.startsWith("Welcome to the ") &&
+      text.includes("This content can be edited from the admin panel.")
+    );
+  });
+};
+
+const shouldSeedNavPage = (existing, pageData, forceUpdate = false) => {
+  if (!pageData.sections || pageData.sections.length === 0) return false;
+  if (!existing) return true;
+  if (forceUpdate) return true;
+  if (!existing.sections || existing.sections.length === 0) return true;
+
+  // Research pages used to ship with legacy non-Markdown section types.
+  // Refresh them once so they move onto the shared Markdown editing flow.
+  if (
+    RESEARCH_MARKDOWN_PAGE_IDS.includes(pageData.pageId) &&
+    !hasMarkdownSections(existing)
+  ) {
+    return true;
+  }
+
+  // Refresh legacy placeholder research markdown content.
+  if (isResearchMarkdownPlaceholderPage(existing)) {
+    return true;
+  }
+
+  return false;
+};
 
 const upsertDefaultPages = async ({ overwrite = false } = {}) => {
   const pages = getDefaultPages().map((page) => ({
@@ -2252,11 +2292,7 @@ const seedAllNavPages = async (req, res) => {
     for (const pageData of allNavPages) {
       const existing = await PageContent.findOne({ pageId: pageData.pageId });
       if (existing) {
-        // If force update OR existing page has empty sections but seed has content, update it
-        if (
-          (forceUpdate || !existing.sections || existing.sections.length === 0) &&
-          pageData.sections && pageData.sections.length > 0
-        ) {
+        if (shouldSeedNavPage(existing, pageData, forceUpdate)) {
           await PageContent.updateOne(
             { pageId: pageData.pageId },
             { $set: { sections: pageData.sections, pageTitle: pageData.pageTitle, pageDescription: pageData.pageDescription } }
@@ -2300,11 +2336,7 @@ const autoSeedMissingPages = async () => {
       if (!existing) {
         await PageContent.create(pageData);
         created++;
-      } else if (
-        (!existing.sections || existing.sections.length === 0) &&
-        pageData.sections && pageData.sections.length > 0
-      ) {
-        // Update pages that have empty sections with seed content
+      } else if (shouldSeedNavPage(existing, pageData)) {
         await PageContent.updateOne(
           { pageId: pageData.pageId },
           { $set: { sections: pageData.sections, pageTitle: pageData.pageTitle, pageDescription: pageData.pageDescription } }
