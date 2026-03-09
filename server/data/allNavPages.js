@@ -12,6 +12,8 @@
  *    placements, iqac, documents, activities, departments, other
  */
 
+const { researchMarkdownPages } = require("./researchMarkdownContent");
+
 // Helper: generate a pageId from the route path
 // e.g. "/about/glance" → "about-glance"
 function routeToPageId(route) {
@@ -725,52 +727,7 @@ const researchPages = [
     category: "research",
     template: "generic",
     isPublished: true,
-    sections: [
-      {
-        sectionId: "about-rdc",
-        title: "About R&D Cell",
-        type: "richtext",
-        order: 1,
-        isVisible: true,
-        content: {
-          text: '<p>The Research and Development (R&D) Cell at SSGMCE aims to nurture research culture in the institute by promoting research activities on emerging trends, keeping in view a multidisciplinary aspect. The R&D Cell provides a platform for faculty and students to share their research work and innovative ideas.</p><p>The cell plays a pivotal role in creating an ecosystem for research, innovation, and entrepreneurship. It encourages faculty and students to undertake research projects, publish papers in reputed journals, and file patents. The cell also facilitates collaboration with industries and research organizations to enhance the quality of research and make it socially relevant.</p>',
-        },
-      },
-      {
-        sectionId: "objectives",
-        title: "Objectives",
-        type: "cards",
-        order: 2,
-        isVisible: true,
-        content: {
-          cards: [
-            { title: "Promote Innovation", description: "To inculcate the spirit and culture of innovation and research among faculty and students.", color: "blue" },
-            { title: "Industry Interaction", description: "To enhance interaction and collaboration with industry and research organizations.", color: "orange" },
-            { title: "Research Quality", description: "To improve the quality of research publications and encourage filing of patents.", color: "blue" },
-            { title: "Sponsored Projects", description: "To facilitate and encourage faculty to obtain research grants from government and non-government agencies.", color: "orange" },
-          ],
-        },
-      },
-      {
-        sectionId: "committee",
-        title: "R&D Committee",
-        type: "table",
-        order: 3,
-        isVisible: true,
-        content: {
-          headers: ["Name", "Role", "Designation"],
-          rows: [
-            ["Dr. S. B. Somani", "Principal", "Chairman"],
-            ["Dr. R. M. Kharate", "Dean (R&D)", "Member Secretary"],
-            ["Dr. S. R. Paraskar", "HOD (Electrical)", "Member"],
-            ["Dr. D. D. Nawgaje", "HOD (EnTC)", "Member"],
-            ["Dr. S. P. Trikal", "HOD (Mechanical)", "Member"],
-            ["Dr. S. B. Patil", "HOD (CSE)", "Member"],
-            ["Dr. S. L. Satarkar", "HOD (IT)", "Member"],
-          ],
-        },
-      },
-    ],
+    sections: researchMarkdownPages["research-rdc"],
   },
   {
     pageId: "research-policy",
@@ -780,7 +737,7 @@ const researchPages = [
     category: "research",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: researchMarkdownPages["research-policy"],
   },
   {
     pageId: "research-coe",
@@ -790,7 +747,7 @@ const researchPages = [
     category: "research",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: researchMarkdownPages["research-coe"],
   },
   {
     pageId: "research-phd",
@@ -800,7 +757,7 @@ const researchPages = [
     category: "research",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: researchMarkdownPages["research-phd"],
   },
   {
     pageId: "research-publications",
@@ -810,7 +767,7 @@ const researchPages = [
     category: "research",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: researchMarkdownPages["research-publications"],
   },
   {
     pageId: "research-ipr",
@@ -820,7 +777,7 @@ const researchPages = [
     category: "research",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: researchMarkdownPages["research-ipr"],
   },
   {
     pageId: "research-ug-projects",
@@ -830,7 +787,7 @@ const researchPages = [
     category: "research",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: researchMarkdownPages["research-ug-projects"],
   },
   {
     pageId: "research-collaboration",
@@ -840,7 +797,7 @@ const researchPages = [
     category: "research",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: researchMarkdownPages["research-collaboration"],
   },
   {
     pageId: "research-iic",
@@ -850,7 +807,7 @@ const researchPages = [
     category: "research",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: researchMarkdownPages["research-iic"],
   },
   {
     pageId: "research-nisp",
@@ -860,7 +817,7 @@ const researchPages = [
     category: "research",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: researchMarkdownPages["research-nisp"],
   },
   {
     pageId: "research-sabbatical",
@@ -870,7 +827,7 @@ const researchPages = [
     category: "research",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: researchMarkdownPages["research-sabbatical"],
   },
 ];
 
