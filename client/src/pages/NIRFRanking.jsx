@@ -1,7 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FaFilePdf, FaDownload, FaCalendarAlt } from "react-icons/fa";
+import {
+  FaFilePdf,
+  FaDownload,
+  FaCalendarAlt,
+  FaUpload,
+  FaCheck,
+  FaSpinner,
+  FaEye,
+  FaEyeSlash,
+} from "react-icons/fa";
+import axios from "axios";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import PageHeader from "../components/PageHeader";
+import { useEdit } from "../contexts/EditContext";
+import EditableSection from "../components/admin/EditableSection";
+import MarkdownEditor from "../components/admin/MarkdownEditor";
 
 // Import all NIRF PDFs
 import NIRF_2025_26_Overall from "../assets/images/NIRF/NIRF_2025-26_Overall.pdf";
@@ -25,61 +40,193 @@ import NIRF_2022_23_Engineering from "../assets/images/NIRF/NIRF_2022-23_Enginee
 
 import NIRF_2021_Overall from "../assets/images/NIRF/NIRF 2021 SSGMCE.pdf";
 
+// Static fallback PDFs (used when no API data exists for a year/category)
+const STATIC_NIRF_DATA = {
+  "2025-26": [
+    { category: "Overall", pdfUrl: NIRF_2025_26_Overall },
+    { category: "Management", pdfUrl: NIRF_2025_26_Management },
+    { category: "Engineering", pdfUrl: NIRF_2025_26_Engineering },
+    { category: "Innovation", pdfUrl: NIRF_2025_26_Innovation },
+  ],
+  "2024-25": [
+    { category: "Overall", pdfUrl: NIRF_2024_25_Overall },
+    { category: "Management", pdfUrl: NIRF_2024_25_Management },
+    { category: "Engineering", pdfUrl: NIRF_2024_25_Engineering },
+    { category: "Innovation", pdfUrl: NIRF_2024_25_Innovation },
+  ],
+  "2023-24": [
+    { category: "Overall", pdfUrl: NIRF_2023_24_Overall },
+    { category: "Management", pdfUrl: NIRF_2023_24_Management },
+    { category: "Engineering", pdfUrl: NIRF_2023_24_Engineering },
+    { category: "Innovation", pdfUrl: NIRF_2023_24_Innovation },
+  ],
+  "2022-23": [
+    { category: "Overall", pdfUrl: NIRF_2022_23_Overall },
+    { category: "Management", pdfUrl: NIRF_2022_23_Management },
+    { category: "Engineering", pdfUrl: NIRF_2022_23_Engineering },
+  ],
+  "2021-22": [{ category: "Overall", pdfUrl: NIRF_2021_Overall }],
+};
+
+const CATEGORY_LABEL = {
+  engineering: "Engineering",
+  overall: "Overall",
+  management: "Management",
+  innovation: "Innovation",
+};
+
 const NIRFRanking = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const yearFromURL = searchParams.get("year");
   const [selectedYear, setSelectedYear] = useState(yearFromURL || "2025-26");
+  const [apiDataMap, setApiDataMap] = useState({});
+  const [cmsSections, setCmsSections] = useState([]);
+  const [nirfEntryIds, setNirfEntryIds] = useState({});
+  const [docUploadState, setDocUploadState] = useState({});
+  const [previewOpen, setPreviewOpen] = useState({});
+  const fileInputRefs = useRef({});
+
+  // useEdit returns { isEditing: false, data: {} } when outside EditProvider
+  const { isEditing, data } = useEdit();
 
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = "NIRF Ranking | SSGMCE";
   }, []);
 
+  // Fetch CMS sections from API (skip when inside visual editor — EditContext has them)
+  useEffect(() => {
+    if (isEditing) return;
+    axios
+      .get("/api/pages/nirf-ranking")
+      .then((res) => {
+        if (res.data.success) {
+          const sections = (res.data.data.sections || []).filter(
+            (s) =>
+              s.isVisible !== false &&
+              (s.type === "markdown" || s.type === "richtext") &&
+              s.content?.text,
+          );
+          setCmsSections(sections);
+        }
+      })
+      .catch(() => {});
+  }, [isEditing]);
+
+  // Fetch PDF overrides from NIRF API
+  useEffect(() => {
+    axios
+      .get("/api/nirf")
+      .then((res) => {
+        if (res.data.success && res.data.data.length > 0) {
+          const map = {};
+          const idMap = {};
+          for (const entry of res.data.data) {
+            const key = `${entry.year}__${entry.category}`;
+            if (entry.reportUrl) map[key] = entry.reportUrl;
+            if (entry._id) idMap[key] = entry._id;
+          }
+          setApiDataMap(map);
+          setNirfEntryIds(idMap);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Update selected year when URL parameter changes
   useEffect(() => {
-    if (yearFromURL) {
-      setSelectedYear(yearFromURL);
-    }
+    if (yearFromURL) setSelectedYear(yearFromURL);
   }, [yearFromURL]);
-
-  // Update URL when year is changed via dropdown
-  const handleYearChange = (year) => {
-    setSelectedYear(year);
-    setSearchParams({ year });
-  };
 
   const years = ["2025-26", "2024-25", "2023-24", "2022-23", "2021-22"];
 
-  const nirfData = {
-    "2025-26": [
-      { category: "Overall", pdfUrl: NIRF_2025_26_Overall },
-      { category: "Management", pdfUrl: NIRF_2025_26_Management },
-      { category: "Engineering", pdfUrl: NIRF_2025_26_Engineering },
-      { category: "Innovation", pdfUrl: NIRF_2025_26_Innovation },
-    ],
-    "2024-25": [
-      { category: "Overall", pdfUrl: NIRF_2024_25_Overall },
-      { category: "Management", pdfUrl: NIRF_2024_25_Management },
-      { category: "Engineering", pdfUrl: NIRF_2024_25_Engineering },
-      { category: "Innovation", pdfUrl: NIRF_2024_25_Innovation },
-    ],
-    "2023-24": [
-      { category: "Overall", pdfUrl: NIRF_2023_24_Overall },
-      { category: "Management", pdfUrl: NIRF_2023_24_Management },
-      { category: "Engineering", pdfUrl: NIRF_2023_24_Engineering },
-      { category: "Innovation", pdfUrl: NIRF_2023_24_Innovation },
-    ],
-    "2022-23": [
-      { category: "Overall", pdfUrl: NIRF_2022_23_Overall },
-      { category: "Management", pdfUrl: NIRF_2022_23_Management },
-      { category: "Engineering", pdfUrl: NIRF_2022_23_Engineering },
-    ],
-    "2021-22": [
-      { category: "Overall", pdfUrl: NIRF_2021_Overall },
-    ],
-  };
+  // Build current year docs: API overrides static where available
+  const staticEntries = STATIC_NIRF_DATA[selectedYear] || [];
+  const currentYearData = staticEntries.map((entry) => {
+    const key = `${selectedYear}__${entry.category.toLowerCase()}`;
+    return {
+      category: entry.category,
+      pdfUrl: apiDataMap[key] || entry.pdfUrl,
+    };
+  });
+  // Add API-only entries not in static (new years/categories added via admin)
+  const staticCats = new Set(
+    staticEntries.map((e) => e.category.toLowerCase()),
+  );
+  for (const [key, url] of Object.entries(apiDataMap)) {
+    const [yr, cat] = key.split("__");
+    if (yr === selectedYear && !staticCats.has(cat)) {
+      currentYearData.push({
+        category: CATEGORY_LABEL[cat] || cat,
+        pdfUrl: url,
+      });
+    }
+  }
 
-  const currentYearData = nirfData[selectedYear] || [];
+  // Sections to render (EditContext when editing, API fetch when public)
+  const editContextSections =
+    isEditing && data?.sections
+      ? data.sections
+          .filter((s) => s.isVisible !== false)
+          .sort((a, b) => a.order - b.order)
+      : null;
+  const publicSections = cmsSections;
+
+  const handleReplaceDocPdf = async (file, year, category) => {
+    if (!file) return;
+    const key = `${year}__${category.toLowerCase()}`;
+    setDocUploadState((s) => ({
+      ...s,
+      [key]: { uploading: true, error: null },
+    }));
+    try {
+      const fd = new FormData();
+      fd.append("pdf", file);
+      const token = localStorage.getItem("adminToken");
+      const uploadRes = await axios.post("/api/upload/nirf-pdf", fd, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      const fileUrl = uploadRes.data.fileUrl;
+      const authHdr = { headers: { Authorization: `Bearer ${token}` } };
+      const existingId = nirfEntryIds[key];
+      if (existingId) {
+        await axios.put(
+          `/api/nirf/admin/${existingId}`,
+          { reportUrl: fileUrl },
+          authHdr,
+        );
+      } else {
+        const createRes = await axios.post(
+          "/api/nirf/admin/create",
+          {
+            year,
+            category: category.toLowerCase(),
+            reportUrl: fileUrl,
+            isActive: true,
+          },
+          authHdr,
+        );
+        setNirfEntryIds((m) => ({ ...m, [key]: createRes.data.data._id }));
+      }
+      setApiDataMap((m) => ({ ...m, [key]: fileUrl }));
+      setDocUploadState((s) => ({
+        ...s,
+        [key]: { uploading: false, success: true },
+      }));
+      setTimeout(() => setDocUploadState((s) => ({ ...s, [key]: {} })), 3000);
+    } catch (err) {
+      setDocUploadState((s) => ({
+        ...s,
+        [key]: {
+          uploading: false,
+          error: err.response?.data?.message || "Upload failed",
+        },
+      }));
+    }
+  };
 
   const getCategoryColor = (category) => {
     const colors = {
@@ -100,19 +247,83 @@ const NIRFRanking = () => {
       />
 
       <div className="container mx-auto px-4 py-12 max-w-7xl">
-        {/* Introduction Section */}
-        <div className="mb-8">
-          <p className="text-gray-600 leading-relaxed mb-4">
-            The National Institutional Ranking Framework (NIRF) was approved by the MHRD and launched by
-            the Honorable Minister of Human Resource Development on September 29, 2015. This framework
-            outlines a methodology to rank institutions across the country.
-          </p>
-          <p className="text-handleYearChangeg-relaxed">
-            SSGMCE has been consistently participating in NIRF rankings across multiple categories including
-            Engineering, Overall, Management, and Innovation, showcasing our commitment to quality education
-            and institutional excellence.
-          </p>
-        </div>
+        {/* CMS Sections — editable in visual editor, fetched from API on public page */}
+        {editContextSections ? (
+          /* EDITING MODE: render sections from EditContext with inline edit controls */
+          <div className="mb-8 space-y-6">
+            {editContextSections.map((section, index) => (
+              <EditableSection
+                key={section.sectionId || index}
+                index={index}
+                title={section.title || section.type}
+                sectionContent={section.content}
+                contentPath={`sections[${index}].content`}
+              >
+                <div>
+                  {section.title && (
+                    <h3 className="text-lg font-bold text-gray-800 mb-2">
+                      {section.title}
+                    </h3>
+                  )}
+                  {section.type === "markdown" ? (
+                    <MarkdownEditor path={`sections[${index}].content.text`} />
+                  ) : (
+                    <div
+                      className="prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{
+                        __html: section.content?.text || "",
+                      }}
+                    />
+                  )}
+                </div>
+              </EditableSection>
+            ))}
+          </div>
+        ) : publicSections.length > 0 ? (
+          /* PUBLIC MODE: render CMS sections from API */
+          <div className="mb-8 space-y-6">
+            {publicSections.map((section, i) => (
+              <div
+                key={section.sectionId || i}
+                className="text-gray-600 leading-relaxed"
+              >
+                {section.title && (
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">
+                    {section.title}
+                  </h3>
+                )}
+                {section.type === "richtext" ? (
+                  <div
+                    className="prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: section.content.text }}
+                  />
+                ) : (
+                  <div className="prose prose-sm max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {section.content.text}
+                    </ReactMarkdown>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* FALLBACK: static text when DB has no sections */
+          <div className="mb-8 text-gray-600 leading-relaxed">
+            <p className="mb-4">
+              The National Institutional Ranking Framework (NIRF) was approved
+              by the MHRD and launched by the Honorable Minister of Human
+              Resource Development on September 29, 2015. This framework
+              outlines a methodology to rank institutions across the country.
+            </p>
+            <p>
+              SSGMCE has been consistently participating in NIRF rankings across
+              multiple categories including Engineering, Overall, Management,
+              and Innovation, showcasing our commitment to quality education and
+              institutional excellence.
+            </p>
+          </div>
+        )}
 
         {/* Year Filter */}
         <div className="mb-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -145,11 +356,17 @@ const NIRFRanking = () => {
               {currentYearData.map((doc, index) => (
                 <div
                   key={index}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 overflow-hidden"
+                  className={`bg-white rounded-lg shadow-sm border transition-all duration-200 overflow-hidden ${
+                    isEditing
+                      ? "border-amber-300"
+                      : "border-gray-200 hover:shadow-md"
+                  }`}
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6">
                     <div className="flex items-start gap-4">
-                      <div className={`w-14 h-14 rounded-lg bg-gradient-to-br ${getCategoryColor(doc.category)} flex items-center justify-center flex-shrink-0`}>
+                      <div
+                        className={`w-14 h-14 rounded-lg bg-gradient-to-br ${getCategoryColor(doc.category)} flex items-center justify-center flex-shrink-0`}
+                      >
                         <FaFilePdf className="text-2xl text-white" />
                       </div>
                       <div>
@@ -161,16 +378,122 @@ const NIRFRanking = () => {
                         </p>
                       </div>
                     </div>
-                    <a
-                      href={doc.pdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white rounded-lg hover:from-blue-600 hover:to-blue-800 transition-all font-medium shadow-sm hover:shadow-md"
-                    >
-                      <FaDownload className="text-sm" />
-                      Download PDF
-                    </a>
+                    <div className="flex items-center gap-3">
+                      {/* Preview toggle — always visible */}
+                      {doc.pdfUrl && (
+                        <button
+                          onClick={() => {
+                            const docKey = `${selectedYear}__${doc.category.toLowerCase()}`;
+                            setPreviewOpen((p) => ({
+                              ...p,
+                              [docKey]: !p[docKey],
+                            }));
+                          }}
+                          className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium text-sm"
+                        >
+                          {previewOpen[
+                            `${selectedYear}__${doc.category.toLowerCase()}`
+                          ] ? (
+                            <>
+                              <FaEyeSlash /> Hide Preview
+                            </>
+                          ) : (
+                            <>
+                              <FaEye /> Preview
+                            </>
+                          )}
+                        </button>
+                      )}
+                      {isEditing ? (
+                        (() => {
+                          const docKey = `${selectedYear}__${doc.category.toLowerCase()}`;
+                          const state = docUploadState[docKey] || {};
+                          return (
+                            <div className="flex flex-col items-end gap-2 min-w-[160px]">
+                              {state.uploading && (
+                                <div className="flex items-center gap-2 text-blue-600 text-sm">
+                                  <FaSpinner className="animate-spin" />{" "}
+                                  Uploading…
+                                </div>
+                              )}
+                              {state.success && (
+                                <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
+                                  <FaCheck /> PDF updated!
+                                </div>
+                              )}
+                              {state.error && (
+                                <div className="text-red-500 text-xs text-right">
+                                  {state.error}
+                                </div>
+                              )}
+                              <input
+                                type="file"
+                                accept="application/pdf"
+                                className="hidden"
+                                ref={(el) => {
+                                  fileInputRefs.current[docKey] = el;
+                                }}
+                                onChange={(e) =>
+                                  handleReplaceDocPdf(
+                                    e.target.files[0],
+                                    selectedYear,
+                                    doc.category,
+                                  )
+                                }
+                              />
+                              <button
+                                onClick={() =>
+                                  fileInputRefs.current[docKey]?.click()
+                                }
+                                disabled={state.uploading}
+                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-60 transition-all font-medium shadow-sm"
+                              >
+                                <FaUpload className="text-sm" />
+                                Replace PDF
+                              </button>
+                            </div>
+                          );
+                        })()
+                      ) : (
+                        <a
+                          href={doc.pdfUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white rounded-lg hover:from-blue-600 hover:to-blue-800 transition-all font-medium shadow-sm hover:shadow-md"
+                        >
+                          <FaDownload className="text-sm" />
+                          Download PDF
+                        </a>
+                      )}
+                    </div>
                   </div>
+                  {/* PDF Preview panel */}
+                  {doc.pdfUrl &&
+                    previewOpen[
+                      `${selectedYear}__${doc.category.toLowerCase()}`
+                    ] && (
+                      <div className="border-t border-gray-200 bg-gray-50">
+                        <div className="p-3 flex items-center justify-between bg-gray-100 border-b border-gray-200">
+                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                            Preview — NIRF {selectedYear} {doc.category}
+                          </span>
+                          <a
+                            href={doc.pdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                          >
+                            <FaFilePdf /> Open in new tab
+                          </a>
+                        </div>
+                        <iframe
+                          src={`${doc.pdfUrl}#toolbar=1&navpanes=0&scrollbar=1`}
+                          title={`NIRF ${selectedYear} ${doc.category}`}
+                          className="w-full"
+                          style={{ height: "780px", border: "none" }}
+                        />
+                      </div>
+                    )}
                 </div>
               ))}
             </div>
@@ -195,7 +518,9 @@ const NIRFRanking = () => {
             <div className="text-sm text-gray-600">Categories</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">{currentYearData.length}</div>
+            <div className="text-3xl font-bold text-green-600 mb-2">
+              {currentYearData.length}
+            </div>
             <div className="text-sm text-gray-600">Documents Available</div>
           </div>
         </div>

@@ -18,10 +18,7 @@ const { iqacMarkdownPages } = require("./iqacMarkdownContent");
 // Helper: generate a pageId from the route path
 // e.g. "/about/glance" → "about-glance"
 function routeToPageId(route) {
-  return route
-    .replace(/^\//, "")
-    .replace(/\//g, "-")
-    .toLowerCase();
+  return route.replace(/^\//, "").replace(/\//g, "-").toLowerCase();
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -69,14 +66,49 @@ const aboutPages = [
         isVisible: true,
         content: {
           stats: [
-            { label: "Years of Excellence", value: "42+", icon: "FaCalendar", color: "blue" },
-            { label: "UG Programs", value: "7", icon: "FaGraduationCap", color: "orange" },
+            {
+              label: "Years of Excellence",
+              value: "42+",
+              icon: "FaCalendar",
+              color: "blue",
+            },
+            {
+              label: "UG Programs",
+              value: "7",
+              icon: "FaGraduationCap",
+              color: "orange",
+            },
             { label: "PG Programs", value: "9", icon: "FaBook", color: "blue" },
-            { label: "Total Students", value: "2500+", icon: "FaUsers", color: "orange" },
-            { label: "Faculty Members", value: "150+", icon: "FaChalkboardTeacher", color: "blue" },
-            { label: "NAAC Grade", value: "A+", icon: "FaAward", color: "orange" },
-            { label: "Research Labs", value: "45+", icon: "FaFlask", color: "blue" },
-            { label: "Placement Rate", value: "85%", icon: "FaTrophy", color: "orange" },
+            {
+              label: "Total Students",
+              value: "2500+",
+              icon: "FaUsers",
+              color: "orange",
+            },
+            {
+              label: "Faculty Members",
+              value: "150+",
+              icon: "FaChalkboardTeacher",
+              color: "blue",
+            },
+            {
+              label: "NAAC Grade",
+              value: "A+",
+              icon: "FaAward",
+              color: "orange",
+            },
+            {
+              label: "Research Labs",
+              value: "45+",
+              icon: "FaFlask",
+              color: "blue",
+            },
+            {
+              label: "Placement Rate",
+              value: "85%",
+              icon: "FaTrophy",
+              color: "orange",
+            },
           ],
         },
       },
@@ -89,7 +121,11 @@ const aboutPages = [
         content: {
           stats: [
             { label: "Campus Area", value: "40 Acres", icon: "FaUniversity" },
-            { label: "Central Library Books", value: "50,000+", icon: "FaBook" },
+            {
+              label: "Central Library Books",
+              value: "50,000+",
+              icon: "FaBook",
+            },
             { label: "Computer Labs", value: "12", icon: "FaLaptop" },
             { label: "Hostel Capacity", value: "500+", icon: "FaBed" },
             { label: "Seminar Halls", value: "8", icon: "FaChalkboardTeacher" },
@@ -105,20 +141,79 @@ const aboutPages = [
         isVisible: true,
         content: {
           events: [
-            { year: "1983", title: "College Established", description: "College Established by Shri Gajanan Shikshan Sanstha, Shegaon" },
-            { year: "1984", title: "First Batch", description: "First Batch Admitted - Mechanical, Electrical & Civil Engineering" },
-            { year: "1995", title: "E&TC Department", description: "Electronics & Telecommunication Department Started" },
-            { year: "2000", title: "CSE Department", description: "Computer Science & Engineering Department Established" },
-            { year: "2002", title: "IT Department", description: "Information Technology Department Started" },
-            { year: "2008", title: "ISO Certified", description: "ISO 9001:2008 Certification Achieved" },
-            { year: "2010", title: "MBA Program", description: "MBA Program Launched" },
-            { year: "2015", title: "NAAC 'A' Grade", description: "NAAC Accredited with 'A' Grade (CGPA 3.14)" },
-            { year: "2016", title: "NBA Accreditation", description: "NBA Accreditation for Multiple Programs" },
-            { year: "2018", title: "TCS Priority", description: "Designated as TCS Priority College" },
-            { year: "2020", title: "NAAC 'A+' Grade", description: "NAAC Re-accredited with 'A+' Grade (CGPA 3.26)" },
-            { year: "2021", title: "Lead College", description: "Identified as Lead College by SGBAU" },
-            { year: "2023", title: "AAA Ranking", description: "Ranked AAA by Careers360 Magazine" },
-            { year: "2025", title: "40+ Years", description: "40+ Years of Academic Excellence Celebrated" },
+            {
+              year: "1983",
+              title: "College Established",
+              description:
+                "College Established by Shri Gajanan Shikshan Sanstha, Shegaon",
+            },
+            {
+              year: "1984",
+              title: "First Batch",
+              description:
+                "First Batch Admitted - Mechanical, Electrical & Civil Engineering",
+            },
+            {
+              year: "1995",
+              title: "E&TC Department",
+              description: "Electronics & Telecommunication Department Started",
+            },
+            {
+              year: "2000",
+              title: "CSE Department",
+              description:
+                "Computer Science & Engineering Department Established",
+            },
+            {
+              year: "2002",
+              title: "IT Department",
+              description: "Information Technology Department Started",
+            },
+            {
+              year: "2008",
+              title: "ISO Certified",
+              description: "ISO 9001:2008 Certification Achieved",
+            },
+            {
+              year: "2010",
+              title: "MBA Program",
+              description: "MBA Program Launched",
+            },
+            {
+              year: "2015",
+              title: "NAAC 'A' Grade",
+              description: "NAAC Accredited with 'A' Grade (CGPA 3.14)",
+            },
+            {
+              year: "2016",
+              title: "NBA Accreditation",
+              description: "NBA Accreditation for Multiple Programs",
+            },
+            {
+              year: "2018",
+              title: "TCS Priority",
+              description: "Designated as TCS Priority College",
+            },
+            {
+              year: "2020",
+              title: "NAAC 'A+' Grade",
+              description: "NAAC Re-accredited with 'A+' Grade (CGPA 3.26)",
+            },
+            {
+              year: "2021",
+              title: "Lead College",
+              description: "Identified as Lead College by SGBAU",
+            },
+            {
+              year: "2023",
+              title: "AAA Ranking",
+              description: "Ranked AAA by Careers360 Magazine",
+            },
+            {
+              year: "2025",
+              title: "40+ Years",
+              description: "40+ Years of Academic Excellence Celebrated",
+            },
           ],
         },
       },
@@ -130,12 +225,42 @@ const aboutPages = [
         isVisible: true,
         content: {
           cards: [
-            { title: "NAAC A+ Grade", description: "National Assessment and Accreditation Council", icon: "FaAward", color: "blue" },
-            { title: "TCS Priority College", description: "Recognized by Tata Consultancy Services", icon: "FaHandshake", color: "orange" },
-            { title: "ISO 9001:2015", description: "Quality Management System Certified", icon: "FaCertificate", color: "blue" },
-            { title: "AAA Ranking", description: "Careers360 Excellence Rating", icon: "FaTrophy", color: "orange" },
-            { title: "Lead College", description: "Identified by SGBAU as Lead Institution", icon: "FaUniversity", color: "blue" },
-            { title: "Mentor Institute", description: "Under AICTE Parisparsh Scheme", icon: "FaHandshake", color: "orange" },
+            {
+              title: "NAAC A+ Grade",
+              description: "National Assessment and Accreditation Council",
+              icon: "FaAward",
+              color: "blue",
+            },
+            {
+              title: "TCS Priority College",
+              description: "Recognized by Tata Consultancy Services",
+              icon: "FaHandshake",
+              color: "orange",
+            },
+            {
+              title: "ISO 9001:2015",
+              description: "Quality Management System Certified",
+              icon: "FaCertificate",
+              color: "blue",
+            },
+            {
+              title: "AAA Ranking",
+              description: "Careers360 Excellence Rating",
+              icon: "FaTrophy",
+              color: "orange",
+            },
+            {
+              title: "Lead College",
+              description: "Identified by SGBAU as Lead Institution",
+              icon: "FaUniversity",
+              color: "blue",
+            },
+            {
+              title: "Mentor Institute",
+              description: "Under AICTE Parisparsh Scheme",
+              icon: "FaHandshake",
+              color: "orange",
+            },
           ],
         },
       },
@@ -147,9 +272,24 @@ const aboutPages = [
         isVisible: true,
         content: {
           stats: [
-            { label: "Placement Rate", value: "85%+", icon: "FaTrophy", color: "blue" },
-            { label: "Students Placed Annually", value: "200+", icon: "FaUsers", color: "orange" },
-            { label: "Recruiting Companies", value: "50+", icon: "FaHandshake", color: "blue" },
+            {
+              label: "Placement Rate",
+              value: "85%+",
+              icon: "FaTrophy",
+              color: "blue",
+            },
+            {
+              label: "Students Placed Annually",
+              value: "200+",
+              icon: "FaUsers",
+              color: "orange",
+            },
+            {
+              label: "Recruiting Companies",
+              value: "50+",
+              icon: "FaHandshake",
+              color: "blue",
+            },
           ],
         },
       },
@@ -210,11 +350,32 @@ const aboutPages = [
         isVisible: true,
         content: {
           cards: [
-            { title: "Personal Excellence", description: "Striving for the highest standards in everything we do", color: "blue" },
-            { title: "Accountability", description: "Taking responsibility for our actions and outcomes", color: "orange" },
-            { title: "Trustworthiness", description: "Building trust through transparency and integrity", color: "blue" },
-            { title: "Holistic Development", description: "Nurturing mind, body, and spirit", color: "orange" },
-            { title: "Creativity & Innovation", description: "Encouraging new ideas and approaches", color: "blue" },
+            {
+              title: "Personal Excellence",
+              description:
+                "Striving for the highest standards in everything we do",
+              color: "blue",
+            },
+            {
+              title: "Accountability",
+              description: "Taking responsibility for our actions and outcomes",
+              color: "orange",
+            },
+            {
+              title: "Trustworthiness",
+              description: "Building trust through transparency and integrity",
+              color: "blue",
+            },
+            {
+              title: "Holistic Development",
+              description: "Nurturing mind, body, and spirit",
+              color: "orange",
+            },
+            {
+              title: "Creativity & Innovation",
+              description: "Encouraging new ideas and approaches",
+              color: "blue",
+            },
           ],
         },
       },
@@ -226,12 +387,41 @@ const aboutPages = [
         isVisible: true,
         content: {
           cards: [
-            { title: "Academic Independence", description: "To acquire autonomous status for the institute.", color: "blue" },
-            { title: "Global Recognition", description: "To get programs accredited by international bodies.", color: "orange" },
-            { title: "Research Hub", description: "To establish Recognized Research Centers in all departments.", color: "blue" },
-            { title: "Industry Connect", description: "To strengthen industry-institute partnership for better opportunities.", color: "orange" },
-            { title: "Digital Transformation", description: "To implement complete digitalization of academic and administrative processes.", color: "blue" },
-            { title: "Sustainable Campus", description: "To maintain a green, eco-friendly, and energy-efficient campus.", color: "orange" },
+            {
+              title: "Academic Independence",
+              description: "To acquire autonomous status for the institute.",
+              color: "blue",
+            },
+            {
+              title: "Global Recognition",
+              description:
+                "To get programs accredited by international bodies.",
+              color: "orange",
+            },
+            {
+              title: "Research Hub",
+              description:
+                "To establish Recognized Research Centers in all departments.",
+              color: "blue",
+            },
+            {
+              title: "Industry Connect",
+              description:
+                "To strengthen industry-institute partnership for better opportunities.",
+              color: "orange",
+            },
+            {
+              title: "Digital Transformation",
+              description:
+                "To implement complete digitalization of academic and administrative processes.",
+              color: "blue",
+            },
+            {
+              title: "Sustainable Campus",
+              description:
+                "To maintain a green, eco-friendly, and energy-efficient campus.",
+              color: "orange",
+            },
           ],
         },
       },
@@ -304,9 +494,24 @@ const aboutPages = [
         isVisible: true,
         content: {
           cards: [
-            { title: "Academic Excellence", description: "Fostering a culture of continuous learning, innovation, and research to maintain high academic standards and industry-relevant curriculum.", color: "blue" },
-            { title: "Innovation & Research", description: "Encouraging students and faculty to pursue cutting-edge research, file patents, and develop innovative solutions for societal challenges.", color: "orange" },
-            { title: "Holistic Development", description: "Nurturing well-rounded individuals through spiritual values, ethical practices, and comprehensive personality development programs.", color: "blue" },
+            {
+              title: "Academic Excellence",
+              description:
+                "Fostering a culture of continuous learning, innovation, and research to maintain high academic standards and industry-relevant curriculum.",
+              color: "blue",
+            },
+            {
+              title: "Innovation & Research",
+              description:
+                "Encouraging students and faculty to pursue cutting-edge research, file patents, and develop innovative solutions for societal challenges.",
+              color: "orange",
+            },
+            {
+              title: "Holistic Development",
+              description:
+                "Nurturing well-rounded individuals through spiritual values, ethical practices, and comprehensive personality development programs.",
+              color: "blue",
+            },
           ],
         },
       },
@@ -331,6 +536,53 @@ const aboutPages = [
     template: "generic",
     isPublished: true,
     sections: [],
+  },
+];
+
+// ──────────────────────────────────────────────────────────────
+//  NIRF RANKING
+// ──────────────────────────────────────────────────────────────
+const nirfPages = [
+  {
+    pageId: "nirf-ranking",
+    pageTitle: "NIRF Ranking",
+    pageDescription: "National Institutional Ranking Framework",
+    route: "/nirf",
+    category: "nirf",
+    template: "generic",
+    isPublished: true,
+    sections: [
+      {
+        sectionId: "nirf-intro",
+        title: "About NIRF",
+        type: "markdown",
+        order: 1,
+        isVisible: true,
+        content: {
+          text: `The **National Institutional Ranking Framework (NIRF)** was approved by the MHRD and launched by the Honorable Minister of Human Resource Development on September 29, 2015. This framework outlines a methodology to rank institutions across the country.\n\nSSGMCE has been consistently participating in NIRF rankings across multiple categories including Engineering, Overall, Management, and Innovation, showcasing our commitment to quality education and institutional excellence.`,
+        },
+      },
+      {
+        sectionId: "nirf-parameters",
+        title: "NIRF Ranking Parameters",
+        type: "markdown",
+        order: 2,
+        isVisible: true,
+        content: {
+          text: `NIRF ranks institutions based on five key performance parameters:\n\n| Parameter | Full Name | Weightage |\n|-----------|-----------|------------|\n| **TLR** | Teaching, Learning & Resources | 30% |\n| **RPC** | Research & Professional Practice | 30% |\n| **GO** | Graduation Outcomes | 20% |\n| **OI** | Outreach & Inclusivity | 10% |\n| **PR** | Public Perception | 10% |`,
+        },
+      },
+      {
+        sectionId: "nirf-categories",
+        title: "NIRF Categories",
+        type: "markdown",
+        order: 3,
+        isVisible: true,
+        content: {
+          text: `SSGMCE participates in the following NIRF ranking categories:\n\n- **Engineering** – Ranks engineering colleges based on academic excellence and research output\n- **Overall** – Ranks all institutions across all disciplines and streams\n- **Management** – Ranks institutions offering management education (MBA/MMS programmes)\n- **Innovation** – Ranks institutions based on innovation, start-ups, and Intellectual Property Rights activities`,
+        },
+      },
+    ],
   },
 ];
 
@@ -444,7 +696,7 @@ const academicsPages = [
         order: 1,
         isVisible: true,
         content: {
-          text: '<p><strong>Date:</strong> 09/07/2025</p><p>All the students are hereby informed to note the following points related to <strong>attendance:</strong></p>',
+          text: "<p><strong>Date:</strong> 09/07/2025</p><p>All the students are hereby informed to note the following points related to <strong>attendance:</strong></p>",
         },
       },
       {
@@ -458,31 +710,36 @@ const academicsPages = [
             {
               itemId: "attendance-rule-1",
               title: "1. Attendance Policy",
-              content: "Attendance will be considered from day one of commencement of classes. It is compulsory for all students to maintain minimum 75% attendance otherwise he/she will be detained. Actions likely to be taken: Not eligible for internal marks based on attendance. Not eligible for incentive marks. Not eligible for scholarship of any kind from the institute. Not eligible for library facility. Not eligible for industrial visit, internship, & training. Parents will be informed and called. Undertaking to be submitted to respective HOD. If student fails to obey the undertaking, will not be permitted to attend classes.",
+              content:
+                "Attendance will be considered from day one of commencement of classes. It is compulsory for all students to maintain minimum 75% attendance otherwise he/she will be detained. Actions likely to be taken: Not eligible for internal marks based on attendance. Not eligible for incentive marks. Not eligible for scholarship of any kind from the institute. Not eligible for library facility. Not eligible for industrial visit, internship, & training. Parents will be informed and called. Undertaking to be submitted to respective HOD. If student fails to obey the undertaking, will not be permitted to attend classes.",
               order: 0,
             },
             {
               itemId: "attendance-rule-2",
               title: "2. Leave Policy",
-              content: "Leave for four lectures per subject will be automatically granted on medical/personal reasons. These four lectures will be subtracted from the total attendance at the end of session for all students irrespective of whether they have availed the leave or not.",
+              content:
+                "Leave for four lectures per subject will be automatically granted on medical/personal reasons. These four lectures will be subtracted from the total attendance at the end of session for all students irrespective of whether they have availed the leave or not.",
               order: 1,
             },
             {
               itemId: "attendance-rule-3",
               title: "3. Leave Application",
-              content: "In case of genuine leave, student needs to apply in the student leave format (SSGMCE/FRM/DPT-79) available in concern HOD office with proper document & justification. Lateral leave application will not be considered.",
+              content:
+                "In case of genuine leave, student needs to apply in the student leave format (SSGMCE/FRM/DPT-79) available in concern HOD office with proper document & justification. Lateral leave application will not be considered.",
               order: 2,
             },
             {
               itemId: "attendance-rule-4",
               title: "4. Special Activities Reporting",
-              content: "Leave for NSS, NCC, & Internship etc. should be reported to the concern In-charge/HOD. The in-charge/HOD will forward the final list to the Dean Academics.",
+              content:
+                "Leave for NSS, NCC, & Internship etc. should be reported to the concern In-charge/HOD. The in-charge/HOD will forward the final list to the Dean Academics.",
               order: 3,
             },
             {
               itemId: "attendance-rule-5",
               title: "5. Attendance Correction",
-              content: "In case of any correction in attendance, student should report to concern subject teacher within four days from the date of display of consolidated cumulative attendance.",
+              content:
+                "In case of any correction in attendance, student should report to concern subject teacher within four days from the date of display of consolidated cumulative attendance.",
               order: 4,
             },
           ],
@@ -582,13 +839,47 @@ const admissionsPages = [
         isVisible: true,
         content: {
           events: [
-            { year: "Step 1", title: "Register for MHT-CET / JEE Main", description: "Appear for MHT-CET or JEE Main examination (April - May)" },
-            { year: "Step 2", title: "CAP Round Registration", description: "Register for CAP on DTE Maharashtra portal (After CET results)" },
-            { year: "Step 3", title: "Fill Preferences", description: "Fill college and branch preferences in order of priority" },
-            { year: "Step 4", title: "CAP Rounds (3 Rounds)", description: "Seat allotment based on merit (July - August)" },
-            { year: "Step 5", title: "Document Verification", description: "Report to SSGMCE with original documents within 2-3 days" },
-            { year: "Step 6", title: "Fee Payment", description: "Pay admission fees online or at the college to confirm seat" },
-            { year: "Step 7", title: "Admission Confirmation", description: "Submit all documents, receive confirmation (August - September)" },
+            {
+              year: "Step 1",
+              title: "Register for MHT-CET / JEE Main",
+              description:
+                "Appear for MHT-CET or JEE Main examination (April - May)",
+            },
+            {
+              year: "Step 2",
+              title: "CAP Round Registration",
+              description:
+                "Register for CAP on DTE Maharashtra portal (After CET results)",
+            },
+            {
+              year: "Step 3",
+              title: "Fill Preferences",
+              description:
+                "Fill college and branch preferences in order of priority",
+            },
+            {
+              year: "Step 4",
+              title: "CAP Rounds (3 Rounds)",
+              description: "Seat allotment based on merit (July - August)",
+            },
+            {
+              year: "Step 5",
+              title: "Document Verification",
+              description:
+                "Report to SSGMCE with original documents within 2-3 days",
+            },
+            {
+              year: "Step 6",
+              title: "Fee Payment",
+              description:
+                "Pay admission fees online or at the college to confirm seat",
+            },
+            {
+              year: "Step 7",
+              title: "Admission Confirmation",
+              description:
+                "Submit all documents, receive confirmation (August - September)",
+            },
           ],
         },
       },
@@ -862,7 +1153,7 @@ const facilitiesPages = [
         order: 1,
         isVisible: true,
         content: {
-          text: '<p>The Central Library at SSGMCE is the intellectual hub of the campus, housing an extensive collection of books, journals, and digital resources. With state-of-the-art facilities and a dedicated team, we provide an ideal environment for academic excellence and research.</p>',
+          text: "<p>The Central Library at SSGMCE is the intellectual hub of the campus, housing an extensive collection of books, journals, and digital resources. With state-of-the-art facilities and a dedicated team, we provide an ideal environment for academic excellence and research.</p>",
         },
       },
       {
@@ -889,12 +1180,24 @@ const facilitiesPages = [
         content: {
           headers: ["Category", "Count", "Details"],
           rows: [
-            ["Text Books", "50,000+", "All engineering disciplines & management"],
-            ["Reference Books", "15,000+", "Encyclopedia, handbooks, dictionaries"],
+            [
+              "Text Books",
+              "50,000+",
+              "All engineering disciplines & management",
+            ],
+            [
+              "Reference Books",
+              "15,000+",
+              "Encyclopedia, handbooks, dictionaries",
+            ],
             ["Technical Journals", "100+", "IEEE, Springer, Elsevier, etc."],
             ["E-Books", "20,000+", "Digital access via subscribed platforms"],
             ["Project Reports", "5,000+", "Student project archives"],
-            ["Newspapers & Magazines", "50+", "Daily newspapers & monthly magazines"],
+            [
+              "Newspapers & Magazines",
+              "50+",
+              "Daily newspapers & monthly magazines",
+            ],
           ],
         },
       },
@@ -906,12 +1209,36 @@ const facilitiesPages = [
         isVisible: true,
         content: {
           cards: [
-            { title: "IEEE Xplore", description: "Access to 5+ million technical documents", color: "blue" },
-            { title: "ScienceDirect", description: "Elsevier platform with 16M+ publications", color: "orange" },
-            { title: "Springer Link", description: "Scientific journals, books & reference works", color: "blue" },
-            { title: "NPTEL", description: "Video lectures & course materials", color: "orange" },
-            { title: "DELNET", description: "Developing Library Network consortium", color: "blue" },
-            { title: "INFLIBNET", description: "Information & Library Network Centre", color: "orange" },
+            {
+              title: "IEEE Xplore",
+              description: "Access to 5+ million technical documents",
+              color: "blue",
+            },
+            {
+              title: "ScienceDirect",
+              description: "Elsevier platform with 16M+ publications",
+              color: "orange",
+            },
+            {
+              title: "Springer Link",
+              description: "Scientific journals, books & reference works",
+              color: "blue",
+            },
+            {
+              title: "NPTEL",
+              description: "Video lectures & course materials",
+              color: "orange",
+            },
+            {
+              title: "DELNET",
+              description: "Developing Library Network consortium",
+              color: "blue",
+            },
+            {
+              title: "INFLIBNET",
+              description: "Information & Library Network Centre",
+              color: "orange",
+            },
           ],
         },
       },
@@ -924,7 +1251,11 @@ const facilitiesPages = [
         content: {
           headers: ["Day", "Circulation Section", "Reading Hall"],
           rows: [
-            ["Monday - Saturday", "8:30 AM - 5:30 PM", "6:00 AM - 12:00 Midnight"],
+            [
+              "Monday - Saturday",
+              "8:30 AM - 5:30 PM",
+              "6:00 AM - 12:00 Midnight",
+            ],
             ["Sunday & Holidays", "Closed", "6:00 AM - 12:00 Midnight"],
             ["Exam Days", "9:00 AM - 4:00 PM", "24 Hours"],
           ],
@@ -1680,31 +2011,141 @@ const documentsPages = [
 // ──────────────────────────────────────────────────────────────
 const activitiesPages = [
   // Central Activities
-  { pageId: "activities-ieee", pageTitle: "IEEE", route: "/activities/ieee", category: "activities" },
-  { pageId: "activities-iste", pageTitle: "ISTE", route: "/activities/iste", category: "activities" },
-  { pageId: "activities-uba", pageTitle: "UBA", route: "/activities/uba", category: "activities" },
-  { pageId: "activities-nss", pageTitle: "NSS", route: "/activities/nss", category: "activities" },
-  { pageId: "activities-pursuit", pageTitle: "PURSUIT", route: "/activities/pursuit", category: "activities" },
-  { pageId: "activities-parishkriti", pageTitle: "Parishkriti", route: "/activities/parishkriti", category: "activities" },
+  {
+    pageId: "activities-ieee",
+    pageTitle: "IEEE",
+    route: "/activities/ieee",
+    category: "activities",
+  },
+  {
+    pageId: "activities-iste",
+    pageTitle: "ISTE",
+    route: "/activities/iste",
+    category: "activities",
+  },
+  {
+    pageId: "activities-uba",
+    pageTitle: "UBA",
+    route: "/activities/uba",
+    category: "activities",
+  },
+  {
+    pageId: "activities-nss",
+    pageTitle: "NSS",
+    route: "/activities/nss",
+    category: "activities",
+  },
+  {
+    pageId: "activities-pursuit",
+    pageTitle: "PURSUIT",
+    route: "/activities/pursuit",
+    category: "activities",
+  },
+  {
+    pageId: "activities-parishkriti",
+    pageTitle: "Parishkriti",
+    route: "/activities/parishkriti",
+    category: "activities",
+  },
   // Departmental
-  { pageId: "activities-mesa", pageTitle: "MESA", route: "/activities/mesa", category: "activities" },
-  { pageId: "activities-essa", pageTitle: "ESSA", route: "/activities/essa", category: "activities" },
-  { pageId: "activities-csesa", pageTitle: "CSESA", route: "/activities/csesa", category: "activities" },
-  { pageId: "activities-itsa", pageTitle: "ITSA", route: "/activities/itsa", category: "activities" },
-  { pageId: "activities-social", pageTitle: "Social Media Team", route: "/activities/social", category: "activities" },
-  { pageId: "activities-cultural", pageTitle: "Cultural Council", route: "/activities/cultural", category: "activities" },
+  {
+    pageId: "activities-mesa",
+    pageTitle: "MESA",
+    route: "/activities/mesa",
+    category: "activities",
+  },
+  {
+    pageId: "activities-essa",
+    pageTitle: "ESSA",
+    route: "/activities/essa",
+    category: "activities",
+  },
+  {
+    pageId: "activities-csesa",
+    pageTitle: "CSESA",
+    route: "/activities/csesa",
+    category: "activities",
+  },
+  {
+    pageId: "activities-itsa",
+    pageTitle: "ITSA",
+    route: "/activities/itsa",
+    category: "activities",
+  },
+  {
+    pageId: "activities-social",
+    pageTitle: "Social Media Team",
+    route: "/activities/social",
+    category: "activities",
+  },
+  {
+    pageId: "activities-cultural",
+    pageTitle: "Cultural Council",
+    route: "/activities/cultural",
+    category: "activities",
+  },
   // Student Activities
-  { pageId: "activities-innovo", pageTitle: "INNOVO 2025", route: "/activities/innovo", category: "activities" },
-  { pageId: "activities-drone", pageTitle: "Drone Club", route: "/activities/drone", category: "activities" },
-  { pageId: "activities-gdg", pageTitle: "GDG-SSGMCE", route: "/activities/gdg", category: "activities" },
-  { pageId: "activities-ecell", pageTitle: "E-CELL", route: "/activities/ecell", category: "activities" },
-  { pageId: "activities-xtreme", pageTitle: "Team x-treme", route: "/activities/xtreme", category: "activities" },
-  { pageId: "activities-mozilla", pageTitle: "Mozilla", route: "/activities/mozilla", category: "activities" },
+  {
+    pageId: "activities-innovo",
+    pageTitle: "INNOVO 2025",
+    route: "/activities/innovo",
+    category: "activities",
+  },
+  {
+    pageId: "activities-drone",
+    pageTitle: "Drone Club",
+    route: "/activities/drone",
+    category: "activities",
+  },
+  {
+    pageId: "activities-gdg",
+    pageTitle: "GDG-SSGMCE",
+    route: "/activities/gdg",
+    category: "activities",
+  },
+  {
+    pageId: "activities-ecell",
+    pageTitle: "E-CELL",
+    route: "/activities/ecell",
+    category: "activities",
+  },
+  {
+    pageId: "activities-xtreme",
+    pageTitle: "Team x-treme",
+    route: "/activities/xtreme",
+    category: "activities",
+  },
+  {
+    pageId: "activities-mozilla",
+    pageTitle: "Mozilla",
+    route: "/activities/mozilla",
+    category: "activities",
+  },
   // Student Chapter
-  { pageId: "activities-acm", pageTitle: "ACM", route: "/activities/acm", category: "activities" },
-  { pageId: "activities-iei-mech", pageTitle: "IEI(MECH)", route: "/activities/iei-mech", category: "activities" },
-  { pageId: "activities-iei-elpo", pageTitle: "IEI(ELPO)", route: "/activities/iei-elpo", category: "activities" },
-  { pageId: "activities-sae", pageTitle: "SAE", route: "/activities/sae", category: "activities" },
+  {
+    pageId: "activities-acm",
+    pageTitle: "ACM",
+    route: "/activities/acm",
+    category: "activities",
+  },
+  {
+    pageId: "activities-iei-mech",
+    pageTitle: "IEI(MECH)",
+    route: "/activities/iei-mech",
+    category: "activities",
+  },
+  {
+    pageId: "activities-iei-elpo",
+    pageTitle: "IEI(ELPO)",
+    route: "/activities/iei-elpo",
+    category: "activities",
+  },
+  {
+    pageId: "activities-sae",
+    pageTitle: "SAE",
+    route: "/activities/sae",
+    category: "activities",
+  },
 ].map((p) => ({
   ...p,
   pageDescription: p.pageDescription || p.pageTitle,
@@ -1718,6 +2159,7 @@ const activitiesPages = [
 // ══════════════════════════════════════════════════════════════
 const allNavPages = [
   ...aboutPages,
+  ...nirfPages,
   ...academicsPages,
   ...admissionsPages,
   ...researchPages,

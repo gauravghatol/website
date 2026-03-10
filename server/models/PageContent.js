@@ -156,6 +156,7 @@ const pageContentSchema = new mongoose.Schema(
         "research",
         "placements",
         "iqac",
+        "nirf",
         "documents",
         "activities",
         "departments",
