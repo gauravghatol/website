@@ -71,23 +71,23 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
 
     try {
       const token = localStorage.getItem("adminToken");
-      
+
       if (!token) {
         console.error("No authentication token found");
-        return { 
-          success: false, 
-          error: "Not authenticated. Please login again." 
+        return {
+          success: false,
+          error: "Not authenticated. Please login again.",
         };
       }
 
       const response = await axios.put(
         `/api/pages/${pageId}`,
-        data,  // send the full data object directly so the server can merge top-level fields
-        { 
-          headers: { 
-            Authorization: `Bearer ${token}` 
-          } 
-        }
+        data, // send the full data object directly so the server can merge top-level fields
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
 
       if (response.data.success) {
@@ -117,6 +117,45 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
     setHasChanges(true);
   };
 
+  /**
+   * Remove the section at the given index and re-sequence order values.
+   * @param {number} index - Index of the section to remove
+   */
+  const removeSection = (index) => {
+    setData((prev) => {
+      const sections = [...(prev.sections || [])];
+      sections.splice(index, 1);
+      // Re-sequence order so there are no gaps
+      const reordered = sections.map((s, i) => ({ ...s, order: i + 1 }));
+      return { ...prev, sections: reordered };
+    });
+    setHasChanges(true);
+  };
+
+  /**
+   * Move the section at `index` one step up or down.
+   * @param {number} index - Index of the section to move
+   * @param {"up"|"down"} direction
+   */
+  const moveSection = (index, direction) => {
+    setData((prev) => {
+      const sections = [...(prev.sections || [])];
+      const swapIndex = direction === "up" ? index - 1 : index + 1;
+      if (swapIndex < 0 || swapIndex >= sections.length) return prev;
+
+      // Swap the two sections
+      [sections[index], sections[swapIndex]] = [
+        sections[swapIndex],
+        sections[index],
+      ];
+
+      // Re-sequence order values to match positions
+      const reordered = sections.map((s, i) => ({ ...s, order: i + 1 }));
+      return { ...prev, sections: reordered };
+    });
+    setHasChanges(true);
+  };
+
   const value = {
     isEditing,
     setIsEditing,
@@ -125,6 +164,8 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
     updateData,
     saveData,
     addSection,
+    removeSection,
+    moveSection,
     hasChanges,
   };
 

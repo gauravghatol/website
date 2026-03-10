@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     cb(
       null,
-      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
+      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname),
     );
   },
 });
@@ -55,7 +55,9 @@ const uploadSingleImage = async (req, res) => {
     });
   } catch (error) {
     console.error("Upload error:", error);
-    res.status(500).json({ message: "File upload failed", error: error.message });
+    res
+      .status(500)
+      .json({ message: "File upload failed", error: error.message });
   }
 };
 
@@ -63,7 +65,7 @@ const uploadSingleImage = async (req, res) => {
 const getUploadedFiles = async (req, res) => {
   try {
     const uploadDir = "./uploads/images";
-    
+
     if (!fs.existsSync(uploadDir)) {
       return res.json({ files: [] });
     }
@@ -77,7 +79,9 @@ const getUploadedFiles = async (req, res) => {
     res.json({ files });
   } catch (error) {
     console.error("Error fetching files:", error);
-    res.status(500).json({ message: "Failed to fetch files", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch files", error: error.message });
   }
 };
 
@@ -95,7 +99,55 @@ const deleteFile = async (req, res) => {
     res.json({ message: "File deleted successfully" });
   } catch (error) {
     console.error("Error deleting file:", error);
-    res.status(500).json({ message: "Failed to delete file", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to delete file", error: error.message });
+  }
+};
+
+// NIRF PDF upload
+const nirfStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = "./uploads/nirf";
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "nirf-" + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const nirfUpload = multer({
+  storage: nirfStorage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed!"), false);
+    }
+  },
+  limits: { fileSize: 20 * 1024 * 1024 },
+});
+
+const uploadNirfPdf = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    const fileUrl = `/uploads/nirf/${req.file.filename}`;
+    res.status(200).json({
+      message: "PDF uploaded successfully",
+      fileUrl,
+      filename: req.file.filename,
+    });
+  } catch (error) {
+    console.error("NIRF PDF upload error:", error);
+    res
+      .status(500)
+      .json({ message: "File upload failed", error: error.message });
   }
 };
 
@@ -104,4 +156,6 @@ module.exports = {
   uploadSingleImage,
   getUploadedFiles,
   deleteFile,
+  nirfUpload,
+  uploadNirfPdf,
 };

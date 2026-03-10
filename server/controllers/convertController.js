@@ -124,6 +124,66 @@ function toTitleCase(str) {
   return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+/**
+ * Prepares HTML tables for GFM markdown conversion:
+ *
+ * 1. Strips <p> tags inside <td>/<th> cells — mammoth wraps cell content in
+ *    <p> tags, which causes newlines inside table cells and breaks the pipe
+ *    table syntax that turndown-plugin-gfm generates.
+ *
+ * 2. Promotes the first <tr> of headless tables to <thead> — turndown-plugin-gfm
+ *    only converts tables that have a <thead> row; without this, tables whose
+ *    header row isn't explicitly styled in Word would be left as raw HTML.
+ */
+function prepareTablesForMarkdown(html) {
+  if (!/<table/i.test(html)) return html;
+
+  // Step 1: flatten <p> tags inside every <td> and <th>
+  // Replace <p>content</p> with content + <br> for multiple paragraphs,
+  // or just content for a single paragraph.
+  html = html.replace(
+    /(<t[dh](?:\s[^>]*)?>) *([\s\S]*?)(<\/t[dh]>)/gi,
+    (_match, open, cellContent, close) => {
+      // Count <p> blocks inside the cell
+      const paragraphs = [];
+      const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+      let m;
+      while ((m = pRegex.exec(cellContent)) !== null) {
+        const text = m[1].trim();
+        if (text) paragraphs.push(text);
+      }
+      if (paragraphs.length > 0) {
+        return open + paragraphs.join(" ") + close;
+      }
+      return _match;
+    },
+  );
+
+  // Step 2: ensure every table has a <thead>
+  html = html.replace(
+    /<table([^>]*)>([\s\S]*?)<\/table>/gi,
+    (_match, attrs, inner) => {
+      // Already has a header row — leave as-is
+      if (/<thead/i.test(inner)) return `<table${attrs}>${inner}</table>`;
+
+      // Promote the first <tr> to a <thead> with <th> cells
+      let promoted = false;
+      const newInner = inner.replace(/<tr[\s\S]*?<\/tr>/i, (row) => {
+        if (promoted) return row;
+        promoted = true;
+        const headerRow = row
+          .replace(/<td(\s[^>]*)?>/gi, (m) => m.replace("<td", "<th"))
+          .replace(/<\/td>/gi, "</th>");
+        return `<thead>${headerRow}</thead>`;
+      });
+
+      return `<table${attrs}>${newInner}</table>`;
+    },
+  );
+
+  return html;
+}
+
 // --- Controller ---
 const convertDocument = async (req, res) => {
   const tmpPath = req.file?.path;
@@ -185,13 +245,18 @@ const convertDocument = async (req, res) => {
       );
 
       // Step 2: convert HTML → GFM markdown (preserves tables as | col | col | syntax)
+      // Pre-process: strip <p> tags inside table cells and ensure every
+      // <table> has a <thead> row so that turndown-plugin-gfm produces
+      // clean GFM pipe tables instead of leaving raw HTML.
+      const processedHtml = prepareTablesForMarkdown(htmlResult.value || "");
+
       const td = new TurndownService({
         headingStyle: "atx",
         bulletListMarker: "-",
         codeBlockStyle: "fenced",
       });
       td.use(gfm); // enables GFM tables, strikethrough, task lists
-      markdown = td.turndown(htmlResult.value || "").trim();
+      markdown = td.turndown(processedHtml).trim();
       method = "mammoth+turndown";
 
       if (extractedImageUrls.length > 0) {
