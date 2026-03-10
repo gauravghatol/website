@@ -234,7 +234,7 @@ const RichTextEditor = ({
         </button>
         <button
           onClick={handleCancel}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-800/500 text-white rounded-lg hover:bg-gray-600 transition-colors font-semibold text-sm shadow-md"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors font-semibold text-sm shadow-md"
         >
           <FaTimes /> Cancel
         </button>

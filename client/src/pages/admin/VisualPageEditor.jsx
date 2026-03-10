@@ -27,10 +27,25 @@ const DEPT_TO_PAGEID = {
   ASH: 'departments-applied-sciences',
 };
 
+// Valid top-level department pageIds — sub-pages must NOT be created as standalone
+const VALID_DEPT_PAGEIDS = new Set([
+  'departments-cse',
+  'departments-it',
+  'departments-entc',
+  'departments-electrical',
+  'departments-mechanical',
+  'departments-mba',
+  'departments-applied-sciences',
+]);
+
 /** Derive a human-readable title and category from a pageId slug */
 const derivePageMeta = (pageId) => {
   const parts = pageId.split('-');
-  const category = parts[0]; // e.g. "placements", "iqac"
+  let category = parts[0]; // e.g. "placements", "iqac"
+  // If it looks like a department sub-page but isn't a known top-level dept, recategorize as 'other'
+  if (category === 'departments' && !VALID_DEPT_PAGEIDS.has(pageId)) {
+    category = 'other';
+  }
   const titleWords = parts.slice(1).map((w) => w.charAt(0).toUpperCase() + w.slice(1));
   const pageTitle = titleWords.join(' ') || pageId;
   // Build a route: placements-about → /placements/about
