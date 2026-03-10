@@ -4,6 +4,7 @@ import GenericPage from "../../components/GenericPage";
 import { useDepartmentData } from "../../hooks/useDepartmentData";
 import EditableText from "../../components/admin/EditableText";
 import EditableImage from "../../components/admin/EditableImage";
+import MarkdownEditor from "../../components/admin/MarkdownEditor";
 import appliedSciencesBanner from "../../assets/images/departments/applied-sciences/banner.png";
 import { AnimatePresence, motion } from "framer-motion";
 import axios from "axios";
@@ -813,141 +814,35 @@ const AppliedSciences = () => {
             </div>
 
             <div className="prose max-w-none text-gray-700 leading-relaxed text-justify space-y-5">
-              <div>
-                <EditableText
-                  value={t(
-                    "templateData.overview.para1",
-                    "Applied Science is a bridge that connects Pure Sciences with the engineering world. The mission of the department is to generate human resource of excellent quality, with high professional competency in interdisciplinary research encompassing mathematics, chemistry, and physics for the national needs.",
-                  )}
-                  onSave={(val) =>
-                    updateField("templateData.overview.para1", val)
-                  }
-                  multiline={true}
-                  className="w-full"
-                />
-              </div>
+              <MarkdownEditor
+                value={t(
+                  "templateData.overview.content",
+                  `Applied Science is a bridge that connects Pure Sciences with the engineering world. The mission of the department is to generate human resource of excellent quality, with high professional competency in interdisciplinary research encompassing mathematics, chemistry, and physics for the national needs.
 
-              <div>
-                <EditableText
-                  value={t(
-                    "templateData.overview.para2",
-                    "Department of Applied Science consists of Engineering Mathematics, Engineering Physics, Engineering Chemistry, and Humanities & Communication Skills, which are part of post-graduate/under-graduate and started functioning since academic year 1983-84.",
-                  )}
-                  onSave={(val) =>
-                    updateField("templateData.overview.para2", val)
-                  }
-                  multiline={true}
-                  className="w-full"
-                />
-              </div>
+Department of Applied Science consists of Engineering Mathematics, Engineering Physics, Engineering Chemistry, and Humanities & Communication Skills, which are part of post-graduate/under-graduate and started functioning since academic year 1983-84.
 
-              <div className="text-base">
-                <EditableText
-                  value={t(
-                    "templateData.overview.para3",
-                    "Department of Applied Science consists of <strong>Engineering Mathematics</strong>, <strong>Engineering Physics</strong>, <strong>Engineering Chemistry</strong>, and <strong>Humanities & Communication Skills</strong>, which are part of post-graduate/under-graduate and started functioning since academic year <strong>1983-84</strong>. All the above subjects are compulsory. Mathematics is the backbone of all Engineering Sciences. Hence a lot of attention is given on Mathematics in engineering education. Engineering Mathematics is for first, second, third year and master of engineering curriculum whereas Engineering Physics and Engineering Chemistry are only for first year engineering and Humanities & Communication skills are for third year engineering. The department has three well equipped laboratories namely <strong>Physics</strong>, <strong>Chemistry</strong> and <strong>Communication Skill</strong>. The department is having <strong>Four Ph.D.</strong>, <strong>Six M. Phil.</strong> and Three faculties are pursuing their Ph.D., while one of the faculty has submitted Ph.D. Thesis. The departments having <strong>two Professors</strong>, <strong>three Associate Professors</strong> and <strong>seven Assistant Professors</strong>.",
-                  )}
-                  onSave={(val) =>
-                    updateField("templateData.overview.para3", val)
-                  }
-                  multiline={true}
-                  className="w-full"
-                />
-              </div>
+Department of Applied Science consists of **Engineering Mathematics**, **Engineering Physics**, **Engineering Chemistry**, and **Humanities & Communication Skills**, which are part of post-graduate/under-graduate and started functioning since academic year **1983-84**. All the above subjects are compulsory. Mathematics is the backbone of all Engineering Sciences. Hence a lot of attention is given on Mathematics in engineering education. Engineering Mathematics is for first, second, third year and master of engineering curriculum whereas Engineering Physics and Engineering Chemistry are only for first year engineering and Humanities & Communication skills are for third year engineering. The department has three well equipped laboratories namely **Physics**, **Chemistry** and **Communication Skill**. The department is having **Four Ph.D.**, **Six M. Phil.** and Three faculties are pursuing their Ph.D., while one of the faculty has submitted Ph.D. Thesis. The departments having **two Professors**, **three Associate Professors** and **seven Assistant Professors**.
 
-              <div className="text-base">
-                <EditableText
-                  value={t(
-                    "templateData.overview.para4",
-                    "The department has its own monitoring system namely <strong>Counselors Teacher Scheme</strong> which looks after the attendance, academic performance and other extracurricular activities of students are monitored regularly and the reports are sent to the parents from time to time. In addition to university final examinations, unit tests, Teacher Evaluation components are conducted. Different types of competitions, guest lectures, sports and cultural programs are organized. Experienced and qualified faculties take a lot of efforts relentlessly which gives excellent results. The result of the students has gained first positions in the university.",
-                  )}
-                  onSave={(val) =>
-                    updateField("templateData.overview.para4", val)
-                  }
-                  multiline={true}
-                  className="w-full"
-                />
-              </div>
+The department has its own monitoring system namely **Counselors Teacher Scheme** which looks after the attendance, academic performance and other extracurricular activities of students are monitored regularly and the reports are sent to the parents from time to time. In addition to university final examinations, unit tests, Teacher Evaluation components are conducted. Different types of competitions, guest lectures, sports and cultural programs are organized. Experienced and qualified faculties take a lot of efforts relentlessly which gives excellent results. The result of the students has gained first positions in the university.
 
-              <div className="text-base">
-                <EditableText
-                  value={t(
-                    "templateData.overview.para5",
-                    "Keeping in view the recent developments in Science and the present needs in Industries, the curriculum of Engineering Chemistry, Physics has been revised so that the Engineers/ Technicians may have a better knowledge of basis Sciences, especially regarding the application of the subject in various fields of Industries. An emphasis, in this direction, has been made in the curriculum, a good knowledge of Engineering Chemistry and Engineering Physics is therefore a necessity for the success of engineers majoring in various disciplines. These sciences foster technology, which is why all technical educational institutions have chemistry in all their courses. These subjects are taught in the First Year of Engineering to all the branches.",
-                  )}
-                  onSave={(val) =>
-                    updateField("templateData.overview.para5", val)
-                  }
-                  multiline={true}
-                  className="w-full"
-                />
-              </div>
+Keeping in view the recent developments in Science and the present needs in Industries, the curriculum of Engineering Chemistry, Physics has been revised so that the Engineers/ Technicians may have a better knowledge of basis Sciences, especially regarding the application of the subject in various fields of Industries. An emphasis, in this direction, has been made in the curriculum, a good knowledge of Engineering Chemistry and Engineering Physics is therefore a necessity for the success of engineers majoring in various disciplines. These sciences foster technology, which is why all technical educational institutions have chemistry in all their courses. These subjects are taught in the First Year of Engineering to all the branches.
 
-              <div className="text-base">
-                <EditableText
-                  value={t(
-                    "templateData.overview.para6",
-                    "The phenomenal progress of technology in the twentieth century has brought dramatically changes in human lifestyles especially with reference to housing, personal comforts, transportation and health care. The technology, which has thus enhanced the quality of human life, is based on scientific research, primarily in chemistry. The need for sustainable development is a key to the future of mankind. Continuing the problems of pollution, loss of forest, solid waste disposal, degradation of environment, issues of economic productivity and national security, and warning about global warming, the depletion of ozone layer and loss of biodiversity have made everyone aware of environmental issues. Recognizing the significance of the Environmental Studies, this subject has introduced at the Second Year Degree Courses in all the faculties. Genuine endeavor is required to minimize the gaps by intellectual and material inputs. The success of this course will depend on the initiative and drive of the teachers and the receptive students.",
-                  )}
-                  onSave={(val) =>
-                    updateField("templateData.overview.para6", val)
-                  }
-                  multiline={true}
-                  className="w-full"
-                />
-              </div>
+The phenomenal progress of technology in the twentieth century has brought dramatically changes in human lifestyles especially with reference to housing, personal comforts, transportation and health care. The technology, which has thus enhanced the quality of human life, is based on scientific research, primarily in chemistry. The need for sustainable development is a key to the future of mankind. Continuing the problems of pollution, loss of forest, solid waste disposal, degradation of environment, issues of economic productivity and national security, and warning about global warming, the depletion of ozone layer and loss of biodiversity have made everyone aware of environmental issues. Recognizing the significance of the Environmental Studies, this subject has introduced at the Second Year Degree Courses in all the faculties. Genuine endeavor is required to minimize the gaps by intellectual and material inputs. The success of this course will depend on the initiative and drive of the teachers and the receptive students.
 
-              <div className="mt-8 pt-6 border-t border-gray-200 flex justify-between items-end">
-                <div>
-                  <p className="font-semibold text-gray-800">
-                    <EditableText
-                      value={t(
-                        "templateData.overview.hodSignature",
-                        "Dr. A. S. Tate,",
-                      )}
-                      onSave={(val) =>
-                        updateField("templateData.overview.hodSignature", val)
-                      }
-                      className="inline"
-                    />
-                  </p>
-                  <p className="text-gray-600 text-sm">
-                    <EditableText
-                      value={t(
-                        "templateData.overview.hodTitle",
-                        "Head, Dept. of Applied Sciences and Humanities",
-                      )}
-                      onSave={(val) =>
-                        updateField("templateData.overview.hodTitle", val)
-                      }
-                    />
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-500 italic">
-                    <EditableText
-                      value={t(
-                        "templateData.overview.collegeName1",
-                        "Shri Sant Gajanan Maharaj",
-                      )}
-                      onSave={(val) =>
-                        updateField("templateData.overview.collegeName1", val)
-                      }
-                    />
-                  </p>
-                  <p className="text-sm text-gray-500 italic">
-                    <EditableText
-                      value={t(
-                        "templateData.overview.collegeName2",
-                        "College of Engineering, Shegaon",
-                      )}
-                      onSave={(val) =>
-                        updateField("templateData.overview.collegeName2", val)
-                      }
-                    />
-                  </p>
-                </div>
-              </div>
+---
+
+**Dr. A. S. Tate,**\
+Head, Dept. of Applied Sciences and Humanities
+
+*Shri Sant Gajanan Maharaj*\
+*College of Engineering, Shegaon*`,
+                )}
+                onSave={(val) =>
+                  updateField("templateData.overview.content", val)
+                }
+                placeholder="Click to edit department overview content (Markdown supported)..."
+                className="w-full"
+              />
             </div>
           </div>
         </div>
