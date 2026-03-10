@@ -764,6 +764,14 @@ const MD_COMPONENTS = {
     </td>
   ),
   tr: ({ children }) => <tr className="even:bg-gray-50">{children}</tr>,
+  img: ({ src, alt }) => (
+    <img
+      src={src}
+      alt={alt || ""}
+      className="max-w-full h-auto rounded-lg my-3 shadow-sm border border-gray-200 dark:border-gray-700"
+      loading="lazy"
+    />
+  ),
   // Support raw HTML for column layouts
   div: ({ className, children, ...props }) => (
     <div className={className} {...props}>

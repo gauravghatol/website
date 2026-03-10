@@ -41,6 +41,7 @@ const placementRoutes = require("./routes/placementRoutes");
 const iqacRoutes = require("./routes/iqacRoutes");
 const documentRoutes = require("./routes/documentRoutes");
 const nirfRoutes = require("./routes/nirfRoutes");
+const convertRoutes = require("./routes/convertRoutes");
 const { initializeDatabase } = require("./utils/dbInit");
 
 // API Routes
@@ -57,6 +58,7 @@ app.use("/api/placements", placementRoutes);
 app.use("/api/iqac", iqacRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/nirf", nirfRoutes);
+app.use("/api/convert", convertRoutes);
 
 // Health Check
 app.get("/", (req, res) => {

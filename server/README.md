@@ -1,352 +1,125 @@
-# SSGMCE Backend - Node.js + Express + MongoDB
+# SSGMCE Backend
 
-Backend API server for the SSGMCE College Website built with Node.js, Express, and MongoDB.
+Express + MongoDB API server for the SSGMCE college website.
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
-# Install dependencies
 npm install
-
-# Set up environment variables (see .env file)
-
-# Start the server
-npm start
-
-# Development mode with nodemon (optional)
-npm run dev
+cp .env.example .env    # fill in MONGODB_URI, JWT_SECRET, ADMIN_JWT_SECRET
+npm start               # or: npm run dev (nodemon)
 ```
 
-## 📁 Directory Structure
+Runs on `http://localhost:5000`.
+
+## Directory Structure
 
 ```
 server/
-├── config/
-│   └── db.js           # MongoDB connection
-│
-├── models/             # Mongoose schemas
-│   ├── News.js
+├── server.js              # Entry point, middleware, route mounting
+├── config/db.js           # MongoDB connection
+├── middleware/
+│   └── authMiddleware.js  # JWT verification
+├── models/                # 18 Mongoose schemas
+│   ├── User.js            # Admin users
+│   ├── Department.js      # Department data + sub-pages
 │   ├── Faculty.js
-│   ├── Department.js
-│   ├── Event.js
-│   └── Notice.js
-│
-├── controllers/        # Request handlers
-│   ├── newsController.js
-│   ├── facultyController.js
-│   ├── departmentController.js
-│   ├── eventController.js
-│   └── noticeController.js
-│
-├── routes/            # API routes
-│   ├── newsRoutes.js
-│   ├── facultyRoutes.js
-│   ├── departmentRoutes.js
-│   ├── eventRoutes.js
-│   └── noticeRoutes.js
-│
-├── server.js          # Main server file
-├── package.json
-└── .env              # Environment variables
+│   ├── Event.js, News.js, Notice.js
+│   ├── PageContent.js     # CMS page content (sections, markdown)
+│   ├── PlacementStat.js, Recruiter.js, Testimonial.js
+│   ├── Research.js
+│   ├── IQACDocument.js, IQACMember.js, IQACNews.js
+│   ├── NIRF.js
+│   ├── Document.js
+│   ├── PopupBanner.js
+│   └── EditLog.js         # Content change audit log
+├── controllers/           # 14 controllers
+├── routes/                # 14 route files
+├── data/
+│   ├── allNavPages.js     # Master page definitions (auto-seeded on startup)
+│   ├── researchMarkdownContent.js
+│   └── iqacMarkdownContent.js
+├── scripts/
+│   ├── syncResearchMarkdownContent.js  # Re-seed research pages
+│   └── syncIqacMarkdownContent.js      # Re-seed IQAC pages
+├── uploads/               # User-uploaded files
+│   ├── documents/         # Department docs (MOUs, publications, etc.)
+│   ├── images/            # Uploaded images
+│   └── nirf/              # NIRF PDF reports
+└── utils/
+    ├── dbInit.js          # Auto-seeds pages from allNavPages.js
+    └── departmentMap.js   # Slug ↔ department name mapping
 ```
 
-## 🗄️ Database Models
+## Environment Variables
 
-### News Model
-- title, description, content
-- category (News, Announcement, Achievement)
-- publishDate, isActive
-- timestamps
-
-### Faculty Model
-- name, designation, department
-- qualification, specialization
-- experience, email, phone
-- isActive, timestamps
-
-### Department Model
-- name, code, description
-- programs (array)
-- isActive, timestamps
-
-### Event Model
-- title, description, eventDate
-- location, category
-- isActive, timestamps
-
-### Notice Model
-- title, description, priority
-- category, publishDate, expiryDate
-- isActive, timestamps
-
-## 🔌 API Endpoints
-
-### Base URL
-```
-http://localhost:5000/api
-```
-
-### News Endpoints
-```
-GET    /api/news              # Get all news
-GET    /api/news/:id          # Get single news
-POST   /api/news              # Create news
-PUT    /api/news/:id          # Update news
-DELETE /api/news/:id          # Delete news
-```
-
-### Faculty Endpoints
-```
-GET    /api/faculty           # Get all faculty
-GET    /api/faculty/:id       # Get single faculty
-POST   /api/faculty           # Add faculty
-PUT    /api/faculty/:id       # Update faculty
-DELETE /api/faculty/:id       # Delete faculty
-```
-
-### Department Endpoints
-```
-GET    /api/departments       # Get all departments
-GET    /api/departments/:id   # Get single department
-POST   /api/departments       # Add department
-PUT    /api/departments/:id   # Update department
-DELETE /api/departments/:id   # Delete department
-```
-
-### Event Endpoints
-```
-GET    /api/events            # Get all events
-GET    /api/events/upcoming   # Get upcoming events
-GET    /api/events/:id        # Get single event
-POST   /api/events            # Create event
-PUT    /api/events/:id        # Update event
-DELETE /api/events/:id        # Delete event
-```
-
-### Notice Endpoints
-```
-GET    /api/notices           # Get all notices
-GET    /api/notices/:id       # Get single notice
-POST   /api/notices           # Create notice
-PUT    /api/notices/:id       # Update notice
-DELETE /api/notices/:id       # Delete notice
-```
-
-## 📦 Dependencies
-
-### Core
-- express: ^4.18.2
-- mongoose: ^7.6.0
-- cors: ^2.8.5
-- dotenv: ^16.3.1
-
-### Security & Auth
-- bcryptjs: ^2.4.3
-- jsonwebtoken: ^9.0.2
-
-### Dev Dependencies
-- nodemon: ^3.0.1 (optional)
-
-## ⚙️ Environment Variables
-
-Create a `.env` file in the server directory:
+See `.env.example`:
 
 ```env
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/ssgmce
-JWT_SECRET=your_super_secret_jwt_key_here_change_this_in_production
+NODE_ENV=development
+MONGODB_URI=mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/<db>
+JWT_SECRET=<random-string>
+ADMIN_JWT_SECRET=<random-string>
 ```
 
-### MongoDB Setup
+## API Routes
 
-#### Option 1: Local MongoDB
-```bash
-# Install MongoDB locally
-# Start MongoDB service
-mongod
+All prefixed with `/api`:
 
-# Database will be created automatically
-```
+| Route | Auth | Description |
+|-------|------|-------------|
+| `/api/auth` | — | Login, register, verify token |
+| `/api/pages` | Read: public, Write: admin | CMS page content by pageId |
+| `/api/departments` | Read: public, Write: admin | Department CRUD |
+| `/api/faculty` | Read: public, Write: admin | Faculty CRUD |
+| `/api/news` | Read: public, Write: admin | News articles |
+| `/api/events` | Read: public, Write: admin | College events |
+| `/api/notices` | Read: public, Write: admin | Notices & announcements |
+| `/api/placements` | Read: public, Write: admin | Stats, records, recruiters |
+| `/api/research` | Read: public, Write: admin | Research data |
+| `/api/iqac` | Read: public, Write: admin | IQAC documents, members, news |
+| `/api/nirf` | Read: public, Write: admin | NIRF rankings & parameters |
+| `/api/documents` | Read: public, Write: admin | Document management |
+| `/api/upload` | Admin | File uploads (images, PDFs) |
 
-#### Option 2: MongoDB Atlas
-```env
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/ssgmce?retryWrites=true&w=majority
-```
+## Auto-Seeding
 
-## 🛠️ Available Scripts
+On first startup, `dbInit.js` reads `allNavPages.js` and seeds all page definitions into the `pagecontents` collection. Pages already in the DB are skipped.
 
-```bash
-# Start server
-npm start
+## Sync Scripts
 
-# Development mode with auto-restart (requires nodemon)
-npm run dev
-```
-
-## 🗄️ Database Schema Examples
-
-### News Document
-```javascript
-{
-  title: "Admissions Open 2024-25",
-  description: "Online applications now open",
-  content: "Full content here...",
-  category: "Announcement",
-  publishDate: "2024-01-15T00:00:00.000Z",
-  isActive: true,
-  createdAt: "2024-01-10T10:30:00.000Z",
-  updatedAt: "2024-01-10T10:30:00.000Z"
-}
-```
-
-### Faculty Document
-```javascript
-{
-  name: "Dr. Rajesh Kumar",
-  designation: "Professor & Head",
-  department: "Computer Science",
-  qualification: "Ph.D., M.Tech",
-  specialization: "Machine Learning, Data Science",
-  experience: "20 years",
-  email: "rajesh.kumar@ssgmce.ac.in",
-  phone: "+91-1234567890",
-  isActive: true
-}
-```
-
-### Department Document
-```javascript
-{
-  name: "Computer Science & Engineering",
-  code: "CSE",
-  description: "Department focuses on...",
-  programs: [
-    "B.E. Computer Science & Engineering",
-    "M.E. Computer Science & Engineering"
-  ],
-  isActive: true
-}
-```
-
-## 🔐 Authentication (Future Enhancement)
-
-Currently, the API is open. For production:
-- Implement JWT authentication middleware
-- Add admin authentication for POST, PUT, DELETE routes
-- Secure sensitive endpoints
-
-## 🔍 Error Handling
-
-All controllers implement try-catch blocks:
-- 200: Success
-- 201: Created
-- 400: Bad Request
-- 404: Not Found
-- 500: Server Error
-
-## 📊 Testing API with Tools
-
-### Using Postman
-```
-GET http://localhost:5000/api/news
-POST http://localhost:5000/api/news
-Content-Type: application/json
-
-{
-  "title": "Test News",
-  "description": "Test description",
-  "category": "News",
-  "publishDate": "2024-01-15"
-}
-```
-
-### Using cURL
-```bash
-# Get all news
-curl http://localhost:5000/api/news
-
-# Create news
-curl -X POST http://localhost:5000/api/news \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Test","description":"Test desc","category":"News"}'
-```
-
-## 🚀 Production Deployment
-
-### Hosting Platforms
-- Heroku
-- Railway
-- Render
-- DigitalOcean
-- AWS EC2
-
-### Pre-deployment Checklist
-- [ ] Set production environment variables
-- [ ] Update MongoDB URI to Atlas
-- [ ] Enable CORS for frontend domain
-- [ ] Add rate limiting
-- [ ] Implement authentication
-- [ ] Add logging (Morgan, Winston)
-- [ ] Set up monitoring
-
-## 📝 Sample Data
-
-To populate the database with sample data, you can use MongoDB Compass or create seed scripts.
-
-### Example: Adding Sample News
-```javascript
-// In MongoDB shell or using Mongoose
-db.news.insertMany([
-  {
-    title: "Admissions Open 2024-25",
-    description: "Applications now being accepted",
-    category: "Admission",
-    publishDate: new Date(),
-    isActive: true
-  },
-  {
-    title: "Placement Drive Completed",
-    description: "85% students successfully placed",
-    category: "Placement",
-    publishDate: new Date(),
-    isActive: true
-  }
-]);
-```
-
-## 🔧 Middleware
-
-### Currently Implemented
-- express.json() - Parse JSON bodies
-- cors() - Enable CORS
-- connectDB() - Database connection
-
-### Future Enhancements
-- Authentication middleware
-- Request logging (Morgan)
-- Rate limiting
-- Input validation
-- File upload handling
-
-## 🐛 Debugging
+Re-runnable utilities for fresh deployments or DB resets:
 
 ```bash
-# Check MongoDB connection
-# Server logs will show: "MongoDB Connected: ..."
-
-# Test API endpoints
-curl http://localhost:5000/api/news
-
-# Check for errors in terminal
-# All errors are logged with console.error
+node scripts/syncResearchMarkdownContent.js   # Seed/update research pages
+node scripts/syncIqacMarkdownContent.js        # Seed/update IQAC pages
 ```
 
-## 📚 Learn More
+These are idempotent — they skip pages that already have content.
 
-- [Express.js Documentation](https://expressjs.com)
-- [Mongoose Documentation](https://mongoosejs.com)
-- [MongoDB Documentation](https://docs.mongodb.com)
-- [Node.js Documentation](https://nodejs.org)
+## Models
+
+| Model | Collection | Purpose |
+|-------|-----------|---------|
+| PageContent | pagecontents | CMS-managed page sections (markdown) |
+| Department | departments | Department info + sub-page content |
+| Faculty | faculties | Faculty profiles |
+| User | users | Admin authentication |
+| Event | events | College events |
+| News | news | News articles |
+| Notice | notices | Announcements |
+| PlacementStat | placementstats | Year-wise placement data |
+| Recruiter | recruiters | Recruiting companies |
+| Testimonial | testimonials | Student testimonials |
+| Research | researches | Research entries |
+| NIRF | nirfs | NIRF ranking data |
+| IQACDocument | iqacdocuments | IQAC files |
+| IQACMember | iqacmembers | IQAC committee members |
+| IQACNews | iqacnews | IQAC announcements |
+| Document | documents | Uploaded documents |
+| PopupBanner | popupbanners | Homepage popup announcements |
+| EditLog | editlogs | Content change audit trail |
 
 ## 🤝 Contributing
 

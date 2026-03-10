@@ -234,6 +234,8 @@ const GenericContentPage = ({ pageId }) => {
                   key={section.sectionId}
                   index={index}
                   title={section.type}
+                  sectionContent={section.content}
+                  contentPath={`sections[${index}].content`}
                 >
                   <div
                     className={`page-section ${
