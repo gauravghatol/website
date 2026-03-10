@@ -1956,6 +1956,7 @@ const defaultPages = [...basePages, ...departmentPages, ...supplementalPages];
 // Import comprehensive nav pages data
 const allNavPages = require("../data/allNavPages");
 const { RESEARCH_MARKDOWN_PAGE_IDS } = require("../data/researchMarkdownContent");
+const { IQAC_MARKDOWN_PAGE_IDS } = require("../data/iqacMarkdownContent");
 
 const getDefaultPages = () => defaultPages;
 
@@ -1985,6 +1986,14 @@ const shouldSeedNavPage = (existing, pageData, forceUpdate = false) => {
   // Refresh them once so they move onto the shared Markdown editing flow.
   if (
     RESEARCH_MARKDOWN_PAGE_IDS.includes(pageData.pageId) &&
+    !hasMarkdownSections(existing)
+  ) {
+    return true;
+  }
+
+  // IQAC pages migrated from hardcoded JSX to Markdown editing flow.
+  if (
+    IQAC_MARKDOWN_PAGE_IDS.includes(pageData.pageId) &&
     !hasMarkdownSections(existing)
   ) {
     return true;

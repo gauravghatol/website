@@ -96,6 +96,16 @@ const sectionSchema = new mongoose.Schema(
         "pdf", // PDF document embed/link
         "sidebar", // Sidebar navigation config
         "hod", // HOD message with photo
+        "link", // External/internal link button
+        // IQAC section types
+        "iqac-stats", // Horizontal compact stats with divider
+        "meeting-records", // Year-wise meeting accordion with PDF links
+        "year-reports", // Year-wise report accordion with criteria
+        "naac-criteria", // Criterion accordion with QlM/QnM indicators
+        "video-gallery", // YouTube video grid with category filter
+        "document-grid", // Document link cards grid
+        "process-steps", // Numbered process steps
+        "info-cards", // Titled info/feature cards
       ],
       required: true,
     },
@@ -107,100 +117,9 @@ const sectionSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    // Flexible content object based on type
-    content: {
-      // For text/richtext type
-      text: { type: String, default: "" },
-
-      // For list type
-      items: [{ type: String }],
-
-      // For image type
-      url: { type: String, default: "" },
-      alt: { type: String, default: "" },
-      caption: { type: String, default: "" },
-
-      // For stats type
-      stats: [
-        {
-          label: String,
-          value: String,
-          icon: String,
-          color: String,
-        },
-      ],
-
-      // For timeline type
-      events: [
-        {
-          year: String,
-          title: String,
-          description: String,
-        },
-      ],
-
-      // For cards type
-      cards: [
-        {
-          title: String,
-          description: String,
-          icon: String,
-          color: String,
-        },
-      ],
-
-      // For table type
-      headers: [String],
-      rows: [[String]],
-
-      // For quote type
-      quote: { type: String, default: "" },
-      author: { type: String, default: "" },
-
-      // For tabs type
-      tabs: [tabSchema],
-
-      // For accordion type
-      accordionItems: [accordionItemSchema],
-
-      // For faculty type
-      facultyMembers: [facultyMemberSchema],
-
-      // For gallery type
-      images: [galleryImageSchema],
-
-      // For video type
-      videoUrl: { type: String, default: "" },
-      videoType: {
-        type: String,
-        enum: ["youtube", "vimeo", "upload", ""],
-        default: "",
-      },
-      videoTitle: { type: String, default: "" },
-
-      // For pdf type
-      pdfUrl: { type: String, default: "" },
-      pdfTitle: { type: String, default: "" },
-      pdfDescription: { type: String, default: "" },
-
-      // For sidebar type
-      sidebarItems: [
-        {
-          label: String,
-          route: String,
-          icon: String,
-          order: Number,
-          isVisible: { type: Boolean, default: true },
-        },
-      ],
-
-      // For hod type
-      hodName: { type: String, default: "" },
-      hodDesignation: { type: String, default: "" },
-      hodPhoto: { type: String, default: "" },
-      hodEmail: { type: String, default: "" },
-      hodMessage: { type: String, default: "" },
-    },
+    // Flexible content object — uses Mixed to support all section types
+    // (text, richtext, markdown, stats, cards, accordion, IQAC types, etc.)
+    content: { type: mongoose.Schema.Types.Mixed, default: {} },
   },
   { _id: true },
 );

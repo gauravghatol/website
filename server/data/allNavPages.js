@@ -13,6 +13,7 @@
  */
 
 const { researchMarkdownPages } = require("./researchMarkdownContent");
+const { iqacMarkdownPages } = require("./iqacMarkdownContent");
 
 // Helper: generate a pageId from the route path
 // e.g. "/about/glance" → "about-glance"
@@ -1414,7 +1415,7 @@ const iqacPages = [
     category: "iqac",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: iqacMarkdownPages["iqac-vision"],
   },
   {
     pageId: "iqac-composition",
@@ -1424,7 +1425,7 @@ const iqacPages = [
     category: "iqac",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: iqacMarkdownPages["iqac-composition"],
   },
   {
     pageId: "iqac-minutes",
@@ -1434,7 +1435,7 @@ const iqacPages = [
     category: "iqac",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: iqacMarkdownPages["iqac-minutes"],
   },
   {
     pageId: "iqac-practices",
@@ -1444,7 +1445,7 @@ const iqacPages = [
     category: "iqac",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: iqacMarkdownPages["iqac-practices"],
   },
   {
     pageId: "iqac-distinctiveness",
@@ -1454,7 +1455,7 @@ const iqacPages = [
     category: "iqac",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: iqacMarkdownPages["iqac-distinctiveness"],
   },
   {
     pageId: "iqac-aqar",
@@ -1464,7 +1465,7 @@ const iqacPages = [
     category: "iqac",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: iqacMarkdownPages["iqac-aqar"],
   },
   {
     pageId: "iqac-naac",
@@ -1474,7 +1475,7 @@ const iqacPages = [
     category: "iqac",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: iqacMarkdownPages["iqac-naac"],
   },
   {
     pageId: "iqac-econtent",
@@ -1484,7 +1485,7 @@ const iqacPages = [
     category: "iqac",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: iqacMarkdownPages["iqac-econtent"],
   },
   {
     pageId: "iqac-econtent-facility",
@@ -1494,7 +1495,7 @@ const iqacPages = [
     category: "iqac",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: iqacMarkdownPages["iqac-econtent-facility"],
   },
   {
     pageId: "iqac-feedback",
@@ -1504,7 +1505,7 @@ const iqacPages = [
     category: "iqac",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: iqacMarkdownPages["iqac-feedback"],
   },
   {
     pageId: "iqac-analysis",
@@ -1514,7 +1515,7 @@ const iqacPages = [
     category: "iqac",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: iqacMarkdownPages["iqac-analysis"],
   },
   {
     pageId: "iqac-survey",
@@ -1524,7 +1525,7 @@ const iqacPages = [
     category: "iqac",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: iqacMarkdownPages["iqac-survey"],
   },
   {
     pageId: "iqac-gender",
@@ -1534,7 +1535,7 @@ const iqacPages = [
     category: "iqac",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: iqacMarkdownPages["iqac-gender"],
   },
   {
     pageId: "iqac-equity",
@@ -1544,7 +1545,7 @@ const iqacPages = [
     category: "iqac",
     template: "generic",
     isPublished: true,
-    sections: [],
+    sections: iqacMarkdownPages["iqac-equity"],
   },
 ];
 

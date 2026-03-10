@@ -43,7 +43,7 @@ const AdminToolbar = ({ title = "Page Editor" }) => {
       );
       if (!confirmed) return;
     }
-    navigate(`${ADMIN_ROUTE_PREFIX}/departments`);
+    navigate(`${ADMIN_ROUTE_PREFIX}`);
   };
 
   return (

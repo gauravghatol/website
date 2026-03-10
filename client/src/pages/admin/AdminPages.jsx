@@ -30,6 +30,17 @@ const CATEGORY_COLORS = {
   departments: "#f59e0b",
 };
 
+// Valid top-level department pageIds — orphan sub-pages should be excluded
+const VALID_DEPT_PAGEIDS = new Set([
+  'departments-cse',
+  'departments-it',
+  'departments-entc',
+  'departments-electrical',
+  'departments-mechanical',
+  'departments-mba',
+  'departments-applied-sciences',
+]);
+
 const AdminPages = () => {
   const [searchParams] = useSearchParams();
   const [pages, setPages] = useState([]);
@@ -66,6 +77,10 @@ const AdminPages = () => {
   ];
 
   const filteredPages = pages.filter((page) => {
+    // Exclude orphan department sub-pages (only show the 7 main departments)
+    if (page.category === 'departments' && !VALID_DEPT_PAGEIDS.has(page.pageId)) {
+      return false;
+    }
     const matchesSearch =
       page.pageTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
       page.category.toLowerCase().includes(searchTerm.toLowerCase());
