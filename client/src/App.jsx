@@ -32,6 +32,7 @@ import Syllabus from "./pages/academics/Syllabus";
 import TeachingLearning from "./pages/academics/TeachingLearning";
 import TimeTable from "./pages/academics/TimeTable";
 import ACM from "./pages/activities/ACM";
+import CSESA from "./pages/activities/CSESA";
 import Cultural from "./pages/activities/Cultural";
 import DroneClub from "./pages/activities/DroneClub";
 import ECell from "./pages/activities/ECell";
@@ -42,11 +43,15 @@ import IEIElpo from "./pages/activities/IEIElpo";
 import IEIMech from "./pages/activities/IEIMech";
 import Innovo from "./pages/activities/Innovo";
 import ISTE from "./pages/activities/ISTE";
+import ITSA from "./pages/activities/ITSA";
 import MESA from "./pages/activities/MESA";
+import Mozilla from "./pages/activities/Mozilla";
+import NSS from "./pages/activities/NSS";
 import Parishkriti from "./pages/activities/Parishkriti";
 import Pursuit from "./pages/activities/Pursuit";
 import SAE from "./pages/activities/SAE";
 import SocialMedia from "./pages/activities/SocialMedia";
+import UBA from "./pages/activities/UBA";
 import Xtreme from "./pages/activities/Xtreme";
 import AdmissionProcess from "./pages/admissions/AdmissionProcess";
 import AdmissionsFAQs from "./pages/admissions/AdmissionsFAQs";
@@ -608,6 +613,46 @@ function App() {
             element={
               <Layout>
                 <Xtreme />
+              </Layout>
+            }
+          />
+          <Route
+            path="/activities/csesa"
+            element={
+              <Layout>
+                <CSESA />
+              </Layout>
+            }
+          />
+          <Route
+            path="/activities/itsa"
+            element={
+              <Layout>
+                <ITSA />
+              </Layout>
+            }
+          />
+          <Route
+            path="/activities/mozilla"
+            element={
+              <Layout>
+                <Mozilla />
+              </Layout>
+            }
+          />
+          <Route
+            path="/activities/nss"
+            element={
+              <Layout>
+                <NSS />
+              </Layout>
+            }
+          />
+          <Route
+            path="/activities/uba"
+            element={
+              <Layout>
+                <UBA />
               </Layout>
             }
           />

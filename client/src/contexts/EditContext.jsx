@@ -105,6 +105,18 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
     }
   };
 
+  /**
+   * Append a new section to the page data
+   * @param {object} section - Section object with sectionId, type, title, order, content
+   */
+  const addSection = (section) => {
+    setData((prev) => ({
+      ...prev,
+      sections: [...(prev.sections || []), section],
+    }));
+    setHasChanges(true);
+  };
+
   const value = {
     isEditing,
     setIsEditing,
@@ -112,6 +124,7 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
     setData,
     updateData,
     saveData,
+    addSection,
     hasChanges,
   };
 

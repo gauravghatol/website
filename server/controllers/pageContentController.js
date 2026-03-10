@@ -1571,11 +1571,6 @@ const basePages = [
         ],
       },
 
-      // ========== PLACEMENTS CATEGORY ==========
-      ...require("../data/placementPagesData"),
-
-      // ========== IQAC CATEGORY ==========
-      ...require("../data/iqacPagesData"),
     ];
 
 const supplementalPages = [
