@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
+import MarkdownIt from "markdown-it";
+import markdownItAttrs from "markdown-it-attrs";
 import axios from "axios";
 import { useEdit } from "../../contexts/EditContext";
 import {
@@ -29,7 +31,12 @@ import {
   FaAlignLeft,
   FaAlignCenter,
   FaAlignRight,
+  FaAlignJustify,
   FaChevronDown,
+  FaInfoCircle,
+  FaExclamationTriangle,
+  FaExclamationCircle,
+  FaLightbulb,
 } from "react-icons/fa";
 
 /** Tailwind-styled renderers for ReactMarkdown — no color overrides, clean & consistent */
@@ -457,6 +464,35 @@ const PlainNumberedGrid = ({ entries }) => (
   </div>
 );
 
+/** markdown-it instance with attrs plugin — used to render image {attrs} */
+const mdIt = new MarkdownIt({ html: true }).use(markdownItAttrs);
+
+/** Pre-process ::: container blocks and markdown-it-attrs images into HTML for ReactMarkdown + rehype-raw */
+const preprocessContainers = (md) => {
+  if (!md) return md;
+
+  // 1. Process ::: containers
+  let result = md.replace(/^:::([\w-]+)\s*\n([\s\S]*?)\n:::\s*$/gm, (_, type, content) => {
+    const t = type.toLowerCase();
+    if (['left', 'center', 'right', 'justify'].includes(t)) {
+      return `<div class="md-align-${t}">\n\n${content.trim()}\n\n</div>`;
+    }
+    if (['info', 'warning', 'danger', 'tip'].includes(t)) {
+      return `<div class="md-callout md-callout-${t}">\n\n${content.trim()}\n\n</div>`;
+    }
+    return `<div class="md-container-${t}">\n\n${content.trim()}\n\n</div>`;
+  });
+
+  // 2. Process markdown-it-attrs images: ![alt](url){width=50% .align-center} → rendered HTML
+  //    Works standalone AND inside table cells (single-line, no block wrappers)
+  result = result.replace(/!\[([^\]]*)\]\(([^)]+)\)\{([^}]+)\}/g, (match) => {
+    const rendered = mdIt.render(match).trim();
+    return rendered.replace(/^<p>/, '').replace(/<\/p>$/, '');
+  });
+
+  return result;
+};
+
 const FacilityGridLayout = ({ markdownText }) => {
   const renderMarkdown = (content) => (
     <ReactMarkdown
@@ -464,7 +500,7 @@ const FacilityGridLayout = ({ markdownText }) => {
       rehypePlugins={[rehypeRaw]}
       components={MD_COMPONENTS}
     >
-      {content}
+      {preprocessContainers(content)}
     </ReactMarkdown>
   );
 
@@ -746,7 +782,7 @@ const MD_COMPONENTS = {
   ),
   table: ({ children }) => (
     <div className="overflow-x-auto my-4">
-      <table className="min-w-full border divide-y divide-gray-200 rounded overflow-hidden">
+      <table className="w-full border divide-y divide-gray-200 rounded overflow-hidden" style={{ tableLayout: 'auto' }}>
         {children}
       </table>
     </div>
@@ -760,28 +796,94 @@ const MD_COMPONENTS = {
     </tbody>
   ),
   th: ({ children, style }) => (
-    <th className="px-4 py-3 text-sm font-semibold" style={style}>{children}</th>
+    <th className="px-3 py-2 text-sm font-semibold" style={style}>{children}</th>
   ),
-  td: ({ children, style }) => (
-    <td className="px-4 py-3 text-sm text-gray-700" style={style}>
-      {children}
-    </td>
-  ),
+  td: ({ children, style }) => {
+    // Detect if cell contains an image to use compact padding
+    const hasImage = React.Children.toArray(children).some(
+      (child) => React.isValidElement(child) && (child.type === 'img' || child.props?.src)
+    );
+    return (
+      <td
+        className={`text-sm text-gray-700 align-middle ${hasImage ? 'px-2 py-1' : 'px-3 py-2'}`}
+        style={style}
+      >
+        {children}
+      </td>
+    );
+  },
   tr: ({ children }) => <tr className="even:bg-gray-50">{children}</tr>,
-  img: ({ src, alt }) => (
-    <img
-      src={src}
-      alt={alt || ""}
-      className="max-w-full h-auto rounded-lg my-3 shadow-sm border border-gray-200 dark:border-gray-700"
-      loading="lazy"
-    />
-  ),
-  // Support raw HTML for column layouts
-  div: ({ className, children, ...props }) => (
-    <div className={className} {...props}>
-      {children}
-    </div>
-  ),
+  img: ({ src, alt, width, className: imgClassName, style: imgStyle, ...imgRest }) => {
+    // Determine width from markdown-it-attrs
+    const widthVal = width || imgStyle?.width;
+    const inlineStyle = {};
+    if (widthVal) {
+      inlineStyle.width = widthVal;
+      inlineStyle.maxWidth = widthVal;
+    } else {
+      inlineStyle.maxWidth = '100%';
+    }
+    inlineStyle.height = 'auto';
+
+    // Determine alignment from class: align-left, align-center, align-right
+    const classes = (imgClassName || '').split(/\s+/);
+    if (classes.includes('align-left')) {
+      inlineStyle.float = 'left';
+      inlineStyle.marginRight = '1rem';
+      inlineStyle.marginBottom = '0.5rem';
+    } else if (classes.includes('align-right')) {
+      inlineStyle.float = 'right';
+      inlineStyle.marginLeft = '1rem';
+      inlineStyle.marginBottom = '0.5rem';
+    } else if (classes.includes('align-center')) {
+      inlineStyle.display = 'block';
+      inlineStyle.marginLeft = 'auto';
+      inlineStyle.marginRight = 'auto';
+    }
+
+    return (
+      <img
+        src={src}
+        alt={alt || ""}
+        style={inlineStyle}
+        className="rounded-lg my-1 shadow-sm border border-gray-200 dark:border-gray-700"
+        loading="lazy"
+      />
+    );
+  },
+  // Support raw HTML for alignment and callout containers
+  div: ({ className, children, align, style, ...props }) => {
+    // Handle legacy HTML align attribute
+    if (align && !className?.includes('md-')) {
+      const alignClasses = { left: 'text-left', center: 'text-center', right: 'text-right' };
+      return <div className={`${alignClasses[align] || ''} my-2`} {...props}>{children}</div>;
+    }
+    // Handle ::: alignment containers
+    if (className?.startsWith('md-align-')) {
+      const a = className.replace('md-align-', '');
+      const cls = { left: 'text-left', center: 'text-center', right: 'text-right', justify: 'text-justify' }[a] || '';
+      return <div className={`${cls} my-2`} {...props}>{children}</div>;
+    }
+    // Handle ::: callout containers
+    if (className?.includes('md-callout')) {
+      const typeMatch = className.match(/md-callout-(info|warning|danger|tip)/);
+      const type = typeMatch?.[1] || 'info';
+      const styles = {
+        info: { border: 'border-blue-400', bg: 'bg-blue-50 dark:bg-blue-950/30', title: 'text-blue-700 dark:text-blue-300', body: 'text-blue-800 dark:text-blue-200', icon: <FaInfoCircle className="text-blue-500" size={16} />, label: 'Info' },
+        warning: { border: 'border-yellow-400', bg: 'bg-yellow-50 dark:bg-yellow-950/30', title: 'text-yellow-700 dark:text-yellow-300', body: 'text-yellow-800 dark:text-yellow-200', icon: <FaExclamationTriangle className="text-yellow-500" size={16} />, label: 'Warning' },
+        danger: { border: 'border-red-400', bg: 'bg-red-50 dark:bg-red-950/30', title: 'text-red-700 dark:text-red-300', body: 'text-red-800 dark:text-red-200', icon: <FaExclamationCircle className="text-red-500" size={16} />, label: 'Danger' },
+        tip: { border: 'border-green-400', bg: 'bg-green-50 dark:bg-green-950/30', title: 'text-green-700 dark:text-green-300', body: 'text-green-800 dark:text-green-200', icon: <FaLightbulb className="text-green-500" size={16} />, label: 'Tip' },
+      };
+      const s = styles[type];
+      return (
+        <div className={`border-l-4 ${s.border} ${s.bg} p-4 my-3 rounded-r-lg`} {...props}>
+          <div className={`flex items-center gap-2 font-semibold ${s.title} mb-2`}>{s.icon} {s.label}</div>
+          <div className={s.body}>{children}</div>
+        </div>
+      );
+    }
+    return <div className={className} style={style} {...props}>{children}</div>;
+  },
 };
 
 /* ── Toolbar group separator ──────────────────────────────────── */
@@ -830,6 +932,112 @@ const HEADING_LEVELS = [
   { level: 6, label: "Heading 6", size: "text-xs" },
 ];
 
+/* ── Image insert dialog constants ─────────────────────────── */
+const IMAGE_SIZES = [
+  { value: '25', label: 'Small (25%)' },
+  { value: '50', label: 'Medium (50%)' },
+  { value: '75', label: 'Large (75%)' },
+  { value: '100', label: 'Full Width (100%)' },
+];
+
+const IMAGE_ALIGNS = [
+  { value: 'none', label: 'Default', icon: FaAlignLeft, desc: 'Normal flow' },
+  { value: 'left', label: 'Float Left', icon: FaAlignLeft, desc: 'Text wraps right' },
+  { value: 'center', label: 'Center', icon: FaAlignCenter, desc: 'Centered block' },
+  { value: 'right', label: 'Float Right', icon: FaAlignRight, desc: 'Text wraps left' },
+];
+
+const CALLOUT_TYPES = [
+  { type: 'info', label: 'Info', icon: FaInfoCircle, color: 'text-blue-500', desc: 'Informational note' },
+  { type: 'tip', label: 'Tip', icon: FaLightbulb, color: 'text-green-500', desc: 'Helpful tip' },
+  { type: 'warning', label: 'Warning', icon: FaExclamationTriangle, color: 'text-yellow-500', desc: 'Warning notice' },
+  { type: 'danger', label: 'Danger', icon: FaExclamationCircle, color: 'text-red-500', desc: 'Danger alert' },
+];
+
+const ImageInsertDialog = ({ open, onClose, onInsert, imageName }) => {
+  const [size, setSize] = useState('100');
+  const [align, setAlign] = useState('none');
+
+  useEffect(() => {
+    if (open) { setSize('100'); setAlign('none'); }
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40" onMouseDown={onClose}>
+      <div
+        className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-sm mx-4 p-5"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Insert Image</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 truncate">{imageName}</p>
+
+        <div className="mb-4">
+          <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2 block">Size</label>
+          <div className="grid grid-cols-2 gap-2">
+            {IMAGE_SIZES.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setSize(value)}
+                className={`px-3 py-2 text-xs rounded-lg border transition-colors font-medium ${
+                  size === value
+                    ? 'bg-blue-50 border-blue-400 text-blue-700 dark:bg-blue-900/40 dark:border-blue-500 dark:text-blue-300'
+                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-5">
+          <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2 block">Alignment</label>
+          <div className="grid grid-cols-2 gap-2">
+            {IMAGE_ALIGNS.map(({ value, label, icon: AIcon, desc }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setAlign(value)}
+                className={`flex items-center gap-2 px-3 py-2 text-xs rounded-lg border transition-colors font-medium ${
+                  align === value
+                    ? 'bg-blue-50 border-blue-400 text-blue-700 dark:bg-blue-900/40 dark:border-blue-500 dark:text-blue-300'
+                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <AIcon size={11} />
+                <div className="text-left">
+                  <div>{label}</div>
+                  <div className="text-[10px] opacity-60 font-normal">{desc}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => onInsert(size, align)}
+            className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Insert
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const MarkdownEditor = ({
   path,
   value,
@@ -843,13 +1051,18 @@ const MarkdownEditor = ({
   const fileInputRef = useRef(null);
   const headingDropdownRef = useRef(null);
   const alignDropdownRef = useRef(null);
+  const calloutDropdownRef = useRef(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
   const [headingOpen, setHeadingOpen] = useState(false);
   const [alignOpen, setAlignOpen] = useState(false);
+  const [calloutOpen, setCalloutOpen] = useState(false);
   const [splitPreview, setSplitPreview] = useState(false);
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [pendingImageUrl, setPendingImageUrl] = useState('');
+  const [pendingImageName, setPendingImageName] = useState('');
 
   const getValueFromPath = (obj, p) => {
     if (!p || !obj) return undefined;
@@ -878,6 +1091,9 @@ const MarkdownEditor = ({
       }
       if (alignDropdownRef.current && !alignDropdownRef.current.contains(e.target)) {
         setAlignOpen(false);
+      }
+      if (calloutDropdownRef.current && !calloutDropdownRef.current.contains(e.target)) {
+        setCalloutOpen(false);
       }
     };
     document.addEventListener("mousedown", handleOutsideClick);
@@ -1074,7 +1290,7 @@ const MarkdownEditor = ({
     }
   }, [currentValue, pushUndo]);
 
-  /** Insert alignment HTML wrapper */
+  /** Insert alignment container (:::left, :::center, :::right, :::justify) */
   const insertAlignment = useCallback(
     (align) => {
       pushUndo();
@@ -1082,7 +1298,7 @@ const MarkdownEditor = ({
       const start = el ? el.selectionStart : currentValue.length;
       const end = el ? el.selectionEnd : currentValue.length;
       const selected = currentValue.substring(start, end) || "Your text here";
-      const wrapped = `<div align="${align}">${selected}</div>`;
+      const wrapped = `\n:::${align}\n${selected}\n:::\n`;
       const next =
         currentValue.substring(0, start) +
         wrapped +
@@ -1092,8 +1308,8 @@ const MarkdownEditor = ({
       setTimeout(() => {
         if (el) {
           el.focus();
-          const pos = start + wrapped.length;
-          el.setSelectionRange(pos, pos);
+          const contentStart = start + align.length + 6;
+          el.setSelectionRange(contentStart, contentStart + selected.length);
         }
       }, 0);
     },
@@ -1123,6 +1339,59 @@ const MarkdownEditor = ({
     }, 0);
   }, [currentValue, pushUndo]);
 
+  /** Insert callout container (:::info, :::warning, :::danger, :::tip) */
+  const insertCallout = useCallback(
+    (type) => {
+      pushUndo();
+      const el = textareaRef.current;
+      const start = el ? el.selectionStart : currentValue.length;
+      const end = el ? el.selectionEnd : currentValue.length;
+      const selected = currentValue.substring(start, end) || "Your content here";
+      const wrapped = `\n:::${type}\n${selected}\n:::\n`;
+      const next = currentValue.substring(0, start) + wrapped + currentValue.substring(end);
+      setCurrentValue(next);
+      setCalloutOpen(false);
+      setTimeout(() => {
+        if (el) {
+          el.focus();
+          const contentStart = start + type.length + 6;
+          el.setSelectionRange(contentStart, contentStart + selected.length);
+        }
+      }, 0);
+    },
+    [currentValue, pushUndo],
+  );
+
+  /** Insert image with size & alignment via markdown-it-attrs syntax — single line, works everywhere including tables */
+  const handleImageInsert = useCallback(
+    (size, align) => {
+      if (!pendingImageUrl) return;
+      pushUndo();
+      // Build attrs: width + optional alignment class
+      const attrs = [`width=${size}%`];
+      if (align && align !== 'none') {
+        attrs.push(`.align-${align}`);
+      }
+      const imgMarkdown = `![${pendingImageName || 'image'}](${pendingImageUrl}){${attrs.join(' ')}}`;
+      const el = textareaRef.current;
+      const start = el ? el.selectionStart : currentValue.length;
+      const end = el ? el.selectionEnd : currentValue.length;
+      const next = currentValue.substring(0, start) + imgMarkdown + currentValue.substring(end);
+      setCurrentValue(next);
+      setImageDialogOpen(false);
+      setPendingImageUrl('');
+      setPendingImageName('');
+      setTimeout(() => {
+        if (el) {
+          el.focus();
+          const pos = start + imgMarkdown.length;
+          el.setSelectionRange(pos, pos);
+        }
+      }, 0);
+    },
+    [pendingImageUrl, pendingImageName, currentValue, pushUndo],
+  );
+
   /* ── Upload handlers ────────────────────────────────────────── */
   const handleImageUpload = async (file) => {
     if (!file || !file.type.startsWith("image/")) return;
@@ -1138,7 +1407,11 @@ const MarkdownEditor = ({
         },
       });
       const url = res.data.fileUrl || res.data.url;
-      if (url) insertAtCursor(`\n![${file.name}](${url})\n`);
+      if (url) {
+        setPendingImageUrl(url);
+        setPendingImageName(file.name);
+        setImageDialogOpen(true);
+      }
     } catch (err) {
       console.error("Image upload failed:", err);
       alert(
@@ -1254,6 +1527,18 @@ const MarkdownEditor = ({
         }}
       />
 
+      {/* Image sizing & alignment dialog */}
+      <ImageInsertDialog
+        open={imageDialogOpen}
+        onClose={() => {
+          setImageDialogOpen(false);
+          setPendingImageUrl('');
+          setPendingImageName('');
+        }}
+        onInsert={handleImageInsert}
+        imageName={pendingImageName}
+      />
+
       {/* Toolbar */}
       <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg">
         {/* ── Main toolbar row ── */}
@@ -1266,6 +1551,7 @@ const MarkdownEditor = ({
                 e.preventDefault();
                 setHeadingOpen((o) => !o);
                 setAlignOpen(false);
+                setCalloutOpen(false);
               }}
               className="inline-flex items-center gap-1 px-2 py-1.5 text-xs rounded transition-colors shadow-sm bg-white dark:bg-[#1a1a2e] border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
               title="Heading (H1–H6)"
@@ -1320,7 +1606,7 @@ const MarkdownEditor = ({
 
           <Sep />
 
-          {/* ── Alignment dropdown (HTML-based) ── */}
+          {/* ── Alignment dropdown ── */}
           <div className="relative" ref={alignDropdownRef}>
             <button
               type="button"
@@ -1328,22 +1614,21 @@ const MarkdownEditor = ({
                 e.preventDefault();
                 setAlignOpen((o) => !o);
                 setHeadingOpen(false);
+                setCalloutOpen(false);
               }}
               className="inline-flex items-center gap-1 px-2 py-1.5 text-xs rounded transition-colors shadow-sm bg-white dark:bg-[#1a1a2e] border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
-              title="Text Alignment (uses HTML)"
+              title="Text Alignment"
             >
               <FaAlignCenter size={11} />
               <FaChevronDown size={8} className={`transition-transform ${alignOpen ? "rotate-180" : ""}`} />
             </button>
             {alignOpen && (
-              <div className="absolute top-full left-0 mt-1 z-50 w-52 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1">
-                <div className="px-3 py-1.5 text-[10px] text-amber-600 dark:text-amber-400 border-b border-gray-100 dark:border-gray-700">
-                  ⚠ Alignment requires HTML - not native Markdown
-                </div>
+              <div className="absolute top-full left-0 mt-1 z-50 w-44 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1">
                 {[
                   { align: "left", icon: FaAlignLeft, label: "Align Left" },
                   { align: "center", icon: FaAlignCenter, label: "Align Center" },
                   { align: "right", icon: FaAlignRight, label: "Align Right" },
+                  { align: "justify", icon: FaAlignJustify, label: "Justify" },
                 ].map(({ align, icon: AIcon, label: lbl }) => (
                   <button
                     key={align}
@@ -1356,6 +1641,48 @@ const MarkdownEditor = ({
                   >
                     <AIcon size={11} className="text-gray-400 dark:text-gray-500" />
                     {lbl}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <Sep />
+
+          {/* ── Callout boxes ── */}
+          <div className="relative" ref={calloutDropdownRef}>
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setCalloutOpen((o) => !o);
+                setHeadingOpen(false);
+                setAlignOpen(false);
+              }}
+              className="inline-flex items-center gap-1 px-2 py-1.5 text-xs rounded transition-colors shadow-sm bg-white dark:bg-[#1a1a2e] border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+              title="Callout / Info Box"
+            >
+              <FaInfoCircle size={11} />
+              <span className="font-medium hidden sm:inline">Callout</span>
+              <FaChevronDown size={8} className={`transition-transform ${calloutOpen ? "rotate-180" : ""}`} />
+            </button>
+            {calloutOpen && (
+              <div className="absolute top-full left-0 mt-1 z-50 w-48 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1">
+                {CALLOUT_TYPES.map(({ type, label, icon: CIcon, color, desc }) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      insertCallout(type);
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-left text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <CIcon size={12} className={color} />
+                    <div>
+                      <div className="font-medium">{label}</div>
+                      <div className="text-[10px] text-gray-400">{desc}</div>
+                    </div>
                   </button>
                 ))}
               </div>
