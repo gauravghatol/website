@@ -4,6 +4,8 @@ const { protect } = require("../middleware/authMiddleware");
 const {
   upload,
   uploadSingleImage,
+  documentUpload,
+  uploadSingleDocument,
   getUploadedFiles,
   deleteFile,
   nirfUpload,
@@ -21,6 +23,13 @@ router.post(
   adminOrCoordinator,
   upload.single("image"),
   uploadSingleImage,
+);
+router.post(
+  "/file",
+  protect,
+  adminOrCoordinator,
+  documentUpload.single("file"),
+  uploadSingleDocument,
 );
 router.get("/files", protect, adminOrCoordinator, getUploadedFiles);
 router.delete("/files/:filename", protect, adminOrCoordinator, deleteFile);
