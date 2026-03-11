@@ -26,6 +26,10 @@ import {
   FaCode,
   FaUndo,
   FaRedo,
+  FaAlignLeft,
+  FaAlignCenter,
+  FaAlignRight,
+  FaChevronDown,
 } from "react-icons/fa";
 
 /** Tailwind-styled renderers for ReactMarkdown — no color overrides, clean & consistent */
@@ -755,11 +759,11 @@ const MD_COMPONENTS = {
       {children}
     </tbody>
   ),
-  th: ({ children }) => (
-    <th className="px-4 py-3 text-left text-sm font-semibold">{children}</th>
+  th: ({ children, style }) => (
+    <th className="px-4 py-3 text-sm font-semibold" style={style}>{children}</th>
   ),
-  td: ({ children }) => (
-    <td className="px-4 py-3 text-sm text-gray-700">
+  td: ({ children, style }) => (
+    <td className="px-4 py-3 text-sm text-gray-700" style={style}>
       {children}
     </td>
   ),
@@ -781,7 +785,7 @@ const MD_COMPONENTS = {
 };
 
 /* ── Toolbar group separator ──────────────────────────────────── */
-const Sep = () => <div className="w-px h-5 bg-gray-300 mx-0.5" />;
+const Sep = () => <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-0.5" />;
 
 /* ── Single toolbar button ────────────────────────────────────── */
 const TBtn = ({
@@ -816,6 +820,16 @@ const TBtn = ({
   </button>
 );
 
+/* ── Heading Dropdown Items ───────────────────────────────────── */
+const HEADING_LEVELS = [
+  { level: 1, label: "Heading 1", size: "text-lg font-bold" },
+  { level: 2, label: "Heading 2", size: "text-base font-bold" },
+  { level: 3, label: "Heading 3", size: "text-sm font-semibold" },
+  { level: 4, label: "Heading 4", size: "text-sm font-medium" },
+  { level: 5, label: "Heading 5", size: "text-xs font-medium" },
+  { level: 6, label: "Heading 6", size: "text-xs" },
+];
+
 const MarkdownEditor = ({
   path,
   value,
@@ -827,10 +841,15 @@ const MarkdownEditor = ({
   const textareaRef = useRef(null);
   const imageInputRef = useRef(null);
   const fileInputRef = useRef(null);
+  const headingDropdownRef = useRef(null);
+  const alignDropdownRef = useRef(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
+  const [headingOpen, setHeadingOpen] = useState(false);
+  const [alignOpen, setAlignOpen] = useState(false);
+  const [splitPreview, setSplitPreview] = useState(false);
 
   const getValueFromPath = (obj, p) => {
     if (!p || !obj) return undefined;
@@ -850,6 +869,20 @@ const MarkdownEditor = ({
   useEffect(() => {
     setCurrentValue(displayValue || "");
   }, [displayValue]);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (headingDropdownRef.current && !headingDropdownRef.current.contains(e.target)) {
+        setHeadingOpen(false);
+      }
+      if (alignDropdownRef.current && !alignDropdownRef.current.contains(e.target)) {
+        setAlignOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   /** Push current value to undo stack before a change */
   const pushUndo = useCallback(() => {
@@ -961,6 +994,134 @@ const MarkdownEditor = ({
     },
     [currentValue, pushUndo],
   );
+
+  /** Insert heading at current line start (toggle-aware, H1-H6) */
+  const insertHeading = useCallback(
+    (level) => {
+      pushUndo();
+      const el = textareaRef.current;
+      const start = el ? el.selectionStart : currentValue.length;
+      const lineStart = currentValue.lastIndexOf("\n", start - 1) + 1;
+      const lineEndIdx = currentValue.indexOf("\n", start);
+      const lineEnd = lineEndIdx === -1 ? currentValue.length : lineEndIdx;
+      const currentLine = currentValue.slice(lineStart, lineEnd);
+      const prefix = "#".repeat(level) + " ";
+
+      let newLine;
+      if (currentLine.startsWith(prefix)) {
+        // Toggle off — remove this heading prefix
+        newLine = currentLine.slice(prefix.length);
+      } else {
+        // Remove any existing heading prefix, then add the new one
+        const stripped = currentLine.replace(/^#{1,6}\s*/, "");
+        newLine = prefix + (stripped || "Heading text");
+      }
+
+      const next =
+        currentValue.substring(0, lineStart) +
+        newLine +
+        currentValue.substring(lineEnd);
+      setCurrentValue(next);
+      setHeadingOpen(false);
+
+      setTimeout(() => {
+        if (el) {
+          el.focus();
+          el.setSelectionRange(lineStart + newLine.length, lineStart + newLine.length);
+        }
+      }, 0);
+    },
+    [currentValue, pushUndo],
+  );
+
+  /** Multi-line blockquote — add > to each selected line, or insert template */
+  const insertBlockquoteMultiline = useCallback(() => {
+    pushUndo();
+    const el = textareaRef.current;
+    const start = el ? el.selectionStart : currentValue.length;
+    const end = el ? el.selectionEnd : currentValue.length;
+    const selected = currentValue.substring(start, end);
+
+    if (selected) {
+      const lines = selected.split("\n");
+      const quoted = lines
+        .map((line, i) => `> ${line}` + (i < lines.length - 1 ? "  " : ""))
+        .join("\n");
+      const next =
+        currentValue.substring(0, start) +
+        quoted +
+        currentValue.substring(end);
+      setCurrentValue(next);
+      setTimeout(() => {
+        if (el) {
+          el.focus();
+          el.setSelectionRange(start, start + quoted.length);
+        }
+      }, 0);
+    } else {
+      const template = "> Quote line one  \n> Quote line two  \n> Quote line three";
+      const next =
+        currentValue.substring(0, start) +
+        template +
+        currentValue.substring(end);
+      setCurrentValue(next);
+      setTimeout(() => {
+        if (el) {
+          el.focus();
+          el.setSelectionRange(start + 2, start + 16); // select "Quote line one"
+        }
+      }, 0);
+    }
+  }, [currentValue, pushUndo]);
+
+  /** Insert alignment HTML wrapper */
+  const insertAlignment = useCallback(
+    (align) => {
+      pushUndo();
+      const el = textareaRef.current;
+      const start = el ? el.selectionStart : currentValue.length;
+      const end = el ? el.selectionEnd : currentValue.length;
+      const selected = currentValue.substring(start, end) || "Your text here";
+      const wrapped = `<div align="${align}">${selected}</div>`;
+      const next =
+        currentValue.substring(0, start) +
+        wrapped +
+        currentValue.substring(end);
+      setCurrentValue(next);
+      setAlignOpen(false);
+      setTimeout(() => {
+        if (el) {
+          el.focus();
+          const pos = start + wrapped.length;
+          el.setSelectionRange(pos, pos);
+        }
+      }, 0);
+    },
+    [currentValue, pushUndo],
+  );
+
+  /** Insert code block with optional selection */
+  const insertCodeBlock = useCallback(() => {
+    pushUndo();
+    const el = textareaRef.current;
+    const start = el ? el.selectionStart : currentValue.length;
+    const end = el ? el.selectionEnd : currentValue.length;
+    const selected = currentValue.substring(start, end);
+    const block = selected ? "```\n" + selected + "\n```" : "```\ncode here\n```";
+    const next =
+      currentValue.substring(0, start) +
+      block +
+      currentValue.substring(end);
+    setCurrentValue(next);
+    setTimeout(() => {
+      if (el) {
+        el.focus();
+        if (!selected) {
+          el.setSelectionRange(start + 4, start + 13); // select "code here"
+        }
+      }
+    }, 0);
+  }, [currentValue, pushUndo]);
 
   /* ── Upload handlers ────────────────────────────────────────── */
   const handleImageUpload = async (file) => {
@@ -1094,173 +1255,283 @@ const MarkdownEditor = ({
       />
 
       {/* Toolbar */}
-      <div className="flex items-center gap-1 px-3 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg flex-wrap">
-        {/* ── Text formatting ── */}
-        <TBtn
-          icon={FaBold}
-          title="Bold (Ctrl+B)"
-          onClick={() => wrapSelection("**", "**", "bold text")}
-        />
-        <TBtn
-          icon={FaItalic}
-          title="Italic (Ctrl+I)"
-          onClick={() => wrapSelection("_", "_", "italic")}
-        />
-        <TBtn
-          icon={FaStrikethrough}
-          title="Strikethrough"
-          onClick={() => wrapSelection("~~", "~~", "strikethrough")}
-        />
-        <TBtn
-          icon={FaCode}
-          title="Inline code"
-          onClick={() => wrapSelection("`", "`", "code")}
-        />
+      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg">
+        {/* ── Main toolbar row ── */}
+        <div className="flex items-center gap-1 px-3 py-2 flex-wrap">
+          {/* ── Heading dropdown ── */}
+          <div className="relative" ref={headingDropdownRef}>
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setHeadingOpen((o) => !o);
+                setAlignOpen(false);
+              }}
+              className="inline-flex items-center gap-1 px-2 py-1.5 text-xs rounded transition-colors shadow-sm bg-white dark:bg-[#1a1a2e] border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+              title="Heading (H1–H6)"
+            >
+              <FaHeading size={11} />
+              <span className="font-medium hidden sm:inline">Heading</span>
+              <FaChevronDown size={8} className={`transition-transform ${headingOpen ? "rotate-180" : ""}`} />
+            </button>
+            {headingOpen && (
+              <div className="absolute top-full left-0 mt-1 z-50 w-44 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1">
+                {HEADING_LEVELS.map(({ level, label, size }) => (
+                  <button
+                    key={level}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      insertHeading(level);
+                    }}
+                    className={`flex items-center gap-2 w-full px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${size} text-gray-700 dark:text-gray-300`}
+                  >
+                    <span className="text-gray-400 dark:text-gray-500 text-[10px] font-mono w-10 shrink-0">{"#".repeat(level)}</span>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-        <Sep />
+          <Sep />
 
-        {/* ── Headings ── */}
-        <TBtn
-          icon={FaHeading}
-          label="2"
-          title="Heading 2"
-          onClick={() => insertAtCursor("\n## Heading\n")}
-        />
-        <TBtn
-          icon={FaHeading}
-          label="3"
-          title="Heading 3"
-          onClick={() => insertAtCursor("\n### Sub-heading\n")}
-        />
+          {/* ── Text formatting ── */}
+          <TBtn
+            icon={FaBold}
+            title="Bold (Ctrl+B)"
+            onClick={() => wrapSelection("**", "**", "bold text")}
+          />
+          <TBtn
+            icon={FaItalic}
+            title="Italic (Ctrl+I)"
+            onClick={() => wrapSelection("_", "_", "italic")}
+          />
+          <TBtn
+            icon={FaStrikethrough}
+            title="Strikethrough"
+            onClick={() => wrapSelection("~~", "~~", "strikethrough")}
+          />
+          <TBtn
+            icon={FaCode}
+            title="Inline code"
+            onClick={() => wrapSelection("`", "`", "code")}
+          />
 
-        <Sep />
+          <Sep />
 
-        {/* ── Lists ── */}
-        <TBtn
-          icon={FaListUl}
-          title="Bullet list"
-          onClick={() => insertAtCursor("\n- Item 1\n- Item 2\n- Item 3\n")}
-        />
-        <TBtn
-          icon={FaListOl}
-          title="Numbered list"
-          onClick={() => insertAtCursor("\n1. Item 1\n2. Item 2\n3. Item 3\n")}
-        />
-        <TBtn
-          icon={FaCheckSquare}
-          title="Checklist / task list"
-          onClick={() =>
-            insertAtCursor(
-              "\n- [ ] Task 1\n- [ ] Task 2\n- [x] Completed task\n",
-            )
-          }
-        />
+          {/* ── Alignment dropdown (HTML-based) ── */}
+          <div className="relative" ref={alignDropdownRef}>
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setAlignOpen((o) => !o);
+                setHeadingOpen(false);
+              }}
+              className="inline-flex items-center gap-1 px-2 py-1.5 text-xs rounded transition-colors shadow-sm bg-white dark:bg-[#1a1a2e] border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+              title="Text Alignment (uses HTML)"
+            >
+              <FaAlignCenter size={11} />
+              <FaChevronDown size={8} className={`transition-transform ${alignOpen ? "rotate-180" : ""}`} />
+            </button>
+            {alignOpen && (
+              <div className="absolute top-full left-0 mt-1 z-50 w-52 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1">
+                <div className="px-3 py-1.5 text-[10px] text-amber-600 dark:text-amber-400 border-b border-gray-100 dark:border-gray-700">
+                  ⚠ Alignment requires HTML - not native Markdown
+                </div>
+                {[
+                  { align: "left", icon: FaAlignLeft, label: "Align Left" },
+                  { align: "center", icon: FaAlignCenter, label: "Align Center" },
+                  { align: "right", icon: FaAlignRight, label: "Align Right" },
+                ].map(({ align, icon: AIcon, label: lbl }) => (
+                  <button
+                    key={align}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      insertAlignment(align);
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-1.5 text-left text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <AIcon size={11} className="text-gray-400 dark:text-gray-500" />
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-        <Sep />
+          <Sep />
 
-        {/* ── Structure ── */}
-        <TBtn
-          icon={FaTable}
-          title="Insert table"
-          onClick={() =>
-            insertAtCursor(
-              "\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Cell     | Cell     | Cell     |\n",
-            )
-          }
-        />
-        <TBtn
-          icon={FaColumns}
-          title="2-column layout"
-          onClick={() =>
-            insertAtCursor(
-              '\n<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">\n<div>\n\n**Left Column**\n\nContent here...\n\n</div>\n<div>\n\n**Right Column**\n\nContent here...\n\n</div>\n</div>\n',
-            )
-          }
-        />
-        <TBtn
-          icon={FaQuoteRight}
-          title="Blockquote"
-          onClick={() => prefixLines("> ", "Quote text")}
-        />
-        <TBtn
-          icon={FaMinus}
-          title="Horizontal rule"
-          onClick={() => insertAtCursor("\n---\n")}
-        />
+          {/* ── Lists & blockquotes ── */}
+          <TBtn
+            icon={FaListUl}
+            title="Bullet list"
+            onClick={() => insertAtCursor("\n- Item 1\n- Item 2\n- Item 3\n")}
+          />
+          <TBtn
+            icon={FaListOl}
+            title="Numbered list"
+            onClick={() => insertAtCursor("\n1. Item 1\n2. Item 2\n3. Item 3\n")}
+          />
+          <TBtn
+            icon={FaQuoteRight}
+            title="Multi-line blockquote"
+            onClick={insertBlockquoteMultiline}
+          />
 
-        <Sep />
+          <Sep />
 
-        {/* ── Media & Links ── */}
-        <TBtn
-          icon={FaLink}
-          title="Insert link (Ctrl+K)"
-          onClick={() => wrapSelection("[", "](https://)", "link text")}
-        />
-        <TBtn
-          icon={FaImage}
-          title="Upload image"
-          uploading={uploadingImage}
-          disabled={uploadingImage}
-          onClick={() => imageInputRef.current?.click()}
-        />
-        <TBtn
-          icon={FaFileUpload}
-          title="Upload file (PDF, Word, etc.)"
-          uploading={uploadingFile}
-          disabled={uploadingFile}
-          onClick={() => fileInputRef.current?.click()}
-        />
+          {/* ── Structure elements ── */}
+          <TBtn
+            icon={FaTable}
+            title="Insert table"
+            onClick={() =>
+              insertAtCursor(
+                "\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Cell     | Cell     | Cell     |\n",
+              )
+            }
+          />
+          <TBtn
+            icon={FaCode}
+            title="Code block"
+            onClick={insertCodeBlock}
+          />
+          <TBtn
+            icon={FaMinus}
+            title="Horizontal rule"
+            onClick={() => insertAtCursor("\n---\n")}
+          />
 
-        <Sep />
+          <Sep />
 
-        {/* ── Undo / Redo ── */}
-        <TBtn
-          icon={FaUndo}
-          title="Undo (Ctrl+Z)"
-          disabled={undoStack.length === 0}
-          onClick={handleUndo}
-        />
-        <TBtn
-          icon={FaRedo}
-          title="Redo (Ctrl+Y)"
-          disabled={redoStack.length === 0}
-          onClick={handleRedo}
-        />
+          {/* ── Undo / Redo ── */}
+          <TBtn
+            icon={FaUndo}
+            title="Undo (Ctrl+Z)"
+            disabled={undoStack.length === 0}
+            onClick={handleUndo}
+          />
+          <TBtn
+            icon={FaRedo}
+            title="Redo (Ctrl+Y)"
+            disabled={redoStack.length === 0}
+            onClick={handleRedo}
+          />
 
-        {/* ── Preview toggle (push right) ── */}
-        <div className="flex-1" />
-        <button
-          type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            setPreview((p) => !p);
-          }}
-          className={`flex items-center gap-1.5 text-xs px-3 py-1.5 border rounded shadow-sm transition-colors font-medium ${
-            preview
-              ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-              : "bg-white dark:bg-[#1a1a2e] border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
-          }`}
-        >
-          {preview ? (
-            <>
-              <FaEdit size={10} /> Edit
-            </>
-          ) : (
-            <>
-              <FaEye size={10} /> Preview
-            </>
-          )}
-        </button>
+          {/* ── Preview toggles (push right) ── */}
+          <div className="flex-1" />
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                if (splitPreview) {
+                  setSplitPreview(false);
+                }
+                setPreview((p) => !p);
+              }}
+              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 border rounded shadow-sm transition-colors font-medium ${
+                preview && !splitPreview
+                  ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                  : "bg-white dark:bg-[#1a1a2e] border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
+              title="Toggle full preview"
+            >
+              {preview && !splitPreview ? (
+                <>
+                  <FaEdit size={10} /> Edit
+                </>
+              ) : (
+                <>
+                  <FaEye size={10} /> Preview
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setPreview(false);
+                setSplitPreview((p) => !p);
+              }}
+              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 border rounded shadow-sm transition-colors font-medium ${
+                splitPreview
+                  ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                  : "bg-white dark:bg-[#1a1a2e] border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
+              title="Split screen: editor + live preview"
+            >
+              <FaColumns size={10} /> Split Editor
+            </button>
+          </div>
+        </div>
+
+        {/* ── Insert row ── */}
+        <div className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-700/30 border-t border-gray-200 dark:border-gray-600">
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 mr-2">Insert:</span>
+          <TBtn
+            icon={FaLink}
+            title="Insert link (Ctrl+K)"
+            onClick={() => wrapSelection("[", "](https://)", "link text")}
+          />
+          <TBtn
+            icon={FaImage}
+            title="Upload image"
+            uploading={uploadingImage}
+            disabled={uploadingImage}
+            onClick={() => imageInputRef.current?.click()}
+          />
+          <TBtn
+            icon={FaFileUpload}
+            title="Upload file (PDF, Word, etc.)"
+            uploading={uploadingFile}
+            disabled={uploadingFile}
+            onClick={() => fileInputRef.current?.click()}
+          />
+        </div>
       </div>
 
       {/* Editor / Preview pane */}
-      {preview ? (
+      {preview && !splitPreview ? (
+        /* Full preview mode */
         <div className="border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg p-5 min-h-[240px] bg-white dark:bg-[#1a1a2e] overflow-auto">
           <FacilityGridLayout
             markdownText={currentValue || "*Nothing to preview yet…*"}
           />
         </div>
+      ) : splitPreview ? (
+        /* Split: editor left + live preview right */
+        <div className="flex border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg overflow-hidden" style={{ minHeight: "320px" }}>
+          <div className="w-1/2 flex flex-col border-r border-gray-200 dark:border-gray-700">
+            <div className="px-3 py-1 bg-gray-100 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Markdown</span>
+            </div>
+            <textarea
+              ref={textareaRef}
+              value={currentValue}
+              onChange={(e) => setCurrentValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="flex-1 w-full p-4 font-mono text-sm outline-none resize-none bg-white dark:bg-[#1a1a2e] leading-relaxed"
+              placeholder={placeholder}
+              autoFocus
+              spellCheck
+            />
+          </div>
+          <div className="w-1/2 flex flex-col">
+            <div className="px-3 py-1 bg-gray-100 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Preview</span>
+            </div>
+            <div className="flex-1 p-5 overflow-auto bg-white dark:bg-[#1a1a2e]">
+              <FacilityGridLayout
+                markdownText={currentValue || "*Nothing to preview yet…*"}
+              />
+            </div>
+          </div>
+        </div>
       ) : (
+        /* Editor only mode */
         <textarea
           ref={textareaRef}
           value={currentValue}
