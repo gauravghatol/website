@@ -6,8 +6,10 @@ import {
   FaArrowLeft,
   FaCheck,
   FaExclamationTriangle,
+  FaFileImport,
 } from "react-icons/fa";
 import { ADMIN_ROUTE_PREFIX } from "../../config/adminAccess";
+import DocImportModal from "./DocImportModal";
 
 /**
  * AdminToolbar - Floating toolbar for visual page editor
@@ -18,6 +20,7 @@ const AdminToolbar = ({ title = "Page Editor" }) => {
   const { hasChanges, saveData } = useEdit();
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'error' | null
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
@@ -43,7 +46,7 @@ const AdminToolbar = ({ title = "Page Editor" }) => {
       );
       if (!confirmed) return;
     }
-    navigate(`${ADMIN_ROUTE_PREFIX}/departments`);
+    navigate(`${ADMIN_ROUTE_PREFIX}`);
   };
 
   return (
@@ -91,6 +94,13 @@ const AdminToolbar = ({ title = "Page Editor" }) => {
           {/* Right: Actions */}
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setShowImportModal(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all border border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400"
+            >
+              <FaFileImport />
+              <span className="hidden sm:inline">Import Doc/PDF</span>
+            </button>
+            <button
               onClick={handleSave}
               disabled={!hasChanges || saving}
               className={`
@@ -117,6 +127,10 @@ const AdminToolbar = ({ title = "Page Editor" }) => {
           </div>
         </div>
       </div>
+
+      {showImportModal && (
+        <DocImportModal onClose={() => setShowImportModal(false)} />
+      )}
     </div>
   );
 };

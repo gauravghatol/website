@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
+import MarkdownIt from "markdown-it";
+import markdownItAttrs from "markdown-it-attrs";
 import axios from "axios";
 import { useEdit } from "../../contexts/EditContext";
 import {
@@ -26,6 +28,15 @@ import {
   FaCode,
   FaUndo,
   FaRedo,
+  FaAlignLeft,
+  FaAlignCenter,
+  FaAlignRight,
+  FaAlignJustify,
+  FaChevronDown,
+  FaInfoCircle,
+  FaExclamationTriangle,
+  FaExclamationCircle,
+  FaLightbulb,
 } from "react-icons/fa";
 
 /** Tailwind-styled renderers for ReactMarkdown — no color overrides, clean & consistent */
@@ -453,6 +464,35 @@ const PlainNumberedGrid = ({ entries }) => (
   </div>
 );
 
+/** markdown-it instance with attrs plugin — used to render image {attrs} */
+const mdIt = new MarkdownIt({ html: true }).use(markdownItAttrs);
+
+/** Pre-process ::: container blocks and markdown-it-attrs images into HTML for ReactMarkdown + rehype-raw */
+const preprocessContainers = (md) => {
+  if (!md) return md;
+
+  // 1. Process ::: containers
+  let result = md.replace(/^:::([\w-]+)\s*\n([\s\S]*?)\n:::\s*$/gm, (_, type, content) => {
+    const t = type.toLowerCase();
+    if (['left', 'center', 'right', 'justify'].includes(t)) {
+      return `<div class="md-align-${t}">\n\n${content.trim()}\n\n</div>`;
+    }
+    if (['info', 'warning', 'danger', 'tip'].includes(t)) {
+      return `<div class="md-callout md-callout-${t}">\n\n${content.trim()}\n\n</div>`;
+    }
+    return `<div class="md-container-${t}">\n\n${content.trim()}\n\n</div>`;
+  });
+
+  // 2. Process markdown-it-attrs images: ![alt](url){width=50% .align-center} → rendered HTML
+  //    Works standalone AND inside table cells (single-line, no block wrappers)
+  result = result.replace(/!\[([^\]]*)\]\(([^)]+)\)\{([^}]+)\}/g, (match) => {
+    const rendered = mdIt.render(match).trim();
+    return rendered.replace(/^<p>/, '').replace(/<\/p>$/, '');
+  });
+
+  return result;
+};
+
 const FacilityGridLayout = ({ markdownText }) => {
   const renderMarkdown = (content) => (
     <ReactMarkdown
@@ -460,7 +500,7 @@ const FacilityGridLayout = ({ markdownText }) => {
       rehypePlugins={[rehypeRaw]}
       components={MD_COMPONENTS}
     >
-      {content}
+      {preprocessContainers(content)}
     </ReactMarkdown>
   );
 
@@ -742,7 +782,7 @@ const MD_COMPONENTS = {
   ),
   table: ({ children }) => (
     <div className="overflow-x-auto my-4">
-      <table className="min-w-full border divide-y divide-gray-200 rounded overflow-hidden">
+      <table className="w-full border divide-y divide-gray-200 rounded overflow-hidden" style={{ tableLayout: 'auto' }}>
         {children}
       </table>
     </div>
@@ -755,25 +795,99 @@ const MD_COMPONENTS = {
       {children}
     </tbody>
   ),
-  th: ({ children }) => (
-    <th className="px-4 py-3 text-left text-sm font-semibold">{children}</th>
+  th: ({ children, style }) => (
+    <th className="px-3 py-2 text-sm font-semibold" style={style}>{children}</th>
   ),
-  td: ({ children }) => (
-    <td className="px-4 py-3 text-sm text-gray-700">
-      {children}
-    </td>
-  ),
+  td: ({ children, style }) => {
+    // Detect if cell contains an image to use compact padding
+    const hasImage = React.Children.toArray(children).some(
+      (child) => React.isValidElement(child) && (child.type === 'img' || child.props?.src)
+    );
+    return (
+      <td
+        className={`text-sm text-gray-700 align-middle ${hasImage ? 'px-2 py-1' : 'px-3 py-2'}`}
+        style={style}
+      >
+        {children}
+      </td>
+    );
+  },
   tr: ({ children }) => <tr className="even:bg-gray-50">{children}</tr>,
-  // Support raw HTML for column layouts
-  div: ({ className, children, ...props }) => (
-    <div className={className} {...props}>
-      {children}
-    </div>
-  ),
+  img: ({ src, alt, width, className: imgClassName, style: imgStyle, ...imgRest }) => {
+    // Determine width from markdown-it-attrs
+    const widthVal = width || imgStyle?.width;
+    const inlineStyle = {};
+    if (widthVal) {
+      inlineStyle.width = widthVal;
+      inlineStyle.maxWidth = widthVal;
+    } else {
+      inlineStyle.maxWidth = '100%';
+    }
+    inlineStyle.height = 'auto';
+
+    // Determine alignment from class: align-left, align-center, align-right
+    const classes = (imgClassName || '').split(/\s+/);
+    if (classes.includes('align-left')) {
+      inlineStyle.float = 'left';
+      inlineStyle.marginRight = '1rem';
+      inlineStyle.marginBottom = '0.5rem';
+    } else if (classes.includes('align-right')) {
+      inlineStyle.float = 'right';
+      inlineStyle.marginLeft = '1rem';
+      inlineStyle.marginBottom = '0.5rem';
+    } else if (classes.includes('align-center')) {
+      inlineStyle.display = 'block';
+      inlineStyle.marginLeft = 'auto';
+      inlineStyle.marginRight = 'auto';
+    }
+
+    return (
+      <img
+        src={src}
+        alt={alt || ""}
+        style={inlineStyle}
+        className="rounded-lg my-1 shadow-sm border border-gray-200 dark:border-gray-700"
+        loading="lazy"
+      />
+    );
+  },
+  // Support raw HTML for alignment and callout containers
+  div: ({ className, children, align, style, ...props }) => {
+    // Handle legacy HTML align attribute
+    if (align && !className?.includes('md-')) {
+      const alignClasses = { left: 'text-left', center: 'text-center', right: 'text-right' };
+      return <div className={`${alignClasses[align] || ''} my-2`} {...props}>{children}</div>;
+    }
+    // Handle ::: alignment containers
+    if (className?.startsWith('md-align-')) {
+      const a = className.replace('md-align-', '');
+      const cls = { left: 'text-left', center: 'text-center', right: 'text-right', justify: 'text-justify' }[a] || '';
+      return <div className={`${cls} my-2`} {...props}>{children}</div>;
+    }
+    // Handle ::: callout containers
+    if (className?.includes('md-callout')) {
+      const typeMatch = className.match(/md-callout-(info|warning|danger|tip)/);
+      const type = typeMatch?.[1] || 'info';
+      const styles = {
+        info: { border: 'border-blue-400', bg: 'bg-blue-50 dark:bg-blue-950/30', title: 'text-blue-700 dark:text-blue-300', body: 'text-blue-800 dark:text-blue-200', icon: <FaInfoCircle className="text-blue-500" size={16} />, label: 'Info' },
+        warning: { border: 'border-yellow-400', bg: 'bg-yellow-50 dark:bg-yellow-950/30', title: 'text-yellow-700 dark:text-yellow-300', body: 'text-yellow-800 dark:text-yellow-200', icon: <FaExclamationTriangle className="text-yellow-500" size={16} />, label: 'Warning' },
+        danger: { border: 'border-red-400', bg: 'bg-red-50 dark:bg-red-950/30', title: 'text-red-700 dark:text-red-300', body: 'text-red-800 dark:text-red-200', icon: <FaExclamationCircle className="text-red-500" size={16} />, label: 'Danger' },
+        tip: { border: 'border-green-400', bg: 'bg-green-50 dark:bg-green-950/30', title: 'text-green-700 dark:text-green-300', body: 'text-green-800 dark:text-green-200', icon: <FaLightbulb className="text-green-500" size={16} />, label: 'Tip' },
+      };
+      const s = styles[type];
+      return (
+        <div className={`border-l-4 ${s.border} ${s.bg} p-4 my-3 rounded-r-lg`} {...props}>
+          <div className={`flex items-center gap-2 font-semibold ${s.title} mb-2`}>{s.icon} {s.label}</div>
+          <div className={s.body}>{children}</div>
+        </div>
+      );
+    }
+    return <div className={className} style={style} {...props}>{children}</div>;
+  },
 };
 
 /* ── Toolbar group separator ──────────────────────────────────── */
-const Sep = () => <div className="w-px h-5 bg-gray-300 mx-0.5" />;
+const Sep = () => <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-0.5" />;
 
 /* ── Single toolbar button ────────────────────────────────────── */
 const TBtn = ({
@@ -808,6 +922,122 @@ const TBtn = ({
   </button>
 );
 
+/* ── Heading Dropdown Items ───────────────────────────────────── */
+const HEADING_LEVELS = [
+  { level: 1, label: "Heading 1", size: "text-lg font-bold" },
+  { level: 2, label: "Heading 2", size: "text-base font-bold" },
+  { level: 3, label: "Heading 3", size: "text-sm font-semibold" },
+  { level: 4, label: "Heading 4", size: "text-sm font-medium" },
+  { level: 5, label: "Heading 5", size: "text-xs font-medium" },
+  { level: 6, label: "Heading 6", size: "text-xs" },
+];
+
+/* ── Image insert dialog constants ─────────────────────────── */
+const IMAGE_SIZES = [
+  { value: '25', label: 'Small (25%)' },
+  { value: '50', label: 'Medium (50%)' },
+  { value: '75', label: 'Large (75%)' },
+  { value: '100', label: 'Full Width (100%)' },
+];
+
+const IMAGE_ALIGNS = [
+  { value: 'none', label: 'Default', icon: FaAlignLeft, desc: 'Normal flow' },
+  { value: 'left', label: 'Float Left', icon: FaAlignLeft, desc: 'Text wraps right' },
+  { value: 'center', label: 'Center', icon: FaAlignCenter, desc: 'Centered block' },
+  { value: 'right', label: 'Float Right', icon: FaAlignRight, desc: 'Text wraps left' },
+];
+
+const CALLOUT_TYPES = [
+  { type: 'info', label: 'Info', icon: FaInfoCircle, color: 'text-blue-500', desc: 'Informational note' },
+  { type: 'tip', label: 'Tip', icon: FaLightbulb, color: 'text-green-500', desc: 'Helpful tip' },
+  { type: 'warning', label: 'Warning', icon: FaExclamationTriangle, color: 'text-yellow-500', desc: 'Warning notice' },
+  { type: 'danger', label: 'Danger', icon: FaExclamationCircle, color: 'text-red-500', desc: 'Danger alert' },
+];
+
+const ImageInsertDialog = ({ open, onClose, onInsert, imageName }) => {
+  const [size, setSize] = useState('100');
+  const [align, setAlign] = useState('none');
+
+  useEffect(() => {
+    if (open) { setSize('100'); setAlign('none'); }
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40" onMouseDown={onClose}>
+      <div
+        className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-sm mx-4 p-5"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Insert Image</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 truncate">{imageName}</p>
+
+        <div className="mb-4">
+          <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2 block">Size</label>
+          <div className="grid grid-cols-2 gap-2">
+            {IMAGE_SIZES.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setSize(value)}
+                className={`px-3 py-2 text-xs rounded-lg border transition-colors font-medium ${
+                  size === value
+                    ? 'bg-blue-50 border-blue-400 text-blue-700 dark:bg-blue-900/40 dark:border-blue-500 dark:text-blue-300'
+                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-5">
+          <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2 block">Alignment</label>
+          <div className="grid grid-cols-2 gap-2">
+            {IMAGE_ALIGNS.map(({ value, label, icon: AIcon, desc }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setAlign(value)}
+                className={`flex items-center gap-2 px-3 py-2 text-xs rounded-lg border transition-colors font-medium ${
+                  align === value
+                    ? 'bg-blue-50 border-blue-400 text-blue-700 dark:bg-blue-900/40 dark:border-blue-500 dark:text-blue-300'
+                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <AIcon size={11} />
+                <div className="text-left">
+                  <div>{label}</div>
+                  <div className="text-[10px] opacity-60 font-normal">{desc}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => onInsert(size, align)}
+            className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Insert
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const MarkdownEditor = ({
   path,
   value,
@@ -819,10 +1049,20 @@ const MarkdownEditor = ({
   const textareaRef = useRef(null);
   const imageInputRef = useRef(null);
   const fileInputRef = useRef(null);
+  const headingDropdownRef = useRef(null);
+  const alignDropdownRef = useRef(null);
+  const calloutDropdownRef = useRef(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
+  const [headingOpen, setHeadingOpen] = useState(false);
+  const [alignOpen, setAlignOpen] = useState(false);
+  const [calloutOpen, setCalloutOpen] = useState(false);
+  const [splitPreview, setSplitPreview] = useState(false);
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [pendingImageUrl, setPendingImageUrl] = useState('');
+  const [pendingImageName, setPendingImageName] = useState('');
 
   const getValueFromPath = (obj, p) => {
     if (!p || !obj) return undefined;
@@ -842,6 +1082,23 @@ const MarkdownEditor = ({
   useEffect(() => {
     setCurrentValue(displayValue || "");
   }, [displayValue]);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (headingDropdownRef.current && !headingDropdownRef.current.contains(e.target)) {
+        setHeadingOpen(false);
+      }
+      if (alignDropdownRef.current && !alignDropdownRef.current.contains(e.target)) {
+        setAlignOpen(false);
+      }
+      if (calloutDropdownRef.current && !calloutDropdownRef.current.contains(e.target)) {
+        setCalloutOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   /** Push current value to undo stack before a change */
   const pushUndo = useCallback(() => {
@@ -954,6 +1211,187 @@ const MarkdownEditor = ({
     [currentValue, pushUndo],
   );
 
+  /** Insert heading at current line start (toggle-aware, H1-H6) */
+  const insertHeading = useCallback(
+    (level) => {
+      pushUndo();
+      const el = textareaRef.current;
+      const start = el ? el.selectionStart : currentValue.length;
+      const lineStart = currentValue.lastIndexOf("\n", start - 1) + 1;
+      const lineEndIdx = currentValue.indexOf("\n", start);
+      const lineEnd = lineEndIdx === -1 ? currentValue.length : lineEndIdx;
+      const currentLine = currentValue.slice(lineStart, lineEnd);
+      const prefix = "#".repeat(level) + " ";
+
+      let newLine;
+      if (currentLine.startsWith(prefix)) {
+        // Toggle off — remove this heading prefix
+        newLine = currentLine.slice(prefix.length);
+      } else {
+        // Remove any existing heading prefix, then add the new one
+        const stripped = currentLine.replace(/^#{1,6}\s*/, "");
+        newLine = prefix + (stripped || "Heading text");
+      }
+
+      const next =
+        currentValue.substring(0, lineStart) +
+        newLine +
+        currentValue.substring(lineEnd);
+      setCurrentValue(next);
+      setHeadingOpen(false);
+
+      setTimeout(() => {
+        if (el) {
+          el.focus();
+          el.setSelectionRange(lineStart + newLine.length, lineStart + newLine.length);
+        }
+      }, 0);
+    },
+    [currentValue, pushUndo],
+  );
+
+  /** Multi-line blockquote — add > to each selected line, or insert template */
+  const insertBlockquoteMultiline = useCallback(() => {
+    pushUndo();
+    const el = textareaRef.current;
+    const start = el ? el.selectionStart : currentValue.length;
+    const end = el ? el.selectionEnd : currentValue.length;
+    const selected = currentValue.substring(start, end);
+
+    if (selected) {
+      const lines = selected.split("\n");
+      const quoted = lines
+        .map((line, i) => `> ${line}` + (i < lines.length - 1 ? "  " : ""))
+        .join("\n");
+      const next =
+        currentValue.substring(0, start) +
+        quoted +
+        currentValue.substring(end);
+      setCurrentValue(next);
+      setTimeout(() => {
+        if (el) {
+          el.focus();
+          el.setSelectionRange(start, start + quoted.length);
+        }
+      }, 0);
+    } else {
+      const template = "> Quote line one  \n> Quote line two  \n> Quote line three";
+      const next =
+        currentValue.substring(0, start) +
+        template +
+        currentValue.substring(end);
+      setCurrentValue(next);
+      setTimeout(() => {
+        if (el) {
+          el.focus();
+          el.setSelectionRange(start + 2, start + 16); // select "Quote line one"
+        }
+      }, 0);
+    }
+  }, [currentValue, pushUndo]);
+
+  /** Insert alignment container (:::left, :::center, :::right, :::justify) */
+  const insertAlignment = useCallback(
+    (align) => {
+      pushUndo();
+      const el = textareaRef.current;
+      const start = el ? el.selectionStart : currentValue.length;
+      const end = el ? el.selectionEnd : currentValue.length;
+      const selected = currentValue.substring(start, end) || "Your text here";
+      const wrapped = `\n:::${align}\n${selected}\n:::\n`;
+      const next =
+        currentValue.substring(0, start) +
+        wrapped +
+        currentValue.substring(end);
+      setCurrentValue(next);
+      setAlignOpen(false);
+      setTimeout(() => {
+        if (el) {
+          el.focus();
+          const contentStart = start + align.length + 6;
+          el.setSelectionRange(contentStart, contentStart + selected.length);
+        }
+      }, 0);
+    },
+    [currentValue, pushUndo],
+  );
+
+  /** Insert code block with optional selection */
+  const insertCodeBlock = useCallback(() => {
+    pushUndo();
+    const el = textareaRef.current;
+    const start = el ? el.selectionStart : currentValue.length;
+    const end = el ? el.selectionEnd : currentValue.length;
+    const selected = currentValue.substring(start, end);
+    const block = selected ? "```\n" + selected + "\n```" : "```\ncode here\n```";
+    const next =
+      currentValue.substring(0, start) +
+      block +
+      currentValue.substring(end);
+    setCurrentValue(next);
+    setTimeout(() => {
+      if (el) {
+        el.focus();
+        if (!selected) {
+          el.setSelectionRange(start + 4, start + 13); // select "code here"
+        }
+      }
+    }, 0);
+  }, [currentValue, pushUndo]);
+
+  /** Insert callout container (:::info, :::warning, :::danger, :::tip) */
+  const insertCallout = useCallback(
+    (type) => {
+      pushUndo();
+      const el = textareaRef.current;
+      const start = el ? el.selectionStart : currentValue.length;
+      const end = el ? el.selectionEnd : currentValue.length;
+      const selected = currentValue.substring(start, end) || "Your content here";
+      const wrapped = `\n:::${type}\n${selected}\n:::\n`;
+      const next = currentValue.substring(0, start) + wrapped + currentValue.substring(end);
+      setCurrentValue(next);
+      setCalloutOpen(false);
+      setTimeout(() => {
+        if (el) {
+          el.focus();
+          const contentStart = start + type.length + 6;
+          el.setSelectionRange(contentStart, contentStart + selected.length);
+        }
+      }, 0);
+    },
+    [currentValue, pushUndo],
+  );
+
+  /** Insert image with size & alignment via markdown-it-attrs syntax — single line, works everywhere including tables */
+  const handleImageInsert = useCallback(
+    (size, align) => {
+      if (!pendingImageUrl) return;
+      pushUndo();
+      // Build attrs: width + optional alignment class
+      const attrs = [`width=${size}%`];
+      if (align && align !== 'none') {
+        attrs.push(`.align-${align}`);
+      }
+      const imgMarkdown = `![${pendingImageName || 'image'}](${pendingImageUrl}){${attrs.join(' ')}}`;
+      const el = textareaRef.current;
+      const start = el ? el.selectionStart : currentValue.length;
+      const end = el ? el.selectionEnd : currentValue.length;
+      const next = currentValue.substring(0, start) + imgMarkdown + currentValue.substring(end);
+      setCurrentValue(next);
+      setImageDialogOpen(false);
+      setPendingImageUrl('');
+      setPendingImageName('');
+      setTimeout(() => {
+        if (el) {
+          el.focus();
+          const pos = start + imgMarkdown.length;
+          el.setSelectionRange(pos, pos);
+        }
+      }, 0);
+    },
+    [pendingImageUrl, pendingImageName, currentValue, pushUndo],
+  );
+
   /* ── Upload handlers ────────────────────────────────────────── */
   const handleImageUpload = async (file) => {
     if (!file || !file.type.startsWith("image/")) return;
@@ -969,7 +1407,11 @@ const MarkdownEditor = ({
         },
       });
       const url = res.data.fileUrl || res.data.url;
-      if (url) insertAtCursor(`\n![${file.name}](${url})\n`);
+      if (url) {
+        setPendingImageUrl(url);
+        setPendingImageName(file.name);
+        setImageDialogOpen(true);
+      }
     } catch (err) {
       console.error("Image upload failed:", err);
       alert(
@@ -1085,174 +1527,338 @@ const MarkdownEditor = ({
         }}
       />
 
+      {/* Image sizing & alignment dialog */}
+      <ImageInsertDialog
+        open={imageDialogOpen}
+        onClose={() => {
+          setImageDialogOpen(false);
+          setPendingImageUrl('');
+          setPendingImageName('');
+        }}
+        onInsert={handleImageInsert}
+        imageName={pendingImageName}
+      />
+
       {/* Toolbar */}
-      <div className="flex items-center gap-1 px-3 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg flex-wrap">
-        {/* ── Text formatting ── */}
-        <TBtn
-          icon={FaBold}
-          title="Bold (Ctrl+B)"
-          onClick={() => wrapSelection("**", "**", "bold text")}
-        />
-        <TBtn
-          icon={FaItalic}
-          title="Italic (Ctrl+I)"
-          onClick={() => wrapSelection("_", "_", "italic")}
-        />
-        <TBtn
-          icon={FaStrikethrough}
-          title="Strikethrough"
-          onClick={() => wrapSelection("~~", "~~", "strikethrough")}
-        />
-        <TBtn
-          icon={FaCode}
-          title="Inline code"
-          onClick={() => wrapSelection("`", "`", "code")}
-        />
+      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg">
+        {/* ── Main toolbar row ── */}
+        <div className="flex items-center gap-1 px-3 py-2 flex-wrap">
+          {/* ── Heading dropdown ── */}
+          <div className="relative" ref={headingDropdownRef}>
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setHeadingOpen((o) => !o);
+                setAlignOpen(false);
+                setCalloutOpen(false);
+              }}
+              className="inline-flex items-center gap-1 px-2 py-1.5 text-xs rounded transition-colors shadow-sm bg-white dark:bg-[#1a1a2e] border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+              title="Heading (H1–H6)"
+            >
+              <FaHeading size={11} />
+              <span className="font-medium hidden sm:inline">Heading</span>
+              <FaChevronDown size={8} className={`transition-transform ${headingOpen ? "rotate-180" : ""}`} />
+            </button>
+            {headingOpen && (
+              <div className="absolute top-full left-0 mt-1 z-50 w-44 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1">
+                {HEADING_LEVELS.map(({ level, label, size }) => (
+                  <button
+                    key={level}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      insertHeading(level);
+                    }}
+                    className={`flex items-center gap-2 w-full px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${size} text-gray-700 dark:text-gray-300`}
+                  >
+                    <span className="text-gray-400 dark:text-gray-500 text-[10px] font-mono w-10 shrink-0">{"#".repeat(level)}</span>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-        <Sep />
+          <Sep />
 
-        {/* ── Headings ── */}
-        <TBtn
-          icon={FaHeading}
-          label="2"
-          title="Heading 2"
-          onClick={() => insertAtCursor("\n## Heading\n")}
-        />
-        <TBtn
-          icon={FaHeading}
-          label="3"
-          title="Heading 3"
-          onClick={() => insertAtCursor("\n### Sub-heading\n")}
-        />
+          {/* ── Text formatting ── */}
+          <TBtn
+            icon={FaBold}
+            title="Bold (Ctrl+B)"
+            onClick={() => wrapSelection("**", "**", "bold text")}
+          />
+          <TBtn
+            icon={FaItalic}
+            title="Italic (Ctrl+I)"
+            onClick={() => wrapSelection("_", "_", "italic")}
+          />
+          <TBtn
+            icon={FaStrikethrough}
+            title="Strikethrough"
+            onClick={() => wrapSelection("~~", "~~", "strikethrough")}
+          />
+          <TBtn
+            icon={FaCode}
+            title="Inline code"
+            onClick={() => wrapSelection("`", "`", "code")}
+          />
 
-        <Sep />
+          <Sep />
 
-        {/* ── Lists ── */}
-        <TBtn
-          icon={FaListUl}
-          title="Bullet list"
-          onClick={() => insertAtCursor("\n- Item 1\n- Item 2\n- Item 3\n")}
-        />
-        <TBtn
-          icon={FaListOl}
-          title="Numbered list"
-          onClick={() => insertAtCursor("\n1. Item 1\n2. Item 2\n3. Item 3\n")}
-        />
-        <TBtn
-          icon={FaCheckSquare}
-          title="Checklist / task list"
-          onClick={() =>
-            insertAtCursor(
-              "\n- [ ] Task 1\n- [ ] Task 2\n- [x] Completed task\n",
-            )
-          }
-        />
+          {/* ── Alignment dropdown ── */}
+          <div className="relative" ref={alignDropdownRef}>
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setAlignOpen((o) => !o);
+                setHeadingOpen(false);
+                setCalloutOpen(false);
+              }}
+              className="inline-flex items-center gap-1 px-2 py-1.5 text-xs rounded transition-colors shadow-sm bg-white dark:bg-[#1a1a2e] border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+              title="Text Alignment"
+            >
+              <FaAlignCenter size={11} />
+              <FaChevronDown size={8} className={`transition-transform ${alignOpen ? "rotate-180" : ""}`} />
+            </button>
+            {alignOpen && (
+              <div className="absolute top-full left-0 mt-1 z-50 w-44 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1">
+                {[
+                  { align: "left", icon: FaAlignLeft, label: "Align Left" },
+                  { align: "center", icon: FaAlignCenter, label: "Align Center" },
+                  { align: "right", icon: FaAlignRight, label: "Align Right" },
+                  { align: "justify", icon: FaAlignJustify, label: "Justify" },
+                ].map(({ align, icon: AIcon, label: lbl }) => (
+                  <button
+                    key={align}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      insertAlignment(align);
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-1.5 text-left text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <AIcon size={11} className="text-gray-400 dark:text-gray-500" />
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-        <Sep />
+          <Sep />
 
-        {/* ── Structure ── */}
-        <TBtn
-          icon={FaTable}
-          title="Insert table"
-          onClick={() =>
-            insertAtCursor(
-              "\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Cell     | Cell     | Cell     |\n",
-            )
-          }
-        />
-        <TBtn
-          icon={FaColumns}
-          title="2-column layout"
-          onClick={() =>
-            insertAtCursor(
-              '\n<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">\n<div>\n\n**Left Column**\n\nContent here...\n\n</div>\n<div>\n\n**Right Column**\n\nContent here...\n\n</div>\n</div>\n',
-            )
-          }
-        />
-        <TBtn
-          icon={FaQuoteRight}
-          title="Blockquote"
-          onClick={() => prefixLines("> ", "Quote text")}
-        />
-        <TBtn
-          icon={FaMinus}
-          title="Horizontal rule"
-          onClick={() => insertAtCursor("\n---\n")}
-        />
+          {/* ── Callout boxes ── */}
+          <div className="relative" ref={calloutDropdownRef}>
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setCalloutOpen((o) => !o);
+                setHeadingOpen(false);
+                setAlignOpen(false);
+              }}
+              className="inline-flex items-center gap-1 px-2 py-1.5 text-xs rounded transition-colors shadow-sm bg-white dark:bg-[#1a1a2e] border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+              title="Callout / Info Box"
+            >
+              <FaInfoCircle size={11} />
+              <span className="font-medium hidden sm:inline">Callout</span>
+              <FaChevronDown size={8} className={`transition-transform ${calloutOpen ? "rotate-180" : ""}`} />
+            </button>
+            {calloutOpen && (
+              <div className="absolute top-full left-0 mt-1 z-50 w-48 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1">
+                {CALLOUT_TYPES.map(({ type, label, icon: CIcon, color, desc }) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      insertCallout(type);
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-left text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <CIcon size={12} className={color} />
+                    <div>
+                      <div className="font-medium">{label}</div>
+                      <div className="text-[10px] text-gray-400">{desc}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-        <Sep />
+          <Sep />
 
-        {/* ── Media & Links ── */}
-        <TBtn
-          icon={FaLink}
-          title="Insert link (Ctrl+K)"
-          onClick={() => wrapSelection("[", "](https://)", "link text")}
-        />
-        <TBtn
-          icon={FaImage}
-          title="Upload image"
-          uploading={uploadingImage}
-          disabled={uploadingImage}
-          onClick={() => imageInputRef.current?.click()}
-        />
-        <TBtn
-          icon={FaFileUpload}
-          title="Upload file (PDF, Word, etc.)"
-          uploading={uploadingFile}
-          disabled={uploadingFile}
-          onClick={() => fileInputRef.current?.click()}
-        />
+          {/* ── Lists & blockquotes ── */}
+          <TBtn
+            icon={FaListUl}
+            title="Bullet list"
+            onClick={() => insertAtCursor("\n- Item 1\n- Item 2\n- Item 3\n")}
+          />
+          <TBtn
+            icon={FaListOl}
+            title="Numbered list"
+            onClick={() => insertAtCursor("\n1. Item 1\n2. Item 2\n3. Item 3\n")}
+          />
+          <TBtn
+            icon={FaQuoteRight}
+            title="Multi-line blockquote"
+            onClick={insertBlockquoteMultiline}
+          />
 
-        <Sep />
+          <Sep />
 
-        {/* ── Undo / Redo ── */}
-        <TBtn
-          icon={FaUndo}
-          title="Undo (Ctrl+Z)"
-          disabled={undoStack.length === 0}
-          onClick={handleUndo}
-        />
-        <TBtn
-          icon={FaRedo}
-          title="Redo (Ctrl+Y)"
-          disabled={redoStack.length === 0}
-          onClick={handleRedo}
-        />
+          {/* ── Structure elements ── */}
+          <TBtn
+            icon={FaTable}
+            title="Insert table"
+            onClick={() =>
+              insertAtCursor(
+                "\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Cell     | Cell     | Cell     |\n",
+              )
+            }
+          />
+          <TBtn
+            icon={FaCode}
+            title="Code block"
+            onClick={insertCodeBlock}
+          />
+          <TBtn
+            icon={FaMinus}
+            title="Horizontal rule"
+            onClick={() => insertAtCursor("\n---\n")}
+          />
 
-        {/* ── Preview toggle (push right) ── */}
-        <div className="flex-1" />
-        <button
-          type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            setPreview((p) => !p);
-          }}
-          className={`flex items-center gap-1.5 text-xs px-3 py-1.5 border rounded shadow-sm transition-colors font-medium ${
-            preview
-              ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-              : "bg-white dark:bg-[#1a1a2e] border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
-          }`}
-        >
-          {preview ? (
-            <>
-              <FaEdit size={10} /> Edit
-            </>
-          ) : (
-            <>
-              <FaEye size={10} /> Preview
-            </>
-          )}
-        </button>
+          <Sep />
+
+          {/* ── Undo / Redo ── */}
+          <TBtn
+            icon={FaUndo}
+            title="Undo (Ctrl+Z)"
+            disabled={undoStack.length === 0}
+            onClick={handleUndo}
+          />
+          <TBtn
+            icon={FaRedo}
+            title="Redo (Ctrl+Y)"
+            disabled={redoStack.length === 0}
+            onClick={handleRedo}
+          />
+
+          {/* ── Preview toggles (push right) ── */}
+          <div className="flex-1" />
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                if (splitPreview) {
+                  setSplitPreview(false);
+                }
+                setPreview((p) => !p);
+              }}
+              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 border rounded shadow-sm transition-colors font-medium ${
+                preview && !splitPreview
+                  ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                  : "bg-white dark:bg-[#1a1a2e] border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
+              title="Toggle full preview"
+            >
+              {preview && !splitPreview ? (
+                <>
+                  <FaEdit size={10} /> Edit
+                </>
+              ) : (
+                <>
+                  <FaEye size={10} /> Preview
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setPreview(false);
+                setSplitPreview((p) => !p);
+              }}
+              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 border rounded shadow-sm transition-colors font-medium ${
+                splitPreview
+                  ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                  : "bg-white dark:bg-[#1a1a2e] border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
+              title="Split screen: editor + live preview"
+            >
+              <FaColumns size={10} /> Split Editor
+            </button>
+          </div>
+        </div>
+
+        {/* ── Insert row ── */}
+        <div className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-700/30 border-t border-gray-200 dark:border-gray-600">
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 mr-2">Insert:</span>
+          <TBtn
+            icon={FaLink}
+            title="Insert link (Ctrl+K)"
+            onClick={() => wrapSelection("[", "](https://)", "link text")}
+          />
+          <TBtn
+            icon={FaImage}
+            title="Upload image"
+            uploading={uploadingImage}
+            disabled={uploadingImage}
+            onClick={() => imageInputRef.current?.click()}
+          />
+          <TBtn
+            icon={FaFileUpload}
+            title="Upload file (PDF, Word, etc.)"
+            uploading={uploadingFile}
+            disabled={uploadingFile}
+            onClick={() => fileInputRef.current?.click()}
+          />
+        </div>
       </div>
 
       {/* Editor / Preview pane */}
-      {preview ? (
+      {preview && !splitPreview ? (
+        /* Full preview mode */
         <div className="border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg p-5 min-h-[240px] bg-white dark:bg-[#1a1a2e] overflow-auto">
           <FacilityGridLayout
             markdownText={currentValue || "*Nothing to preview yet…*"}
           />
         </div>
+      ) : splitPreview ? (
+        /* Split: editor left + live preview right */
+        <div className="flex border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg overflow-hidden" style={{ minHeight: "320px" }}>
+          <div className="w-1/2 flex flex-col border-r border-gray-200 dark:border-gray-700">
+            <div className="px-3 py-1 bg-gray-100 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Markdown</span>
+            </div>
+            <textarea
+              ref={textareaRef}
+              value={currentValue}
+              onChange={(e) => setCurrentValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="flex-1 w-full p-4 font-mono text-sm outline-none resize-none bg-white dark:bg-[#1a1a2e] leading-relaxed"
+              placeholder={placeholder}
+              autoFocus
+              spellCheck
+            />
+          </div>
+          <div className="w-1/2 flex flex-col">
+            <div className="px-3 py-1 bg-gray-100 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Preview</span>
+            </div>
+            <div className="flex-1 p-5 overflow-auto bg-white dark:bg-[#1a1a2e]">
+              <FacilityGridLayout
+                markdownText={currentValue || "*Nothing to preview yet…*"}
+              />
+            </div>
+          </div>
+        </div>
       ) : (
+        /* Editor only mode */
         <textarea
           ref={textareaRef}
           value={currentValue}

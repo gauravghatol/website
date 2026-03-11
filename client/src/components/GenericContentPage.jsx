@@ -29,6 +29,150 @@ const SIDEBAR_MAP = {
   "documents-": DocumentsSidebar,
 };
 
+/* ─── IQAC Accordion helper ─── */
+const IQACAccordion = ({
+  items,
+  defaultOpen,
+  renderHeader,
+  renderContent,
+  getKey,
+}) => {
+  const [expanded, setExpanded] = useState(defaultOpen);
+  return (
+    <div className="space-y-2">
+      {items.map((item) => {
+        const key = getKey(item);
+        const isOpen = expanded === key;
+        return (
+          <div
+            key={key}
+            className="border border-gray-100 rounded-lg overflow-hidden"
+          >
+            <button
+              onClick={() => setExpanded(isOpen ? null : key)}
+              className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${isOpen ? "bg-ssgmce-blue/5" : "hover:bg-gray-50"}`}
+            >
+              {renderHeader(item, isOpen)}
+              <svg
+                className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${isOpen ? "rotate-180" : ""}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+            {isOpen && (
+              <div className="px-4 pb-3 pt-1">{renderContent(item)}</div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+/* ─── Video Gallery helper ─── */
+const VideoGallery = ({ videos, channelUrl }) => {
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [playingId, setPlayingId] = useState(null);
+  const categories = [...new Set(videos.map((v) => v.category))];
+  const filtered =
+    activeCategory === "All"
+      ? videos
+      : videos.filter((v) => v.category === activeCategory);
+
+  return (
+    <div>
+      {/* Category Filter */}
+      <div className="flex flex-wrap gap-1.5 mb-6">
+        {["All", ...categories].map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+              activeCategory === cat
+                ? "bg-ssgmce-blue text-white"
+                : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+      {/* Video Grid */}
+      <div className="grid sm:grid-cols-2 gap-4">
+        {filtered.map((video) => (
+          <div
+            key={video.youtubeId}
+            className="border border-gray-100 rounded-lg overflow-hidden group"
+          >
+            <div className="relative aspect-video bg-gray-100">
+              {playingId === video.youtubeId ? (
+                <iframe
+                  src={`https://www.youtube.com/embed/${video.youtubeId}?autoplay=1`}
+                  title={video.title}
+                  className="absolute inset-0 w-full h-full"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                />
+              ) : (
+                <button
+                  onClick={() => setPlayingId(video.youtubeId)}
+                  className="absolute inset-0 w-full h-full cursor-pointer"
+                >
+                  <img
+                    src={`https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`}
+                    alt={video.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+                    <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
+                      <svg
+                        className="w-5 h-5 text-ssgmce-blue ml-0.5"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  </div>
+                </button>
+              )}
+            </div>
+            <div className="p-3">
+              <span className="text-[10px] font-medium text-ssgmce-orange bg-ssgmce-orange/10 px-1.5 py-0.5 rounded">
+                {video.category}
+              </span>
+              <p className="text-sm text-gray-700 font-medium mt-1 leading-snug">
+                {video.title}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Channel Link */}
+      {channelUrl && (
+        <div className="text-center mt-6">
+          <a
+            href={channelUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-ssgmce-blue/20 text-sm font-medium text-ssgmce-blue hover:bg-ssgmce-blue/5 transition-colors"
+          >
+            View More on YouTube ↗
+          </a>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const GenericContentPage = ({ pageId }) => {
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +200,15 @@ const GenericContentPage = ({ pageId }) => {
   const isAdmissionsThemePage = admissionsThemePages.has(pageId);
 
   useEffect(() => {
+    // When rendered inside VisualPageEditor the data is already loaded into
+    // EditContext — skip the redundant network request to avoid a double
+    // fetch (and a double error in the console if the server is momentarily
+    // unavailable).
+    if (isEditing && data && data.sections) {
+      setLoading(false);
+      return;
+    }
+
     const fetchPageData = async () => {
       try {
         setLoading(true);
@@ -78,7 +231,7 @@ const GenericContentPage = ({ pageId }) => {
     if (pageId) {
       fetchPageData();
     }
-  }, [pageId]);
+  }, [pageId, isEditing, data]);
 
   // Auto-select sidebar based on pageId prefix (longer prefixes checked first)
   const sidebar = useMemo(() => {
@@ -150,6 +303,8 @@ const GenericContentPage = ({ pageId }) => {
                   key={section.sectionId}
                   index={index}
                   title={section.type}
+                  sectionContent={section.content}
+                  contentPath={`sections[${index}].content`}
                 >
                   <div
                     className={`page-section ${
@@ -489,6 +644,274 @@ const GenericContentPage = ({ pageId }) => {
                         />
                       </div>
                     )}
+
+                    {/* IQAC Compact Stats */}
+                    {section.type === "iqac-stats" && section.content.stats && (
+                      <div className="flex items-center gap-6 mb-2">
+                        {section.content.stats.map((stat, idx) => (
+                          <React.Fragment key={idx}>
+                            {idx > 0 && (
+                              <div className="w-px h-8 bg-gray-200" />
+                            )}
+                            <div className="text-center">
+                              <span
+                                className={`block text-2xl font-bold ${idx % 2 === 0 ? "text-ssgmce-blue" : "text-ssgmce-orange"}`}
+                              >
+                                {stat.value}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                {stat.label}
+                              </span>
+                            </div>
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Meeting Records Accordion */}
+                    {section.type === "meeting-records" &&
+                      section.content.records && (
+                        <IQACAccordion
+                          items={section.content.records}
+                          defaultOpen={section.content.records[0]?.year}
+                          renderHeader={(item, isOpen) => (
+                            <div className="flex items-center gap-3">
+                              <span
+                                className={`text-sm font-semibold ${isOpen ? "text-ssgmce-blue" : "text-gray-700"}`}
+                              >
+                                {item.year}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                {item.meetings.length} meeting
+                                {item.meetings.length !== 1 ? "s" : ""}
+                              </span>
+                            </div>
+                          )}
+                          renderContent={(item) => (
+                            <div className="grid sm:grid-cols-2 gap-2">
+                              {item.meetings.map((m) => (
+                                <a
+                                  key={m.label}
+                                  href={m.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-3 p-2.5 rounded border border-gray-50 hover:border-ssgmce-orange/40 hover:bg-ssgmce-orange/5 transition-colors group"
+                                >
+                                  <span className="text-xs font-semibold text-ssgmce-blue bg-ssgmce-blue/5 px-2 py-0.5 rounded">
+                                    {m.label}
+                                  </span>
+                                  {m.date && (
+                                    <span className="text-xs text-gray-400">
+                                      {m.date}
+                                    </span>
+                                  )}
+                                  <span className="ml-auto text-xs text-gray-400 group-hover:text-ssgmce-blue transition-colors">
+                                    PDF ↗
+                                  </span>
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                          getKey={(item) => item.year}
+                        />
+                      )}
+
+                    {/* Year Reports Accordion (AQAR) */}
+                    {section.type === "year-reports" &&
+                      section.content.reports && (
+                        <IQACAccordion
+                          items={section.content.reports}
+                          defaultOpen={section.content.reports[0]?.year}
+                          renderHeader={(item, isOpen) => (
+                            <div className="flex items-center gap-3">
+                              <span
+                                className={`text-sm font-semibold ${isOpen ? "text-ssgmce-blue" : "text-gray-700"}`}
+                              >
+                                {item.year}
+                              </span>
+                              {item.subtitle && (
+                                <span className="text-xs text-gray-400">
+                                  {item.subtitle}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          renderContent={(item) => (
+                            <div className="space-y-3">
+                              <div className="flex flex-wrap gap-2">
+                                {item.links?.map((link, i) => (
+                                  <a
+                                    key={i}
+                                    href={link.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded border border-ssgmce-blue/20 text-xs font-medium text-ssgmce-blue hover:bg-ssgmce-blue/5 transition-colors"
+                                  >
+                                    {link.label} ↗
+                                  </a>
+                                ))}
+                              </div>
+                              {item.criteria && (
+                                <div>
+                                  <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+                                    Criterion-wise Details
+                                  </p>
+                                  <div className="grid sm:grid-cols-2 gap-1.5">
+                                    {item.criteria.map((c, i) => (
+                                      <a
+                                        key={i}
+                                        href={c.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 p-2 rounded border border-gray-50 hover:border-ssgmce-orange/40 hover:bg-ssgmce-orange/5 transition-colors group text-xs"
+                                      >
+                                        <span className="font-semibold text-ssgmce-blue bg-ssgmce-blue/5 px-1.5 py-0.5 rounded">
+                                          {c.num}
+                                        </span>
+                                        <span className="text-gray-600 group-hover:text-ssgmce-blue transition-colors">
+                                          {c.title}
+                                        </span>
+                                      </a>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          getKey={(item) => item.year}
+                        />
+                      )}
+
+                    {/* NAAC Criteria Accordion */}
+                    {section.type === "naac-criteria" &&
+                      section.content.criteria && (
+                        <IQACAccordion
+                          items={section.content.criteria}
+                          defaultOpen={section.content.criteria[0]?.num}
+                          renderHeader={(item, isOpen) => (
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs font-bold text-white bg-ssgmce-blue w-6 h-6 rounded flex items-center justify-center flex-shrink-0">
+                                {item.num}
+                              </span>
+                              <span
+                                className={`text-sm font-semibold ${isOpen ? "text-ssgmce-blue" : "text-gray-700"}`}
+                              >
+                                {item.title}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                {item.indicators.length} indicators
+                              </span>
+                            </div>
+                          )}
+                          renderContent={(item) => (
+                            <div className="space-y-1.5">
+                              {item.indicators.map((ind) => (
+                                <div
+                                  key={ind.id}
+                                  className="flex items-start gap-3 p-2.5 rounded border border-gray-50 text-xs"
+                                >
+                                  <span className="font-mono font-semibold text-ssgmce-blue bg-ssgmce-blue/5 px-1.5 py-0.5 rounded whitespace-nowrap">
+                                    {ind.id}
+                                  </span>
+                                  <span
+                                    className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 ${ind.type === "QlM" ? "bg-ssgmce-orange/10 text-ssgmce-orange" : "bg-ssgmce-blue/10 text-ssgmce-blue"}`}
+                                  >
+                                    {ind.type}
+                                  </span>
+                                  <span className="text-gray-600 leading-relaxed">
+                                    {ind.desc}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          getKey={(item) => item.num}
+                        />
+                      )}
+
+                    {/* Video Gallery */}
+                    {section.type === "video-gallery" &&
+                      section.content.videos && (
+                        <VideoGallery
+                          videos={section.content.videos}
+                          channelUrl={section.content.channelUrl}
+                        />
+                      )}
+
+                    {/* Document Grid */}
+                    {section.type === "document-grid" &&
+                      section.content.documents && (
+                        <div
+                          className={`grid ${section.content.columns === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3"} gap-2`}
+                        >
+                          {section.content.documents.map((doc, idx) => (
+                            <a
+                              key={idx}
+                              href={doc.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-ssgmce-orange/40 hover:bg-ssgmce-orange/5 transition-colors group text-sm"
+                            >
+                              {doc.year && (
+                                <span className="text-xs font-semibold text-ssgmce-blue bg-ssgmce-blue/5 px-2 py-1 rounded">
+                                  {doc.year}
+                                </span>
+                              )}
+                              <span className="text-gray-600 group-hover:text-ssgmce-blue transition-colors">
+                                {doc.label || "View PDF ↗"}
+                              </span>
+                              {!doc.label && (
+                                <span className="ml-auto text-xs text-gray-400 group-hover:text-ssgmce-blue">
+                                  ↗
+                                </span>
+                              )}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+
+                    {/* Process Steps */}
+                    {section.type === "process-steps" &&
+                      section.content.steps && (
+                        <div className="space-y-2">
+                          {section.content.steps.map((step, i) => (
+                            <div key={i} className="flex gap-3 items-start">
+                              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-ssgmce-blue/5 text-ssgmce-blue text-[11px] font-bold flex items-center justify-center mt-0.5">
+                                {i + 1}
+                              </span>
+                              <p className="text-sm text-gray-600 leading-relaxed">
+                                {step}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                    {/* Info Cards (title + description) */}
+                    {section.type === "info-cards" && section.content.items && (
+                      <div
+                        className={`grid ${section.content.columns === 1 ? "grid-cols-1" : "sm:grid-cols-2"} gap-3`}
+                      >
+                        {section.content.items.map((item, idx) => (
+                          <div
+                            key={idx}
+                            className="p-3 rounded-lg border border-gray-100"
+                          >
+                            <p className="text-sm font-semibold text-gray-800">
+                              {item.title}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {item.description}
+                            </p>
+                            {item.ownership && (
+                              <p className="text-[10px] text-ssgmce-blue mt-2 font-medium">
+                                {item.ownership} · {item.timeFrame}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </EditableSection>
               ))}
@@ -508,4 +931,3 @@ const GenericContentPage = ({ pageId }) => {
 };
 
 export default GenericContentPage;
-

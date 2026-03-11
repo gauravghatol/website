@@ -16,13 +16,14 @@ const storage = multer.diskStorage({
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     cb(
       null,
-      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
+      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname),
     );
   },
 });
 
-// File filter — images only
+// File filter
 const fileFilter = (req, file, cb) => {
+  // Accept images only
   if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
@@ -30,7 +31,7 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Multer upload instance — images
+// Multer upload instance (images)
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
@@ -39,22 +40,10 @@ const upload = multer({
   },
 });
 
-// ─── Document / file uploads (PDF, DOC, XLS, PPT, etc.) ────────────────────
-const ALLOWED_DOC_TYPES = [
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.ms-excel",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.ms-powerpoint",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "text/plain",
-  "text/csv",
-];
-
-const docStorage = multer.diskStorage({
+// --- Document / file upload ---
+const documentStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = "./uploads/files";
+    const uploadDir = "./uploads/documents";
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -62,23 +51,38 @@ const docStorage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    // Preserve original extension
-    cb(null, "file-" + uniqueSuffix + path.extname(file.originalname));
+    cb(
+      null,
+      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
+    );
   },
 });
 
-const docFilter = (req, file, cb) => {
-  if (ALLOWED_DOC_TYPES.includes(file.mimetype) || file.mimetype.startsWith("image/")) {
+const documentFilter = (req, file, cb) => {
+  const allowed = [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "text/plain",
+    "text/csv",
+  ];
+  if (allowed.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("File type not allowed. Accepted: PDF, Word, Excel, PPT, CSV, TXT, images."), false);
+    cb(new Error("File type not allowed. Supported: PDF, Word, Excel, PowerPoint, TXT, CSV."), false);
   }
 };
 
-const uploadDoc = multer({
-  storage: docStorage,
-  fileFilter: docFilter,
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB for documents
+const documentUpload = multer({
+  storage: documentStorage,
+  fileFilter: documentFilter,
+  limits: {
+    fileSize: 20 * 1024 * 1024, // 20 MB limit
+  },
 });
 
 // Upload single image handler
@@ -96,28 +100,9 @@ const uploadSingleImage = async (req, res) => {
     });
   } catch (error) {
     console.error("Upload error:", error);
-    res.status(500).json({ message: "File upload failed", error: error.message });
-  }
-};
-
-// Upload single document/file handler
-const uploadSingleFile = async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-
-    const fileUrl = `/uploads/files/${req.file.filename}`;
-    const originalName = req.file.originalname;
-    res.status(200).json({
-      message: "File uploaded successfully",
-      fileUrl,
-      filename: req.file.filename,
-      originalName,
-    });
-  } catch (error) {
-    console.error("File upload error:", error);
-    res.status(500).json({ message: "File upload failed", error: error.message });
+    res
+      .status(500)
+      .json({ message: "File upload failed", error: error.message });
   }
 };
 
@@ -125,7 +110,7 @@ const uploadSingleFile = async (req, res) => {
 const getUploadedFiles = async (req, res) => {
   try {
     const uploadDir = "./uploads/images";
-    
+
     if (!fs.existsSync(uploadDir)) {
       return res.json({ files: [] });
     }
@@ -139,7 +124,29 @@ const getUploadedFiles = async (req, res) => {
     res.json({ files });
   } catch (error) {
     console.error("Error fetching files:", error);
-    res.status(500).json({ message: "Failed to fetch files", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch files", error: error.message });
+  }
+};
+
+// Upload single document handler
+const uploadSingleDocument = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const fileUrl = `/uploads/documents/${req.file.filename}`;
+    res.status(200).json({
+      message: "File uploaded successfully",
+      fileUrl: fileUrl,
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+    });
+  } catch (error) {
+    console.error("Document upload error:", error);
+    res.status(500).json({ message: "File upload failed", error: error.message });
   }
 };
 
@@ -157,15 +164,65 @@ const deleteFile = async (req, res) => {
     res.json({ message: "File deleted successfully" });
   } catch (error) {
     console.error("Error deleting file:", error);
-    res.status(500).json({ message: "Failed to delete file", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to delete file", error: error.message });
+  }
+};
+
+// NIRF PDF upload
+const nirfStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = "./uploads/nirf";
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "nirf-" + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const nirfUpload = multer({
+  storage: nirfStorage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed!"), false);
+    }
+  },
+  limits: { fileSize: 20 * 1024 * 1024 },
+});
+
+const uploadNirfPdf = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    const fileUrl = `/uploads/nirf/${req.file.filename}`;
+    res.status(200).json({
+      message: "PDF uploaded successfully",
+      fileUrl,
+      filename: req.file.filename,
+    });
+  } catch (error) {
+    console.error("NIRF PDF upload error:", error);
+    res
+      .status(500)
+      .json({ message: "File upload failed", error: error.message });
   }
 };
 
 module.exports = {
   upload,
-  uploadDoc,
   uploadSingleImage,
-  uploadSingleFile,
+  documentUpload,
+  uploadSingleDocument,
   getUploadedFiles,
   deleteFile,
+  nirfUpload,
+  uploadNirfPdf,
 };

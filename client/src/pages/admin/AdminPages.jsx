@@ -6,6 +6,7 @@ import { FaSearch, FaChevronRight, FaChevronDown } from "react-icons/fa";
 
 const CATEGORY_ORDER = [
   "about",
+  "nirf",
   "academics",
   "admissions",
   "research",
@@ -19,6 +20,7 @@ const CATEGORY_ORDER = [
 
 const CATEGORY_COLORS = {
   about: "#3b82f6",
+  nirf: "#e11d48",
   academics: "#06b6d4",
   admissions: "#a855f7",
   research: "#ec4899",
@@ -30,13 +32,24 @@ const CATEGORY_COLORS = {
   departments: "#f59e0b",
 };
 
+// Valid top-level department pageIds — orphan sub-pages should be excluded
+const VALID_DEPT_PAGEIDS = new Set([
+  "departments-cse",
+  "departments-it",
+  "departments-entc",
+  "departments-electrical",
+  "departments-mechanical",
+  "departments-mba",
+  "departments-applied-sciences",
+]);
+
 const AdminPages = () => {
   const [searchParams] = useSearchParams();
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState(
-    searchParams.get("category") || "all"
+    searchParams.get("category") || "all",
   );
   const [collapsed, setCollapsed] = useState({});
 
@@ -66,6 +79,13 @@ const AdminPages = () => {
   ];
 
   const filteredPages = pages.filter((page) => {
+    // Exclude orphan department sub-pages (only show the 7 main departments)
+    if (
+      page.category === "departments" &&
+      !VALID_DEPT_PAGEIDS.has(page.pageId)
+    ) {
+      return false;
+    }
     const matchesSearch =
       page.pageTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
       page.category.toLowerCase().includes(searchTerm.toLowerCase());
@@ -107,7 +127,9 @@ const AdminPages = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end gap-3">
           <div className="flex-1">
-            <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Pages</h1>
+            <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">
+              Pages
+            </h1>
             <p className="text-base text-gray-400 dark:text-gray-500 mt-0.5">
               {filteredPages.length} of {pages.length} pages
             </p>
@@ -130,7 +152,9 @@ const AdminPages = () => {
             >
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
-                  {cat === "all" ? "All" : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  {cat === "all"
+                    ? "All"
+                    : cat.charAt(0).toUpperCase() + cat.slice(1)}
                 </option>
               ))}
             </select>
@@ -146,48 +170,59 @@ const AdminPages = () => {
               return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
             })
             .map(([category, categoryPages], idx) => {
-            const color = CATEGORY_COLORS[category.toLowerCase()] || "#6b7280";
-            const isCollapsed = collapsed[category];
-            return (
-              <div key={category}>
-                {/* Category Row */}
-                <button
-                  onClick={() => toggleCategory(category)}
-                  className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors ${idx > 0 ? "border-t border-gray-100 dark:border-gray-800" : ""}`}
-                >
-                  {isCollapsed
-                    ? <FaChevronRight className="text-xs text-gray-400 dark:text-gray-500" />
-                    : <FaChevronDown className="text-xs text-gray-400 dark:text-gray-500" />
-                  }
-                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-                  <span className="text-base font-semibold text-gray-600 dark:text-gray-300 capitalize tracking-wide">{category}</span>
-                  <span className="text-sm text-gray-400 dark:text-gray-500 ml-1">{categoryPages.length}</span>
-                </button>
+              const color =
+                CATEGORY_COLORS[category.toLowerCase()] || "#6b7280";
+              const isCollapsed = collapsed[category];
+              return (
+                <div key={category}>
+                  {/* Category Row */}
+                  <button
+                    onClick={() => toggleCategory(category)}
+                    className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors ${idx > 0 ? "border-t border-gray-100 dark:border-gray-800" : ""}`}
+                  >
+                    {isCollapsed ? (
+                      <FaChevronRight className="text-xs text-gray-400 dark:text-gray-500" />
+                    ) : (
+                      <FaChevronDown className="text-xs text-gray-400 dark:text-gray-500" />
+                    )}
+                    <span
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: color }}
+                    />
+                    <span className="text-base font-semibold text-gray-600 dark:text-gray-300 capitalize tracking-wide">
+                      {category}
+                    </span>
+                    <span className="text-sm text-gray-400 dark:text-gray-500 ml-1">
+                      {categoryPages.length}
+                    </span>
+                  </button>
 
-                {/* Pages */}
-                {!isCollapsed && (
-                  <div className="grid grid-cols-2 gap-x-0 border-t border-gray-100 dark:border-gray-800/60">
-                    {categoryPages.map((page) => (
-                      <Link
-                        key={page.pageId}
-                        to={`/admin/visual/${page.pageId}`}
-                        className="flex items-center px-4 py-2 pl-11 border-b border-gray-50 dark:border-gray-800/40 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
-                      >
-                        <span className="flex-1 text-base text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                          {page.pageTitle}
-                        </span>
-                        <FaChevronRight className="text-[10px] text-gray-200 dark:text-gray-700 group-hover:text-blue-400 ml-2 flex-shrink-0 transition-colors" />
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                  {/* Pages */}
+                  {!isCollapsed && (
+                    <div className="grid grid-cols-2 gap-x-0 border-t border-gray-100 dark:border-gray-800/60">
+                      {categoryPages.map((page) => (
+                        <Link
+                          key={page.pageId}
+                          to={`/admin/visual/${page.pageId}`}
+                          className="flex items-center px-4 py-2 pl-11 border-b border-gray-50 dark:border-gray-800/40 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
+                        >
+                          <span className="flex-1 text-base text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                            {page.pageTitle}
+                          </span>
+                          <FaChevronRight className="text-[10px] text-gray-200 dark:text-gray-700 group-hover:text-blue-400 ml-2 flex-shrink-0 transition-colors" />
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
           {Object.keys(groupedPages).length === 0 && (
             <div className="text-center py-12">
-              <p className="text-sm text-gray-400 dark:text-gray-500">No pages match your search</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">
+                No pages match your search
+              </p>
             </div>
           )}
         </div>

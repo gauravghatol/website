@@ -10,7 +10,7 @@ const nirfSchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, "Category is required"],
-      enum: ["engineering", "overall", "management"],
+      enum: ["engineering", "overall", "management", "innovation"],
       default: "engineering",
     },
     rank: {

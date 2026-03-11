@@ -1,14 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import { useEdit } from "../../contexts/EditContext";
-import { FaArrowUp, FaArrowDown, FaTrash } from "react-icons/fa";
+import { FaArrowUp, FaArrowDown, FaTrash, FaEdit } from "react-icons/fa";
+import SectionContentEditor from "./SectionContentEditor";
 
 /**
  * EditableSection Component
  * Wrapper for content sections that provides visual editing feedback
- * and section management controls (reordering, deletion)
+ * and section management controls (reordering, deletion, content editing)
  */
-const EditableSection = ({ index, title, children }) => {
-  const { isEditing, removeSection, moveSection, data } = useEdit();
+const EditableSection = ({
+  index,
+  title,
+  children,
+  sectionContent,
+  contentPath,
+}) => {
+  const { isEditing, removeSection, moveSection, data, updateData } = useEdit();
+  const [showContentEditor, setShowContentEditor] = useState(false);
   const totalSections = Array.isArray(data?.sections) ? data.sections.length : 0;
 
   if (!isEditing) {
@@ -45,6 +53,15 @@ const EditableSection = ({ index, title, children }) => {
           >
             <FaArrowDown />
           </button>
+          {sectionContent !== undefined && contentPath && (
+            <button
+              onClick={() => setShowContentEditor(true)}
+              className="p-1.5 bg-blue-600 text-white rounded hover:bg-blue-500 text-xs"
+              title="Edit section content (add/remove items)"
+            >
+              <FaEdit />
+            </button>
+          )}
           <button
             onClick={handleDelete}
             className="p-1.5 bg-red-600 text-white rounded hover:bg-red-500 text-xs"
@@ -59,6 +76,16 @@ const EditableSection = ({ index, title, children }) => {
       <div className="mt-2">
         {children}
       </div>
+
+      {/* JSON Content Editor Modal */}
+      {showContentEditor && sectionContent !== undefined && contentPath && (
+        <SectionContentEditor
+          title={title}
+          content={sectionContent}
+          onSave={(parsed) => updateData(contentPath, parsed)}
+          onClose={() => setShowContentEditor(false)}
+        />
+      )}
     </div>
   );
 };
