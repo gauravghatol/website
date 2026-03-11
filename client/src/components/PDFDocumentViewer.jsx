@@ -14,7 +14,9 @@ const PDFDocumentViewer = ({ title, summary, pdfUrl, fileSize, year }) => {
   const handleDownload = () => {
     if (isExternalUrl) {
       // Use proxy endpoint for cross-origin downloads
-      const proxyUrl = `/api/documents/proxy-download?url=${encodeURIComponent(pdfUrl)}&filename=${encodeURIComponent((title || "document") + ".pdf")}`;
+      const encodedUrl = encodeURIComponent(pdfUrl.replace('/api/documents/proxy-download?url=', ''));
+      const filename = encodeURIComponent((title || "document") + ".pdf");
+      const proxyUrl = `/api/documents/proxy-download?url=${encodedUrl}&filename=${filename}&download=true`;
       window.open(proxyUrl, "_blank");
     } else {
       const link = document.createElement("a");

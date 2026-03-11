@@ -1,4 +1,63 @@
 const Document = require("../models/Document");
+const https = require("https");
+const http = require("http");
+
+// @desc    Proxy download PDF from external URL
+// @route   GET /api/documents/proxy-download
+// @access  Public
+const proxyDownloadPDF = async (req, res) => {
+  try {
+    const { url, filename } = req.query;
+
+    if (!url) {
+      return res
+        .status(400)
+        .json({ success: false, message: "URL parameter is required" });
+    }
+
+    // Validate that the URL is proper
+    let pdfUrl;
+    try {
+      pdfUrl = new URL(url);
+    } catch (error) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid URL format" });
+    }
+
+    // Set response headers for PDF download
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${filename || "document.pdf"}"`
+    );
+
+    // Fetch the PDF from external URL
+    const protocol = pdfUrl.protocol === "https:" ? https : http;
+    protocol
+      .get(pdfUrl, (remoteResponse) => {
+        if (remoteResponse.statusCode !== 200) {
+          return res
+            .status(remoteResponse.statusCode)
+            .json({
+              success: false,
+              message: "Failed to fetch the PDF from external source",
+            });
+        }
+        remoteResponse.pipe(res);
+      })
+      .on("error", (error) => {
+        console.error("Proxy download error:", error);
+        res.status(500).json({
+          success: false,
+          message: "Error fetching PDF from external source",
+        });
+      });
+  } catch (error) {
+    console.error("Proxy download error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 // @desc    Get all active documents
 // @route   GET /api/documents
@@ -218,4 +277,5 @@ module.exports = {
   getAllDocumentsAdmin,
   seedDocuments,
   getCategoryStats,
+  proxyDownloadPDF,
 };
