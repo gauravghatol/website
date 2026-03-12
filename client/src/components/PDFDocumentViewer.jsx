@@ -7,7 +7,6 @@ import { FaDownload, FaFilePdf, FaExternalLinkAlt, FaInfoCircle, FaChevronDown, 
  */
 const PDFDocumentViewer = ({ title, summary, pdfUrl, fileSize, year }) => {
   const [showFullSummary, setShowFullSummary] = useState(false);
-  const [iframeError, setIframeError] = useState(false);
 
   const isExternalUrl = pdfUrl && (pdfUrl.startsWith("http://") || pdfUrl.startsWith("https://"));
   const isLocalPath = pdfUrl && pdfUrl.startsWith("/uploads/");
@@ -83,29 +82,6 @@ const PDFDocumentViewer = ({ title, summary, pdfUrl, fileSize, year }) => {
           </div>
         </div>
       )}
-
-      {/* PDF Embedded Viewer */}
-      <div className="p-6 border-b border-gray-100">
-        <h4 className="font-semibold text-gray-700 mb-3">Document Preview</h4>
-        {!iframeError ? (
-          <div className="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-            <iframe
-              src={`${pdfUrl}#toolbar=1&navpanes=0&view=fit`}
-              className="w-full h-full"
-              title={title}
-              onError={() => setIframeError(true)}
-              allow="fullscreen"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-        ) : (
-          <div className="w-full h-64 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex flex-col items-center justify-center text-gray-600 border-2 border-dashed border-gray-300">
-            <FaFilePdf className="text-5xl text-gray-400 mb-3" />
-            <p className="text-lg font-semibold text-gray-700">PDF Preview Not Available</p>
-            <p className="text-sm text-gray-500 mt-2 text-center px-4">External PDFs cannot be previewed here. Click "Open in New Tab" to view the document.</p>
-          </div>
-        )}
-      </div>
 
       {/* Download Section */}
       <div className="p-6 bg-gray-50 flex flex-col sm:flex-row gap-3">

@@ -55,7 +55,7 @@ const NIRF = () => {
           {/* Main Content */}
           <div className="lg:col-span-9 space-y-8">
             {/* About NIRF */}
-            <div className="bg-white rounded-xl shadow-md p-6">
+            <div id="nirf-about" className="bg-white rounded-xl shadow-md p-6">
               <h2 className="text-xl font-bold text-gray-800 mb-3">About NIRF</h2>
               <p className="text-gray-600 leading-relaxed">
                 The National Institutional Ranking Framework (NIRF) was approved by the MHRD and launched on 29th September 2015.
@@ -66,7 +66,7 @@ const NIRF = () => {
             </div>
 
             {/* NIRF Report Heading */}
-            <div className="flex items-center gap-3">
+            <div id="nirf-rankings" className="flex items-center gap-3">
               <FaCalendarAlt className="text-2xl text-ssgmce-orange" />
               <h2 className="text-2xl font-bold text-gray-800">Data Submitted To NIRF</h2>
             </div>

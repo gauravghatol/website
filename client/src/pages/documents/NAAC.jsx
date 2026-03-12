@@ -56,7 +56,7 @@ const NAAC = () => {
           {/* Main Content */}
           <div className="lg:col-span-9">
             {/* Header Info */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div id="naac-status" className="bg-white rounded-lg shadow-md p-6 mb-8">
               <h2 className="text-2xl font-bold text-ssgmce-blue mb-3">
                 NAAC ACCREDITATION STATUS
               </h2>
@@ -66,7 +66,7 @@ const NAAC = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div id="naac-cycles" className="bg-white rounded-lg shadow-md overflow-hidden">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-100 border-b">

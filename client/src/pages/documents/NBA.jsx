@@ -93,7 +93,7 @@ const NBA = () => {
           {/* Main Content */}
           <div className="lg:col-span-9">
             {/* Header Info */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div id="nba-status" className="bg-white rounded-lg shadow-md p-6 mb-8">
               <h2 className="text-2xl font-bold text-ssgmce-blue mb-3">
                 NBA ACCREDITATION STATUS
               </h2>
@@ -103,7 +103,7 @@ const NBA = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div id="nba-table" className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-sm">
                   <thead>

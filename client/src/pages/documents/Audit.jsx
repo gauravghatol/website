@@ -5,18 +5,21 @@ import { FaFilePdf, FaExternalLinkAlt } from "react-icons/fa";
 
 const auditCategories = [
   {
+    id: "audit-energy",
     title: "Energy Audit",
     reports: [
       { label: "Energy Audit 2023-24", url: "/uploads/documents/audit/Energy_Audit_2023-24.pdf" },
     ],
   },
   {
+    id: "audit-environmental",
     title: "Environmental Audit",
     reports: [
       { label: "Environmental Audit 2023-24", url: "/uploads/documents/audit/Environmental_Audit_2023-24.pdf" },
     ],
   },
   {
+    id: "audit-green",
     title: "Green Audit",
     reports: [
       { label: "Green Audit 2023-24", url: "/uploads/documents/audit/Green_Audit_2023-24.pdf" },
@@ -46,7 +49,7 @@ const Audit = () => {
 
           <div className="lg:col-span-9 space-y-8">
             {/* About */}
-            <div className="bg-white rounded-xl shadow-md p-6">
+            <div id="audit-about" className="bg-white rounded-xl shadow-md p-6">
               <h2 className="text-xl font-bold text-gray-800 mb-3">About Sustainable Audit</h2>
               <p className="text-gray-600 leading-relaxed">
                 SSGMCE conducts regular sustainability audits covering energy consumption, environmental impact, and green campus initiatives.
@@ -57,7 +60,7 @@ const Audit = () => {
             {/* Audit Categories */}
             <div className="grid md:grid-cols-3 gap-6">
               {auditCategories.map((category) => (
-                <div key={category.title} className="bg-white rounded-xl shadow-md overflow-hidden">
+                <div key={category.title} id={category.id} className="bg-white rounded-xl shadow-md overflow-hidden">
                   <div className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white px-5 py-4">
                     <h3 className="text-lg font-bold">{category.title}</h3>
                   </div>
