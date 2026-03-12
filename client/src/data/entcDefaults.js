@@ -11,7 +11,6 @@ import workshopLabImg from "../assets/images/departments/electronics/labs/Worksh
 import projectLabImg from "../assets/images/departments/electronics/labs/Project_LAB.JPG";
 import vlsiLabImg from "../assets/images/departments/electronics/labs/EXTC_Lab_Cadence.jpg";
 import pgLabImg from "../assets/images/departments/electronics/labs/me_VLSI__ESD_lab.jpg";
-import aimlLabImg from "../assets/images/departments/electronics/labs/EXTC_AIMLLAB.jpg";
 
 export const defaultVision =
   "To impart quality education and excel in Electronics and Telecommunication Engineering research to serve the global society.";
@@ -184,14 +183,6 @@ export const defaultLabs = [
     resources:
       "Universal trainer kit for CPLD/FPGA, TK based TMS 320C6713 DSP starter kit, Cranes MSP-430 starter kit, Xilinx 13.4 and sysgen software.",
     facilities: "Area: 65.45 Sq.Mtrs | Systems: 14 PC | UPS: 10 KVA",
-  },
-  {
-    name: "YOGI-DIGI AIML Laboratory",
-    image: aimlLabImg,
-    resources:
-      "Server with 5th Generation Intel Xeon Scalable Processors, one compute node and one master node. Compute Node: Total Cores 32, Total Threads 64, Intel UPI Speed 20 GT/s, Processor Base Frequency 2.1 GHz. Master Node: Total Cores 12, Total Threads 24, Intel UPI Speed 16 GT/s, Processor Base Frequency 2.40 GHz. Smart Board, Jupyter Notebook Software.",
-    facilities:
-      "Area: 800 sq. ft. | Systems: 35 PC | High-Performance GPU Server | UPS: 25 KVA",
   },
 ];
 

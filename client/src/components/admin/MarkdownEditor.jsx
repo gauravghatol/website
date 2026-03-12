@@ -106,7 +106,7 @@ const parseFacilityGridMarkdown = (markdownText = "") => {
     const reportMatch = body.match(/\[View Detailed Report\]\(([^)]+)\)/i);
     const imageMatch = body.match(/\[Reference Image\]\(([^)]+)\)/i);
 
-    if (!title || !reportMatch || !imageMatch || !isLikelyImageUrl(imageMatch[1])) {
+    if (!title || !imageMatch || !isLikelyImageUrl(imageMatch[1])) {
       continue;
     }
 
@@ -120,7 +120,7 @@ const parseFacilityGridMarkdown = (markdownText = "") => {
       title,
       department: departmentMatch ? departmentMatch[1].trim() : "",
       description,
-      reportUrl: reportMatch[1].trim(),
+      reportUrl: reportMatch ? reportMatch[1].trim() : null,
       imageUrl: imageMatch[1].trim(),
     });
   }
@@ -530,6 +530,7 @@ const FacilityGridLayout = ({ markdownText }) => {
               {facility.description ? renderMarkdown(facility.description) : null}
 
               <div className="mt-3 flex flex-col items-start gap-2.5">
+                {facility.reportUrl ? (
                 <a
                   href={facility.reportUrl}
                   target="_blank"
@@ -538,6 +539,7 @@ const FacilityGridLayout = ({ markdownText }) => {
                 >
                   Download Detailed Report
                 </a>
+                ) : null}
 
                 <a
                   href={facility.imageUrl}

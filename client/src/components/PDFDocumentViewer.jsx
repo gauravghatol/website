@@ -10,22 +10,19 @@ const PDFDocumentViewer = ({ title, summary, pdfUrl, fileSize, year }) => {
   const [iframeError, setIframeError] = useState(false);
 
   const isExternalUrl = pdfUrl && (pdfUrl.startsWith("http://") || pdfUrl.startsWith("https://"));
+  const isLocalPath = pdfUrl && pdfUrl.startsWith("/uploads/");
+
+  const handleViewOnline = () => {
+    window.open(pdfUrl, "_blank");
+  };
 
   const handleDownload = () => {
-    if (isExternalUrl) {
-      // Use proxy endpoint for cross-origin downloads
-      const encodedUrl = encodeURIComponent(pdfUrl.replace('/api/documents/proxy-download?url=', ''));
-      const filename = encodeURIComponent((title || "document") + ".pdf");
-      const proxyUrl = `/api/documents/proxy-download?url=${encodedUrl}&filename=${filename}&download=true`;
-      window.open(proxyUrl, "_blank");
-    } else {
-      const link = document.createElement("a");
-      link.href = pdfUrl;
-      link.download = title ? `${title}.pdf` : "document.pdf";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    const link = document.createElement("a");
+    link.href = pdfUrl;
+    link.download = title ? `${title}.pdf` : "document.pdf";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // Truncate summary for preview
@@ -93,17 +90,19 @@ const PDFDocumentViewer = ({ title, summary, pdfUrl, fileSize, year }) => {
         {!iframeError ? (
           <div className="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
             <iframe
-              src={`${pdfUrl}#toolbar=1&navpanes=0`}
+              src={`${pdfUrl}#toolbar=1&navpanes=0&view=fit`}
               className="w-full h-full"
               title={title}
               onError={() => setIframeError(true)}
+              allow="fullscreen"
+              referrerPolicy="no-referrer"
             />
           </div>
         ) : (
-          <div className="w-full h-64 bg-gray-100 rounded-lg flex flex-col items-center justify-center text-gray-500">
-            <FaFilePdf className="text-5xl text-red-300 mb-4" />
-            <p className="text-lg font-medium">PDF Preview Unavailable</p>
-            <p className="text-sm mt-1">Click the button below to download or view the document</p>
+          <div className="w-full h-64 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex flex-col items-center justify-center text-gray-600 border-2 border-dashed border-gray-300">
+            <FaFilePdf className="text-5xl text-gray-400 mb-3" />
+            <p className="text-lg font-semibold text-gray-700">PDF Preview Not Available</p>
+            <p className="text-sm text-gray-500 mt-2 text-center px-4">External PDFs cannot be previewed here. Click "Open in New Tab" to view the document.</p>
           </div>
         )}
       </div>
@@ -111,21 +110,19 @@ const PDFDocumentViewer = ({ title, summary, pdfUrl, fileSize, year }) => {
       {/* Download Section */}
       <div className="p-6 bg-gray-50 flex flex-col sm:flex-row gap-3">
         <button
-          onClick={handleDownload}
+          onClick={handleViewOnline}
           className="flex-1 flex items-center justify-center gap-2 bg-ssgmce-blue hover:bg-ssgmce-dark-blue text-white py-3 px-6 rounded-lg transition-colors font-medium shadow-md hover:shadow-lg"
+        >
+          <FaExternalLinkAlt />
+          View PDF Online
+        </button>
+        <button
+          onClick={handleDownload}
+          className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-gray-700 py-3 px-6 rounded-lg transition-colors font-medium border border-gray-200"
         >
           <FaDownload />
           Download PDF
         </button>
-        <a
-          href={pdfUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-gray-700 py-3 px-6 rounded-lg transition-colors font-medium border border-gray-200"
-        >
-          <FaExternalLinkAlt />
-          Open in New Tab
-        </a>
       </div>
     </div>
   );

@@ -20,14 +20,15 @@ const DocumentsSidebar = () => {
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="bg-gradient-to-r from-amber-700 to-amber-800 p-4">
-        <h3 className="text-white font-bold text-lg flex items-center">
-          <FaFolderOpen className="mr-2" />
-          Documents
-        </h3>
-      </div>
-      <div className="p-4">
+    <aside className="hidden lg:block lg:sticky lg:top-36 lg:self-start lg:w-72 h-fit">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-gradient-to-r from-amber-700 to-amber-800 p-4">
+          <h3 className="text-white font-bold text-lg flex items-center">
+            <FaFolderOpen className="mr-2" />
+            Documents
+          </h3>
+        </div>
+        <div className="p-4">
         <nav>
           <ul className="space-y-2">
             {links.map((link) => (
@@ -49,6 +50,7 @@ const DocumentsSidebar = () => {
         </nav>
       </div>
     </div>
+    </aside>
   );
 };
 
