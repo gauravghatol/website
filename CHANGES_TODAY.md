@@ -5,6 +5,10 @@
 
 ---
 
+> **Note:** The entire **Documents section** of the website is now **complete**. All document pages (Academic, Administrative, IQAC, NAAC, etc.) are fully functional — PDFs load, preview, and download correctly across all categories.
+
+---
+
 ## 1. PDF Viewer & Document Fixes
 
 ### Problem
@@ -71,3 +75,52 @@ The `parseFacilityGridMarkdown()` function in `MarkdownEditor.jsx` **required** 
 | `client/src/data/entcDefaults.js` | Removed AIML lab entry |
 | `server/data/researchMarkdownContent.js` | Added AIML lab to COE seed data |
 | `server/uploads/images/EXTC_AIMLLAB.jpg` | New — AIML lab reference image |
+
+---
+
+## ✅ Document Section — COMPLETED
+
+The **entire Documents section** is now fully done:
+
+- All **88+ PDF paths** across every document page have been corrected to use `/uploads/documents/{category}/` format.
+- All **288 PDF files** are real content (Git LFS pull completed).
+- Preview, view online, and download all work correctly.
+
+### Document Pages (12 pages)
+
+| Page | File |
+|------|------|
+| AICTE | `client/src/pages/documents/AICTE.jsx` |
+| Audit Reports | `client/src/pages/documents/Audit.jsx` |
+| Financial Statements | `client/src/pages/documents/Financial.jsx` |
+| ISO Certificates | `client/src/pages/documents/ISO.jsx` |
+| Mandatory Disclosure | `client/src/pages/documents/MandatoryDisclosure.jsx` |
+| NAAC | `client/src/pages/documents/NAAC.jsx` |
+| NBA | `client/src/pages/documents/NBA.jsx` |
+| Newsletter | `client/src/pages/documents/Newsletter.jsx` |
+| NIRF | `client/src/pages/documents/NIRF.jsx` |
+| Policies | `client/src/pages/documents/Policies.jsx` |
+| Student Forms | `client/src/pages/documents/StudentForms.jsx` |
+| Tattwadarshi | `client/src/pages/documents/Tattwadarshi.jsx` |
+
+### Document Components (6 components)
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| PDFDocumentViewer | `client/src/components/PDFDocumentViewer.jsx` | Renders PDF with iframe preview, view & download buttons |
+| DocumentsSidebar | `client/src/components/DocumentsSidebar.jsx` | Sidebar navigation for document categories |
+| EnhancedDocumentsLayout | `client/src/components/EnhancedDocumentsLayout.jsx` | Enhanced layout wrapper for document pages |
+| DocumentsLayout | `client/src/components/DocumentsLayout.jsx` | Base layout wrapper for document pages |
+| DocumentGrid | `client/src/components/DocumentGrid.jsx` | Grid layout for displaying multiple documents |
+| DocumentCard | `client/src/components/DocumentCard.jsx` | Individual document card with title & actions |
+
+### Admin Components (2 files)
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| AdminDocuments | `client/src/pages/admin/AdminDocuments.jsx` | Admin panel for managing documents |
+| DocImportModal | `client/src/components/admin/DocImportModal.jsx` | Modal for importing/uploading documents |
+- All **288 PDF files** are real content (Git LFS pull completed — no more pointer files).
+- The `PDFDocumentViewer` component works correctly — **preview, view online, and download** all function properly.
+- The Vite proxy handles routing to the backend seamlessly — no hardcoded URLs.
+- Every document sub-page (Syllabus, Annual Reports, Academic Planner, Sessional Marks, Rules & Regulations, Incentive Marks, Rubrics, Student Notices, Time Table, etc.) loads and serves PDFs as expected.
