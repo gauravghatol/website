@@ -5,6 +5,21 @@
 
 ---
 
+> **⚠️ IMPORTANT FOR DEVELOPERS:** Before working on any section, refer to the relevant documentation files listed below. They contain setup instructions, architecture details, and conventions you need to follow.
+
+### Reference Docs (read these first)
+
+| Doc | Location | What It Covers |
+|-----|----------|----------------|
+| Project README | `README.md` | Overall architecture, tech stack, folder structure, how things connect |
+| Client README | `client/README.md` | Frontend setup, component patterns, GenericContentPage, sidebar components |
+| Server README | `server/README.md` | Backend API, MongoDB models, routes, controllers, file uploads |
+| Setup Guide | `SETUP_GUIDE.md` | How to set up the project locally (install, env vars, run dev servers) |
+| Department Guide | `DEPARTMENT_REFACTOR_GUIDE.md` | How department pages work, how to add/edit departments |
+| Update Departments | `UPDATE_DEPARTMENTS.md` | Step-by-step guide for updating department content |
+
+---
+
 > **Note:** The entire **Documents section** of the website is now **complete**. All document pages (Academic, Administrative, IQAC, NAAC, etc.) are fully functional — PDFs load, preview, and download correctly across all categories.
 
 ---
@@ -120,7 +135,45 @@ The **entire Documents section** is now fully done:
 |-----------|------|---------|
 | AdminDocuments | `client/src/pages/admin/AdminDocuments.jsx` | Admin panel for managing documents |
 | DocImportModal | `client/src/components/admin/DocImportModal.jsx` | Modal for importing/uploading documents |
-- All **288 PDF files** are real content (Git LFS pull completed — no more pointer files).
-- The `PDFDocumentViewer` component works correctly — **preview, view online, and download** all function properly.
-- The Vite proxy handles routing to the backend seamlessly — no hardcoded URLs.
-- Every document sub-page (Syllabus, Annual Reports, Academic Planner, Sessional Marks, Rules & Regulations, Incentive Marks, Rubrics, Student Notices, Time Table, etc.) loads and serves PDFs as expected.
+
+### PDF Storage
+
+All PDFs are stored in `server/uploads/documents/` organized by category:
+
+| Folder | Content |
+|--------|---------|
+| `server/uploads/documents/policies/` | 26 policy PDFs |
+| `server/uploads/documents/naac/` | NAAC certificates & reports |
+| `server/uploads/documents/nba/` | NBA accreditation letters |
+| `server/uploads/documents/nirf/` | NIRF ranking data |
+| `server/uploads/documents/audit/` | Energy, Environmental & Green audit reports |
+| `server/uploads/documents/aicte/` | AICTE approval letters |
+| `server/uploads/documents/financial/` | Audited financial statements |
+| `server/uploads/documents/newsletter/` | Newsletters |
+| `server/uploads/documents/tattwadarshi/` | e-Tattwadarshi magazines |
+| `server/uploads/documents/iso/` | ISO certificates & manuals |
+| `server/uploads/documents/disclosure/` | Mandatory disclosure documents |
+
+---
+
+## 4. PDF Preview Removed
+
+Removed the embedded iframe PDF preview from `PDFDocumentViewer.jsx`. Document cards now show only the header, summary, and View/Download buttons — cleaner and faster.
+
+## 5. Document Sidebar — Matched with Placements Sidebar
+
+Redesigned `DocumentsSidebar.jsx` to match the `PlacementSidebar.jsx` style:
+- White card with border (`rounded-xl shadow-sm border`)
+- Orange accent bar in header with "Quick Links" title
+- Active link: blue background with shadow and slide animation
+- **Subsection anchors** — when a page is active, its sub-sections expand below with smooth scroll:
+  - **NAAC** → Accreditation Status, Accreditation Cycles
+  - **NBA** → Accreditation Status, Accreditation Details
+  - **NIRF** → About NIRF, Rankings
+  - **Audit** → About, Energy Audit, Environmental Audit, Green Audit
+
+### Pages Updated with `id` Anchors
+- `client/src/pages/documents/NAAC.jsx` — `naac-status`, `naac-cycles`
+- `client/src/pages/documents/NBA.jsx` — `nba-status`, `nba-table`
+- `client/src/pages/documents/NIRF.jsx` — `nirf-about`, `nirf-rankings`
+- `client/src/pages/documents/Audit.jsx` — `audit-about`, `audit-energy`, `audit-environmental`, `audit-green`
