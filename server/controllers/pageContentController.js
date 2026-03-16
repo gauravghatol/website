@@ -2233,6 +2233,15 @@ const updatePage = async (req, res) => {
       }
     });
 
+    // Mongoose does not reliably detect changes on Mixed-type fields.
+    // Explicitly mark them so page.save() writes the update to the DB.
+    if (body.templateData !== undefined) {
+      page.markModified("templateData");
+    }
+    if (body.sections !== undefined) {
+      page.markModified("sections");
+    }
+
     page.lastEditedBy = req.user._id;
 
     await page.save();

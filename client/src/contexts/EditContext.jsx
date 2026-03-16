@@ -15,6 +15,7 @@ export const useEdit = () => {
       isEditing: false,
       data: {},
       updateData: () => {},
+      removeData: () => {},
       saveData: () => {},
     };
   }
@@ -30,6 +31,14 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
   const [isEditing, setIsEditing] = useState(true);
   const [data, setData] = useState(initialData);
   const [hasChanges, setHasChanges] = useState(false);
+
+  /**
+   * Discard all unsaved changes and revert to the initial data
+   */
+  const discardChanges = () => {
+    setData(initialData);
+    setHasChanges(false);
+  };
 
   /**
    * Update a field in the data object using a path string
@@ -55,6 +64,53 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
       }
 
       current[keys[keys.length - 1]] = value;
+      setHasChanges(true);
+      return newData;
+    });
+  };
+
+  /**
+   * Remove a field from the data object using a path string
+   * @param {string} path - Dot notation path (e.g. "templateData.placements.details.2025-26")
+   */
+  const removeData = (path) => {
+    setData((prevData) => {
+      if (!path) return prevData;
+
+      const keys = path.replace(/\[(\d+)\]/g, ".$1").split(".");
+      const newData = Array.isArray(prevData) ? [...prevData] : { ...prevData };
+      let current = newData;
+
+      for (let i = 0; i < keys.length - 1; i++) {
+        const key = keys[i];
+        const next = current?.[key];
+
+        if (next === undefined || next === null || typeof next !== "object") {
+          return prevData;
+        }
+
+        current[key] = Array.isArray(next) ? [...next] : { ...next };
+        current = current[key];
+      }
+
+      const lastKey = keys[keys.length - 1];
+
+      if (Array.isArray(current)) {
+        const index = Number(lastKey);
+        if (!Number.isInteger(index) || index < 0 || index >= current.length) {
+          return prevData;
+        }
+        current.splice(index, 1);
+      } else if (
+        current &&
+        typeof current === "object" &&
+        Object.prototype.hasOwnProperty.call(current, lastKey)
+      ) {
+        delete current[lastKey];
+      } else {
+        return prevData;
+      }
+
       setHasChanges(true);
       return newData;
     });
@@ -162,7 +218,9 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
     data,
     setData,
     updateData,
+    removeData,
     saveData,
+    discardChanges,
     addSection,
     removeSection,
     moveSection,

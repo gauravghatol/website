@@ -66,15 +66,16 @@ const EditableImage = ({
       const formData = new FormData();
       formData.append("image", file);
 
-      const response = await axios.post("/api/upload", formData, {
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/image", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      if (response.data.success) {
-        const newUrl = response.data.url;
-
+      const newUrl = response.data.fileUrl || response.data.url;
+      if (newUrl) {
         // Save the new URL
         if (onSave) {
           onSave(newUrl);
@@ -171,7 +172,9 @@ const EditableImage = ({
           {uploading ? (
             <div className="space-y-2">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Uploading...</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Uploading...
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -187,7 +190,9 @@ const EditableImage = ({
                   or drag and drop an image here
                 </p>
               </div>
-              <p className="text-xs text-gray-400 dark:text-gray-500">Maximum file size: 5MB</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">
+                Maximum file size: 5MB
+              </p>
             </div>
           )}
 
@@ -238,7 +243,9 @@ const EditableImage = ({
           className={`flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 cursor-pointer transition-colors ${className}`}
         >
           <FaUpload className="text-3xl text-gray-400 dark:text-gray-500 mb-2" />
-          <span className="text-sm text-gray-500 dark:text-gray-400">{placeholder}</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {placeholder}
+          </span>
         </div>
       )}
     </div>

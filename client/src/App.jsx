@@ -33,7 +33,6 @@ import Syllabus from "./pages/academics/Syllabus";
 import TeachingLearning from "./pages/academics/TeachingLearning";
 import TimeTable from "./pages/academics/TimeTable";
 import ACM from "./pages/activities/ACM";
-import CSESA from "./pages/activities/CSESA";
 import Cultural from "./pages/activities/Cultural";
 import DroneClub from "./pages/activities/DroneClub";
 import ECell from "./pages/activities/ECell";
@@ -44,15 +43,11 @@ import IEIElpo from "./pages/activities/IEIElpo";
 import IEIMech from "./pages/activities/IEIMech";
 import Innovo from "./pages/activities/Innovo";
 import ISTE from "./pages/activities/ISTE";
-import ITSA from "./pages/activities/ITSA";
 import MESA from "./pages/activities/MESA";
-import Mozilla from "./pages/activities/Mozilla";
-import NSS from "./pages/activities/NSS";
 import Parishkriti from "./pages/activities/Parishkriti";
 import Pursuit from "./pages/activities/Pursuit";
 import SAE from "./pages/activities/SAE";
 import SocialMedia from "./pages/activities/SocialMedia";
-import UBA from "./pages/activities/UBA";
 import Xtreme from "./pages/activities/Xtreme";
 import AdmissionProcess from "./pages/admissions/AdmissionProcess";
 import AdmissionsFAQs from "./pages/admissions/AdmissionsFAQs";
@@ -74,7 +69,6 @@ import EnTC from "./pages/departments/EnTC";
 import IT from "./pages/departments/IT";
 import MBA from "./pages/departments/MBA";
 import Mechanical from "./pages/departments/Mechanical";
-import FacultyDetail from "./pages/FacultyDetail";
 import AICTE from "./pages/documents/AICTE";
 import Audit from "./pages/documents/Audit";
 import Financial from "./pages/documents/Financial";
@@ -84,7 +78,6 @@ import NAAC from "./pages/documents/NAAC";
 import NBA from "./pages/documents/NBA";
 import Newsletter from "./pages/documents/Newsletter";
 import NIRF from "./pages/documents/NIRF";
-import NIRFRanking from "./pages/NIRFRanking";
 import StudentForms from "./pages/documents/StudentForms";
 import Policies from "./pages/documents/Policies";
 import Tattwadarshi from "./pages/documents/Tattwadarshi";
@@ -196,1361 +189,1490 @@ function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
-      <Router>
-        <ScrollToTop />
-        <Routes>
-          {/* Admin Login - Public Route */}
-          <Route path="/admin/login" element={<AdminLogin />} />
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
+          <ScrollToTop />
+          <Routes>
+            {/* Admin Login - Public Route */}
+            <Route path="/admin/login" element={<AdminLogin />} />
 
-          {/* Admin Routes - Protected (require authentication) */}
-          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/admin/pages" element={<ProtectedRoute><AdminPages /></ProtectedRoute>} />
-          <Route
-            path="/admin/pages/editor/:pageId"
-            element={<ProtectedRoute><VisualPageEditor /></ProtectedRoute>}
-          />
-          <Route path="/admin/visual/:pageId" element={<ProtectedRoute><VisualPageEditor /></ProtectedRoute>} />
-          <Route path="/admin/faculty" element={<ProtectedRoute><AdminFaculty /></ProtectedRoute>} />
-          <Route path="/admin/research" element={<ProtectedRoute><AdminResearch /></ProtectedRoute>} />
-          <Route path="/admin/departments" element={<ProtectedRoute><AdminDepartments /></ProtectedRoute>} />
-          <Route path="/admin/coordinators" element={<ProtectedRoute><AdminCoordinators /></ProtectedRoute>} />
-          <Route path="/admin/logs" element={<ProtectedRoute><AdminEditLogs /></ProtectedRoute>} />
-          <Route path="/admin/activity-log" element={<ProtectedRoute><AdminEditLogs /></ProtectedRoute>} />
-          <Route path="/admin/menu" element={<ProtectedRoute><AdminMenuManager /></ProtectedRoute>} />
-          <Route path="/admin/menu-manager" element={<ProtectedRoute><AdminMenuManager /></ProtectedRoute>} />
-          <Route path="/admin/popup-banner" element={<ProtectedRoute><AdminPopupBanner /></ProtectedRoute>} />
-          {/* Content Management Routes */}
-          <Route path="/admin/news" element={<ProtectedRoute><AdminNews /></ProtectedRoute>} />
-          <Route path="/admin/notices" element={<ProtectedRoute><AdminNotices /></ProtectedRoute>} />
-          <Route path="/admin/events" element={<ProtectedRoute><AdminEvents /></ProtectedRoute>} />
-          <Route path="/admin/documents" element={<ProtectedRoute><AdminDocuments /></ProtectedRoute>} />
-          <Route path="/admin/iqac" element={<ProtectedRoute><AdminIQAC /></ProtectedRoute>} />
-          <Route path="/admin/placements" element={<ProtectedRoute><AdminPlacements /></ProtectedRoute>} />
-          <Route path="/admin/recruiters" element={<ProtectedRoute><AdminRecruiters /></ProtectedRoute>} />
-          <Route path="/admin/testimonials" element={<ProtectedRoute><AdminTestimonials /></ProtectedRoute>} />
-          <Route path="/admin/nirf" element={<ProtectedRoute><AdminNIRF /></ProtectedRoute>} />
-          {/* System Routes */}
-          <Route path="/admin/analytics" element={<ProtectedRoute><AdminAnalytics /></ProtectedRoute>} />
-          <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
+            {/* Admin Routes - Protected (require authentication) */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/pages"
+              element={
+                <ProtectedRoute>
+                  <AdminPages />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/pages/editor/:pageId"
+              element={
+                <ProtectedRoute>
+                  <VisualPageEditor />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/visual/:pageId"
+              element={
+                <ProtectedRoute>
+                  <VisualPageEditor />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/faculty"
+              element={
+                <ProtectedRoute>
+                  <AdminFaculty />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/research"
+              element={
+                <ProtectedRoute>
+                  <AdminResearch />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/departments"
+              element={
+                <ProtectedRoute>
+                  <AdminDepartments />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/coordinators"
+              element={
+                <ProtectedRoute>
+                  <AdminCoordinators />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/logs"
+              element={
+                <ProtectedRoute>
+                  <AdminEditLogs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/activity-log"
+              element={
+                <ProtectedRoute>
+                  <AdminEditLogs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/menu"
+              element={
+                <ProtectedRoute>
+                  <AdminMenuManager />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/menu-manager"
+              element={
+                <ProtectedRoute>
+                  <AdminMenuManager />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/popup-banner"
+              element={
+                <ProtectedRoute>
+                  <AdminPopupBanner />
+                </ProtectedRoute>
+              }
+            />
+            {/* Content Management Routes */}
+            <Route
+              path="/admin/news"
+              element={
+                <ProtectedRoute>
+                  <AdminNews />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/notices"
+              element={
+                <ProtectedRoute>
+                  <AdminNotices />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/events"
+              element={
+                <ProtectedRoute>
+                  <AdminEvents />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/documents"
+              element={
+                <ProtectedRoute>
+                  <AdminDocuments />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/iqac"
+              element={
+                <ProtectedRoute>
+                  <AdminIQAC />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/placements"
+              element={
+                <ProtectedRoute>
+                  <AdminPlacements />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/recruiters"
+              element={
+                <ProtectedRoute>
+                  <AdminRecruiters />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/testimonials"
+              element={
+                <ProtectedRoute>
+                  <AdminTestimonials />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/nirf"
+              element={
+                <ProtectedRoute>
+                  <AdminNIRF />
+                </ProtectedRoute>
+              }
+            />
+            {/* System Routes */}
+            <Route
+              path="/admin/analytics"
+              element={
+                <ProtectedRoute>
+                  <AdminAnalytics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <ProtectedRoute>
+                  <AdminSettings />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Public Website Routes - With Layout (includes navbar & header) */}
-          <Route
-            path="/"
-            element={
-              <Layout>
-                <Home />
-              </Layout>
-            }
-          />
-          <Route
-            path="/about"
-            element={
-              <Layout>
-                <About />
-              </Layout>
-            }
-          />
-          <Route
-            path="/departments"
-            element={
-              <Layout>
-                <Departments />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admissions"
-            element={
-              <Layout>
-                <Admissions />
-              </Layout>
-            }
-          />
-          <Route
-            path="/faculty"
-            element={
-              <Layout>
-                <Faculty />
-              </Layout>
-            }
-          />
-          <Route
-            path="/faculty/:facultyId"
-            element={
-              <Layout>
-                <FacultyDetail />
-              </Layout>
-            }
-          />
-          <Route
-            path="/placements"
-            element={
-              <Layout>
-                <Placements />
-              </Layout>
-            }
-          />
-          <Route
-            path="/nirf"
-            element={
-              <Layout>
-                <NIRFRanking />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research"
-            element={
-              <Layout>
-                <Research />
-              </Layout>
-            }
-          />
-          <Route
-            path="/events"
-            element={
-              <Layout>
-                <Events />
-              </Layout>
-            }
-          />
-          <Route
-            path="/gallery"
-            element={
-              <Layout>
-                <Gallery />
-              </Layout>
-            }
-          />
-          <Route
-            path="/contact"
-            element={
-              <Layout>
-                <Contact />
-              </Layout>
-            }
-          />
-          <Route
-            path="/about/glance"
-            element={
-              <Layout>
-                <AtGlance />
-              </Layout>
-            }
-          />
-          <Route
-            path="/about/directors"
-            element={
-              <Layout>
-                <BoardOfDirectors />
-              </Layout>
-            }
-          />
-          <Route
-            path="/about/committees"
-            element={
-              <Layout>
-                <Committees />
-              </Layout>
-            }
-          />
-          <Route
-            path="/about/governing"
-            element={
-              <Layout>
-                <GoverningBody />
-              </Layout>
-            }
-          />
-          <Route
-            path="/about/inspiration"
-            element={
-              <Layout>
-                <Inspiration />
-              </Layout>
-            }
-          />
-          <Route
-            path="/about/structure"
-            element={
-              <Layout>
-                <Organization />
-              </Layout>
-            }
-          />
-          <Route
-            path="/about/principal"
-            element={
-              <Layout>
-                <PrincipalMsg />
-              </Layout>
-            }
-          />
-          <Route
-            path="/about/vision"
-            element={
-              <Layout>
-                <VisionMission />
-              </Layout>
-            }
-          />
-          <Route
-            path="/academics/planner"
-            element={
-              <Layout>
-                <AcademicPlanner />
-              </Layout>
-            }
-          />
-          <Route
-            path="/academics/reports"
-            element={
-              <Layout>
-                <AnnualReports />
-              </Layout>
-            }
-          />
-          <Route
-            path="/academics/incentive"
-            element={
-              <Layout>
-                <IncentiveMarks />
-              </Layout>
-            }
-          />
-          <Route
-            path="/academics/innovative"
-            element={
-              <Layout>
-                <InnovativePractices />
-              </Layout>
-            }
-          />
-          <Route
-            path="/academics/rubrics"
-            element={
-              <Layout>
-                <Rubrics />
-              </Layout>
-            }
-          />
-          <Route
-            path="/academics/rules"
-            element={
-              <Layout>
-                <RulesRegulations />
-              </Layout>
-            }
-          />
-          <Route
-            path="/academics/marks"
-            element={
-              <Layout>
-                <SessionalMarks />
-              </Layout>
-            }
-          />
-          <Route
-            path="/academics/notices"
-            element={
-              <Layout>
-                <StudentNotices />
-              </Layout>
-            }
-          />
-          <Route
-            path="/academics/syllabus"
-            element={
-              <Layout>
-                <Syllabus />
-              </Layout>
-            }
-          />
-          <Route
-            path="/academics/teaching"
-            element={
-              <Layout>
-                <TeachingLearning />
-              </Layout>
-            }
-          />
-          <Route
-            path="/academics/timetable"
-            element={
-              <Layout>
-                <TimeTable />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/acm"
-            element={
-              <Layout>
-                <ACM />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/cultural"
-            element={
-              <Layout>
-                <Cultural />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/drone"
-            element={
-              <Layout>
-                <DroneClub />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/ecell"
-            element={
-              <Layout>
-                <ECell />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/essa"
-            element={
-              <Layout>
-                <ESSA />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/gdg"
-            element={
-              <Layout>
-                <GDG />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/ieee"
-            element={
-              <Layout>
-                <IEEE />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/iei-elpo"
-            element={
-              <Layout>
-                <IEIElpo />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/iei-mech"
-            element={
-              <Layout>
-                <IEIMech />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/innovo"
-            element={
-              <Layout>
-                <Innovo />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/iste"
-            element={
-              <Layout>
-                <ISTE />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/mesa"
-            element={
-              <Layout>
-                <MESA />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/parishkriti"
-            element={
-              <Layout>
-                <Parishkriti />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/pursuit"
-            element={
-              <Layout>
-                <Pursuit />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/sae"
-            element={
-              <Layout>
-                <SAE />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/social"
-            element={
-              <Layout>
-                <SocialMedia />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/xtreme"
-            element={
-              <Layout>
-                <Xtreme />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/csesa"
-            element={
-              <Layout>
-                <CSESA />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/itsa"
-            element={
-              <Layout>
-                <ITSA />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/mozilla"
-            element={
-              <Layout>
-                <Mozilla />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/nss"
-            element={
-              <Layout>
-                <NSS />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activities/uba"
-            element={
-              <Layout>
-                <UBA />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admissions/dse"
-            element={
-              <Layout>
-                <DSEAdmissions />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admissions/fees"
-            element={
-              <Layout>
-                <FeeStructure />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admissions/brochure"
-            element={
-              <Layout>
-                <InstituteBrochure />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admissions/mba"
-            element={
-              <Layout>
-                <MBAAdmissions />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admissions/pg"
-            element={
-              <Layout>
-                <PGAdmissions />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admissions/phd"
-            element={
-              <Layout>
-                <PhDAdmissions />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admissions/ug"
-            element={
-              <Layout>
-                <UGAdmissions />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admissions/process"
-            element={
-              <Layout>
-                <AdmissionProcess />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admissions/faqs"
-            element={
-              <Layout>
-                <AdmissionsFAQs />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admissions/contact"
-            element={
-              <Layout>
-                <ContactAdminOffice />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admissions/documents"
-            element={
-              <Layout>
-                <DocumentsRequired />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admissions/scholarships"
-            element={
-              <Layout>
-                <Scholarships />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admissions/seat-matrix"
-            element={
-              <Layout>
-                <SeatMatrix />
-              </Layout>
-            }
-          />
+            {/* Public Website Routes - With Layout (includes navbar & header) */}
+            <Route
+              path="/"
+              element={
+                <Layout>
+                  <Home />
+                </Layout>
+              }
+            />
+            <Route
+              path="/about"
+              element={
+                <Layout>
+                  <About />
+                </Layout>
+              }
+            />
+            <Route
+              path="/departments"
+              element={
+                <Layout>
+                  <Departments />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admissions"
+              element={
+                <Layout>
+                  <Admissions />
+                </Layout>
+              }
+            />
+            <Route
+              path="/faculty"
+              element={
+                <Layout>
+                  <Faculty />
+                </Layout>
+              }
+            />
+            <Route
+              path="/faculty/:facultyId"
+              element={
+                <Layout>
+                  <FacultyDetail />
+                </Layout>
+              }
+            />
+            <Route
+              path="/placements"
+              element={
+                <Layout>
+                  <Placements />
+                </Layout>
+              }
+            />
+            <Route
+              path="/nirf"
+              element={
+                <Layout>
+                  <NIRFRanking />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research"
+              element={
+                <Layout>
+                  <Research />
+                </Layout>
+              }
+            />
+            <Route
+              path="/events"
+              element={
+                <Layout>
+                  <Events />
+                </Layout>
+              }
+            />
+            <Route
+              path="/gallery"
+              element={
+                <Layout>
+                  <Gallery />
+                </Layout>
+              }
+            />
+            <Route
+              path="/contact"
+              element={
+                <Layout>
+                  <Contact />
+                </Layout>
+              }
+            />
+            <Route
+              path="/about/glance"
+              element={
+                <Layout>
+                  <AtGlance />
+                </Layout>
+              }
+            />
+            <Route
+              path="/about/directors"
+              element={
+                <Layout>
+                  <BoardOfDirectors />
+                </Layout>
+              }
+            />
+            <Route
+              path="/about/committees"
+              element={
+                <Layout>
+                  <Committees />
+                </Layout>
+              }
+            />
+            <Route
+              path="/about/governing"
+              element={
+                <Layout>
+                  <GoverningBody />
+                </Layout>
+              }
+            />
+            <Route
+              path="/about/inspiration"
+              element={
+                <Layout>
+                  <Inspiration />
+                </Layout>
+              }
+            />
+            <Route
+              path="/about/structure"
+              element={
+                <Layout>
+                  <Organization />
+                </Layout>
+              }
+            />
+            <Route
+              path="/about/principal"
+              element={
+                <Layout>
+                  <PrincipalMsg />
+                </Layout>
+              }
+            />
+            <Route
+              path="/about/vision"
+              element={
+                <Layout>
+                  <VisionMission />
+                </Layout>
+              }
+            />
+            <Route
+              path="/academics/planner"
+              element={
+                <Layout>
+                  <AcademicPlanner />
+                </Layout>
+              }
+            />
+            <Route
+              path="/academics/reports"
+              element={
+                <Layout>
+                  <AnnualReports />
+                </Layout>
+              }
+            />
+            <Route
+              path="/academics/incentive"
+              element={
+                <Layout>
+                  <IncentiveMarks />
+                </Layout>
+              }
+            />
+            <Route
+              path="/academics/innovative"
+              element={
+                <Layout>
+                  <InnovativePractices />
+                </Layout>
+              }
+            />
+            <Route
+              path="/academics/rubrics"
+              element={
+                <Layout>
+                  <Rubrics />
+                </Layout>
+              }
+            />
+            <Route
+              path="/academics/rules"
+              element={
+                <Layout>
+                  <RulesRegulations />
+                </Layout>
+              }
+            />
+            <Route
+              path="/academics/marks"
+              element={
+                <Layout>
+                  <SessionalMarks />
+                </Layout>
+              }
+            />
+            <Route
+              path="/academics/notices"
+              element={
+                <Layout>
+                  <StudentNotices />
+                </Layout>
+              }
+            />
+            <Route
+              path="/academics/syllabus"
+              element={
+                <Layout>
+                  <Syllabus />
+                </Layout>
+              }
+            />
+            <Route
+              path="/academics/teaching"
+              element={
+                <Layout>
+                  <TeachingLearning />
+                </Layout>
+              }
+            />
+            <Route
+              path="/academics/timetable"
+              element={
+                <Layout>
+                  <TimeTable />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/acm"
+              element={
+                <Layout>
+                  <ACM />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/cultural"
+              element={
+                <Layout>
+                  <Cultural />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/drone"
+              element={
+                <Layout>
+                  <DroneClub />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/ecell"
+              element={
+                <Layout>
+                  <ECell />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/essa"
+              element={
+                <Layout>
+                  <ESSA />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/gdg"
+              element={
+                <Layout>
+                  <GDG />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/ieee"
+              element={
+                <Layout>
+                  <IEEE />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/iei-elpo"
+              element={
+                <Layout>
+                  <IEIElpo />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/iei-mech"
+              element={
+                <Layout>
+                  <IEIMech />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/innovo"
+              element={
+                <Layout>
+                  <Innovo />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/iste"
+              element={
+                <Layout>
+                  <ISTE />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/mesa"
+              element={
+                <Layout>
+                  <MESA />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/parishkriti"
+              element={
+                <Layout>
+                  <Parishkriti />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/pursuit"
+              element={
+                <Layout>
+                  <Pursuit />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/sae"
+              element={
+                <Layout>
+                  <SAE />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/social"
+              element={
+                <Layout>
+                  <SocialMedia />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activities/xtreme"
+              element={
+                <Layout>
+                  <Xtreme />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admissions/dse"
+              element={
+                <Layout>
+                  <DSEAdmissions />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admissions/fees"
+              element={
+                <Layout>
+                  <FeeStructure />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admissions/brochure"
+              element={
+                <Layout>
+                  <InstituteBrochure />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admissions/mba"
+              element={
+                <Layout>
+                  <MBAAdmissions />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admissions/pg"
+              element={
+                <Layout>
+                  <PGAdmissions />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admissions/phd"
+              element={
+                <Layout>
+                  <PhDAdmissions />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admissions/ug"
+              element={
+                <Layout>
+                  <UGAdmissions />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admissions/process"
+              element={
+                <Layout>
+                  <AdmissionProcess />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admissions/faqs"
+              element={
+                <Layout>
+                  <AdmissionsFAQs />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admissions/contact"
+              element={
+                <Layout>
+                  <ContactAdminOffice />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admissions/documents"
+              element={
+                <Layout>
+                  <DocumentsRequired />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admissions/scholarships"
+              element={
+                <Layout>
+                  <Scholarships />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admissions/seat-matrix"
+              element={
+                <Layout>
+                  <SeatMatrix />
+                </Layout>
+              }
+            />
 
-          <Route
-            path="/departments/applied-sciences"
-            element={
-              <Layout>
-                <AppliedSciences />
-              </Layout>
-            }
-          />
-          <Route
-            path="/departments/cse"
-            element={
-              <Layout>
-                <CSE />
-              </Layout>
-            }
-          />
-          <Route
-            path="/departments/electrical"
-            element={
-              <Layout>
-                <Electrical />
-              </Layout>
-            }
-          />
-          <Route
-            path="/departments/entc"
-            element={
-              <Layout>
-                <EnTC />
-              </Layout>
-            }
-          />
-          <Route
-            path="/departments/it"
-            element={
-              <Layout>
-                <IT />
-              </Layout>
-            }
-          />
-          <Route
-            path="/departments/mba"
-            element={
-              <Layout>
-                <MBA />
-              </Layout>
-            }
-          />
-          <Route
-            path="/departments/mechanical"
-            element={
-              <Layout>
-                <Mechanical />
-              </Layout>
-            }
-          />
-          <Route
-            path="/documents/aicte"
-            element={
-              <Layout>
-                <AICTE />
-              </Layout>
-            }
-          />
-          <Route
-            path="/documents/audit"
-            element={
-              <Layout>
-                <Audit />
-              </Layout>
-            }
-          />
-          <Route
-            path="/documents/financial"
-            element={
-              <Layout>
-                <Financial />
-              </Layout>
-            }
-          />
-          <Route
-            path="/documents/iso"
-            element={
-              <Layout>
-                <ISO />
-              </Layout>
-            }
-          />
-          <Route
-            path="/documents/disclosure"
-            element={
-              <Layout>
-                <MandatoryDisclosure />
-              </Layout>
-            }
-          />
-          <Route
-            path="/documents/naac"
-            element={
-              <Layout>
-                <NAAC />
-              </Layout>
-            }
-          />
-          <Route
-            path="/documents/nba"
-            element={
-              <Layout>
-                <NBA />
-              </Layout>
-            }
-          />
-          <Route
-            path="/documents/newsletter"
-            element={
-              <Layout>
-                <Newsletter />
-              </Layout>
-            }
-          />
-          <Route
-            path="/nirf"
-            element={
-              <Layout>
-                <NIRFRanking />
-              </Layout>
-            }
-          />
-          <Route
-            path="/documents/nirf"
-            element={
-              <Layout>
-                <NIRF />
-              </Layout>
-            }
-          />
-          <Route
-            path="/documents/student-forms"
-            element={
-              <Layout>
-                <StudentForms />
-              </Layout>
-            }
-          />
-          <Route
-            path="/documents/policies"
-            element={
-              <Layout>
-                <Policies />
-              </Layout>
-            }
-          />
-          <Route
-            path="/documents/tattwadarshi"
-            element={
-              <Layout>
-                <Tattwadarshi />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/admin"
-            element={
-              <Layout>
-                <AdministrativeOffice />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/library"
-            element={
-              <Layout>
-                <CentralLibrary />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/computing"
-            element={
-              <Layout>
-                <ComputingFacility />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/hostels"
-            element={
-              <Layout>
-                <Hostels />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/other"
-            element={
-              <Layout>
-                <OtherFacilities />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/sports"
-            element={
-              <Layout>
-                <Sports />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/hostel/aicte-letters"
-            element={
-              <Layout>
-                <AICTELetters />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/hostel/anti-ragging-committee"
-            element={
-              <Layout>
-                <AntiRaggingCommittee />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/hostel/anti-ragging-notices"
-            element={
-              <Layout>
-                <AntiRaggingNotices />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/hostel/anti-ragging-posters"
-            element={
-              <Layout>
-                <AntiRaggingPosters />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/hostel/anti-ragging-reports"
-            element={
-              <Layout>
-                <AntiRaggingReports />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/hostel/accommodation"
-            element={
-              <Layout>
-                <HostelAccommodation />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/hostel/admission-form"
-            element={
-              <Layout>
-                <HostelAdmissionForm />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/hostel/brochure"
-            element={
-              <Layout>
-                <HostelBrochure />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/hostel/committee"
-            element={
-              <Layout>
-                <HostelCommittee />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/hostel/fee-structure"
-            element={
-              <Layout>
-                <HostelFeeStructure />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/hostel/feedback"
-            element={
-              <Layout>
-                <HostelFeedback />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/hostel/policy"
-            element={
-              <Layout>
-                <HostelPolicy />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/hostel/minutes"
-            element={
-              <Layout>
-                <MinutesOfMeeting />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/library/about"
-            element={
-              <Layout>
-                <AboutLibrary />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/library/book-details"
-            element={
-              <Layout>
-                <BookDetails />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/library/coursera"
-            element={
-              <Layout>
-                <Coursera />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/library/facilities"
-            element={
-              <Layout>
-                <LibraryFacilities />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/library/rules"
-            element={
-              <Layout>
-                <LibraryRules />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/library/services"
-            element={
-              <Layout>
-                <LibraryServices />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/library/staff"
-            element={
-              <Layout>
-                <LibraryStaff />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/library/nptel"
-            element={
-              <Layout>
-                <NPTEL />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/library/nptel-faculty"
-            element={
-              <Layout>
-                <NPTELFacultyAchievers />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/library/nptel-students"
-            element={
-              <Layout>
-                <NPTELStudentAchievers />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/library/hours"
-            element={
-              <Layout>
-                <WorkingHours />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/sports/about"
-            element={
-              <Layout>
-                <AboutSportDepartment />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/sports/indoor"
-            element={
-              <Layout>
-                <IndoorSportFacility />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/sports/outdoor"
-            element={
-              <Layout>
-                <OutdoorSportFacility />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/sports/staff"
-            element={
-              <Layout>
-                <SportStaff />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/sports/statistics"
-            element={
-              <Layout>
-                <SportStatistics />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/sports/achievements"
-            element={
-              <Layout>
-                <SportsAchievements />
-              </Layout>
-            }
-          />
-          <Route
-            path="/facilities/sports/council"
-            element={
-              <Layout>
-                <SportsCouncil />
-              </Layout>
-            }
-          />
+            <Route
+              path="/departments/applied-sciences"
+              element={
+                <Layout>
+                  <AppliedSciences />
+                </Layout>
+              }
+            />
+            <Route
+              path="/departments/cse"
+              element={
+                <Layout>
+                  <CSE />
+                </Layout>
+              }
+            />
+            <Route
+              path="/departments/electrical"
+              element={
+                <Layout>
+                  <Electrical />
+                </Layout>
+              }
+            />
+            <Route
+              path="/departments/entc"
+              element={
+                <Layout>
+                  <EnTC />
+                </Layout>
+              }
+            />
+            <Route
+              path="/departments/it"
+              element={
+                <Layout>
+                  <IT />
+                </Layout>
+              }
+            />
+            <Route
+              path="/departments/mba"
+              element={
+                <Layout>
+                  <MBA />
+                </Layout>
+              }
+            />
+            <Route
+              path="/departments/mechanical"
+              element={
+                <Layout>
+                  <Mechanical />
+                </Layout>
+              }
+            />
+            <Route
+              path="/documents/aicte"
+              element={
+                <Layout>
+                  <AICTE />
+                </Layout>
+              }
+            />
+            <Route
+              path="/documents/audit"
+              element={
+                <Layout>
+                  <Audit />
+                </Layout>
+              }
+            />
+            <Route
+              path="/documents/financial"
+              element={
+                <Layout>
+                  <Financial />
+                </Layout>
+              }
+            />
+            <Route
+              path="/documents/iso"
+              element={
+                <Layout>
+                  <ISO />
+                </Layout>
+              }
+            />
+            <Route
+              path="/documents/disclosure"
+              element={
+                <Layout>
+                  <MandatoryDisclosure />
+                </Layout>
+              }
+            />
+            <Route
+              path="/documents/naac"
+              element={
+                <Layout>
+                  <NAAC />
+                </Layout>
+              }
+            />
+            <Route
+              path="/documents/nba"
+              element={
+                <Layout>
+                  <NBA />
+                </Layout>
+              }
+            />
+            <Route
+              path="/documents/newsletter"
+              element={
+                <Layout>
+                  <Newsletter />
+                </Layout>
+              }
+            />
+            <Route
+              path="/nirf"
+              element={
+                <Layout>
+                  <NIRFRanking />
+                </Layout>
+              }
+            />
+            <Route
+              path="/documents/nirf"
+              element={
+                <Layout>
+                  <NIRF />
+                </Layout>
+              }
+            />
+            <Route
+              path="/documents/student-forms"
+              element={
+                <Layout>
+                  <StudentForms />
+                </Layout>
+              }
+            />
+            <Route
+              path="/documents/policies"
+              element={
+                <Layout>
+                  <Policies />
+                </Layout>
+              }
+            />
+            <Route
+              path="/documents/tattwadarshi"
+              element={
+                <Layout>
+                  <Tattwadarshi />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/admin"
+              element={
+                <Layout>
+                  <AdministrativeOffice />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/library"
+              element={
+                <Layout>
+                  <CentralLibrary />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/computing"
+              element={
+                <Layout>
+                  <ComputingFacility />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/hostels"
+              element={
+                <Layout>
+                  <Hostels />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/other"
+              element={
+                <Layout>
+                  <OtherFacilities />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/sports"
+              element={
+                <Layout>
+                  <Sports />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/hostel/aicte-letters"
+              element={
+                <Layout>
+                  <AICTELetters />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/hostel/anti-ragging-committee"
+              element={
+                <Layout>
+                  <AntiRaggingCommittee />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/hostel/anti-ragging-notices"
+              element={
+                <Layout>
+                  <AntiRaggingNotices />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/hostel/anti-ragging-posters"
+              element={
+                <Layout>
+                  <AntiRaggingPosters />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/hostel/anti-ragging-reports"
+              element={
+                <Layout>
+                  <AntiRaggingReports />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/hostel/accommodation"
+              element={
+                <Layout>
+                  <HostelAccommodation />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/hostel/admission-form"
+              element={
+                <Layout>
+                  <HostelAdmissionForm />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/hostel/brochure"
+              element={
+                <Layout>
+                  <HostelBrochure />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/hostel/committee"
+              element={
+                <Layout>
+                  <HostelCommittee />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/hostel/fee-structure"
+              element={
+                <Layout>
+                  <HostelFeeStructure />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/hostel/feedback"
+              element={
+                <Layout>
+                  <HostelFeedback />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/hostel/policy"
+              element={
+                <Layout>
+                  <HostelPolicy />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/hostel/minutes"
+              element={
+                <Layout>
+                  <MinutesOfMeeting />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/library/about"
+              element={
+                <Layout>
+                  <AboutLibrary />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/library/book-details"
+              element={
+                <Layout>
+                  <BookDetails />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/library/coursera"
+              element={
+                <Layout>
+                  <Coursera />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/library/facilities"
+              element={
+                <Layout>
+                  <LibraryFacilities />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/library/rules"
+              element={
+                <Layout>
+                  <LibraryRules />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/library/services"
+              element={
+                <Layout>
+                  <LibraryServices />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/library/staff"
+              element={
+                <Layout>
+                  <LibraryStaff />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/library/nptel"
+              element={
+                <Layout>
+                  <NPTEL />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/library/nptel-faculty"
+              element={
+                <Layout>
+                  <NPTELFacultyAchievers />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/library/nptel-students"
+              element={
+                <Layout>
+                  <NPTELStudentAchievers />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/library/hours"
+              element={
+                <Layout>
+                  <WorkingHours />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/sports/about"
+              element={
+                <Layout>
+                  <AboutSportDepartment />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/sports/indoor"
+              element={
+                <Layout>
+                  <IndoorSportFacility />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/sports/outdoor"
+              element={
+                <Layout>
+                  <OutdoorSportFacility />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/sports/staff"
+              element={
+                <Layout>
+                  <SportStaff />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/sports/statistics"
+              element={
+                <Layout>
+                  <SportStatistics />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/sports/achievements"
+              element={
+                <Layout>
+                  <SportsAchievements />
+                </Layout>
+              }
+            />
+            <Route
+              path="/facilities/sports/council"
+              element={
+                <Layout>
+                  <SportsCouncil />
+                </Layout>
+              }
+            />
 
-          <Route
-            path="/iqac/aqar"
-            element={
-              <Layout>
-                <AQAR />
-              </Layout>
-            }
-          />
-          <Route
-            path="/iqac/practices"
-            element={
-              <Layout>
-                <BestPractices />
-              </Layout>
-            }
-          />
-          <Route
-            path="/iqac/composition"
-            element={
-              <Layout>
-                <Composition />
-              </Layout>
-            }
-          />
-          <Route
-            path="/iqac/distinctiveness"
-            element={
-              <Layout>
-                <Distinctiveness />
-              </Layout>
-            }
-          />
-          <Route
-            path="/iqac/econtent"
-            element={
-              <Layout>
-                <EContent />
-              </Layout>
-            }
-          />
-          <Route
-            path="/iqac/econtent-facility"
-            element={
-              <Layout>
-                <EContentFacility />
-              </Layout>
-            }
-          />
-          <Route
-            path="/iqac/analysis"
-            element={
-              <Layout>
-                <FeedbackAnalysis />
-              </Layout>
-            }
-          />
-          <Route
-            path="/iqac/feedback"
-            element={
-              <Layout>
-                <FeedbackReport />
-              </Layout>
-            }
-          />
-          <Route
-            path="/iqac/equity"
-            element={
-              <Layout>
-                <GenderEquity />
-              </Layout>
-            }
-          />
-          <Route
-            path="/iqac/gender"
-            element={
-              <Layout>
-                <GenderPlan />
-              </Layout>
-            }
-          />
-          <Route
-            path="/iqac/vision"
-            element={
-              <Layout>
-                <IQACVision />
-              </Layout>
-            }
-          />
-          <Route
-            path="/iqac/minutes"
-            element={
-              <Layout>
-                <Minutes />
-              </Layout>
-            }
-          />
-          <Route
-            path="/iqac/naac"
-            element={
-              <Layout>
-                <NAACSSR />
-              </Layout>
-            }
-          />
-          <Route
-            path="/iqac/survey"
-            element={
-              <Layout>
-                <StudentSurvey />
-              </Layout>
-            }
-          />
-          <Route
-            path="/placements/about"
-            element={
-              <Layout>
-                <AboutTP />
-              </Layout>
-            }
-          />
-          <Route
-            path="/placements/activities"
-            element={
-              <Layout>
-                <Activities />
-              </Layout>
-            }
-          />
-          <Route
-            path="/placements/alumni"
-            element={
-              <Layout>
-                <AlumniRegistration />
-              </Layout>
-            }
-          />
-          <Route
-            path="/placements/career"
-            element={
-              <Layout>
-                <CareerGuidance />
-              </Layout>
-            }
-          />
-          <Route
-            path="/placements/coordinators"
-            element={
-              <Layout>
-                <Coordinators />
-              </Layout>
-            }
-          />
-          <Route
-            path="/placements/goals"
-            element={
-              <Layout>
-                <Goals />
-              </Layout>
-            }
-          />
-          <Route
-            path="/placements/internship"
-            element={
-              <Layout>
-                <Internship />
-              </Layout>
-            }
-          />
-          <Route
-            path="/placements/objectives"
-            element={
-              <Layout>
-                <Objectives />
-              </Layout>
-            }
-          />
-          <Route
-            path="/placements/brochure"
-            element={
-              <Layout>
-                <PlacementBrochure />
-              </Layout>
-            }
-          />
-          <Route
-            path="/placements/statistics"
-            element={
-              <Layout>
-                <PlacementStats />
-              </Layout>
-            }
-          />
-          <Route
-            path="/placements/recruiters"
-            element={
-              <Layout>
-                <Recruiters />
-              </Layout>
-            }
-          />
-          <Route
-            path="/placements/contact"
-            element={
-              <Layout>
-                <PlacementContact />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/coe"
-            element={
-              <Layout>
-                <COE />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/collaboration"
-            element={
-              <Layout>
-                <Collaboration />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/iic"
-            element={
-              <Layout>
-                <IIC />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/ipr"
-            element={
-              <Layout>
-                <IPR />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/nisp"
-            element={
-              <Layout>
-                <NISP />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/phd"
-            element={
-              <Layout>
-                <PhdCentre />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/publications"
-            element={
-              <Layout>
-                <Publications />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/rdc"
-            element={
-              <Layout>
-                <RDCell />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/policy"
-            element={
-              <Layout>
-                <ResearchPolicy />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/sabbatical"
-            element={
-              <Layout>
-                <Sabbatical />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/ug-projects"
-            element={
-              <Layout>
-                <UGProjects />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/funded-projects"
-            element={
-              <Layout>
-                <FundedProjects />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/innovation-cell"
-            element={
-              <Layout>
-                <InnovationCell />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/patents"
-            element={
-              <Layout>
-                <PatentsIP />
-              </Layout>
-            }
-          />
-          <Route
-            path="/research/overview"
-            element={
-              <Layout>
-                <ResearchOverview />
-              </Layout>
-            }
-          />
-
-        </Routes>
-      </Router>
+            <Route
+              path="/iqac/aqar"
+              element={
+                <Layout>
+                  <AQAR />
+                </Layout>
+              }
+            />
+            <Route
+              path="/iqac/practices"
+              element={
+                <Layout>
+                  <BestPractices />
+                </Layout>
+              }
+            />
+            <Route
+              path="/iqac/composition"
+              element={
+                <Layout>
+                  <Composition />
+                </Layout>
+              }
+            />
+            <Route
+              path="/iqac/distinctiveness"
+              element={
+                <Layout>
+                  <Distinctiveness />
+                </Layout>
+              }
+            />
+            <Route
+              path="/iqac/econtent"
+              element={
+                <Layout>
+                  <EContent />
+                </Layout>
+              }
+            />
+            <Route
+              path="/iqac/econtent-facility"
+              element={
+                <Layout>
+                  <EContentFacility />
+                </Layout>
+              }
+            />
+            <Route
+              path="/iqac/analysis"
+              element={
+                <Layout>
+                  <FeedbackAnalysis />
+                </Layout>
+              }
+            />
+            <Route
+              path="/iqac/feedback"
+              element={
+                <Layout>
+                  <FeedbackReport />
+                </Layout>
+              }
+            />
+            <Route
+              path="/iqac/equity"
+              element={
+                <Layout>
+                  <GenderEquity />
+                </Layout>
+              }
+            />
+            <Route
+              path="/iqac/gender"
+              element={
+                <Layout>
+                  <GenderPlan />
+                </Layout>
+              }
+            />
+            <Route
+              path="/iqac/vision"
+              element={
+                <Layout>
+                  <IQACVision />
+                </Layout>
+              }
+            />
+            <Route
+              path="/iqac/minutes"
+              element={
+                <Layout>
+                  <Minutes />
+                </Layout>
+              }
+            />
+            <Route
+              path="/iqac/naac"
+              element={
+                <Layout>
+                  <NAACSSR />
+                </Layout>
+              }
+            />
+            <Route
+              path="/iqac/survey"
+              element={
+                <Layout>
+                  <StudentSurvey />
+                </Layout>
+              }
+            />
+            <Route
+              path="/placements/about"
+              element={
+                <Layout>
+                  <AboutTP />
+                </Layout>
+              }
+            />
+            <Route
+              path="/placements/activities"
+              element={
+                <Layout>
+                  <Activities />
+                </Layout>
+              }
+            />
+            <Route
+              path="/placements/alumni"
+              element={
+                <Layout>
+                  <AlumniRegistration />
+                </Layout>
+              }
+            />
+            <Route
+              path="/placements/career"
+              element={
+                <Layout>
+                  <CareerGuidance />
+                </Layout>
+              }
+            />
+            <Route
+              path="/placements/coordinators"
+              element={
+                <Layout>
+                  <Coordinators />
+                </Layout>
+              }
+            />
+            <Route
+              path="/placements/goals"
+              element={
+                <Layout>
+                  <Goals />
+                </Layout>
+              }
+            />
+            <Route
+              path="/placements/internship"
+              element={
+                <Layout>
+                  <Internship />
+                </Layout>
+              }
+            />
+            <Route
+              path="/placements/objectives"
+              element={
+                <Layout>
+                  <Objectives />
+                </Layout>
+              }
+            />
+            <Route
+              path="/placements/brochure"
+              element={
+                <Layout>
+                  <PlacementBrochure />
+                </Layout>
+              }
+            />
+            <Route
+              path="/placements/statistics"
+              element={
+                <Layout>
+                  <PlacementStats />
+                </Layout>
+              }
+            />
+            <Route
+              path="/placements/recruiters"
+              element={
+                <Layout>
+                  <Recruiters />
+                </Layout>
+              }
+            />
+            <Route
+              path="/placements/contact"
+              element={
+                <Layout>
+                  <PlacementContact />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/coe"
+              element={
+                <Layout>
+                  <COE />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/collaboration"
+              element={
+                <Layout>
+                  <Collaboration />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/iic"
+              element={
+                <Layout>
+                  <IIC />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/ipr"
+              element={
+                <Layout>
+                  <IPR />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/nisp"
+              element={
+                <Layout>
+                  <NISP />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/phd"
+              element={
+                <Layout>
+                  <PhdCentre />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/publications"
+              element={
+                <Layout>
+                  <Publications />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/rdc"
+              element={
+                <Layout>
+                  <RDCell />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/policy"
+              element={
+                <Layout>
+                  <ResearchPolicy />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/sabbatical"
+              element={
+                <Layout>
+                  <Sabbatical />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/ug-projects"
+              element={
+                <Layout>
+                  <UGProjects />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/funded-projects"
+              element={
+                <Layout>
+                  <FundedProjects />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/innovation-cell"
+              element={
+                <Layout>
+                  <InnovationCell />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/patents"
+              element={
+                <Layout>
+                  <PatentsIP />
+                </Layout>
+              }
+            />
+            <Route
+              path="/research/overview"
+              element={
+                <Layout>
+                  <ResearchOverview />
+                </Layout>
+              }
+            />
+          </Routes>
+        </Router>
       </ThemeProvider>
     </AuthProvider>
   );

@@ -57,8 +57,9 @@ export const defaultLabs = [
 ];
 export const defaultHodMessage =
   "Welcome to the Department of Computer Science & Engineering. Our department is committed to providing quality education and fostering innovation in the field of computer science.";
-export const defaultVision =
-  "To be a center of excellence in Computer Science & Engineering education and research, producing globally competitive professionals with strong ethical values.";
+export const defaultVision = [
+  "To be a center of excellence in Computer Science & Engineering education and research, producing globally competitive professionals with strong ethical values.",
+];
 export const defaultMission = [
   "To provide quality education in Computer Science & Engineering through innovative teaching-learning processes.",
   "To foster research and development activities in emerging areas of computer science.",
@@ -4022,7 +4023,7 @@ export const defaultNewsletters = {
     title: "News Letter 2025-26 (Volume I)",
     description:
       "Stay updated with the latest happenings, student achievements, faculty contributions, and department events.",
-    link: "https://www.ssgmce.ac.in/images/cse_faculty/newsletters/news-letter-25-26-I.pdf",
+    link: "/uploads/images/cse/activities/news-letter-25-26-I.pdf",
   },
   archives: [
     {
@@ -4035,67 +4036,67 @@ export const defaultNewsletters = {
       date: "2024-25",
       vol: "News Letter 2024-25 (Volume I)",
       term: "Term I",
-      link: "https://www.ssgmce.ac.in/images/cse_faculty/newsletters/CSE_news-letter-24-25-I.pdf",
+      link: "/uploads/images/cse/activities/CSE_news-letter-24-25-I.pdf",
     },
     {
       date: "2023-24",
       vol: "News Letter 2023-24 (Volume II)",
       term: "Term II",
-      link: "https://www.ssgmce.ac.in/images/cse_faculty/newsletters/CSE_news-letter-23-24-II.pdf",
+      link: "/uploads/images/cse/activities/CSE_news-letter-23-24-II.pdf",
     },
     {
       date: "2023-24",
       vol: "News Letter 2023-24 (Volume I)",
       term: "Term I",
-      link: "https://www.ssgmce.ac.in/images/cse_faculty/newsletters/CSE_news-letter-23-24-I.pdf",
+      link: "/uploads/images/cse/activities/CSE_news-letter-23-24-I.pdf",
     },
     {
       date: "2022-23",
       vol: "News Letter 2022-23 (Volume II)",
       term: "Term II",
-      link: "https://www.ssgmce.ac.in/images/cse_faculty/newsletters/CSE_news-letter-22-23-II.pdf",
+      link: "/uploads/images/cse/activities/CSE_news-letter-22-23-II.pdf",
     },
     {
       date: "2022-23",
       vol: "News Letter 2022-23 (Volume I)",
       term: "Term I",
-      link: "https://www.ssgmce.ac.in/images/cse_faculty/newsletters/CSE_news-letter-22-23-I.pdf",
+      link: "/uploads/images/cse/activities/CSE_news-letter-22-23-I.pdf",
     },
     {
       date: "2021-22",
       vol: "News Letter 2021-22 (Volume II)",
       term: "Term II",
-      link: "https://www.ssgmce.ac.in/images/cse_faculty/newsletters/CSE_news-letter-21-22-II.pdf",
+      link: "/uploads/images/cse/activities/CSE_news-letter-21-22-II.pdf",
     },
     {
       date: "2021-22",
       vol: "News Letter 2021-22 (Volume I)",
       term: "Term I",
-      link: "https://www.ssgmce.ac.in/images/cse_faculty/newsletters/CSE_news-letter-21-22-I.pdf",
+      link: "/uploads/images/cse/activities/CSE_news-letter-21-22-I.pdf",
     },
     {
       date: "2020-21",
       vol: "News Letter 2020-21 (Volume II)",
       term: "Term II",
-      link: "https://www.ssgmce.ac.in/images/cse_faculty/newsletters/CSE_news-letter-20-21-II.pdf",
+      link: "/uploads/images/cse/activities/CSE_news-letter-20-21-II.pdf",
     },
     {
       date: "2020-21",
       vol: "News Letter 2020-21 (Volume I)",
       term: "Term I",
-      link: "https://www.ssgmce.ac.in/images/cse_faculty/newsletters/CSE_news-letter-20-21-I.pdf",
+      link: "/uploads/images/cse/activities/CSE_news-letter-20-21-I.pdf",
     },
     {
       date: "2019-20",
       vol: "News Letter 2019-20 (Volume II)",
       term: "Term II",
-      link: "https://www.ssgmce.ac.in/images/cse_faculty/newsletters/CSE_news-letter-19-20-II.pdf",
+      link: "/uploads/images/cse/activities/CSE_news-letter-19-20-II.pdf",
     },
     {
       date: "2019-20",
       vol: "News Letter 2019-20 (Volume I)",
       term: "Term I",
-      link: "https://www.ssgmce.ac.in/images/cse_faculty/newsletters/CSE_news-letter-19-20-I.pdf",
+      link: "/uploads/images/cse/activities/CSE_news-letter-19-20-I.pdf",
     },
   ],
 };
@@ -4450,4 +4451,204 @@ export const defaultAchievements = {
   ],
 };
 export const defaultPlacements = [];
-export const defaultStudentProjects = [];
+
+// ─── Pride section: Markdown converter helpers ───────────────────────────────
+
+export function prideGateToMarkdown(gateData = []) {
+  return gateData
+    .map((yr) => {
+      const header = yr.title || `List of GATE Qualified Students ${yr.year}`;
+      const rows = yr.students.map(
+        (s) =>
+          `| ${s[0] || ""} | ${s[1] || ""} | ${s[2] || ""} | ${s[3] || ""} |`,
+      );
+      return [
+        `## ${header}`,
+        "",
+        "| S. N. | Student Name | Normalized Valid Score | Category |",
+        "|-------|-------------|------------------------|----------|",
+        ...rows,
+      ].join("\n");
+    })
+    .join("\n\n");
+}
+
+export function prideToppersToMarkdown({ be = [], me = [] } = {}) {
+  const renderCategory = (label, records) => {
+    const rows = records.flatMap((yr) =>
+      yr.records.map(
+        (r) =>
+          `| ${yr.year} | ${r.name || ""} | ${r.rank || ""} | ${r.score || ""} |`,
+      ),
+    );
+    return [
+      `## ${label}`,
+      "",
+      "| Year | Name of the Student | University Rank | CGPA/Percentage |",
+      "|------|---------------------|-----------------|-----------------|",
+      ...rows,
+    ].join("\n");
+  };
+  return [
+    renderCategory("B.E. UNIVERSITY RANK HOLDERS", be),
+    "",
+    renderCategory("M.E. UNIVERSITY RANK HOLDERS", me),
+  ].join("\n");
+}
+
+export function prideAlumniToMarkdown(
+  alumniData = [],
+  title = "Top Alumni of Department",
+) {
+  const rows = alumniData.map(
+    (row, i) =>
+      `| ${i + 1}. | ${row[0] || ""} | ${row[1] || ""} | ${row[2] || ""} |`,
+  );
+  return [
+    `## ${title}`,
+    "",
+    "| S. N. | Names of Alumni | Position | Names of Organisation |",
+    "|-------|-----------------|----------|-----------------------|",
+    ...rows,
+  ].join("\n");
+}
+
+export const defaultPrideGateMarkdown = prideGateToMarkdown(defaultPrideGate);
+export const defaultPrideTopperMarkdown = prideToppersToMarkdown({
+  be: defaultPrideToppersBE,
+  me: defaultPrideToppersME,
+});
+export const defaultPrideAlumniMarkdown = prideAlumniToMarkdown(
+  defaultPrideAlumni,
+  "Top Alumni of Department",
+);
+export const defaultStudentProjects = {
+  "2024-25": [
+    {
+      no: 1,
+      title:
+        "GenAI-Powered Application Tracking System: Enhancing Recruitment with Skill Fitment Analysis.",
+      guide: "Dr. J. M. Patil",
+      award: "1st Rank",
+    },
+    {
+      no: 2,
+      title:
+        "Automated guide for Accurate and Faster Packaging of E-Commerce Orders.",
+      guide: "Prof. C. M. Mankar",
+      award: "2nd Rank",
+    },
+  ],
+  "2023-24": [
+    {
+      no: 1,
+      title: "Digital Document Verification using Blockchain Technology.",
+      guide: "Dr. J. M. Patil",
+      award: "1st Rank",
+    },
+    {
+      no: 2,
+      title: "Voice Analysis for Disease Screening.",
+      guide: "Prof. V. S. Mahalle",
+      award: "2nd Rank",
+    },
+  ],
+  "2022-23": [
+    {
+      no: 1,
+      title: "Product Authentication System using Blockchain",
+      guide: "Dr. N.M. Kandoi",
+      award: "1st Rank",
+    },
+    {
+      no: 2,
+      title: "Mental Health Therapy App",
+      guide: "Dr. J.M.P Patil",
+      award: "2nd Rank",
+    },
+  ],
+  "2021-22": [
+    {
+      no: 1,
+      title:
+        "Autonomous Robotics Using VSLAM Technology and Implementation Using ARM Architecture.",
+      guide: "Prof. V. S. Mahalle",
+      award: "1st Rank",
+    },
+    {
+      no: 2,
+      title: "Sentiment Analysis of Marathi Language.",
+      guide: "Prof. KP Sable",
+      award: "2nd Rank",
+    },
+  ],
+};
+
+export function cseStudentProjectsToMarkdown(projectsData = {}) {
+  return Object.keys(projectsData)
+    .sort()
+    .reverse()
+    .map((year) => {
+      const header = `## ${year}\n\n| Sr. No | Title of Project | Guided By | Award/Reward |\n|--------|-----------------|-----------|--------------|`;
+      const projects = projectsData[year] || [];
+      if (!projects.length) return `${header}\n| — | No records | — | — |`;
+      const rows = projects
+        .map((p) => `| ${p.no} | ${p.title} | ${p.guide} | ${p.award} |`)
+        .join("\n");
+      return `${header}\n${rows}`;
+    })
+    .join("\n\n");
+}
+
+export function cseUgProjectsToMarkdown(
+  projectsByYear = {},
+  preferredYears = [],
+) {
+  const getReportLabel = (project = {}) => {
+    const explicitName = String(project?.fileName || "").trim();
+    if (explicitName) return explicitName;
+
+    const link = String(project?.link || "").trim();
+    if (!link) return "Project Report";
+
+    const fileName = link.split("/").pop()?.split("?")[0] || "";
+    return fileName || "Project Report";
+  };
+
+  const yearOrder = [
+    ...preferredYears,
+    ...Object.keys(projectsByYear || {}).filter(
+      (year) => !preferredYears.includes(year),
+    ),
+  ];
+
+  return yearOrder
+    .filter(Boolean)
+    .map((year) => {
+      const projects = Array.isArray(projectsByYear?.[year])
+        ? projectsByYear[year]
+        : [];
+
+      const header = [
+        `## ${year}`,
+        "",
+        "| Group No. | Project Title | Project Report |",
+        "|-----------|---------------|----------------|",
+      ];
+
+      if (!projects.length) {
+        return [...header, "| - | No projects added yet. | - |"].join("\n");
+      }
+
+      const rows = projects.map((project) => {
+        const reportCell = project?.link
+          ? `[${getReportLabel(project)}](${project.link})`
+          : "-";
+
+        return `| ${project?.id || "-"} | ${project?.title || "-"} | ${reportCell} |`;
+      });
+
+      return [...header, ...rows].join("\n");
+    })
+    .join("\n\n");
+}

@@ -13,8 +13,9 @@ import vlsiLabImg from "../assets/images/departments/electronics/labs/EXTC_Lab_C
 import pgLabImg from "../assets/images/departments/electronics/labs/me_VLSI__ESD_lab.jpg";
 import aimlLabImg from "../assets/images/departments/electronics/labs/EXTC_AIMLLAB.jpg";
 
-export const defaultVision =
-  "To impart quality education and excel in Electronics and Telecommunication Engineering research to serve the global society.";
+export const defaultVision = [
+  "To impart quality education and excel in Electronics and Telecommunication Engineering research to serve the global society.",
+];
 
 export const defaultMission = [
   "To produce Electronics & Telecommunication engineers with a strong foundation of Mathematics, Science and Technology to fulfill needs of society.",
@@ -97,11 +98,11 @@ export const defaultHodMessage = {
   qualification: "Associate Professor",
   photo: "",
   message1:
-    "The Department of Electronics and Telecommunication Engineering is one of the major departments of SSGMCE, Shegaon established in <strong>1983</strong> offering programs: <strong>Under Graduate, Post Graduate and Ph.D.</strong> It is affiliated to Sant Gadge Baba Amravati University, Amravati, recognized by AICTE, New Delhi and approved by DTE, Maharashtra.",
+    "The Department of Electronics and Telecommunication Engineering is one of the major departments of SSGMCE, Shegaon established in **1983** offering programs: **Under Graduate, Post Graduate and Ph.D.** It is affiliated to Sant Gadge Baba Amravati University, Amravati, recognized by AICTE, New Delhi and approved by DTE, Maharashtra.",
   message2:
-    "The Undergraduate program of the Department of Electronics and Telecommunication Engineering has the recognition of being accredited <strong>05 times by NBA, AICTE, New Delhi</strong>. The post graduate program was also accredited once by NBA, AICTE, New Delhi. This achievement reflects our commitment to maintaining the highest standards of education and continuous improvement.",
+    "The Undergraduate program of the Department of Electronics and Telecommunication Engineering has the recognition of being accredited **05 times by NBA, AICTE, New Delhi**. The post graduate program was also accredited once by NBA, AICTE, New Delhi. This achievement reflects our commitment to maintaining the highest standards of education and continuous improvement.",
   message3:
-    "All the laboratories in the department are <strong>well equipped</strong> to run the program specific curriculum prescribed by the University. All laboratories are recognized and approved as research laboratories for Ph.D. work by SGB Amravati University. The department is having <strong>qualified and experienced faculty members</strong> dedicated to imparting quality education and fostering innovation among students.",
+    "All the laboratories in the department are **well equipped** to run the program specific curriculum prescribed by the University. All laboratories are recognized and approved as research laboratories for Ph.D. work by SGB Amravati University. The department is having **qualified and experienced faculty members** dedicated to imparting quality education and fostering innovation among students.",
   signatureName: "Dr. D. D. Nawgaje",
   signatureTitle:
     "Head, Dept. of Electronics and Telecommunication Engineering",
@@ -448,6 +449,80 @@ export const defaultPrideAlumni = [
     "JioFiber",
   ],
 ];
+
+// ---------- Pride section Markdown converters ----------
+
+export function entcPrideGateToMarkdown(gateData = []) {
+  if (!Array.isArray(gateData) || gateData.length === 0) return "";
+  return gateData
+    .map((yearGroup) => {
+      const title =
+        yearGroup.title || `GATE Qualified Students ${yearGroup.year}`;
+      const header = `## ${title}\n\n| Sr. No. | Name of Student | Class | Valid Score | Category |\n|---------|-----------------|-------|-------------|----------|`;
+      if (!yearGroup.students || yearGroup.students.length === 0) {
+        return `${header}\n| — | No records | — | — | — |`;
+      }
+      const rows = yearGroup.students
+        .map((s) => `| ${s[0]} | ${s[1]} | ${s[2]} | ${s[3]} | ${s[4]} |`)
+        .join("\n");
+      return `${header}\n${rows}`;
+    })
+    .join("\n\n");
+}
+
+export function entcPrideToppersToMarkdown({ be = [], me = [] } = {}) {
+  const renderSection = (label, data) => {
+    const header = `## ${label}\n\n| Year | Name of the Student | University Rank | CGPA/Percentage |\n|------|---------------------|-----------------|-----------------|`;
+    if (!data || data.length === 0) {
+      return `${header}\n| — | No records | — | — |`;
+    }
+    const rows = data
+      .flatMap((yearGroup) =>
+        yearGroup.records.map(
+          (r, i) =>
+            `| ${i === 0 ? yearGroup.year : ""} | ${r.name} | ${r.rank} | ${r.score} |`,
+        ),
+      )
+      .join("\n");
+    return `${header}\n${rows}`;
+  };
+  return (
+    renderSection("B.E. UNIVERSITY RANK HOLDERS", be) +
+    "\n\n" +
+    renderSection("M.E. UNIVERSITY RANK HOLDERS", me)
+  );
+}
+
+export function entcPrideAlumniToMarkdown(
+  alumniData = [],
+  title = "Top Alumnis of Department",
+) {
+  const header = `## ${title}\n\n| S. N. | Names of Alumni | Position | Names of Organisation |\n|-------|-----------------|----------|----------------------|`;
+  if (!alumniData || alumniData.length === 0) {
+    return `${header}\n| — | No records | — | — |`;
+  }
+  const rows = alumniData
+    .map((a, i) => `| ${i + 1}. | ${a[0]} | ${a[1]} | ${a[2]} |`)
+    .join("\n");
+  return `${header}\n${rows}`;
+}
+
+export function entcStudentProjectsToMarkdown(projectsData = {}) {
+  return Object.keys(projectsData)
+    .sort()
+    .reverse()
+    .map((year) => {
+      const header = `## ${year}\n\n| Sr. No | Title of Project | Guided By | Award/Reward |\n|--------|-----------------|-----------|--------------|`;
+      const projects = projectsData[year] || [];
+      if (!projects.length)
+        return `${header}\n| \u2014 | No records | \u2014 | \u2014 |`;
+      const rows = projects
+        .map((p) => `| ${p.no} | ${p.title} | ${p.guide} | ${p.award} |`)
+        .join("\n");
+      return `${header}\n${rows}`;
+    })
+    .join("\n\n");
+}
 
 export const defaultStudentProjects = {
   "2024-25": [
@@ -4474,7 +4549,118 @@ export const defaultStaff = [
   { name: "Mr. M. U. Sable", role: "Peon", photo: "MUS" },
 ];
 
-export const defaultCourseMaterials = [];
+export const defaultCourseMaterials = [
+  {
+    year: "1",
+    title:
+      "Dr. M. N. Tibdewal - Digital Image and Video Processing, Signal and System",
+    link: "https://ssgmcefablab.in/faculty/ManishTibdewal/",
+  },
+  {
+    year: "2",
+    title: "Dr. K. B. Khanchandani - Digital Signal Processing",
+    link: "https://ssgmcefablab.in/faculty/KamleshKhanchandani/",
+  },
+  {
+    year: "3",
+    title: "Dr. R. S. Dhekekar - Control System, Power Electronics",
+    link: "https://ssgmcefablab.in/faculty/RamDhekekar/",
+  },
+  {
+    year: "4",
+    title: "Mr. V. M. Umale - Electronics Devices and Circuits, DCN, BME",
+    link: "https://ssgmcefablab.in/faculty/VinayakUmale/",
+  },
+  {
+    year: "5",
+    title:
+      "Mr. D. L. Bhombe - Project Management and Entrepreneurship",
+    link: "https://ssgmcefablab.in/faculty/DinkarBhombe/",
+  },
+  {
+    year: "6",
+    title: "Dr. S. B. Patil - Object Oriented Programming, Microcontroller",
+    link: "https://ssgmcefablab.in/faculty/SantoshPatil/",
+  },
+  {
+    year: "7",
+    title: "Dr. D. D. Nawgaje - Microprocessor and Microcontroller",
+    link: "https://ssgmcefablab.in/faculty/DeveshNawgaje/",
+  },
+  {
+    year: "8",
+    title: "Dr. Ms. B. P. Harane - Electromagnetic Fields, Network Theory",
+    link: "https://ssgmcefablab.in/faculty/BhavanaHarne/",
+  },
+  {
+    year: "9",
+    title: "Dr. D. P. Tulaskar - Wireless Communication",
+    link: "https://ssgmcefablab.in/faculty/DhirajTulaskar/",
+  },
+  {
+    year: "10",
+    title: "Mr. A. N. Dolas - SDL, EDC",
+    link: "https://ssgmcefablab.in/faculty/AmitDolas/",
+  },
+  {
+    year: "11",
+    title: "Mr. V. K. Bhangdiya - Digital System Design",
+    link: "https://ssgmcefablab.in/faculty/VikasBhangdiya/",
+  },
+  {
+    year: "12",
+    title: "Dr. K. T. Kahar - Analog and Digital Communication",
+    link: "https://ssgmcefablab.in/faculty/KamleshKahar/",
+  },
+  {
+    year: "13",
+    title:
+      "Ms. K. S. Vyas - Cryptography and Network Security, Wireless Communication",
+    link: "https://ssgmcefablab.in/faculty/KomalThanvi/",
+  },
+  {
+    year: "14",
+    title: "Mr. S. P. Badar - Network Security and VLSI",
+    link: "https://ssgmcefablab.in/faculty/SwapnilBadar/",
+  },
+  {
+    year: "15",
+    title: "Mr. T. P. Marode - Python, Java CNS",
+    link: "https://ssgmcefablab.in/faculty/TejraoMarode/",
+  },
+  {
+    year: "16",
+    title: "Mr. S. G. Nemane - ADC",
+    link: "https://ssgmcefablab.in/faculty/ShonNemane/",
+  },
+  {
+    year: "17",
+    title:
+      "Mr. V. S. Ingole - Object Oriented Programming, Microcontroller",
+    link: "https://ssgmcefablab.in/faculty/vikramingole/",
+  },
+  {
+    year: "18",
+    title: "Mrs. Ashwini Deshmukh - Mobile Communication",
+    link: "https://ssgmcefablab.in/faculty/AshwiniDeshmukh/",
+  },
+  {
+    year: "19",
+    title: "Dr. Rupesh Mahamune - Sensors and Transducer",
+    link: "http://sunl.li/gdhpgw",
+  },
+  {
+    year: "20",
+    title:
+      "Dr. Neerja Dharmale - Digital Image and Video Processing, Digital Signal Processing",
+    link: "https://rb.gy/vy9v8a",
+  },
+  {
+    year: "21",
+    title: "Mr. H. B. Patil - ADE, DSD",
+    link: "https://shorturl.at/CE3wu",
+  },
+];
 export const defaultInnovativePractices = [
   {
     sn: "01",

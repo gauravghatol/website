@@ -2,6 +2,25 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
+const resolveUploadPath = (relativePath = "") => {
+  const sanitizedRelativePath = String(relativePath || "")
+    .replace(/^\/+/, "")
+    .replace(/^uploads[\\/]/, "uploads/");
+
+  if (!sanitizedRelativePath.startsWith("uploads/")) {
+    return null;
+  }
+
+  const resolvedPath = path.resolve(sanitizedRelativePath);
+  const uploadsRoot = path.resolve("./uploads");
+
+  if (!resolvedPath.startsWith(uploadsRoot)) {
+    return null;
+  }
+
+  return resolvedPath;
+};
+
 // Configure multer storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -21,22 +40,24 @@ const storage = multer.diskStorage({
   },
 });
 
-// File filter
+// File filter - accepts images and PDFs
 const fileFilter = (req, file, cb) => {
-  // Accept images only
-  if (file.mimetype.startsWith("image/")) {
+  if (
+    file.mimetype.startsWith("image/") ||
+    file.mimetype === "application/pdf"
+  ) {
     cb(null, true);
   } else {
-    cb(new Error("Only image files are allowed!"), false);
+    cb(new Error("Only image and PDF files are allowed!"), false);
   }
 };
 
-// Multer upload instance (images)
+// Multer upload instance (images + PDFs)
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 20 * 1024 * 1024, // 20MB limit (increased for PDFs)
   },
 });
 
@@ -53,7 +74,7 @@ const documentStorage = multer.diskStorage({
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     cb(
       null,
-      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
+      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname),
     );
   },
 });
@@ -73,7 +94,12 @@ const documentFilter = (req, file, cb) => {
   if (allowed.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("File type not allowed. Supported: PDF, Word, Excel, PowerPoint, TXT, CSV."), false);
+    cb(
+      new Error(
+        "File type not allowed. Supported: PDF, Word, Excel, PowerPoint, TXT, CSV.",
+      ),
+      false,
+    );
   }
 };
 
@@ -146,15 +172,21 @@ const uploadSingleDocument = async (req, res) => {
     });
   } catch (error) {
     console.error("Document upload error:", error);
-    res.status(500).json({ message: "File upload failed", error: error.message });
+    res
+      .status(500)
+      .json({ message: "File upload failed", error: error.message });
   }
 };
 
 // Delete file
 const deleteFile = async (req, res) => {
   try {
-    const { filename } = req.params;
-    const filePath = path.join("./uploads/images", filename);
+    const requestedPath = req.query.path || path.join("uploads/images", req.params.filename || "");
+    const filePath = resolveUploadPath(requestedPath);
+
+    if (!filePath) {
+      return res.status(400).json({ message: "Invalid file path" });
+    }
 
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ message: "File not found" });

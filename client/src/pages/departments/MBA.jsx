@@ -1,14 +1,21 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useRef } from "react";
+import axios from "axios";
 import GenericPage from "../../components/GenericPage";
 import { useDepartmentData } from "../../hooks/useDepartmentData";
 import EditableText from "../../components/admin/EditableText";
 import EditableImage from "../../components/admin/EditableImage";
+import MarkdownEditor from "../../components/admin/MarkdownEditor";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import mbaBanner from "../../assets/images/departments/mba/MBA banner.png";
 import {
   defaultFaculty as MBA_DEFAULT_FACULTY,
   defaultPrideToppers,
   defaultPrideAlumni,
+  mbaPrideToppersToMarkdown,
+  mbaPrideAlumniToMarkdown,
   defaultActivities,
   defaultNewsletters,
   defaultAchievements,
@@ -17,6 +24,10 @@ import {
   defaultMbaConferences,
   defaultMbaBooks,
   defaultMbaCopyrights,
+  defaultVision,
+  defaultMission,
+  defaultPeo,
+  defaultPo,
 } from "../../data/mbaDefaults";
 import { defaultPlacements } from "../../data/mbaPlacements";
 import { AnimatePresence, motion } from "framer-motion";
@@ -47,6 +58,9 @@ import {
   FaFileAlt,
   FaExternalLinkAlt,
   FaBook,
+  FaUpload,
+  FaPlus,
+  FaTrash,
 } from "react-icons/fa";
 
 // Import HOD photo
@@ -84,6 +98,90 @@ const resolvedMbaFaculty = MBA_DEFAULT_FACULTY.map((f) => ({
   photo: mbaPhotoMap[f.photo] || f.photo,
 }));
 
+// ---- MBA Pride Markdown helpers ----
+function mbaParsePrideSections(markdown = "") {
+  const sections = [];
+  const parts = markdown.split(/^(?=## )/m);
+  for (const part of parts) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    const firstNewline = trimmed.indexOf("\n");
+    const title =
+      firstNewline === -1
+        ? trimmed.replace(/^## /, "")
+        : trimmed.slice(3, firstNewline).trim();
+    const body =
+      firstNewline === -1 ? "" : trimmed.slice(firstNewline + 1).trim();
+    sections.push({ title, body });
+  }
+  return sections;
+}
+
+const mbaPrideTableComponents = {
+  table: ({ children }) => (
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200">{children}</table>
+    </div>
+  ),
+  thead: ({ children }) => <thead className="bg-gray-50">{children}</thead>,
+  tbody: ({ children }) => (
+    <tbody className="bg-white divide-y divide-gray-200">{children}</tbody>
+  ),
+  tr: ({ children }) => <tr className="hover:bg-gray-50">{children}</tr>,
+  th: ({ children }) => (
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      {children}
+    </th>
+  ),
+  td: ({ children }) => (
+    <td className="px-6 py-4 text-sm text-gray-900">{children}</td>
+  ),
+};
+
+function MbaPrideMdView({ markdown = "" }) {
+  const sections = mbaParsePrideSections(markdown);
+  if (sections.length === 0) {
+    return (
+      <div className="text-center text-gray-400 italic py-8">
+        No data available yet.
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-8">
+      {sections.map((sec, i) => (
+        <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
+            <h4 className="text-xl font-bold">{sec.title}</h4>
+          </div>
+          <div className="px-2 py-2">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={mbaPrideTableComponents}
+            >
+              {sec.body}
+            </ReactMarkdown>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+// ---- End MBA Pride Markdown helpers ----
+
+const defaultCourseMaterials = [
+  {
+    year: "First Year",
+    title: "MBA First Year",
+    link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/mba_cm_ssgmce_ac_in/EtQmSLd-WshPjxPKL1cvLyABm9hqbiQjpe7e0j5hS6sDfg",
+  },
+  {
+    year: "Second Year",
+    title: "MBA Second Year",
+    link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/mba_cm_ssgmce_ac_in/EgrxHhZnLptLkLMLcR7cCvABRb0lRgjh3P4N1XmfO1dE_w",
+  },
+];
+
 const MBA = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [vmTab, setVmTab] = useState("vision");
@@ -94,12 +192,28 @@ const MBA = () => {
   const [projectYear, setProjectYear] = useState("2023-24");
   const [researchYear, setResearchYear] = useState("2023-24");
   const [placementYear, setPlacementYear] = useState(null);
+  const [showAddPlacementYear, setShowAddPlacementYear] = useState(false);
+  const [newPlacementYear, setNewPlacementYear] = useState("");
+  const [placementYearError, setPlacementYearError] = useState("");
   const [prideTab, setPrideTab] = useState("toppers");
   const [activitiesVisible, setActivitiesVisible] = useState(6);
   const [lightboxActivity, setLightboxActivity] = useState(null);
   const [achievementTab, setAchievementTab] = useState("faculty");
   const [certificateLightbox, setCertificateLightbox] = useState(null);
   const [patentSubTab, setPatentSubTab] = useState("patents");
+
+  // State for Curriculum (Scheme & Syllabus) management
+  const [selectedCurriculumItems, setSelectedCurriculumItems] = useState([]);
+  const [uploadingFiles, setUploadingFiles] = useState({});
+  const [newsletterUploading, setNewsletterUploading] = useState({});
+  const [newsletterUploadErrors, setNewsletterUploadErrors] = useState({});
+  const [achievementUploading, setAchievementUploading] = useState({});
+  const [achievementUploadErrors, setAchievementUploadErrors] = useState({});
+  const [achievementUploadSuccess, setAchievementUploadSuccess] = useState({});
+  const [shouldScrollToNewCourseMaterial, setShouldScrollToNewCourseMaterial] =
+    useState(false);
+  const latestCourseMaterialRef = useRef(null);
+
   const researchYears = [
     "2024-25",
     "2023-24",
@@ -115,6 +229,7 @@ const MBA = () => {
     loading: dataLoading,
     isEditing,
     updateData,
+    removeData,
     t,
   } = useDepartmentData("departments-mba");
 
@@ -123,11 +238,301 @@ const MBA = () => {
     updateData(path, value);
   };
 
+  const academicYearPattern = /^\d{4}-\d{2}$/;
+  const defaultPlacementYearOrder = defaultPlacements.summary.map(
+    ({ year }) => year,
+  );
+  const placementRecordsByYear = defaultPlacements.details;
+
+  const isAcademicYearKey = (value) =>
+    typeof value === "string" && academicYearPattern.test(value.trim());
+
+  const compareAcademicYearsDesc = (a, b) => {
+    const aStart = Number(String(a).slice(0, 4));
+    const bStart = Number(String(b).slice(0, 4));
+    return bStart - aStart;
+  };
+
+  const normalizePlacementYears = (years) => {
+    const uniqueYears = [];
+
+    years.forEach((year) => {
+      const normalizedYear = String(year || "").trim();
+      if (!isAcademicYearKey(normalizedYear)) return;
+      if (!uniqueYears.includes(normalizedYear)) {
+        uniqueYears.push(normalizedYear);
+      }
+    });
+
+    return uniqueYears;
+  };
+
+  const isValidAcademicYear = (value) => {
+    const normalizedYear = String(value || "").trim();
+    if (!isAcademicYearKey(normalizedYear)) return false;
+
+    const [startYear, endSuffix] = normalizedYear.split("-");
+    return String(Number(startYear) + 1).slice(-2) === endSuffix;
+  };
+
+  const storedPlacementYears = Array.isArray(t("placements.years", null))
+    ? t("placements.years", [])
+    : [];
+  const storedPlacementDetails = t("placements.details", {});
+  const storedPlacementMarkdown = t("placements.markdown", {});
+  const storedPlacementObject = t("placements", {});
+
+  const discoveredPlacementYears = normalizePlacementYears([
+    ...Object.keys(
+      storedPlacementDetails && typeof storedPlacementDetails === "object"
+        ? storedPlacementDetails
+        : {},
+    ),
+    ...Object.keys(
+      storedPlacementMarkdown && typeof storedPlacementMarkdown === "object"
+        ? storedPlacementMarkdown
+        : {},
+    ),
+    ...Object.keys(
+      storedPlacementObject && typeof storedPlacementObject === "object"
+        ? Object.fromEntries(
+            Object.entries(storedPlacementObject).filter(
+              ([key]) => !["years", "details", "markdown"].includes(key),
+            ),
+          )
+        : {},
+    ),
+  ]).sort(compareAcademicYearsDesc);
+
+  const placementYearOrder = (() => {
+    const baseYears =
+      storedPlacementYears.length > 0
+        ? normalizePlacementYears(storedPlacementYears)
+        : [...defaultPlacementYearOrder];
+    const extraYears = discoveredPlacementYears.filter(
+      (year) => !baseYears.includes(year),
+    );
+
+    return normalizePlacementYears([...baseYears, ...extraYears]).sort(
+      compareAcademicYearsDesc,
+    );
+  })();
+
+  const currentPlacementYear = placementYearOrder[0] || null;
+
+  const handleAddPlacementYear = () => {
+    const normalizedYear = newPlacementYear.trim();
+
+    if (!isValidAcademicYear(normalizedYear)) {
+      setPlacementYearError("Enter a valid academic year like 2025-26.");
+      return;
+    }
+
+    if (placementYearOrder.includes(normalizedYear)) {
+      setPlacementYearError("That academic year already exists.");
+      return;
+    }
+
+    const nextYears = normalizePlacementYears([
+      normalizedYear,
+      ...placementYearOrder,
+    ]).sort(compareAcademicYearsDesc);
+
+    updateData("placements.years", nextYears);
+    updateData(`placements.details.${normalizedYear}`, "");
+    setNewPlacementYear("");
+    setPlacementYearError("");
+    setShowAddPlacementYear(false);
+  };
+
+  const handleDeletePlacementYear = (year) => {
+    if (!window.confirm(`Delete placement statistics for ${year}?`)) {
+      return;
+    }
+
+    const remainingYears = placementYearOrder.filter(
+      (placementEntryYear) => placementEntryYear !== year,
+    );
+
+    updateData("placements.years", remainingYears);
+    removeData(`placements.details.${year}`);
+    removeData(`placements.markdown.${year}`);
+    removeData(`placements.${year}`);
+
+    if (placementYear === year) {
+      setPlacementYear(null);
+    }
+  };
+
+  const getPlacementMarkdown = (year) => {
+    const records = placementRecordsByYear[year] || [];
+    const header = `## Placement Record - ${year}`;
+    const intro =
+      year === currentPlacementYear
+        ? "*Placements still in progress for the current academic year.*\n\n"
+        : "";
+    const rows = records.map(
+      (student, index) =>
+        `| ${index + 1} | ${student.name} | ${student.company} | ${student.ctc} |`,
+    );
+
+    const table = [
+      "| Sr. No. | Name of Student | Company Name | CTC |",
+      "|--------|----------------|--------------|-----|",
+      ...rows,
+    ].join("\n");
+
+    return [header, "", intro, table].join("\n");
+  };
+
+  const getStoredPlacementValue = (year) => {
+    const candidates = [
+      `placements.details.${year}`,
+      `placements.${year}`,
+      `placements.markdown.${year}`,
+    ];
+
+    for (const path of candidates) {
+      const value = t(path, null);
+      if (value !== null && value !== undefined) {
+        if (typeof value === "string" && value.trim() === "") continue;
+        return value;
+      }
+    }
+
+    const placements = t("placements", null);
+    if (placements && typeof placements === "object" && placements[year]) {
+      return placements[year];
+    }
+
+    return null;
+  };
+
+  const placementRecordsToMarkdown = (year, records) => {
+    const header = `## Placement Record - ${year}`;
+    const intro =
+      year === currentPlacementYear
+        ? "*Placements still in progress for the current academic year.*\n\n"
+        : "";
+    const rows = records.map(
+      (student, index) =>
+        `| ${index + 1} | ${student.name} | ${student.company} | ${student.ctc} |`,
+    );
+
+    const table = [
+      "| Sr. No. | Name of Student | Company Name | CTC |",
+      "|--------|----------------|--------------|-----|",
+      ...rows,
+    ].join("\n");
+
+    return [header, "", intro, table].join("\n");
+  };
+
+  const getCurrentPlacementMarkdown = () => {
+    if (!placementYear) return "";
+
+    const stored = getStoredPlacementValue(placementYear);
+
+    if (typeof stored === "string" && stored.trim()) return stored;
+    if (Array.isArray(stored) && stored.length > 0) {
+      return placementRecordsToMarkdown(placementYear, stored);
+    }
+
+    return getPlacementMarkdown(placementYear);
+  };
+
+  const getPlacementCount = (year) => {
+    const stored = getStoredPlacementValue(year);
+
+    if (Array.isArray(stored)) return stored.length;
+
+    if (typeof stored === "string" && stored.trim()) {
+      const lines = stored.split("\n").map((line) => line.trim());
+      const tableStart = lines.findIndex((line) => line.startsWith("| Sr. No."));
+      if (tableStart !== -1) {
+        return lines
+          .slice(tableStart + 2)
+          .filter((line) => line.startsWith("|")).length;
+      }
+    }
+
+    return placementRecordsByYear[year]?.length || 0;
+  };
+
+  const placementSummary = placementYearOrder.map((year) => ({
+    year,
+    count: `${getPlacementCount(year)}${year === currentPlacementYear ? "*" : ""}`,
+    id: year,
+  }));
+
+  const renderPlacementDetails = () => {
+    const markdown = getCurrentPlacementMarkdown();
+
+    return (
+      <div>
+        <div className="flex justify-between items-center mb-6">
+          <button
+            onClick={() => setPlacementYear(null)}
+            className="flex items-center text-gray-600 hover:text-ssgmce-blue font-medium transition-colors"
+          >
+            <span className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-2 text-sm group-hover:bg-blue-100">
+              <FaAngleRight className="transform rotate-180" />
+            </span>
+            Back to Statistics
+          </button>
+          <div className="text-right">
+            <h3 className="text-xl font-bold text-gray-800">
+              Placement Record
+            </h3>
+            <p className="text-sm text-ssgmce-blue font-bold">
+              Session: {placementYear}
+            </p>
+          </div>
+        </div>
+
+        {isEditing ? (
+          <MarkdownEditor
+            value={markdown}
+            onSave={(value) =>
+              updateData(`placements.details.${placementYear}`, value)
+            }
+            showDocImport
+            docTemplateUrl="/uploads/documents/pride_templates/cse_placement_details_template.docx"
+            docTemplateLabel="Download Placement Template"
+            placeholder="Paste or import placement data (Markdown) here..."
+          />
+        ) : (
+          <MbaPrideMdView markdown={markdown} />
+        )}
+      </div>
+    );
+  };
+
   // Activity helper
   const updateActivity = (idx, field, value) => {
-    const arr = JSON.parse(JSON.stringify(t("activities", defaultActivities)));
-    arr[idx][field] = value;
-    updateData("activities", arr);
+    const storedActivitiesMarkdown = t("activitiesMarkdown", "");
+    const parsedActivities = parseMbaActivitiesMarkdown(
+      storedActivitiesMarkdown,
+    );
+    const sourceActivities = (
+      parsedActivities.length
+        ? parsedActivities
+        : t("activities", defaultMbaActivityCards)
+    ).map(normalizeMbaActivity);
+
+    if (!sourceActivities[idx]) return;
+
+    const nextActivities = sourceActivities.map((activity, activityIndex) =>
+      activityIndex === idx
+        ? normalizeMbaActivity({
+            ...activity,
+            [field]: value,
+          })
+        : activity,
+    );
+
+    updateData("activities", nextActivities);
+    updateData("activitiesMarkdown", mbaActivitiesToMarkdown(nextActivities));
   };
 
   // Newsletter helper
@@ -147,6 +552,492 @@ const MBA = () => {
     }
   };
 
+  const getStoredMbaValue = (key) =>
+    activeData?.[key] ?? activeData?.templateData?.[key];
+
+  const latestNewsletterData =
+    getStoredMbaValue("newsletters_latest") || defaultNewsletters.latest;
+  const newsletterArchivesData =
+    getStoredMbaValue("newsletters_archives") ||
+    defaultNewsletters.archives ||
+    [];
+
+  const createEmptyLatestNewsletter = () => ({
+    title: "New Newsletter",
+    description: "",
+    link: "",
+    fileName: "",
+    date: "",
+    term: "",
+  });
+
+  const createArchiveFromLatest = (latest) => ({
+    date: latest?.date || "",
+    vol: latest?.title || "New Newsletter",
+    term: latest?.term || "",
+    link: latest?.link || "",
+    fileName: latest?.fileName || "",
+  });
+
+  const createLatestFromArchive = (archive) => ({
+    title: archive?.vol || "New Newsletter",
+    description: "",
+    link: archive?.link || "",
+    fileName: archive?.fileName || "",
+    date: archive?.date || "",
+    term: archive?.term || "",
+  });
+
+  const getNewsletterFileName = (link, fileName) => {
+    if (fileName) return fileName;
+    if (!link) return "No file uploaded";
+
+    const lastSegment = String(link).split("/").pop() || "";
+    return decodeURIComponent(lastSegment);
+  };
+
+  const getDeletableUploadPath = (link) => {
+    if (typeof link !== "string" || !link.startsWith("/uploads/")) return null;
+    if (link.includes("..")) return null;
+    if (!link.startsWith("/uploads/documents/")) return null;
+    return link;
+  };
+
+  const deleteNewsletterFileIfNeeded = async (link) => {
+    const deletablePath = getDeletableUploadPath(link);
+    if (!deletablePath) return;
+
+    const token = localStorage.getItem("adminToken");
+    if (!token) return;
+
+    try {
+      await axios.delete("/api/upload/file", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          path: deletablePath,
+        },
+      });
+    } catch (error) {
+      console.error("Newsletter file delete skipped:", error);
+    }
+  };
+
+  const addNewsletter = () => {
+    const currentLatest = JSON.parse(
+      JSON.stringify(latestNewsletterData || defaultNewsletters.latest),
+    );
+    const currentArchives = JSON.parse(
+      JSON.stringify(newsletterArchivesData || defaultNewsletters.archives),
+    );
+
+    const nextArchives = currentLatest?.title
+      ? [createArchiveFromLatest(currentLatest), ...currentArchives]
+      : currentArchives;
+
+    updateData("newsletters_latest", createEmptyLatestNewsletter());
+    updateData("newsletters_archives", nextArchives);
+  };
+
+  const deleteNewsletter = async (type, index) => {
+    if (type === "latest") {
+      const currentLatest = JSON.parse(
+        JSON.stringify(latestNewsletterData || defaultNewsletters.latest),
+      );
+      const currentArchives = JSON.parse(
+        JSON.stringify(newsletterArchivesData || defaultNewsletters.archives),
+      );
+
+      await deleteNewsletterFileIfNeeded(currentLatest?.link);
+
+      if (currentArchives.length > 0) {
+        const [nextLatest, ...remainingArchives] = currentArchives;
+        updateData("newsletters_latest", createLatestFromArchive(nextLatest));
+        updateData("newsletters_archives", remainingArchives);
+      } else {
+        updateData("newsletters_latest", createEmptyLatestNewsletter());
+        updateData("newsletters_archives", []);
+      }
+      return;
+    }
+
+    const currentArchives = JSON.parse(
+      JSON.stringify(newsletterArchivesData || defaultNewsletters.archives),
+    );
+    const archiveToDelete = currentArchives[index];
+
+    await deleteNewsletterFileIfNeeded(archiveToDelete?.link);
+
+    updateData(
+      "newsletters_archives",
+      currentArchives.filter((_, archiveIndex) => archiveIndex !== index),
+    );
+  };
+
+  const uploadNewsletterFile = async (type, index, file) => {
+    if (!file) return;
+
+    const uploadKey = `${type}-${index}`;
+    setNewsletterUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setNewsletterUploadErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data.fileUrl) {
+        throw new Error("Upload did not return a file URL.");
+      }
+
+      if (type === "latest") {
+        const latest = JSON.parse(
+          JSON.stringify(latestNewsletterData || defaultNewsletters.latest),
+        );
+        updateData("newsletters_latest", {
+          ...latest,
+          link: response.data.fileUrl,
+          fileName: response.data.originalName || file.name,
+        });
+      } else {
+        const archives = JSON.parse(
+          JSON.stringify(newsletterArchivesData || defaultNewsletters.archives),
+        );
+        archives[index] = {
+          ...archives[index],
+          link: response.data.fileUrl,
+          fileName: response.data.originalName || file.name,
+        };
+        updateData("newsletters_archives", archives);
+      }
+    } catch (error) {
+      console.error("Newsletter upload failed:", error);
+      setNewsletterUploadErrors((prev) => ({
+        ...prev,
+        [uploadKey]:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Upload failed",
+      }));
+    } finally {
+      setNewsletterUploading((prev) => ({ ...prev, [uploadKey]: false }));
+    }
+  };
+
+  const handleNewsletterFileChange = (type, index, event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+    if (file.type !== "application/pdf") {
+      alert("Please select a PDF file for the newsletter.");
+      return;
+    }
+
+    uploadNewsletterFile(type, index, file);
+  };
+
+  const getCourseMaterials = () =>
+    JSON.parse(JSON.stringify(t("courseMaterials", defaultCourseMaterials)));
+
+  const updateCourseMaterial = (index, field, value) => {
+    const items = getCourseMaterials();
+    if (!items[index]) return;
+    items[index] = { ...items[index], [field]: value };
+    updateData("courseMaterials", items);
+  };
+
+  const addCourseMaterial = () => {
+    updateData("courseMaterials", [
+      ...getCourseMaterials(),
+      { year: "New Year", title: "New Semester", link: "#" },
+    ]);
+    setShouldScrollToNewCourseMaterial(true);
+  };
+
+  const deleteCourseMaterial = (index) => {
+    updateData(
+      "courseMaterials",
+      getCourseMaterials().filter((_, itemIndex) => itemIndex !== index),
+    );
+  };
+
+  const courseMaterialItems = t("courseMaterials", defaultCourseMaterials) || [];
+
+  useEffect(() => {
+    if (
+      !shouldScrollToNewCourseMaterial ||
+      !isEditing ||
+      activeTab !== "course-material"
+    ) {
+      return;
+    }
+
+    if (latestCourseMaterialRef.current) {
+      latestCourseMaterialRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      setShouldScrollToNewCourseMaterial(false);
+    }
+  }, [
+    shouldScrollToNewCourseMaterial,
+    isEditing,
+    activeTab,
+    courseMaterialItems.length,
+  ]);
+
+  const getAchievementItems = (section) =>
+    JSON.parse(
+      JSON.stringify(t(`achievements.${section}`, defaultAchievements[section] || [])),
+    );
+
+  const achievementsToMarkdown = (section, items = []) =>
+    items
+      .map((item, index) => {
+        const title = item?.achievement || `Achievement ${index + 1}`;
+        const name = item?.name || "Name";
+        const category = item?.category || "Category";
+        const description = String(item?.description || "").trim();
+        const image = String(item?.image || "").trim();
+
+        return [
+          `### ${title}`,
+          "",
+          `- **Name:** ${name}`,
+          `- **Category:** ${category}`,
+          ...(image ? [`- **Certificate:** [View File](${image})`] : []),
+          "",
+          description || "Add achievement description.",
+        ].join("\n");
+      })
+      .join("\n\n---\n\n");
+
+  const persistAchievementItems = (section, items) => {
+    updateData(`achievements.${section}`, items);
+    updateData(
+      `achievementsMarkdown.${section}`,
+      achievementsToMarkdown(section, items),
+    );
+  };
+
+  const updateAchievementItem = (section, index, field, value) => {
+    const items = getAchievementItems(section);
+    if (!items[index]) return;
+    items[index] = { ...items[index], [field]: value };
+    persistAchievementItems(section, items);
+  };
+
+  const addAchievement = (section) => {
+    const items = getAchievementItems(section);
+    const nextItems = [
+      {
+        name: section === "faculty" ? "Faculty Name" : "Student Name",
+        achievement: "New Achievement",
+        description: "Add achievement description.",
+        category: "Recognition",
+        image: "",
+      },
+      ...items,
+    ];
+    persistAchievementItems(section, nextItems);
+  };
+
+  const getAchievementDeletableUploadPath = (link) => {
+    if (typeof link !== "string" || !link.startsWith("/uploads/")) return null;
+    if (link.includes("..")) return null;
+    return link;
+  };
+
+  const deleteAchievementFileIfNeeded = async (link) => {
+    const deletablePath = getAchievementDeletableUploadPath(link);
+    if (!deletablePath) return;
+
+    const token = localStorage.getItem("adminToken");
+    if (!token) return;
+
+    try {
+      await axios.delete("/api/upload/file", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          path: deletablePath,
+        },
+      });
+    } catch (error) {
+      console.error("Achievement file delete skipped:", error);
+    }
+  };
+
+  const deleteAchievement = async (section, index) => {
+    const items = getAchievementItems(section);
+    const itemToDelete = items[index];
+
+    await deleteAchievementFileIfNeeded(itemToDelete?.image);
+
+    const nextItems = items.filter((_, itemIndex) => itemIndex !== index);
+    persistAchievementItems(section, nextItems);
+
+    const uploadKey = `${section}-${index}`;
+    setAchievementUploadErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+    setAchievementUploadSuccess((prev) => ({ ...prev, [uploadKey]: "" }));
+  };
+
+  const getAchievementFileName = (link) => {
+    if (!link) return "No file uploaded";
+    const lastSegment = String(link).split("/").pop() || "";
+    return decodeURIComponent(lastSegment);
+  };
+
+  const uploadAchievementFile = async (section, index, file) => {
+    if (!file) return;
+
+    const uploadKey = `${section}-${index}`;
+    setAchievementUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setAchievementUploadErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+    setAchievementUploadSuccess((prev) => ({ ...prev, [uploadKey]: "" }));
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data.fileUrl) {
+        throw new Error("Upload did not return a file URL.");
+      }
+
+      const items = getAchievementItems(section);
+      if (!items[index]) return;
+
+      items[index] = {
+        ...items[index],
+        image: response.data.fileUrl,
+      };
+      persistAchievementItems(section, items);
+      setAchievementUploadSuccess((prev) => ({
+        ...prev,
+        [uploadKey]: "Uploaded successfully",
+      }));
+    } catch (error) {
+      console.error("Achievement upload failed:", error);
+      setAchievementUploadErrors((prev) => ({
+        ...prev,
+        [uploadKey]:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Upload failed",
+      }));
+    } finally {
+      setAchievementUploading((prev) => ({ ...prev, [uploadKey]: false }));
+    }
+  };
+
+  const handleAchievementFileChange = (section, index, event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+
+    uploadAchievementFile(section, index, file);
+  };
+
+  const legacyActivities = (
+    t("activities", defaultMbaActivityCards) || defaultMbaActivityCards
+  ).map(normalizeMbaActivity);
+  const storedActivitiesMarkdown = t("activitiesMarkdown", "");
+  const parsedActivities = parseMbaActivitiesMarkdown(storedActivitiesMarkdown);
+  const activitiesData = parsedActivities.length
+    ? parsedActivities
+    : legacyActivities;
+
+  const updateActivityList = (updater) => {
+    const nextActivities = updater(
+      activitiesData.map((activity) => normalizeMbaActivity(activity)),
+    );
+    updateData("activities", nextActivities);
+    updateData("activitiesMarkdown", mbaActivitiesToMarkdown(nextActivities));
+  };
+
+  const addActivityCard = () => {
+    updateActivityList((items) => [
+      {
+        title: "New Curricular Activity",
+        date: "Add activity date",
+        participants: "Add participant details",
+        organizer: "MBA Department, SSGMCE",
+        resource: "",
+        image: "",
+      },
+      ...items,
+    ]);
+  };
+
+  const deleteActivityCard = (index) => {
+    updateActivityList((items) =>
+      items.filter((_, itemIndex) => itemIndex !== index),
+    );
+  };
+
+  const mbaActivityMarkdownComponents = {
+    p: ({ node, ...props }) => (
+      <p className="text-gray-700 leading-relaxed" {...props} />
+    ),
+    ul: ({ node, ...props }) => (
+      <ul className="list-disc pl-5 space-y-1 text-gray-700" {...props} />
+    ),
+    ol: ({ node, ...props }) => (
+      <ol className="list-decimal pl-5 space-y-1 text-gray-700" {...props} />
+    ),
+    li: ({ node, ...props }) => <li className="leading-relaxed" {...props} />,
+    strong: ({ node, ...props }) => (
+      <strong className="font-semibold text-gray-800" {...props} />
+    ),
+    a: ({ node, ...props }) => (
+      <a
+        className="text-ssgmce-blue hover:text-ssgmce-orange underline underline-offset-2"
+        target="_blank"
+        rel="noopener noreferrer"
+        {...props}
+      />
+    ),
+  };
+
+  const renderActivityMarkdown = (value, emptyText = "Not specified") => {
+    const trimmedValue = String(value || "").trim();
+    if (!trimmedValue) {
+      return <p className="text-gray-400 italic leading-relaxed">{emptyText}</p>;
+    }
+
+    return (
+      <div className="prose prose-sm max-w-none prose-p:my-0 prose-ul:my-0 prose-ol:my-0">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={mbaActivityMarkdownComponents}
+        >
+          {trimmedValue}
+        </ReactMarkdown>
+      </div>
+    );
+  };
+
   // Pride section helper functions
   const updatePrideToppers = (yearIdx, recordIdx, field, val) => {
     const newData = JSON.parse(
@@ -160,6 +1051,144 @@ const MBA = () => {
     const newData = JSON.parse(JSON.stringify(t(path, defaultArr)));
     newData[rowIdx][cellIdx] = val;
     updateData(path, newData);
+  };
+
+  // Default curriculum items for Scheme & Syllabus
+  const DEFAULT_CURRICULUM_MBA = [
+    { label: "Scheme", link: "#", fileName: null, fileUrl: null },
+    {
+      label: "Syllabus First Year (1st & 2nd Sem)",
+      link: "#",
+      fileName: null,
+      fileUrl: null,
+    },
+    {
+      label: "Syllabus Second Year (3rd Sem)",
+      link: "#",
+      fileName: null,
+      fileUrl: null,
+    },
+    {
+      label: "Syllabus Second Year (4th Sem)",
+      link: "#",
+      fileName: null,
+      fileUrl: null,
+    },
+  ];
+
+  const DEFAULT_CURRICULUM_PHD = [
+    {
+      label: "Scheme and Syllabus Ph.D.",
+      link: "#",
+      fileName: null,
+      fileUrl: null,
+    },
+  ];
+
+  // Curriculum management functions
+  const updateCurriculumItem = (section, index, field, value) => {
+    const key = `templateData.curriculum.${section}`;
+    const defaults =
+      section === "mba" ? DEFAULT_CURRICULUM_MBA : DEFAULT_CURRICULUM_PHD;
+    const items = JSON.parse(JSON.stringify(t(key, defaults)));
+    items[index] = { ...items[index], [field]: value };
+    updateField(key, items);
+  };
+
+  const addCurriculumItem = (section) => {
+    const key = `templateData.curriculum.${section}`;
+    const defaults =
+      section === "mba" ? DEFAULT_CURRICULUM_MBA : DEFAULT_CURRICULUM_PHD;
+    const items = JSON.parse(JSON.stringify(t(key, defaults)));
+    items.push({
+      label: "New Syllabus Item",
+      link: "#",
+      fileName: null,
+      fileUrl: null,
+    });
+    updateField(key, items);
+  };
+
+  const uploadCurriculumFile = async (section, index, file) => {
+    if (!file) return;
+    const uploadKey = `${section}-${index}`;
+    setUploadingFiles((prev) => ({ ...prev, [uploadKey]: true }));
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.data.fileUrl) {
+        const key = `templateData.curriculum.${section}`;
+        const defaults =
+          section === "mba" ? DEFAULT_CURRICULUM_MBA : DEFAULT_CURRICULUM_PHD;
+        const items = JSON.parse(JSON.stringify(t(key, defaults)));
+        items[index] = {
+          ...items[index],
+          fileUrl: response.data.fileUrl,
+          fileName: response.data.originalName,
+          link: response.data.fileUrl,
+        };
+        updateField(key, items);
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("Failed to upload file. Please try again.");
+    } finally {
+      setUploadingFiles((prev) => ({ ...prev, [uploadKey]: false }));
+    }
+  };
+
+  const handleCurriculumFileChange = (section, index, event) => {
+    const file = event.target.files[0];
+    if (file && file.type === "application/pdf") {
+      uploadCurriculumFile(section, index, file);
+    } else {
+      alert("Please select a PDF file.");
+    }
+  };
+
+  const removeCurriculumItem = (section, index) => {
+    const key = `templateData.curriculum.${section}`;
+    const defaults =
+      section === "mba" ? DEFAULT_CURRICULUM_MBA : DEFAULT_CURRICULUM_PHD;
+    const items = JSON.parse(JSON.stringify(t(key, defaults)));
+    items.splice(index, 1);
+    updateField(key, items);
+    setSelectedCurriculumItems(
+      selectedCurriculumItems.filter((i) => i !== `${section}-${index}`),
+    );
+  };
+
+  const toggleCurriculumSelection = (section, index) => {
+    const key = `${section}-${index}`;
+    if (selectedCurriculumItems.includes(key)) {
+      setSelectedCurriculumItems(
+        selectedCurriculumItems.filter((i) => i !== key),
+      );
+    } else {
+      setSelectedCurriculumItems([...selectedCurriculumItems, key]);
+    }
+  };
+
+  const deleteSelectedCurriculumItems = (section) => {
+    const key = `templateData.curriculum.${section}`;
+    const defaults =
+      section === "mba" ? DEFAULT_CURRICULUM_MBA : DEFAULT_CURRICULUM_PHD;
+    const items = JSON.parse(JSON.stringify(t(key, defaults)));
+    const sectionSelected = selectedCurriculumItems
+      .filter((k) => k.startsWith(`${section}-`))
+      .map((k) => parseInt(k.split("-")[1]));
+    const newItems = items.filter((_, i) => !sectionSelected.includes(i));
+    updateField(key, newItems);
+    setSelectedCurriculumItems(
+      selectedCurriculumItems.filter((k) => !k.startsWith(`${section}-`)),
+    );
   };
 
   const academicsLinks = [
@@ -385,21 +1414,63 @@ const MBA = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-start gap-4 w-full"
+                className="space-y-4 w-full"
               >
-                <div className="mt-1 text-ssgmce-orange text-2xl flex-shrink-0">
-                  âž¤
-                </div>
-                <div className="text-lg text-gray-700 leading-relaxed font-medium flex-1">
-                  <EditableText
-                    value={t(
-                      "vision",
-                      "To be a learning centre for developing competent managerial manpower with spiritual blend to serve industry and humanity.",
-                    )}
-                    onSave={(val) => updateField("vision", val)}
-                    multiline
-                  />
-                </div>
+                {(Array.isArray(t("vision")) ? t("vision") : defaultVision).map(
+                  (item, i) => (
+                    <div key={i} className="flex items-start gap-4">
+                      <div className="mt-1 text-ssgmce-orange text-2xl flex-shrink-0">
+                        ➤
+                      </div>
+                      <div className="text-lg text-gray-700 leading-relaxed font-medium flex-1">
+                        <MarkdownEditor
+                          value={item}
+                          onSave={(val) => {
+                            const current = Array.isArray(t("vision"))
+                              ? [...t("vision")]
+                              : [...defaultVision];
+                            current[i] = val;
+                            updateField("vision", current);
+                          }}
+                          placeholder="Click to edit vision item..."
+                          className="w-full"
+                        />
+                      </div>
+                      {isEditing && (
+                        <button
+                          onClick={() => {
+                            const arr = (
+                              Array.isArray(t("vision"))
+                                ? t("vision")
+                                : defaultVision
+                            ).filter((_, idx) => idx !== i);
+                            updateField("vision", arr);
+                          }}
+                          className="flex-shrink-0 mt-1 text-red-400 hover:text-red-600 text-sm font-bold px-2"
+                          title="Remove item"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  ),
+                )}
+                {isEditing && (
+                  <button
+                    onClick={() => {
+                      const arr = [
+                        ...(Array.isArray(t("vision"))
+                          ? t("vision")
+                          : defaultVision),
+                        "New vision statement.",
+                      ];
+                      updateField("vision", arr);
+                    }}
+                    className="mt-2 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded text-sm font-medium"
+                  >
+                    + Add Vision Item
+                  </button>
+                )}
               </motion.div>
             )}
             {vmTab === "mission" && (
@@ -408,15 +1479,50 @@ const MBA = () => {
                 animate={{ opacity: 1 }}
                 className="space-y-4 w-full"
               >
-                {[
-                  "To develop competent and entrepreneurial manpower through research, innovation and quality education.",
-                  "To develop human resources with spiritual values to serve global society.",
-                ].map((item, i) => (
+                {t("mission", defaultMission).map((item, i) => (
                   <div key={i} className="flex items-start gap-4">
-                    <div className="mt-1 text-ssgmce-orange text-xl">âž¤</div>
-                    <p className="text-gray-700">{item}</p>
+                    <div className="mt-1 text-ssgmce-orange text-xl">➤</div>
+                    <div className="text-gray-700 w-full">
+                      <MarkdownEditor
+                        value={item}
+                        onSave={(val) => {
+                          const current = [...t("mission", defaultMission)];
+                          current[i] = val;
+                          updateField("mission", current);
+                        }}
+                        placeholder="Click to edit mission item..."
+                        className="w-full"
+                      />
+                    </div>
+                    {isEditing && (
+                      <button
+                        onClick={() => {
+                          const arr = t("mission", defaultMission).filter(
+                            (_, idx) => idx !== i,
+                          );
+                          updateField("mission", arr);
+                        }}
+                        className="flex-shrink-0 mt-1 text-red-400 hover:text-red-600 text-sm font-bold px-2"
+                        title="Remove item"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                 ))}
+                {isEditing && (
+                  <button
+                    onClick={() => {
+                      updateField("mission", [
+                        ...t("mission", defaultMission),
+                        "New mission statement.",
+                      ]);
+                    }}
+                    className="mt-2 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded text-sm font-medium"
+                  >
+                    + Add Mission Item
+                  </button>
+                )}
               </motion.div>
             )}
           </div>
@@ -450,20 +1556,50 @@ const MBA = () => {
                 animate={{ opacity: 1 }}
                 className="space-y-4"
               >
-                {[
-                  "Students would accomplish distinguished positions in the corporate world and act as change agents in the society.",
-                  "Students would demonstrate and apply analytical thinking, creativity & innovation and adaptability in problem solving.",
-                  "Students would be perennially reinventing themselves in management thoughts, philosophy, action, tools and techniques.",
-                  "Students would be high on ethical, moral and spiritual values to strive for sustainable growth and inclusive management (Sarve Bhavantu Sukhinah).",
-                  "Students would develop multidisciplinary and professional approach coupled with communication skills and teamwork skills to excel in the global environment.",
-                ].map((item, i) => (
+                {t("peo", defaultPeo).map((item, i) => (
                   <div key={i} className="flex items-start gap-4">
-                    <div className="mt-1 text-blue-900 text-xl">âž¤</div>
-                    <p className="text-gray-700 leading-relaxed font-medium">
-                      {item}
-                    </p>
+                    <div className="mt-1 text-ssgmce-orange text-xl">➤</div>
+                    <div className="text-gray-700 leading-relaxed font-medium w-full">
+                      <MarkdownEditor
+                        value={item}
+                        onSave={(val) => {
+                          const updated = [...t("peo", defaultPeo)];
+                          updated[i] = val;
+                          updateField("peo", updated);
+                        }}
+                        placeholder="Click to edit PEO item..."
+                        className="w-full"
+                      />
+                    </div>
+                    {isEditing && (
+                      <button
+                        onClick={() => {
+                          const arr = t("peo", defaultPeo).filter(
+                            (_, idx) => idx !== i,
+                          );
+                          updateField("peo", arr);
+                        }}
+                        className="flex-shrink-0 mt-1 text-red-400 hover:text-red-600 text-sm font-bold px-2"
+                        title="Remove item"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                 ))}
+                {isEditing && (
+                  <button
+                    onClick={() => {
+                      updateField("peo", [
+                        ...t("peo", defaultPeo),
+                        "New program educational objective.",
+                      ]);
+                    }}
+                    className="mt-2 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded text-sm font-medium"
+                  >
+                    + Add PEO Item
+                  </button>
+                )}
               </motion.div>
             )}
 
@@ -471,22 +1607,86 @@ const MBA = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="space-y-4"
+                className="space-y-6"
               >
-                {[
-                  "Apply knowledge and management theories and practices to solve business problems.",
-                  "Foster analytical and critical thinking abilities for data-based decision making.",
-                  "Ability to develop value-based leadership quality.",
-                  "Ability to understand analyze and communicate global, economic, legal and ethical aspect of Business.",
-                  "Ability to lead themselves and others in the achievement of organization goals, contributing effectively to a team environment.",
-                ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <div className="mt-1 text-blue-900 text-xl">âž¤</div>
-                    <p className="text-gray-700 leading-relaxed font-medium">
-                      {item}
-                    </p>
-                  </div>
-                ))}
+                <div className="space-y-4">
+                  {t("po", defaultPo)
+                    .slice(0, showAllPos ? undefined : 4)
+                    .map((po, i) => (
+                      <div
+                        key={i}
+                        className="text-gray-700 leading-relaxed text-sm"
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className="flex-1">
+                            <strong className="text-gray-900 block mb-1 text-base">
+                              <EditableText
+                                value={po.t}
+                                onSave={(val) => {
+                                  const updated = JSON.parse(
+                                    JSON.stringify(t("po", defaultPo)),
+                                  );
+                                  updated[i].t = val;
+                                  updateField("po", updated);
+                                }}
+                              />
+                              :
+                            </strong>
+                            <MarkdownEditor
+                              value={po.d}
+                              onSave={(val) => {
+                                const updated = JSON.parse(
+                                  JSON.stringify(t("po", defaultPo)),
+                                );
+                                updated[i].d = val;
+                                updateField("po", updated);
+                              }}
+                              placeholder="Click to edit PO description..."
+                              className="w-full"
+                            />
+                          </div>
+                          {isEditing && (
+                            <button
+                              onClick={() => {
+                                const arr = t("po", defaultPo).filter(
+                                  (_, idx) => idx !== i,
+                                );
+                                updateField("po", arr);
+                              }}
+                              className="flex-shrink-0 mt-1 text-red-400 hover:text-red-600 text-sm font-bold px-2"
+                              title="Remove item"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+                <button
+                  onClick={() => setShowAllPos(!showAllPos)}
+                  className="text-ssgmce-blue hover:text-ssgmce-orange font-medium text-sm transition-colors"
+                >
+                  {showAllPos
+                    ? "Read Less ▲"
+                    : `Read More ▼ (${t("po", defaultPo).length - 4} more)`}
+                </button>
+                {isEditing && (
+                  <button
+                    onClick={() => {
+                      updateField("po", [
+                        ...t("po", defaultPo),
+                        {
+                          t: "New PO Title",
+                          d: "New program outcome description.",
+                        },
+                      ]);
+                    }}
+                    className="ml-4 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded text-sm font-medium"
+                  >
+                    + Add PO Item
+                  </button>
+                )}
               </motion.div>
             )}
           </div>
@@ -503,8 +1703,9 @@ const MBA = () => {
               <div className="relative">
                 <div className="absolute -inset-2 bg-gradient-to-r from-ssgmce-blue to-ssgmce-orange rounded-2xl blur opacity-25"></div>
                 <div className="relative rounded-xl overflow-hidden shadow-2xl border-4 border-white group w-72 md:w-80 lg:w-96">
-                  <img
-                    src={hodPhoto}
+                  <EditableImage
+                    src={t("hod.photo", hodPhoto)}
+                    onSave={(url) => updateField("hod.photo", url)}
                     alt="Dr. P. M. Kuchar - HOD MBA"
                     className="w-full h-auto group-hover:scale-105 transition-transform duration-500"
                   />
@@ -513,28 +1714,57 @@ const MBA = () => {
             </div>
             <div className="flex-1">
               <h3 className="text-2xl font-bold text-gray-900">
-                Dr. P. M. Kuchar
+                <EditableText
+                  value={t("hod.name", "Dr. P. M. Kuchar")}
+                  onSave={(v) => updateField("hod.name", v)}
+                  placeholder="Click to edit HOD name..."
+                />
               </h3>
-              <p className="text-ssgmce-blue font-bold text-sm mt-1 uppercase tracking-wide">
-                Head of Department
-              </p>
+              <div className="text-ssgmce-blue font-bold text-sm mt-1 uppercase tracking-wide">
+                <EditableText
+                  value={t("hod.role", "Head of Department")}
+                  onSave={(v) => updateField("hod.role", v)}
+                  placeholder="Click to edit role..."
+                />
+              </div>
               <p className="text-gray-600 text-sm mt-1">
-                Business Administration and Research (MBA)
+                <EditableText
+                  value={t(
+                    "hod.departmentTitle",
+                    "Business Administration and Research (MBA)",
+                  )}
+                  onSave={(v) => updateField("hod.departmentTitle", v)}
+                  placeholder="Click to edit department title..."
+                />
               </p>
 
               <div className="mt-4 flex items-center gap-4 text-sm text-gray-600">
                 <div className="flex items-center">
                   <FaEnvelope className="mr-2 text-ssgmce-orange" />
-                  <span>pmkuchar@ssgmce.ac.in</span>
+                  <span>
+                    <EditableText
+                      value={t("hod.email", "pmkuchar@ssgmce.ac.in")}
+                      onSave={(v) => updateField("hod.email", v)}
+                      placeholder="Click to edit email..."
+                    />
+                  </span>
                 </div>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
                 <span className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-semibold text-ssgmce-blue">
-                  Ph.D
+                  <EditableText
+                    value={t("hod.badge1", "Ph.D")}
+                    onSave={(v) => updateField("hod.badge1", v)}
+                    placeholder="Badge 1..."
+                  />
                 </span>
                 <span className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-semibold text-ssgmce-blue">
-                  MBA
+                  <EditableText
+                    value={t("hod.badge2", "MBA")}
+                    onSave={(v) => updateField("hod.badge2", v)}
+                    placeholder="Badge 2..."
+                  />
                 </span>
               </div>
             </div>
@@ -548,148 +1778,58 @@ const MBA = () => {
           <div className="relative z-10 max-w-5xl mx-auto">
             <div className="mb-6 text-center">
               <h3 className="text-2xl font-bold text-gray-800">
-                Message from the HOD
+                <EditableText
+                  value={t("hod.messageTitle", "Message from the HOD")}
+                  onSave={(v) => updateField("hod.messageTitle", v)}
+                  placeholder="Click to edit title..."
+                />
               </h3>
-              <div className="h-1 w-20 bg-ssgmce-blue mt-2 rounded-full mx-auto"></div>
+              <div className="h-1 w-20 bg-ssgmce-orange mt-2 rounded-full mx-auto"></div>
             </div>
 
             <div className="space-y-4 text-gray-700 text-base leading-relaxed text-justify">
-              <p className="text-gray-800 font-semibold">Dear Friends,</p>
-              <p>
-                The Department of Business Administration and Research was
-                established as the{" "}
-                <span className="font-semibold text-gray-900">
-                  first Post-Graduate Department
-                </span>{" "}
-                of Shri Sant Gajanan Maharaj College of Engineering in the year{" "}
-                <span className="font-semibold text-gray-900">1994</span> to
-                impart two year full time Post-Graduate Degree Course of Master
-                of Business Administration (
-                <span className="font-semibold text-gray-900">M.B.A.</span>)
-                with prior approval from{" "}
-                <span className="font-semibold text-gray-900">
-                  All India Council for Technical Education, New Delhi
-                </span>{" "}
-                and affiliation to{" "}
-                <span className="font-semibold text-gray-900">
-                  Sant Gadge Baba Amravati University, Amravati, Maharashtra
-                </span>{" "}
-                to meet the need for management education in rural India.
-              </p>
-              <p>
-                The Department made its dent in the management education of the
-                region causing{" "}
-                <span className="font-semibold text-gray-900">shift</span> of
-                the traditionally run{" "}
-                <span className="font-semibold text-gray-900">
-                  annual pattern MBA
-                </span>{" "}
-                of the affiliating university to{" "}
-                <span className="font-semibold text-gray-900">
-                  semester pattern
-                </span>{" "}
-                and then went on to its individual run for quality management
-                education with distinction for others in the region to imbibe.
-                The qualitative attitude and students' centric approach coupled
-                with industrial collaboration paid dividends to the department
-                and its stakeholders which came in form of{" "}
-                <span className="font-semibold text-gray-900">
-                  NBA Accreditations
-                </span>{" "}
-                (first in 2002, second in 2007 and third time accreditation in
-                2013),{" "}
-                <span className="font-semibold text-gray-900">
-                  NAAC Accreditations
-                </span>{" "}
-                (first in 2002 and second in 2010),{" "}
-                <span className="font-semibold text-gray-900">
-                  ISO Certification
-                </span>
-                ,{" "}
-                <span className="font-semibold text-gray-900">
-                  Business India Best B-Schools Ranking
-                </span>{" "}
-                (continuously since 2010), ranking amongst{" "}
-                <span className="font-semibold text-gray-900">
-                  India's top 100 B-Schools
-                </span>{" "}
-                by{" "}
-                <span className="font-semibold text-gray-900">
-                  Career Outlook Survey
-                </span>{" "}
-                continuously since 2015.
-              </p>
-              <p>
-                <span className="font-semibold text-gray-900">
-                  Management College of the Year Award
-                </span>{" "}
-                by{" "}
-                <span className="font-semibold text-gray-900">
-                  Higher Education Review Magazine
-                </span>{" "}
-                continuously for two years in 2016 and 2017,{" "}
-                <span className="font-semibold text-gray-900">
-                  Dewang Mehta Education Leadership Award 2015 and 2016
-                </span>
-                , ranking under{" "}
-                <span className="font-semibold text-gray-900">
-                  Excellent Placement Category
-                </span>{" "}
-                by{" "}
-                <span className="font-semibold text-gray-900">
-                  Go-Education Survey
-                </span>{" "}
-                and rankings by similar other national surveys including one by{" "}
-                <span className="font-semibold text-gray-900">
-                  Business Today
-                </span>{" "}
-                etc.{" "}
-                <span className="font-semibold text-gray-900">
-                  Gold Medal awards
-                </span>{" "}
-                to its students for their consistent performance in university
-                examinations, their satisfactory placements in India and abroad
-                and above all some of the outstanding entrepreneurial ventures
-                established by our alumni.
-              </p>
-              <p>
-                The march is on which has begun in small way through
-                international exposures to our students from CEOs (like Dr.
-                Vikram Pandit of{" "}
-                <span className="font-semibold text-gray-900">
-                  Citibank, USA
-                </span>{" "}
-                and Mr. Pradeep Andhare of{" "}
-                <span className="font-semibold text-gray-900">
-                  FOTONS Ltd., China
-                </span>
-                ) and academicians (like Prof. Rajiv Lall of{" "}
-                <span className="font-semibold text-gray-900">
-                  Harvard Business School, USA
-                </span>
-                ) and internalization of academic excellence parameters like
-                research and publications, academic visits abroad, MoUs, intense
-                industry-interaction, host of co-curricular activities and so on
-                and so forth.
-              </p>
-              <p className="font-semibold text-gray-800 italic">
-                Wishing you all a successful and fulfilling academic journey
-                ahead.
-              </p>
+              <MarkdownEditor
+                value={t(
+                  "hod.message",
+                  "Dear Friends,\n\nThe Department of Business Administration and Research was established as the **first Post-Graduate Department** of Shri Sant Gajanan Maharaj College of Engineering in the year **1994** to impart two year full time Post-Graduate Degree Course of Master of Business Administration (**M.B.A.**) with prior approval from **All India Council for Technical Education, New Delhi** and affiliation to **Sant Gadge Baba Amravati University, Amravati, Maharashtra** to meet the need for management education in rural India.\n\nThe Department made its dent in the management education of the region causing **shift** of the traditionally run **annual pattern MBA** of the affiliating university to **semester pattern** and then went on to its individual run for quality management education with distinction for others in the region to imbibe. The qualitative attitude and students' centric approach coupled with industrial collaboration paid dividends to the department and its stakeholders which came in form of **NBA Accreditations** (first in 2002, second in 2007 and third time accreditation in 2013), **NAAC Accreditations** (first in 2002 and second in 2010), **ISO Certification**, **Business India Best B-Schools Ranking** (continuously since 2010), ranking amongst **India's top 100 B-Schools** by **Career Outlook Survey** continuously since 2015.\n\n**Management College of the Year Award** by **Higher Education Review Magazine** continuously for two years in 2016 and 2017, **Dewang Mehta Education Leadership Award 2015 and 2016**, ranking under **Excellent Placement Category** by **Go-Education Survey** and rankings by similar other national surveys including one by **Business Today** etc. **Gold Medal awards** to its students for their consistent performance in university examinations, their satisfactory placements in India and abroad and above all some of the outstanding entrepreneurial ventures established by our alumni.\n\nThe march is on which has begun in small way through international exposures to our students from CEOs (like Dr. Vikram Pandit of **Citibank, USA** and Mr. Pradeep Andhare of **FOTONS Ltd., China**) and academicians (like Prof. Rajiv Lall of **Harvard Business School, USA**) and internalization of academic excellence parameters like research and publications, academic visits abroad, MoUs, intense industry-interaction, host of co-curricular activities and so on and so forth.\n\n*Wishing you all a successful and fulfilling academic journey ahead.*",
+                )}
+                onSave={(v) => updateField("hod.message", v)}
+                placeholder="Click to edit HOD message (Markdown supported)..."
+                className="w-full"
+              />
             </div>
 
             <div className="mt-8 pt-6 border-t border-gray-100 flex justify-between items-center">
               <div>
-                <p className="font-dancing text-2xl text-ssgmce-blue">
-                  Dr. P. M. Kuchar
-                </p>
-                <p className="text-sm text-gray-500">
-                  Head, Department of Business Administration and Research (MBA)
-                </p>
+                <div className="font-dancing text-2xl text-ssgmce-blue">
+                  <EditableText
+                    value={t("hod.name", "Dr. P. M. Kuchar")}
+                    onSave={(v) => updateField("hod.name", v)}
+                    placeholder="Click to edit HOD name..."
+                  />
+                </div>
+                <div className="text-sm text-gray-500">
+                  <EditableText
+                    value={t(
+                      "hod.role",
+                      "Head, Department of Business Administration and Research (MBA)",
+                    )}
+                    onSave={(v) => updateField("hod.role", v)}
+                    placeholder="Click to edit designation..."
+                  />
+                </div>
               </div>
               <div className="text-right text-sm text-gray-400">
-                <p>Shri Sant Gajanan Maharaj</p>
-                <p>College of Engineering, Shegaon</p>
+                <EditableText
+                  value={t(
+                    "hod.collegeName",
+                    "Shri Sant Gajanan Maharaj\nCollege of Engineering, Shegaon",
+                  )}
+                  onSave={(v) => updateField("hod.collegeName", v)}
+                  placeholder="Click to edit college name..."
+                  multiline
+                  richText={false}
+                />
               </div>
             </div>
           </div>
@@ -807,1595 +1947,569 @@ const MBA = () => {
       </div>
     ),
 
-    "course-outcomes": (
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-3">
-            Course Outcomes
-          </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Comprehensive course outcomes for all semesters of M.B.A. (Business
-            Administration and Research)
-          </p>
-        </div>
+    "course-outcomes": (() => {
+      const defaultSections = [
+        {
+          id: "mba-sem1",
+          label: "M.B.A. Semester-I",
+          content: `### 101 Managerial Economics
 
-        {/* M.B.A. Course Outcomes */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-[#003366] px-6 py-4 text-center">
-            <h3 className="text-xl font-bold text-white">
-              M.B.A. (Business Administration and Research) - Course Outcomes
-            </h3>
+After successfully completing the course, students will be able to:
+
+1. Develop a fundamental understanding of supply, demand, buyer surplus, seller's surplus, and elasticities.
+2. Understand competitive markets and economic efficiency.
+3. Use firm and industry cost analysis for production and strategic decisions.
+4. Distinguish between different market structures and different business strategies.
+
+### 102 Legal and Business Environment
+
+After successfully completing the course, students will be able to:
+
+1. Identify and evaluate the complexities of business environment and their impact on the business.
+2. Analyze the relationships between Government and business and understand the political, economic, legal and social policies of the country.
+3. Analyze current economic conditions in developing emerging markets, and evaluate present and future opportunities.
+4. Understand the Industrial functioning and strategies to overcome challenges in competitive markets.
+
+### 103 Financial Reporting, Statement and Analysis
+
+After successfully completing the course, students will be able to:
+
+1. Understand the basic concepts of accounting and also able to know the difference between accounting, financial accounting, management accounting and Cost accounting.
+2. Prepare financial statements and also able to make decisions with the help of various financial analysis tools.
+3. Acquainting the knowledge regarding various cost accounting concepts with analytical skills for its application in managerial decision making.
+4. Able to present the financial results and position of a company relative to its industry by developing skills for interpretation to adopt for financial reporting purposes.
+
+### 104 Indian Ethos and Business Ethics
+
+After successfully completing the course, students will be able to:
+
+1. Students will be acquainted with the fundamentals of Indian ethos and its relevance in the practical aspects.
+2. Students will comprehend the allied root reasons and nature of ethical issues.
+3. Aspirants will endeavor to find remedies for ethical issues being faced by organizations, employees, managers and policy makers.
+4. Students will reflect a personality well equipped by values and spread the same at workplaces in future.
+
+### 105 Organizational Behaviour
+
+After successfully completing the course, students will be able to:
+
+1. Aware the students regarding human interaction in an organization.
+2. Finding what forces enhancing it for setting better results in attending the business goals.
+3. Formulate approaches to reorient individual, team, managerial and leadership behavior in order to achieve organizational goals.
+4. Able to analyze the behavior of individuals and groups in organizations in terms of the key factors that influence organizational behavior and demonstrate skills required for working in groups.
+
+### 106 Computer Application for Business
+
+After successfully completing the course, students will be able to:
+
+1. Students will possess a comprehensive understanding of Management Information Systems, encompassing information concepts, subsystems, and the development phases of MIS.
+2. Develop the basic understanding and describe various aspects of IT, including telecommunication and networks, data management systems, and IT-enabled services.
+3. Students will be able to explain the decision-making process and the role of Information Systems in supporting decision-making phases, including the construction of Decision Support Systems.
+4. Students will be able to understand the management issues associated with MIS, including information security and control, quality assurance, ethical and social dimensions, intellectual property rights, and the challenges of managing global information systems.
+
+### 107 Business Statistics and Analytics for Decision Making
+
+After successfully completing the course, students will be able to:
+
+1. Develop an understanding of Business Statistics and Analytics and its managerial applications in the real business world.
+2. Make the student familiar with statistical techniques in Business Decision Making.
+3. Expand the knowledge of inferential statistics for developing criteria for decision making.
+4. Understanding of basic and advance quantitative models in management decision making.`,
+        },
+        {
+          id: "mba-sem2",
+          label: "M.B.A. Semester-II",
+          content: `### 201 Business Communication
+
+After successfully completing the course, students will be able to:
+
+1. Demonstrate students to verbal and non-verbal communication ability to solve workplace communication issues.
+2. Create and deliver effective business presentations, using appropriate tools.
+3. Draft effective business correspondence with brevity and clarity.
+4. Develop the students for job market.
+
+### 202 Marketing Management
+
+After successfully completing the course, students will be able to:
+
+1. Develop an understanding of the underlying concept, theories and strategies involved in the marketing of product and services.
+2. Capable to apply the three steps of target marketing: market segmentation, target marketing, and market positioning.
+3. Able to evaluate different distribution channel options and their suitability for the company's product.
+4. Develop a suitable promotion mix (advertising, sales promotion, public relations, personal selling, and direct marketing etc.) for the product.
+
+### 203 Corporate Finance
+
+After successfully completing the course, students will be able to:
+
+1. Aware of the basic concepts related to financial management, various techniques and tools to manage finance function.
+2. Gaining the knowledge of principles and concepts used in financial decision making and familiarizing the students with the valuation of firm.
+3. Able to find out the best course of action among several financial options with the technique of capital budgeting and restructuring.
+4. Assessing the impact of corporate investment decisions in financing of working capital needs and the long term capital needs of the business organization.
+
+### 204 Research Methodology
+
+After successfully completing the course, students will be able to:
+
+1. Understand the basics of marketing research, literature review and research design.
+2. Understand the different tools and techniques of measurement, scaling and data collection.
+3. Understand sampling, sample design and descriptive statistics.
+4. Acquire an ability to conduct hypothesis testing.
+
+### 205 Production and Operation Management
+
+After successfully completing the course, students will be able to:
+
+1. Equip students with process of planning, organizing and controlling activities of production.
+2. Educate them on resources system used for transforming raw materials into value added products.
+3. Explain the students various dimensions of production planning and control and their inter-linkages with forecasting.
+4. Students can measure performance related to productivity and will be able to conduct basic industrial engineering study on men and machines.
+
+### 206 Human Resource Management
+
+After successfully completing the course, students will be able to:
+
+1. Judge Human Resource Management scenario and practices for acquisition of manpower in India.
+2. Implement Human Resource Development practices for development of human resources.
+3. Judge their role according to problems and situations in human resource department.
+4. Implement training methods and practices on employee development.
+5. Project human resource management policies for any organization.
+
+### 207 Entrepreneurship Development
+
+After successfully completing the course, students will be able to:
+
+1. Explore entrepreneurial path and acquaint them with the essential knowledge of starting new ventures.
+2. Students will learn tools and techniques for generating, testing and developing innovative startup ideas into successful enterprise.`,
+        },
+        {
+          id: "mba-sem3",
+          label: "M.B.A. Semester-III",
+          content: `### Common Subjects
+
+### 301 International Business Environment
+
+After successfully completing the course, students will be able to:
+
+1. Get acquainted with the fundamentals of International trade and business.
+2. Analyse and evaluate International marketing environment and the export procedures.
+3. Analyse and evaluate Global logistics and Supply chain environment.
+4. Analyse and evaluate International financial environments and working of institutions.
+
+### 3101 Investment Analysis and Portfolio Management
+
+After successfully completing the course, students will be able to:
+
+1. Understand and get insights into investment analysis for investment decision making.
+2. Acquire knowledge and skills on Technical and Fundamental analysis.
+3. Understand concept of Equity valuation.
+4. Learn the concept of Portfolio management along with different theories.
+
+### 3102 Indian Financial System and Financial Markets
+
+After successfully completing the course, students will be able to:
+
+1. Understand the role, function, components and regulation of the financial system in reference to the macro economy.
+2. Identify the existence of regulatory authority and development of Banking and non-banking financial institutions.
+3. Know the instruments, participants, structure and operation of various financial market working in India.
+4. Assess the important role of development banks in the Indian financial system and create strategies to promote financial inclusion.
+
+### 3103 Financial Derivatives and Risk Management
+
+After successfully completing the course, students will be able to:
+
+1. Describe and explain the fundamental features of a range of key financial derivatives instruments.
+2. Solve problems requiring pricing derivative instruments and hedge market risk based on numerical data and current market trends.
+3. Acquire ability to selection of various options strategies and able to determine option prices with Binomial and Black Scholes models.
+4. Estimate the value of interest rate and foreign exchange swaps; Be able to understand the structure of commodity market.
+
+### 3104 Behavioral Finance
+
+After successfully completing the course, students will be able to:
+
+1. Explain and demonstrate using empirical data the challenges to the efficient market hypothesis.
+2. Explain the nature and forecast the consequences of key behavioural biases of investors.
+3. Demonstrate the effect of Emotional Factors and Social Forces on investment.
+4. Explain the psychological factors influencing decision-making.
+
+### 3201 Retail Management
+
+After successfully completing the course, students will be able to:
+
+1. Acquaintance budding managers with knowledge of planning, designing, implementation and assessment of retail strategies based on consumer needs and prevailing trends.
+2. Understands evolution of retail industry, strategies and apply in retail sector.
+3. Understand characteristics of retail trading area, factors of site locations, information system requirements and techniques of customer retention.
+4. Understand the role of ICT in retail management in today's market scenario.
+
+### 3202 Consumer Behavior
+
+After successfully completing the course, students will be able to:
+
+1. Understand consumer behavior in totality and its application in marketing.
+2. Understand marketing decisions and its interlink with consumer behavior.
+3. Recognize social, technological, implications of marketing actions on consumer behavior.
+4. Design Models and analyse latest trends which influence consumer behavior.
+
+### 3203 Brand Management
+
+After successfully completing the course, students will be able to:
+
+1. Train students to manage product, and building brand equity in the market of an organization.
+2. Give students an insight of managing brand over multiple categories, over time and across multiple market segments.
+3. Gain knowledge and skills in brand architecture and brand engagement.
+4. Build strategies for launching product across markets.
+
+### 3204 Sales and Distribution Management
+
+After successfully completing the course, students will be able to:
+
+1. Learner understand importance of SDM in marketing functional and its interlinks with other functional areas.
+2. Had knowledge and understand the diverse variables affecting sales and distribution functions and various plans of distribution.
+3. Develop expertise in designing and effectively managing company's sales and distributions operations.
+4. Understand fundamentals of distribution channels, logistics and supply chain management.
+
+### 3301 Talent Acquisition and Development
+
+After successfully completing the course, students will be able to:
+
+1. Students will be able to understand and explain talent acquisition process and retain talent.
+2. Students will be able to understand the interplay between various aspects of talent acquisition retention and development of talent.
+3. Students will be able to analyse the need assessment of training and its methods.
+4. Student will be able to learn to design training programme and also can explore issues and possible solutions for evaluating training.
+
+### 3302 Employee Relations
+
+After successfully completing the course, students will be able to:
+
+1. Elaborate the IR perspective in detail.
+2. Illustrate the role of trade union in the industrial setup.
+3. Comprehend the causes and impact of industrial disputes.
+4. Understand importance and process of developing and maintaining harmonious relationships between the management and all level of employees.
+
+### 3303 Performance Management System
+
+After successfully completing the course, students will be able to:
+
+1. Explain the concept of performance management, challenges of performance management and different advantages of implementing well-designed performance management systems.
+2. Understand that performance management is an on-going process composed of several sub-processes, such as performance planning, execution, assessment, and review.
+3. Analyze different methods and approaches to performance measurement and also can identify some of the common challenges, problems with the performance appraisal process.
+4. Design a performance management system and also can develop key skills involved in effective performance management and employee development.
+
+### 3304 Compensation and Benefit Management
+
+After successfully completing the course, students will be able to:
+
+1. Students will be able to design rational and contemporary compensation systems in modern organization and analyse different types of rewarding procedures of employees on the basis of performance.
+2. Students will be able to analyse, integrate, and apply the knowledge to solve compensation and reward related problems in organization. Students will be able to justify the existing pay structure to employees.
+3. Students can hold the knowledge of the different softwares used for compensation management in this technological era.
+4. Students will be able to summarize the important provisions of social security legislation in reference to Employee State Insurance Act 1948, Payment of Gratuity Act 1982, and Employee's Provident Fund Act 1952.`,
+        },
+        {
+          id: "mba-sem4",
+          label: "M.B.A. Semester-IV",
+          content: `### Common Subjects
+
+### 401 Strategic Management
+
+After successfully completing the course, students will be able to:
+
+1. Understand the fundamental aspects of strategy, strategic management process and its intents.
+2. Analyse the importance of environmental and competitive analysis for formulating Corporate strategy.
+3. Categorize different level of Corporate strategies and its alternatives in strategy formulation.
+4. Apply the strategic alternative and implement & control in corporate setting.
+
+### 4101 Managing Banks and Financial Institutions
+
+After successfully completing the course, students will be able to:
+
+1. Understand functioning of banking industry and able to know about the various financial services provided by banks.
+2. Aware about significance of modern banking products and schemes.
+3. Learn about the important concepts like investment banking and wealth management along with practical approach.
+4. Understand the technology driven banking system like e-banking, electronic fund transfer and electronic payment system.
+
+### 4102 Financial Markets and Financial Services
+
+After successfully completing the course, students will be able to:
+
+1. Identify the functions of financial markets and institutions and examine their impact on financial system of a country.
+2. Describe the framework of Forex markets and mechanism of exchange rate determination.
+3. Analyse the salient features of various financial products, services and instruments.
+4. Acquire knowledge of modern financial services and familiarize with Fintech and Digital currency.
+
+### 4103 Project Appraisal and Finance
+
+After successfully completing the course, students will be able to:
+
+1. Acquire the knowledge of Project Management and able to prepare Detail project report.
+2. Gain the knowledge about different sources of financing and financial appraisal technique.
+3. Understanding the concept of Corporate restructuring, Mergers and Acquisitions.
+4. Analyse various types of Project risk and preparation of project report.
+
+### 4104 Working Capital Management
+
+After successfully completing the course, students will be able to:
+
+1. Evaluate Working Capital effectiveness of a company based on its operating and cash conversion cycles, and compare the company's effectiveness with that of peer companies.
+2. Identify and evaluate the necessary tools to use in managing a company's net daily cash position.
+3. Estimate a company's management of accounts receivable policy, inventory, and accounts payable over time and compared to peer companies.
+4. Evaluate the choices of short-term funding available to a company and recommend a financing method.
+
+### 4201 Digital Marketing
+
+After successfully completing the course, students will be able to:
+
+1. To familiarize aspirants with fundamental of digital Marketing.
+2. Implement a process of planning of social media or digital marketing activities.
+3. Use tools and techniques to manage digital and social media marketing programs.
+4. Design social media programs that directly support business and marketing goals.
+
+### 4202 Integrated Marketing Communication
+
+After successfully completing the course, students will be able to:
+
+1. To recognise the significance of IC in the contemporary times and understand fundamentals thereof.
+2. To comprehend the advertising media related attributes thoroughly and modern media platforms.
+3. To enable aspirants to design the advertising body copy and campaign.
+4. To contribute to advertising arena with a due consideration for ethical and social aspects.
+
+### 4203 Sales Promotion Management
+
+After successfully completing the course, students will be able to:
+
+1. Learn sales promotion techniques for consumer, trade, company and sales force.
+2. Develop sales promotion campaign, establishing its objectives, tools and program.
+3. Understand its roles and purpose to serve in overall marketing communication, assessing effectiveness of tools used in promotion, know modern day tools of promotion.
+
+### 4204 Service Marketing
+
+After successfully completing the course, students will be able to:
+
+1. Have a greater understanding of services marketing, specialties of how it dominates the business landscape.
+2. Acquaintance with major elements needed to improve marketing of services and adding value to the customers perception.
+3. Appraise the nature and development of strategies of marketing of services.
+4. Handling customers complaints and insight to service recovery management.
+
+### 4301 Legal Framework Governing Human Relations
+
+After successfully completing the course, students will be able to:
+
+1. Students will gain a basic understanding of objectives and importance of laws relating to industrial disputes and management of trade union and the role of trade unions in changing environment.
+2. Understanding of various factors responsible for growth and development of labour laws.
+3. Student will be able to summarize the important provisions of Wage Legislations, in reference to Payment of Wages Act 1936, Minimum Wages Act 1948 & Payment of Bonus Act 1965.
+4. Students will be able to understand the laws related to working conditions in factories.
+
+### 4302 Organizational Change and Intervention Strategies
+
+After successfully completing the course, students will be able to:
+
+1. Students will be able to understand theories and models that form the foundation of disciplines as well as the OD diagnostic process.
+2. Students will be able to understand the ethics of OD professional and also can recognise ethical principles in organisational development.
+3. Students will comprehend the main approaches of change and will be equipped with knowledge and skills required for effective change and organisational development.
+4. Students will be able to apply various OD interventions and can develop a working knowledge of all aspects of OD intervention process.
+
+### 4303 Team Dynamics at Work
+
+After successfully completing the course, students will be able to:
+
+1. Students will be able to justify formation and development of teams and can explain the dynamics of Team & Team Building and different learning methodologies in team decision-making.
+2. Student will be able to justify the applicability of various theories of Motivation, T-group sensitivity training and Johari Window and also able to justify the Conflict resolution strategy.
+3. Student will be able to understand the development of team and can discover orientation through FIRO-B.
+4. Students will be able to determine the importance of Interpersonal Communication and can increase their self-awareness and strengthen ability to better understand others.
+
+### 4304 International Human Resource Management
+
+After successfully completing the course, students will be able to:
+
+1. Recognize, outline, and illustrate the enduring global contexts of International HRM understanding and key skills required by HR professionals working in an international context with multinational organizations.
+2. Demonstrate, appraise the implications of IHRM in the Host Country Context and managing alliances and joint venture.
+3. Differentiate the Context of Cross-border Alliances, prepare staffing international operations for sustained global growth, recruiting and selecting staff for international assignments, interpret and analyze the International Industrial Relation issues and performance management.
+4. Evaluate, interpret issues of international training, development and also can able to comprehend HRM practices in different countries.
+
+### 4401 Data Analytics with R
+
+After successfully completing the course, students will be able to:
+
+1. Demonstrate skill in data management.
+2. Understand the basic concept of R programming.
+3. Demonstrate skills in data visualization.
+4. Describe their proficiency in business statistical analysis of data.
+
+### 4402 Data Mining for Business Decisions
+
+After successfully completing the course, students will be able to:
+
+1. Realize Data Mining (DM) principles and techniques.
+2. Analyse large sets of data to gain useful business understanding.
+3. Interpret business applications of data mining.
+4. Demonstrate skills in new trends of Data Mining in relevant business fields.
+
+### 4403 Marketing Analytics
+
+After successfully completing the course, students will be able to:
+
+1. Develop the skill in marketing analytics.
+2. Predict the market scenario for effective marketing decision.
+3. Analyze the customer behavior for strategy formation.
+4. Assess the advertising effect to form adequate retailing policies.
+
+### 4404 Financial Credit Risk Analytics
+
+After successfully completing the course, students will be able to:
+
+1. Understand about various types of financial credit.
+2. Interpret the credit risk and its rating.
+3. Inspect the risk to frame effective management and governance policies.
+4. Demonstrate skill of credit analysis.`,
+        },
+      ];
+
+      const sections = t("courseOutcomes.sections", defaultSections);
+
+      const updateSections = (updated) =>
+        updateField("courseOutcomes.sections", updated);
+
+      const insertSection = (afterIdx) => {
+        const newSec = {
+          id: `custom-${Date.now()}`,
+          label: "New Semester",
+          content: "",
+        };
+        const updated = [...sections];
+        updated.splice(afterIdx + 1, 0, newSec);
+        updateSections(updated);
+      };
+
+      const removeSection = (idx) => {
+        updateSections(sections.filter((_, i) => i !== idx));
+      };
+
+      return (
+        <div className="space-y-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-800 mb-3">
+              Course Outcomes
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Comprehensive course outcomes for all semesters of M.B.A. (Master
+              of Business Administration)
+            </p>
           </div>
 
-          <div className="p-6 space-y-2">
-            {/* M.B.A. Semester-I */}
-            <div className="border-b border-gray-200 pb-2">
-              <button
-                onClick={() =>
-                  setExpandedSemester(
-                    expandedSemester === "mba-sem1" ? null : "mba-sem1",
-                  )
-                }
-                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">
-                  M.B.A. Semester-I
-                </span>
-                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "mba-sem1" ? "Hide" : "View"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {expandedSemester === "mba-sem1" && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 py-4 bg-gray-50 space-y-6">
-                      {/* 101 Managerial Economics */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          101 Managerial Economics
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the course, students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Develop a fundamental understanding of supply,
-                            demand, buyer surplus, seller's surplus, and
-                            elasticities.
-                          </li>
-                          <li>
-                            Understand competitive markets and economic
-                            efficiency.
-                          </li>
-                          <li>
-                            Use firm and industry cost analysis for production
-                            and strategic decisions.
-                          </li>
-                          <li>
-                            Distinguish between different market structures and
-                            different business strategies.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 102 Legal and Business Environment */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          102 Legal and Business Environment
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the course, students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Identify and evaluate the complexities of business
-                            environment and their impact on the business.
-                          </li>
-                          <li>
-                            Analyze the relationships between Government and
-                            business and understand the political, economic,
-                            legal and social policies of the country.
-                          </li>
-                          <li>
-                            Analyze current economic conditions in developing
-                            emerging markets, and evaluate present and future
-                            opportunities.
-                          </li>
-                          <li>
-                            Understand the Industrial functioning and strategies
-                            to overcome challenges in competitive markets.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 103 Financial Reporting, Statement and Analysis */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          103 Financial Reporting, Statement and Analysis
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the course, students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Understand the basic concepts of accounting and also
-                            able to know the difference between accounting,
-                            financial accounting, management accounting and Cost
-                            accounting.
-                          </li>
-                          <li>
-                            Prepare financial statements and also able to make
-                            decisions with the help of various financial
-                            analysis tools.
-                          </li>
-                          <li>
-                            Acquainting the knowledge regarding various cost
-                            accounting concepts with analytical skills for its
-                            application in managerial decision making.
-                          </li>
-                          <li>
-                            Able to present the financial results and position
-                            of a company relative to its industry by developing
-                            skills for interpretation to adopt for financial
-                            reporting purposes.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 104 Indian Ethos and Business Ethics */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          104 Indian Ethos and Business Ethics
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the course, students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Students will be acquainted with the fundamentals of
-                            Indian ethos and its relevance in the practical
-                            aspects.
-                          </li>
-                          <li>
-                            Students will comprehend the allied root reasons and
-                            nature of ethical issues.
-                          </li>
-                          <li>
-                            Aspirants will endeavor to find remedies for ethical
-                            issues being faced by organizations, employees,
-                            managers and policy makers.
-                          </li>
-                          <li>
-                            Students will reflect a personality well equipped by
-                            values and spread the same at workplaces in future.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 105 Organizational Behaviour */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          105 Organizational Behaviour
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the course, students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Aware the students regarding human interaction in an
-                            organization.
-                          </li>
-                          <li>
-                            Finding what forces enhancing it for setting better
-                            results in attending the business goals.
-                          </li>
-                          <li>
-                            Formulate approaches to reorient individual, team,
-                            managerial and leadership behavior in order to
-                            achieve organizational goals.
-                          </li>
-                          <li>
-                            Able to analyze the behavior of individuals and
-                            groups in organizations in terms of the key factors
-                            that influence organizational behavior and
-                            demonstrate skills required for working in groups.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 106 Computer Application for Business */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          106 Computer Application for Business
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the course, students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Students will possess a comprehensive understanding
-                            of Management Information Systems, encompassing
-                            information concepts, subsystems, and the
-                            development phases of MIS.
-                          </li>
-                          <li>
-                            Develop the basic understanding and describe various
-                            aspects of IT, including telecommunication and
-                            networks, data management systems, and IT-enabled
-                            services.
-                          </li>
-                          <li>
-                            Students will be able to explain the decision-making
-                            process and the role of Information Systems in
-                            supporting decision-making phases, including the
-                            construction of Decision Support Systems.
-                          </li>
-                          <li>
-                            Students will be able to understand the management
-                            issues associated with MIS, including information
-                            security and control, quality assurance, ethical and
-                            social dimensions, intellectual property rights, and
-                            the challenges of managing global information
-                            systems.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 107 Business Statistics and Analytics for Decision Making */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          107 Business Statistics and Analytics for Decision
-                          Making
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the course, students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Develop an understanding of Business Statistics and
-                            Analytics and its managerial applications in the
-                            real business world.
-                          </li>
-                          <li>
-                            Make the student familiar with statistical
-                            techniques in Business Decision Making.
-                          </li>
-                          <li>
-                            Expand the knowledge of inferential statistics for
-                            developing criteria for decision making.
-                          </li>
-                          <li>
-                            Understanding of basic and advance quantitative
-                            models in management decision making.
-                          </li>
-                        </ol>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+          {/* Course Outcomes */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-[#003366] px-6 py-4 text-center">
+              <h3 className="text-xl font-bold text-white">
+                M.B.A. - Course Outcomes
+              </h3>
             </div>
-
-            {/* M.B.A. Semester-II */}
-            <div className="border-b border-gray-200 pb-2">
-              <button
-                onClick={() =>
-                  setExpandedSemester(
-                    expandedSemester === "mba-sem2" ? null : "mba-sem2",
-                  )
-                }
-                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">
-                  M.B.A. Semester-II
-                </span>
-                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "mba-sem2" ? "Hide" : "View"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {expandedSemester === "mba-sem2" && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
+            <div className="p-6 space-y-1">
+              {isEditing && (
+                <button
+                  onClick={() => insertSection(-1)}
+                  className="w-full py-1.5 mb-2 border-2 border-dashed border-green-300 text-green-600 hover:border-green-500 hover:bg-green-50 rounded-lg text-sm font-medium transition-colors"
+                >
+                  + Insert at Beginning
+                </button>
+              )}
+              {sections.map((semester, idx) => (
+                <React.Fragment key={semester.id}>
+                  <div className="border-b border-gray-200 pb-2">
+                    <button
+                      onClick={() =>
+                        setExpandedSemester(
+                          expandedSemester === semester.id ? null : semester.id,
+                        )
+                      }
+                      className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="font-medium text-gray-700 text-left">
+                        {isEditing ? (
+                          <EditableText
+                            value={semester.label}
+                            onSave={(val) => {
+                              const updated = [...sections];
+                              updated[idx] = { ...updated[idx], label: val };
+                              updateSections(updated);
+                            }}
+                          />
+                        ) : (
+                          semester.label
+                        )}
+                      </span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {isEditing && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (
+                                window.confirm(
+                                  `Delete "${semester.label}"? This cannot be undone.`,
+                                )
+                              ) {
+                                removeSection(idx);
+                              }
+                            }}
+                            className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+                          >
+                            Delete
+                          </button>
+                        )}
+                        <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                          {expandedSemester === semester.id ? "Hide" : "View"}
+                        </span>
+                      </div>
+                    </button>
+                    <AnimatePresence>
+                      {expandedSemester === semester.id && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-4 py-4 bg-gray-50">
+                            <MarkdownEditor
+                              value={semester.content}
+                              onSave={(val) => {
+                                const updated = [...sections];
+                                updated[idx] = {
+                                  ...updated[idx],
+                                  content: val,
+                                };
+                                updateSections(updated);
+                              }}
+                              placeholder={`Click to edit ${semester.label} course outcomes (Markdown supported)...`}
+                              className="w-full"
+                            />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                  {isEditing && (
+                    <button
+                      onClick={() => insertSection(idx)}
+                      className="w-full py-1 border-2 border-dashed border-green-300 text-green-600 hover:border-green-500 hover:bg-green-50 rounded-lg text-xs font-medium transition-colors"
+                    >
+                      + Insert After
+                    </button>
+                  )}
+                </React.Fragment>
+              ))}
+              {isEditing && (
+                <div className="pt-2">
+                  <button
+                    onClick={() => insertSection(sections.length - 1)}
+                    className="w-full py-3 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
                   >
-                    <div className="px-4 py-4 bg-gray-50 space-y-6">
-                      {/* 201 Business Communication */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          201 Business Communication
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the course, students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Demonstrate students to verbal and non-verbal
-                            communication ability to solve workplace
-                            communication issues.
-                          </li>
-                          <li>
-                            Create and deliver effective business presentations,
-                            using appropriate tools.
-                          </li>
-                          <li>
-                            Draft effective business correspondence with brevity
-                            and clarity.
-                          </li>
-                          <li>Develop the students for job market.</li>
-                        </ol>
-                      </div>
-
-                      {/* 202 Marketing Management */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          202 Marketing Management
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the course, students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Develop an understanding of the underlying concept,
-                            theories and strategies involved in the marketing of
-                            product and services.
-                          </li>
-                          <li>
-                            Capable to apply the three steps of target
-                            marketing: market segmentation, target marketing,
-                            and market positioning.
-                          </li>
-                          <li>
-                            Able to evaluate different distribution channel
-                            options and their suitability for the company's
-                            product.
-                          </li>
-                          <li>
-                            Develop a suitable promotion mix (advertising, sales
-                            promotion, public relations, personal selling, and
-                            direct marketing etc.) for the product.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 203 Corporate Finance */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          203 Corporate Finance
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the course, students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Aware of the basic concepts related to financial
-                            management, various techniques and tools to manage
-                            finance function.
-                          </li>
-                          <li>
-                            Gaining the knowledge of principles and concepts
-                            used in financial decision making and familiarizing
-                            the students with the valuation of firm.
-                          </li>
-                          <li>
-                            Able to find out the best course of action among
-                            several financial options with the technique of
-                            capital budgeting and restructuring.
-                          </li>
-                          <li>
-                            Assessing the impact of corporate investment
-                            decisions in financing of working capital needs and
-                            the long term capital needs of the business
-                            organization.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 204 Research Methodology */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          204 Research Methodology
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the course, students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Understand the basics of marketing research,
-                            literature review and research design.
-                          </li>
-                          <li>
-                            Understand the different tools and techniques of
-                            measurement, scaling and data collection.
-                          </li>
-                          <li>
-                            Understand sampling, sample design and descriptive
-                            statistics.
-                          </li>
-                          <li>
-                            Acquire an ability to conduct hypothesis testing.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 205 Production and Operation Management */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          205 Production and Operation Management
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the course, students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Equip students with process of planning, organizing
-                            and controlling activities of production.
-                          </li>
-                          <li>
-                            Educate them on resources system used for
-                            transforming raw materials into value added
-                            products.
-                          </li>
-                          <li>
-                            Explain the students various dimensions of
-                            production planning and control and their
-                            inter-linkages with forecasting.
-                          </li>
-                          <li>
-                            Students can measure performance related to
-                            productivity and will be able to conduct basic
-                            industrial engineering study on men and machines.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 206 Human Resource Management */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          206 Human Resource Management
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the course, students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Judge Human Resource Management scenario and
-                            practices for acquisition of manpower in India.
-                          </li>
-                          <li>
-                            Implement Human Resource Development practices for
-                            development of human resources.
-                          </li>
-                          <li>
-                            Judge their role according to problems and
-                            situations in human resource department.
-                          </li>
-                          <li>
-                            Implement training methods and practices on employee
-                            development.
-                          </li>
-                          <li>
-                            Project human resource management policies for any
-                            organization.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 207 Entrepreneurship Development */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          207 Entrepreneurship Development
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the course, students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Explore entrepreneurial path and acquaint them with
-                            the essential knowledge of starting new ventures.
-                          </li>
-                          <li>
-                            Students will learn tools and techniques for
-                            generating, testing and developing innovative
-                            startup ideas into successful enterprise.
-                          </li>
-                        </ol>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* M.B.A. Semester-III */}
-            <div className="border-b border-gray-200 pb-2">
-              <button
-                onClick={() =>
-                  setExpandedSemester(
-                    expandedSemester === "mba-sem3" ? null : "mba-sem3",
-                  )
-                }
-                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">
-                  M.B.A. Semester-III
-                </span>
-                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "mba-sem3" ? "Hide" : "View"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {expandedSemester === "mba-sem3" && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 py-4 bg-gray-50 space-y-6">
-                      {/* Common Subjects */}
-                      <div className="mb-4">
-                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
-                          Common Subjects
-                        </h4>
-                        <div className="space-y-6">
-                          {/* 301 International Business Environment */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              301 International Business Environment
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Get acquainted with the fundamentals of
-                                International trade and business.
-                              </li>
-                              <li>
-                                Analyse and evaluate International marketing
-                                environment and the export procedures.
-                              </li>
-                              <li>
-                                Analyse and evaluate Global logistics and Supply
-                                chain environment.
-                              </li>
-                              <li>
-                                Analyse and evaluate International financial
-                                environments and working of institutions.
-                              </li>
-                            </ol>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Finance Specialization */}
-                      <div className="mb-4">
-                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
-                          Finance Specialization
-                        </h4>
-                        <div className="space-y-6">
-                          {/* 3101 Investment Analysis and Portfolio Management */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              3101 Investment Analysis and Portfolio Management
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Understand and get insights into investment
-                                analysis for investment decision making.
-                              </li>
-                              <li>
-                                Acquire knowledge and skills on Technical and
-                                Fundamental analysis.
-                              </li>
-                              <li>Understand concept of Equity valuation.</li>
-                              <li>
-                                Learn the concept of Portfolio management along
-                                with different theories.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 3102 Indian Financial System and Financial Markets */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              3102 Indian Financial System and Financial Markets
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Understand the role, function, components and
-                                regulation of the financial system in reference
-                                to the macro economy.
-                              </li>
-                              <li>
-                                Identify the existence of regulatory authority
-                                and development of Banking and non-banking
-                                financial institutions.
-                              </li>
-                              <li>
-                                Know the instruments, participants, structure
-                                and operation of various financial market
-                                working in India.
-                              </li>
-                              <li>
-                                Assess the important role of development banks
-                                in the Indian financial system and create
-                                strategies to promote financial inclusion.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 3103 Financial Derivatives and Risk Management */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              3103 Financial Derivatives and Risk Management
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Describe and explain the fundamental features of
-                                a range of key financial derivatives
-                                instruments.
-                              </li>
-                              <li>
-                                Solve problems requiring pricing derivative
-                                instruments and hedge market risk based on
-                                numerical data and current market trends.
-                              </li>
-                              <li>
-                                Acquire ability to selection of various options
-                                strategies and able to determine option prices
-                                with Binomial and Black Scholes models.
-                              </li>
-                              <li>
-                                Estimate the value of interest rate and foreign
-                                exchange swaps; Be able to understand the
-                                structure of commodity market.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 3104 Behavioral Finance */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              3104 Behavioral Finance
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Explain and demonstrate using empirical data the
-                                challenges to the efficient market hypothesis.
-                              </li>
-                              <li>
-                                Explain the nature and forecast the consequences
-                                of key behavioural biases of investors.
-                              </li>
-                              <li>
-                                Demonstrate the effect of Emotional Factors and
-                                Social Forces on investment.
-                              </li>
-                              <li>
-                                Explain the psychological factors influencing
-                                decision-making.
-                              </li>
-                            </ol>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Marketing Specialization */}
-                      <div className="mb-4">
-                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
-                          Marketing Specialization
-                        </h4>
-                        <div className="space-y-6">
-                          {/* 3201 Retail Management */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              3201 Retail Management
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Acquaintance budding managers with knowledge of
-                                planning, designing, implementation and
-                                assessment of retail strategies based on
-                                consumer needs and prevailing trends.
-                              </li>
-                              <li>
-                                Understands evolution of retail industry,
-                                strategies and apply in retail sector.
-                              </li>
-                              <li>
-                                Understand characteristics of retail trading
-                                area, factors of site locations, information
-                                system requirements and techniques of customer
-                                retention.
-                              </li>
-                              <li>
-                                Understand the role of ICT in retail management
-                                in today's market scenario.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 3202 Consumer Behavior */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              3202 Consumer Behavior
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Understand consumer behavior in totality and its
-                                application in marketing.
-                              </li>
-                              <li>
-                                Understand marketing decisions and its interlink
-                                with consumer behavior.
-                              </li>
-                              <li>
-                                Recognize social, technological, implications of
-                                marketing actions on consumer behavior.
-                              </li>
-                              <li>
-                                Design Models and analyse latest trends which
-                                influence consumer behavior.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 3203 Brand Management */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              3203 Brand Management
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Train students to manage product, and building
-                                brand equity in the market of an organization.
-                              </li>
-                              <li>
-                                Give students an insight of managing brand over
-                                multiple categories, over time and across
-                                multiple market segments.
-                              </li>
-                              <li>
-                                Gain knowledge and skills in brand architecture
-                                and brand engagement.
-                              </li>
-                              <li>
-                                Build strategies for launching product across
-                                markets.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 3204 Sales and Distribution Management */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              3204 Sales and Distribution Management
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Learner understand importance of SDM in
-                                marketing functional and its interlinks with
-                                other functional areas.
-                              </li>
-                              <li>
-                                Had knowledge and understand the diverse
-                                variables affecting sales and distribution
-                                functions and various plans of distribution.
-                              </li>
-                              <li>
-                                Develop expertise in designing and effectively
-                                managing company's sales and distributions
-                                operations.
-                              </li>
-                              <li>
-                                Understand fundamentals of distribution
-                                channels, logistics and supply chain management.
-                              </li>
-                            </ol>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Human Resource Specialization */}
-                      <div className="mb-4">
-                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
-                          Human Resource Specialization
-                        </h4>
-                        <div className="space-y-6">
-                          {/* 3301 Talent Acquisition and Development */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              3301 Talent Acquisition and Development
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Students will be able to understand and explain
-                                talent acquisition process and retain talent.
-                              </li>
-                              <li>
-                                Students will be able to understand the
-                                interplay between various aspects of talent
-                                acquisition retention and development of talent.
-                              </li>
-                              <li>
-                                Students will be able to analyse the need
-                                assessment of training and its methods.
-                              </li>
-                              <li>
-                                Student will be able to learn to design training
-                                programme and also can explore issues and
-                                possible solutions for evaluating training.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 3302 Employee Relations */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              3302 Employee Relations
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>Elaborate the IR perspective in detail.</li>
-                              <li>
-                                Illustrate the role of trade union in the
-                                industrial setup.
-                              </li>
-                              <li>
-                                Comprehend the causes and impact of industrial
-                                disputes.
-                              </li>
-                              <li>
-                                Understand importance and process of developing
-                                and maintaining harmonious relationships between
-                                the management and all level of employees.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 3303 Performance Management System */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              3303 Performance Management System
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Explain the concept of performance management,
-                                challenges of performance management and
-                                different advantages of implementing
-                                well-designed performance management systems.
-                              </li>
-                              <li>
-                                Understand that performance management is an
-                                on-going process composed of several
-                                sub-processes, such as performance planning,
-                                execution, assessment, and review.
-                              </li>
-                              <li>
-                                Analyze different methods and approaches to
-                                performance measurement and also can identify
-                                some of the common challenges, problems with the
-                                performance appraisal process.
-                              </li>
-                              <li>
-                                Design a performance management system and also
-                                can develop key skills involved in effective
-                                performance management and employee development.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 3304 Compensation and Benefit Management */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              3304 Compensation and Benefit Management
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Students will be able to design rational and
-                                contemporary compensation systems in modern
-                                organization and analyse different types of
-                                rewarding procedures of employees on the basis
-                                of performance.
-                              </li>
-                              <li>
-                                Students will be able to analyse, integrate, and
-                                apply the knowledge to solve compensation and
-                                reward related problems in organization.
-                                Students will be able to justify the existing
-                                pay structure to employees.
-                              </li>
-                              <li>
-                                Students can hold the knowledge of the different
-                                softwares used for compensation management in
-                                this technological era.
-                              </li>
-                              <li>
-                                Students will be able to summarize the important
-                                provisions of social security legislation in
-                                reference to Employee State Insurance Act 1948,
-                                Payment of Gratuity Act 1982, and Employee's
-                                Provident Fund Act 1952.
-                              </li>
-                            </ol>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* M.B.A. Semester-IV */}
-            <div className="border-b border-gray-200 pb-2">
-              <button
-                onClick={() =>
-                  setExpandedSemester(
-                    expandedSemester === "mba-sem4" ? null : "mba-sem4",
-                  )
-                }
-                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">
-                  M.B.A. Semester-IV
-                </span>
-                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "mba-sem4" ? "Hide" : "View"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {expandedSemester === "mba-sem4" && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 py-4 bg-gray-50 space-y-6">
-                      {/* Common Subjects */}
-                      <div className="mb-4">
-                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
-                          Common Subjects
-                        </h4>
-                        <div className="space-y-6">
-                          {/* 401 Strategic Management */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              401 Strategic Management
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Understand the fundamental aspects of strategy,
-                                strategic management process and its intents.
-                              </li>
-                              <li>
-                                Analyse the importance of environmental and
-                                competitive analysis for formulating Corporate
-                                strategy.
-                              </li>
-                              <li>
-                                Categorize different level of Corporate
-                                strategies and its alternatives in strategy
-                                formulation.
-                              </li>
-                              <li>
-                                Apply the strategic alternative and implement
-                                &amp; control in corporate setting.
-                              </li>
-                            </ol>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Finance Specialization */}
-                      <div className="mb-4">
-                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
-                          Finance Specialization
-                        </h4>
-                        <div className="space-y-6">
-                          {/* 4101 Managing Banks and Financial Institutions */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4101 Managing Banks and Financial Institutions
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Understand functioning of banking industry and
-                                able to know about the various financial
-                                services provided by banks.
-                              </li>
-                              <li>
-                                Aware about significance of modern banking
-                                products and schemes.
-                              </li>
-                              <li>
-                                Learn about the important concepts like
-                                investment banking and wealth management along
-                                with practical approach.
-                              </li>
-                              <li>
-                                Understand the technology driven banking system
-                                like e-banking, electronic fund transfer and
-                                electronic payment system.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 4102 Financial Markets and Financial Services */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4102 Financial Markets and Financial Services
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Identify the functions of financial markets and
-                                institutions and examine their impact on
-                                financial system of a country.
-                              </li>
-                              <li>
-                                Describe the framework of Forex markets and
-                                mechanism of exchange rate determination.
-                              </li>
-                              <li>
-                                Analyse the salient features of various
-                                financial products, services and instruments.
-                              </li>
-                              <li>
-                                Acquire knowledge of modern financial services
-                                and familiarize with Fintech and Digital
-                                currency.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 4103 Project Appraisal and Finance */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4103 Project Appraisal and Finance
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Acquire the knowledge of Project Management and
-                                able to prepare Detail project report.
-                              </li>
-                              <li>
-                                Gain the knowledge about different sources of
-                                financing and financial appraisal technique.
-                              </li>
-                              <li>
-                                Understanding the concept of Corporate
-                                restructuring, Mergers and Acquisitions.
-                              </li>
-                              <li>
-                                Analyse various types of Project risk and
-                                preparation of project report.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 4104 Working Capital Management */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4104 Working Capital Management
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Evaluate Working Capital effectiveness of a
-                                company based on its operating and cash
-                                conversion cycles, and compare the company's
-                                effectiveness with that of peer companies.
-                              </li>
-                              <li>
-                                Identify and evaluate the necessary tools to use
-                                in managing a company's net daily cash position.
-                              </li>
-                              <li>
-                                Estimate a company's management of accounts
-                                receivable policy, inventory, and accounts
-                                payable over time and compared to peer
-                                companies.
-                              </li>
-                              <li>
-                                Evaluate the choices of short-term funding
-                                available to a company and recommend a financing
-                                method.
-                              </li>
-                            </ol>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Marketing Specialization */}
-                      <div className="mb-4">
-                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
-                          Marketing Specialization
-                        </h4>
-                        <div className="space-y-6">
-                          {/* 4201 Digital Marketing */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4201 Digital Marketing
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                To familiarize aspirants with fundamental of
-                                digital Marketing.
-                              </li>
-                              <li>
-                                Implement a process of planning of social media
-                                or digital marketing activities.
-                              </li>
-                              <li>
-                                Use tools and techniques to manage digital and
-                                social media marketing programs.
-                              </li>
-                              <li>
-                                Design social media programs that directly
-                                support business and marketing goals.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 4202 Integrated Marketing Communication */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4202 Integrated Marketing Communication
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                To recognise the significance of IC in the
-                                contemporary times and understand fundamentals
-                                thereof.
-                              </li>
-                              <li>
-                                To comprehend the advertising media related
-                                attributes thoroughly and modern media
-                                platforms.
-                              </li>
-                              <li>
-                                To enable aspirants to design the advertising
-                                body copy and campaign.
-                              </li>
-                              <li>
-                                To contribute to advertising arena with a due
-                                consideration for ethical and social aspects.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 4203 Sales Promotion Management */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4203 Sales Promotion Management
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Learn sales promotion techniques for consumer,
-                                trade, company and sales force.
-                              </li>
-                              <li>
-                                Develop sales promotion campaign, establishing
-                                its objectives, tools and program.
-                              </li>
-                              <li>
-                                Understand its roles and purpose to serve in
-                                overall marketing communication, assessing
-                                effectiveness of tools used in promotion, know
-                                modern day tools of promotion.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 4204 Service Marketing */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4204 Service Marketing
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Have a greater understanding of services
-                                marketing, specialties of how it dominates the
-                                business landscape.
-                              </li>
-                              <li>
-                                Acquaintance with major elements needed to
-                                improve marketing of services and adding value
-                                to the customers perception.
-                              </li>
-                              <li>
-                                Appraise the nature and development of
-                                strategies of marketing of services.
-                              </li>
-                              <li>
-                                Handling customers complaints and insight to
-                                service recovery management.
-                              </li>
-                            </ol>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Human Resource Specialization */}
-                      <div className="mb-4">
-                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
-                          Human Resource Specialization
-                        </h4>
-                        <div className="space-y-6">
-                          {/* 4301 Legal Framework Governing Human Relations */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4301 Legal Framework Governing Human Relations
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Students will gain a basic understanding of
-                                objectives and importance of laws relating to
-                                industrial disputes and management of trade
-                                union and the role of trade unions in changing
-                                environment.
-                              </li>
-                              <li>
-                                Understanding of various factors responsible for
-                                growth and development of labour laws.
-                              </li>
-                              <li>
-                                Student will be able to summarize the important
-                                provisions of Wage Legislations, in reference to
-                                Payment of Wages Act 1936, Minimum Wages Act
-                                1948 &amp; Payment of Bonus Act 1965.
-                              </li>
-                              <li>
-                                Students will be able to understand the laws
-                                related to working conditions in factories.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 4302 Organizational Change and Intervention Strategies */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4302 Organizational Change and Intervention
-                              Strategies
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Students will be able to understand theories and
-                                models that form the foundation of disciplines
-                                as well as the OD diagnostic process.
-                              </li>
-                              <li>
-                                Students will be able to understand the ethics
-                                of OD professional and also can recognise
-                                ethical principles in organisational
-                                development.
-                              </li>
-                              <li>
-                                Students will comprehend the main approaches of
-                                change and will be equipped with knowledge and
-                                skills required for effective change and
-                                organisational development.
-                              </li>
-                              <li>
-                                Students will be able to apply various OD
-                                interventions and can develop a working
-                                knowledge of all aspects of OD intervention
-                                process.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 4303 Team Dynamics at Work */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4303 Team Dynamics at Work
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Students will be able to justify formation and
-                                development of teams and can explain the
-                                dynamics of Team &amp; Team Building and
-                                different learning methodologies in team
-                                decision-making.
-                              </li>
-                              <li>
-                                Student will be able to justify the
-                                applicability of various theories of Motivation,
-                                T-group sensitivity training and Johari Window
-                                and also able to justify the Conflict resolution
-                                strategy.
-                              </li>
-                              <li>
-                                Student will be able to understand the
-                                development of team and can discover orientation
-                                through FIRO-B.
-                              </li>
-                              <li>
-                                Students will be able to determine the
-                                importance of Interpersonal Communication and
-                                can increase their self-awareness and strengthen
-                                ability to better understand others.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 4304 International Human Resource Management */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4304 International Human Resource Management
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Recognize, outline, and illustrate the enduring
-                                global contexts of International HRM
-                                understanding and key skills required by HR
-                                professionals working in an international
-                                context with multinational organizations.
-                              </li>
-                              <li>
-                                Demonstrate, appraise the implications of IHRM
-                                in the Host Country Context and managing
-                                alliances and joint venture.
-                              </li>
-                              <li>
-                                Differentiate the Context of Cross-border
-                                Alliances, prepare staffing international
-                                operations for sustained global growth,
-                                recruiting and selecting staff for international
-                                assignments, interpret and analyze the
-                                International Industrial Relation issues and
-                                performance management.
-                              </li>
-                              <li>
-                                Evaluate, interpret issues of international
-                                training, development and also can able to
-                                comprehend HRM practices in different countries.
-                              </li>
-                            </ol>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Business Analytics Specialization */}
-                      <div className="mb-4">
-                        <h4 className="font-bold text-blue-800 mb-4 text-base border-b border-blue-200 pb-2">
-                          Business Analytics Specialization
-                        </h4>
-                        <div className="space-y-6">
-                          {/* 4401 Data Analytics with R */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4401 Data Analytics with R
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>Demonstrate skill in data management.</li>
-                              <li>
-                                Understand the basic concept of R programming.
-                              </li>
-                              <li>Demonstrate skills in data visualization.</li>
-                              <li>
-                                Describe their proficiency in business
-                                statistical analysis of data.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 4402 Data Mining for Business Decisions */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4402 Data Mining for Business Decisions
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Realize Data Mining (DM) principles and
-                                techniques.
-                              </li>
-                              <li>
-                                Analyse large sets of data to gain useful
-                                business understanding.
-                              </li>
-                              <li>
-                                Interpret business applications of data mining.
-                              </li>
-                              <li>
-                                Demonstrate skills in new trends of Data Mining
-                                in relevant business fields.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 4403 Marketing Analytics */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4403 Marketing Analytics
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>Develop the skill in marketing analytics.</li>
-                              <li>
-                                Predict the market scenario for effective
-                                marketing decision.
-                              </li>
-                              <li>
-                                Analyze the customer behavior for strategy
-                                formation.
-                              </li>
-                              <li>
-                                Assess the advertising effect to form adequate
-                                retailing policies.
-                              </li>
-                            </ol>
-                          </div>
-
-                          {/* 4404 Financial Credit Risk Analytics */}
-                          <div>
-                            <h4 className="font-bold text-gray-800 mb-2">
-                              4404 Financial Credit Risk Analytics
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              After successfully completing the course, students
-                              will be able to:
-                            </p>
-                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                              <li>
-                                Understand about various types of financial
-                                credit.
-                              </li>
-                              <li>Interpret the credit risk and its rating.</li>
-                              <li>
-                                Inspect the risk to frame effective management
-                                and governance policies.
-                              </li>
-                              <li>Demonstrate skill of credit analysis.</li>
-                            </ol>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    + Add New Semester
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </div>
-    ),
-
+      );
+    })(),
     ranking: (
       <div className="space-y-8">
         <h3 className="text-2xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2">
@@ -2567,38 +2681,169 @@ const MBA = () => {
 
     curriculum: (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
-          Scheme and Syllabus
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+            Scheme and Syllabus
+          </h3>
+        </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {/* MBA Section */}
           <div className="grid md:grid-cols-12 border-b border-gray-200">
             <div className="md:col-span-4 bg-gray-50/50 p-6 flex items-center border-r border-gray-100">
-              <h4 className="font-bold text-lg text-gray-800">
-                M.B.A. (Master of Business Administration)
-              </h4>
+              <div className="flex items-center gap-3 w-full">
+                <h4 className="font-bold text-lg text-gray-800">
+                  M.B.A. (Master of Business Administration)
+                </h4>
+              </div>
             </div>
             <div className="md:col-span-8 p-6">
+              {isEditing && (
+                <div className="flex gap-2 mb-4 justify-end">
+                  {selectedCurriculumItems.filter((k) => k.startsWith("mba-"))
+                    .length > 0 && (
+                    <button
+                      onClick={() => deleteSelectedCurriculumItems("mba")}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-xs font-semibold"
+                    >
+                      <FaTrash /> Delete Selected (
+                      {
+                        selectedCurriculumItems.filter((k) =>
+                          k.startsWith("mba-"),
+                        ).length
+                      }
+                      )
+                    </button>
+                  )}
+                  <button
+                    onClick={() => addCurriculumItem("mba")}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-ssgmce-blue text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-semibold"
+                  >
+                    <FaPlus /> Add Item
+                  </button>
+                </div>
+              )}
               <ul className="space-y-4">
-                {[
-                  { label: "Scheme", link: "#" },
-                  { label: "Syllabus First Year (1st & 2nd Sem)", link: "#" },
-                  { label: "Syllabus Second Year (3rd Sem)", link: "#" },
-                  { label: "Syllabus Second Year (4th Sem)", link: "#" },
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 group">
-                    <span className="w-2 h-2 rounded-full bg-ssgmce-orange mt-2 block group-hover:bg-ssgmce-blue transition-colors"></span>
-                    <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-50 pb-2">
-                      <span className="text-gray-700 text-sm font-medium">
-                        {item.label}
-                      </span>
-                      <button className="text-xs font-bold text-ssgmce-blue hover:text-ssgmce-orange hover:underline uppercase tracking-wide shrink-0">
-                        Download
-                      </button>
-                    </div>
-                  </li>
-                ))}
+                {t("templateData.curriculum.mba", DEFAULT_CURRICULUM_MBA).map(
+                  (item, i) => (
+                    <li key={i} className="flex items-start gap-3 group">
+                      {isEditing && (
+                        <input
+                          type="checkbox"
+                          checked={selectedCurriculumItems.includes(`mba-${i}`)}
+                          onChange={() => toggleCurriculumSelection("mba", i)}
+                          className="mt-2 w-4 h-4 rounded border-gray-300"
+                        />
+                      )}
+                      <span className="w-2 h-2 rounded-full bg-ssgmce-orange mt-2 block group-hover:bg-ssgmce-blue transition-colors"></span>
+                      <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-50 pb-2">
+                        <span className="text-gray-700 text-sm font-medium flex-1">
+                          <EditableText
+                            value={item.label}
+                            onSave={(val) =>
+                              updateCurriculumItem("mba", i, "label", val)
+                            }
+                          />
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {isEditing && (
+                            <>
+                              <div className="flex flex-col gap-1">
+                                <input
+                                  type="text"
+                                  value={item.link || ""}
+                                  onChange={(e) =>
+                                    updateCurriculumItem(
+                                      "mba",
+                                      i,
+                                      "link",
+                                      e.target.value,
+                                    )
+                                  }
+                                  placeholder="Link URL or use upload"
+                                  className={`text-xs px-2 py-1 border rounded w-40 ${
+                                    item.fileUrl
+                                      ? "border-green-400 bg-green-50"
+                                      : "border-gray-300"
+                                  }`}
+                                />
+                                {item.fileName && (
+                                  <span
+                                    className="text-xs text-green-700 bg-green-100 border border-green-300 rounded px-1.5 py-0.5 truncate max-w-[160px] font-medium"
+                                    title={item.fileName}
+                                  >
+                                    ✅ {item.fileName}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="relative">
+                                <input
+                                  type="file"
+                                  accept=".pdf"
+                                  onChange={(e) =>
+                                    handleCurriculumFileChange("mba", i, e)
+                                  }
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                  id={`file-upload-mba-${i}`}
+                                />
+                                <label
+                                  htmlFor={`file-upload-mba-${i}`}
+                                  className={`flex items-center gap-1 px-2 py-1 text-xs rounded cursor-pointer transition-colors ${
+                                    uploadingFiles[`mba-${i}`]
+                                      ? "bg-gray-300 text-gray-500"
+                                      : item.fileUrl
+                                        ? "bg-green-500 text-white hover:bg-green-600"
+                                        : "bg-blue-500 text-white hover:bg-blue-600"
+                                  }`}
+                                  title={
+                                    item.fileUrl
+                                      ? "Re-upload PDF"
+                                      : "Upload PDF"
+                                  }
+                                >
+                                  {uploadingFiles[`mba-${i}`] ? (
+                                    "Uploading..."
+                                  ) : (
+                                    <>
+                                      <FaUpload />{" "}
+                                      {item.fileUrl ? "Re-upload" : "PDF"}
+                                    </>
+                                  )}
+                                </label>
+                              </div>
+                              <button
+                                onClick={() => removeCurriculumItem("mba", i)}
+                                className="text-red-500 hover:text-red-700 p-1"
+                                title="Delete Item"
+                              >
+                                <FaTrash className="text-xs" />
+                              </button>
+                            </>
+                          )}
+                          {!isEditing && (
+                            <a
+                              href={item.fileUrl || item.link || "#"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-bold text-ssgmce-blue hover:text-ssgmce-orange hover:underline uppercase tracking-wide shrink-0"
+                              onClick={(e) => {
+                                if (
+                                  !item.fileUrl &&
+                                  (!item.link || item.link === "#")
+                                ) {
+                                  e.preventDefault();
+                                  alert("No file available for download.");
+                                }
+                              }}
+                            >
+                              Download
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  ),
+                )}
               </ul>
             </div>
           </div>
@@ -2606,23 +2851,159 @@ const MBA = () => {
           {/* PhD Section */}
           <div className="grid md:grid-cols-12 bg-gray-50/30">
             <div className="md:col-span-4 bg-gray-50/50 p-6 flex items-center border-r border-gray-100">
-              <h4 className="font-bold text-lg text-gray-800">
-                Ph.D. (Business Management and Research)
-              </h4>
+              <div className="flex items-center gap-3 w-full">
+                <h4 className="font-bold text-lg text-gray-800">
+                  Ph.D. (Business Management and Research)
+                </h4>
+              </div>
             </div>
             <div className="md:col-span-8 p-6">
-              <ul className="space-y-4">
-                <li className="flex items-start gap-3 group">
-                  <span className="w-2 h-2 rounded-full bg-ssgmce-orange mt-2 block group-hover:bg-ssgmce-blue transition-colors"></span>
-                  <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <span className="text-gray-700 text-sm font-medium">
-                      Scheme and Syllabus Ph.D.
-                    </span>
-                    <button className="text-xs font-bold text-ssgmce-blue hover:text-ssgmce-orange hover:underline uppercase tracking-wide shrink-0">
-                      Download
+              {isEditing && (
+                <div className="flex gap-2 mb-4 justify-end">
+                  {selectedCurriculumItems.filter((k) => k.startsWith("phd-"))
+                    .length > 0 && (
+                    <button
+                      onClick={() => deleteSelectedCurriculumItems("phd")}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-xs font-semibold"
+                    >
+                      <FaTrash /> Delete Selected (
+                      {
+                        selectedCurriculumItems.filter((k) =>
+                          k.startsWith("phd-"),
+                        ).length
+                      }
+                      )
                     </button>
-                  </div>
-                </li>
+                  )}
+                  <button
+                    onClick={() => addCurriculumItem("phd")}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-ssgmce-blue text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-semibold"
+                  >
+                    <FaPlus /> Add Item
+                  </button>
+                </div>
+              )}
+              <ul className="space-y-4">
+                {t("templateData.curriculum.phd", DEFAULT_CURRICULUM_PHD).map(
+                  (item, i) => (
+                    <li key={i} className="flex items-start gap-3 group">
+                      {isEditing && (
+                        <input
+                          type="checkbox"
+                          checked={selectedCurriculumItems.includes(`phd-${i}`)}
+                          onChange={() => toggleCurriculumSelection("phd", i)}
+                          className="mt-2 w-4 h-4 rounded border-gray-300"
+                        />
+                      )}
+                      <span className="w-2 h-2 rounded-full bg-ssgmce-orange mt-2 block group-hover:bg-ssgmce-blue transition-colors"></span>
+                      <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-50 pb-2">
+                        <span className="text-gray-700 text-sm font-medium flex-1">
+                          <EditableText
+                            value={item.label}
+                            onSave={(val) =>
+                              updateCurriculumItem("phd", i, "label", val)
+                            }
+                          />
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {isEditing && (
+                            <>
+                              <div className="flex flex-col gap-1">
+                                <input
+                                  type="text"
+                                  value={item.link || ""}
+                                  onChange={(e) =>
+                                    updateCurriculumItem(
+                                      "phd",
+                                      i,
+                                      "link",
+                                      e.target.value,
+                                    )
+                                  }
+                                  placeholder="Link URL or use upload"
+                                  className={`text-xs px-2 py-1 border rounded w-40 ${
+                                    item.fileUrl
+                                      ? "border-green-400 bg-green-50"
+                                      : "border-gray-300"
+                                  }`}
+                                />
+                                {item.fileName && (
+                                  <span
+                                    className="text-xs text-green-700 bg-green-100 border border-green-300 rounded px-1.5 py-0.5 truncate max-w-[160px] font-medium"
+                                    title={item.fileName}
+                                  >
+                                    ✅ {item.fileName}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="relative">
+                                <input
+                                  type="file"
+                                  accept=".pdf"
+                                  onChange={(e) =>
+                                    handleCurriculumFileChange("phd", i, e)
+                                  }
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                  id={`file-upload-phd-${i}`}
+                                />
+                                <label
+                                  htmlFor={`file-upload-phd-${i}`}
+                                  className={`flex items-center gap-1 px-2 py-1 text-xs rounded cursor-pointer transition-colors ${
+                                    uploadingFiles[`phd-${i}`]
+                                      ? "bg-gray-300 text-gray-500"
+                                      : item.fileUrl
+                                        ? "bg-green-500 text-white hover:bg-green-600"
+                                        : "bg-blue-500 text-white hover:bg-blue-600"
+                                  }`}
+                                  title={
+                                    item.fileUrl
+                                      ? "Re-upload PDF"
+                                      : "Upload PDF"
+                                  }
+                                >
+                                  {uploadingFiles[`phd-${i}`] ? (
+                                    "Uploading..."
+                                  ) : (
+                                    <>
+                                      <FaUpload />{" "}
+                                      {item.fileUrl ? "Re-upload" : "PDF"}
+                                    </>
+                                  )}
+                                </label>
+                              </div>
+                              <button
+                                onClick={() => removeCurriculumItem("phd", i)}
+                                className="text-red-500 hover:text-red-700 p-1"
+                                title="Delete Item"
+                              >
+                                <FaTrash className="text-xs" />
+                              </button>
+                            </>
+                          )}
+                          {!isEditing && (
+                            <a
+                              href={item.fileUrl || item.link || "#"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-bold text-ssgmce-blue hover:text-ssgmce-orange hover:underline uppercase tracking-wide shrink-0"
+                              onClick={(e) => {
+                                if (
+                                  !item.fileUrl &&
+                                  (!item.link || item.link === "#")
+                                ) {
+                                  e.preventDefault();
+                                  alert("No file available for download.");
+                                }
+                              }}
+                            >
+                              Download
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  ),
+                )}
               </ul>
             </div>
           </div>
@@ -2669,288 +3050,49 @@ const MBA = () => {
           </div>
 
           {/* University Toppers */}
-          {prideTab === "toppers" && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-8"
-            >
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
-                  <h4 className="text-xl font-bold">UNIVERSITY RANK HOLDERS</h4>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        {[
-                          "Year",
-                          "Name of the Student",
-                          "University Rank",
-                          "CGPA/Percentage",
-                        ].map((h, i) => (
-                          <th
-                            key={i}
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {t("pride.toppers", defaultPrideToppers).length > 0 ? (
-                        t("pride.toppers", defaultPrideToppers).map(
-                          (yearGroup, yearIdx) => (
-                            <React.Fragment key={yearIdx}>
-                              {yearGroup.records.map((record, recordIdx) => (
-                                <tr
-                                  key={recordIdx}
-                                  className="hover:bg-gray-50"
-                                >
-                                  {recordIdx === 0 && (
-                                    <td
-                                      className="px-6 py-4 text-sm font-medium text-gray-900"
-                                      rowSpan={yearGroup.records.length}
-                                    >
-                                      <EditableText
-                                        value={yearGroup.year}
-                                        onSave={(val) => {
-                                          const newData = JSON.parse(
-                                            JSON.stringify(
-                                              t(
-                                                "pride.toppers",
-                                                defaultPrideToppers,
-                                              ),
-                                            ),
-                                          );
-                                          newData[yearIdx].year = val;
-                                          updateData("pride.toppers", newData);
-                                        }}
-                                      />
-                                    </td>
-                                  )}
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <EditableText
-                                      value={record.name}
-                                      onSave={(val) =>
-                                        updatePrideToppers(
-                                          yearIdx,
-                                          recordIdx,
-                                          "name",
-                                          val,
-                                        )
-                                      }
-                                    />
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <EditableText
-                                      value={record.rank}
-                                      onSave={(val) =>
-                                        updatePrideToppers(
-                                          yearIdx,
-                                          recordIdx,
-                                          "rank",
-                                          val,
-                                        )
-                                      }
-                                    />
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <EditableText
-                                      value={record.score}
-                                      onSave={(val) =>
-                                        updatePrideToppers(
-                                          yearIdx,
-                                          recordIdx,
-                                          "score",
-                                          val,
-                                        )
-                                      }
-                                    />
-                                  </td>
-                                  {isEditing && (
-                                    <td
-                                      className="px-6 py-4 text-sm text-red-500 cursor-pointer"
-                                      onClick={() => {
-                                        const newData = JSON.parse(
-                                          JSON.stringify(
-                                            t(
-                                              "pride.toppers",
-                                              defaultPrideToppers,
-                                            ),
-                                          ),
-                                        );
-                                        newData[yearIdx].records = newData[
-                                          yearIdx
-                                        ].records.filter(
-                                          (_, idx) => idx !== recordIdx,
-                                        );
-                                        if (
-                                          newData[yearIdx].records.length === 0
-                                        ) {
-                                          newData.splice(yearIdx, 1);
-                                        }
-                                        updateData("pride.toppers", newData);
-                                      }}
-                                    >
-                                      Delete
-                                    </td>
-                                  )}
-                                </tr>
-                              ))}
-                            </React.Fragment>
-                          ),
-                        )
-                      ) : (
-                        <tr>
-                          <td
-                            colSpan={4}
-                            className="px-6 py-8 text-center text-gray-400 italic"
-                          >
-                            No data available yet.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                {isEditing && (
-                  <button
-                    onClick={() => {
-                      const newData = JSON.parse(
-                        JSON.stringify(t("pride.toppers", defaultPrideToppers)),
-                      );
-                      newData.push({
-                        year: "2024-25",
-                        records: [
-                          {
-                            name: "New Student",
-                            rank: "1st",
-                            score: "9.5 CGPA",
-                          },
-                        ],
-                      });
-                      updateData("pride.toppers", newData);
-                    }}
-                    className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
-                  >
-                    Add Year Group
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          )}
+          {prideTab === "toppers" &&
+            (() => {
+              const md = t(
+                "pride.toppersMarkdown",
+                mbaPrideToppersToMarkdown(
+                  t("pride.toppers", defaultPrideToppers),
+                ),
+              );
+              return isEditing ? (
+                <MarkdownEditor
+                  value={md}
+                  onSave={(v) => updateData("pride.toppersMarkdown", v)}
+                  showDocImport
+                  docTemplateUrl="/uploads/documents/pride_templates/mba_toppers_template.docx"
+                  docTemplateLabel="Download Template"
+                />
+              ) : (
+                <MbaPrideMdView markdown={md} />
+              );
+            })()}
 
           {/* Top Alumni */}
-          {prideTab === "alumni" && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-lg shadow-md overflow-hidden"
-            >
-              <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
-                <h4 className="text-xl font-bold">
-                  <EditableText
-                    value={t("pride.alumniTitle", "Top Alumnis of Department")}
-                    onSave={(val) => updateData("pride.alumniTitle", val)}
-                  />
-                </h4>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      {[
-                        "S. N.",
-                        "Names of Alumni",
-                        "Position",
-                        "Names of Organisation",
-                      ].map((h, i) => (
-                        <th
-                          key={i}
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {t("pride.alumni", defaultPrideAlumni).length > 0 ? (
-                      t("pride.alumni", defaultPrideAlumni).map(
-                        (alumnus, idx) => (
-                          <tr key={idx} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                              {idx + 1}.
-                            </td>
-                            {alumnus.map((cell, cellIdx) => (
-                              <td
-                                key={cellIdx}
-                                className="px-6 py-4 text-sm text-gray-900"
-                              >
-                                <EditableText
-                                  value={cell}
-                                  onSave={(val) =>
-                                    updateOverviewTable(
-                                      "pride.alumni",
-                                      defaultPrideAlumni,
-                                      idx,
-                                      cellIdx,
-                                      val,
-                                    )
-                                  }
-                                />
-                              </td>
-                            ))}
-                            {isEditing && (
-                              <td
-                                className="px-6 py-4 text-sm text-red-500 cursor-pointer"
-                                onClick={() => {
-                                  const newArr = t(
-                                    "pride.alumni",
-                                    defaultPrideAlumni,
-                                  ).filter((_, i) => i !== idx);
-                                  updateData("pride.alumni", newArr);
-                                }}
-                              >
-                                Delete
-                              </td>
-                            )}
-                          </tr>
-                        ),
-                      )
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan={4}
-                          className="px-6 py-8 text-center text-gray-400 italic"
-                        >
-                          No alumni data available yet.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              {isEditing && (
-                <button
-                  onClick={() => {
-                    const newArr = [
-                      ...t("pride.alumni", defaultPrideAlumni),
-                      ["New Alumni", "Position", "Organisation"],
-                    ];
-                    updateData("pride.alumni", newArr);
-                  }}
-                  className="m-4 px-4 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
-                >
-                  Add Alumni
-                </button>
-              )}
-            </motion.div>
-          )}
+          {prideTab === "alumni" &&
+            (() => {
+              const md = t(
+                "pride.alumniMarkdown",
+                mbaPrideAlumniToMarkdown(
+                  t("pride.alumni", defaultPrideAlumni),
+                  t("pride.alumniTitle", "Top Alumnis of Department"),
+                ),
+              );
+              return isEditing ? (
+                <MarkdownEditor
+                  value={md}
+                  onSave={(v) => updateData("pride.alumniMarkdown", v)}
+                  showDocImport
+                  docTemplateUrl="/uploads/documents/pride_templates/mba_alumni_template.docx"
+                  docTemplateLabel="Download Template"
+                />
+              ) : (
+                <MbaPrideMdView markdown={md} />
+              );
+            })()}
         </motion.div>
       </div>
     ),
@@ -3071,6 +3213,18 @@ const MBA = () => {
               transition={{ duration: 0.3 }}
               className="space-y-4"
             >
+              {isEditing && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => addAchievement("faculty")}
+                    className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-ssgmce-blue to-blue-700 px-4 py-2 text-sm font-semibold text-white transition-all hover:shadow-lg"
+                  >
+                    <FaPlus className="text-xs" />
+                    Add Faculty Achievement
+                  </button>
+                </div>
+              )}
               {facultyAchievements.map((item, index) => (
                 <motion.div
                   key={index}
@@ -3082,30 +3236,119 @@ const MBA = () => {
                   <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
                     <h3 className="text-lg font-bold text-white flex items-center">
                       <FaTrophy className="mr-3 text-yellow-300" />
-                      {item.name}
+                      <EditableText
+                        value={item.name}
+                        onSave={(val) =>
+                          updateAchievementItem("faculty", index, "name", val)
+                        }
+                      />
                     </h3>
                     <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
-                      {item.category}
+                      <EditableText
+                        value={item.category}
+                        onSave={(val) =>
+                          updateAchievementItem(
+                            "faculty",
+                            index,
+                            "category",
+                            val,
+                          )
+                        }
+                      />
                     </span>
                   </div>
                   <div className="p-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <h4 className="text-sm font-bold text-[#003366] mb-2">
-                          {item.achievement}
+                          <EditableText
+                            value={item.achievement}
+                            onSave={(val) =>
+                              updateAchievementItem(
+                                "faculty",
+                                index,
+                                "achievement",
+                                val,
+                              )
+                            }
+                          />
                         </h4>
-                        <p className="text-gray-700 text-sm leading-relaxed">
-                          {item.description}
-                        </p>
+                        <div className="text-gray-700 text-sm leading-relaxed">
+                          <MarkdownEditor
+                            value={item.description}
+                            onSave={(val) =>
+                              updateAchievementItem(
+                                "faculty",
+                                index,
+                                "description",
+                                val,
+                              )
+                            }
+                            placeholder="Add achievement description in Markdown..."
+                            className="w-full"
+                          />
+                        </div>
                       </div>
-                      {item.image && (
-                        <button
-                          onClick={() => handleViewCertificate(item)}
-                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
-                        >
-                          <FaAward className="text-yellow-300" />
-                          View Certificate
-                        </button>
+                      {isEditing ? (
+                        <div className="flex min-w-[190px] flex-col items-end gap-2">
+                          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-gradient-to-r from-[#003366] to-[#004d99] px-4 py-2.5 text-xs font-semibold text-white transition-all duration-300 hover:from-[#004d99] hover:to-[#0066cc] hover:shadow-lg">
+                            <FaUpload className="text-yellow-300" />
+                            {achievementUploading[`faculty-${index}`]
+                              ? "Uploading..."
+                              : "Upload Certificate"}
+                            <input
+                              type="file"
+                              accept="image/*,application/pdf"
+                              className="hidden"
+                              disabled={achievementUploading[`faculty-${index}`]}
+                              onChange={(event) =>
+                                handleAchievementFileChange(
+                                  "faculty",
+                                  index,
+                                  event,
+                                )
+                              }
+                            />
+                          </label>
+                          {item.image && (
+                            <a
+                              href={item.image}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-right text-xs font-medium text-ssgmce-blue underline underline-offset-2"
+                            >
+                              {getAchievementFileName(item.image)}
+                            </a>
+                          )}
+                          {achievementUploadErrors[`faculty-${index}`] && (
+                            <span className="text-right text-[11px] text-red-500">
+                              {achievementUploadErrors[`faculty-${index}`]}
+                            </span>
+                          )}
+                          {achievementUploadSuccess[`faculty-${index}`] && (
+                            <span className="rounded-full bg-green-50 px-3 py-1 text-right text-[11px] font-semibold text-green-700">
+                              {achievementUploadSuccess[`faculty-${index}`]}
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => deleteAchievement("faculty", index)}
+                            className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100"
+                          >
+                            <FaTrash className="text-xs" />
+                            Delete
+                          </button>
+                        </div>
+                      ) : (
+                        item.image && (
+                          <button
+                            onClick={() => handleViewCertificate(item)}
+                            className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                          >
+                            <FaAward className="text-yellow-300" />
+                            View Certificate
+                          </button>
+                        )
                       )}
                     </div>
                   </div>
@@ -3127,6 +3370,18 @@ const MBA = () => {
               transition={{ duration: 0.3 }}
               className="space-y-4"
             >
+              {isEditing && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => addAchievement("students")}
+                    className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-ssgmce-blue to-blue-700 px-4 py-2 text-sm font-semibold text-white transition-all hover:shadow-lg"
+                  >
+                    <FaPlus className="text-xs" />
+                    Add Student Achievement
+                  </button>
+                </div>
+              )}
               {studentAchievements.map((item, index) => (
                 <motion.div
                   key={index}
@@ -3138,30 +3393,119 @@ const MBA = () => {
                   <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
                     <h3 className="text-lg font-bold text-white flex items-center">
                       <FaAward className="mr-3 text-yellow-300" />
-                      {item.name}
+                      <EditableText
+                        value={item.name}
+                        onSave={(val) =>
+                          updateAchievementItem("students", index, "name", val)
+                        }
+                      />
                     </h3>
                     <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
-                      {item.category}
+                      <EditableText
+                        value={item.category}
+                        onSave={(val) =>
+                          updateAchievementItem(
+                            "students",
+                            index,
+                            "category",
+                            val,
+                          )
+                        }
+                      />
                     </span>
                   </div>
                   <div className="p-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <h4 className="text-sm font-bold text-[#003366] mb-2">
-                          {item.achievement}
+                          <EditableText
+                            value={item.achievement}
+                            onSave={(val) =>
+                              updateAchievementItem(
+                                "students",
+                                index,
+                                "achievement",
+                                val,
+                              )
+                            }
+                          />
                         </h4>
-                        <p className="text-gray-700 text-sm leading-relaxed">
-                          {item.description}
-                        </p>
+                        <div className="text-gray-700 text-sm leading-relaxed">
+                          <MarkdownEditor
+                            value={item.description}
+                            onSave={(val) =>
+                              updateAchievementItem(
+                                "students",
+                                index,
+                                "description",
+                                val,
+                              )
+                            }
+                            placeholder="Add achievement description in Markdown..."
+                            className="w-full"
+                          />
+                        </div>
                       </div>
-                      {item.image && (
-                        <button
-                          onClick={() => handleViewCertificate(item)}
-                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
-                        >
-                          <FaAward className="text-yellow-300" />
-                          View Certificate
-                        </button>
+                      {isEditing ? (
+                        <div className="flex min-w-[190px] flex-col items-end gap-2">
+                          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-gradient-to-r from-[#003366] to-[#004d99] px-4 py-2.5 text-xs font-semibold text-white transition-all duration-300 hover:from-[#004d99] hover:to-[#0066cc] hover:shadow-lg">
+                            <FaUpload className="text-yellow-300" />
+                            {achievementUploading[`students-${index}`]
+                              ? "Uploading..."
+                              : "Upload Certificate"}
+                            <input
+                              type="file"
+                              accept="image/*,application/pdf"
+                              className="hidden"
+                              disabled={achievementUploading[`students-${index}`]}
+                              onChange={(event) =>
+                                handleAchievementFileChange(
+                                  "students",
+                                  index,
+                                  event,
+                                )
+                              }
+                            />
+                          </label>
+                          {item.image && (
+                            <a
+                              href={item.image}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-right text-xs font-medium text-ssgmce-blue underline underline-offset-2"
+                            >
+                              {getAchievementFileName(item.image)}
+                            </a>
+                          )}
+                          {achievementUploadErrors[`students-${index}`] && (
+                            <span className="text-right text-[11px] text-red-500">
+                              {achievementUploadErrors[`students-${index}`]}
+                            </span>
+                          )}
+                          {achievementUploadSuccess[`students-${index}`] && (
+                            <span className="rounded-full bg-green-50 px-3 py-1 text-right text-[11px] font-semibold text-green-700">
+                              {achievementUploadSuccess[`students-${index}`]}
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => deleteAchievement("students", index)}
+                            className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100"
+                          >
+                            <FaTrash className="text-xs" />
+                            Delete
+                          </button>
+                        </div>
+                      ) : (
+                        item.image && (
+                          <button
+                            onClick={() => handleViewCertificate(item)}
+                            className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                          >
+                            <FaAward className="text-yellow-300" />
+                            View Certificate
+                          </button>
+                        )
                       )}
                     </div>
                   </div>
@@ -3388,7 +3732,21 @@ const MBA = () => {
                     Year-wise breakdown of student placements
                   </p>
                 </div>
-                <FaChartLine className="text-4xl text-blue-100" />
+                <div className="flex items-center gap-4">
+                  {isEditing && (
+                    <button
+                      onClick={() => {
+                        setPlacementYearError("");
+                        setNewPlacementYear("");
+                        setShowAddPlacementYear(true);
+                      }}
+                      className="flex items-center gap-2 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all text-sm"
+                    >
+                      <FaPlus /> Add Year
+                    </button>
+                  )}
+                  <FaChartLine className="text-4xl text-blue-100" />
+                </div>
               </div>
 
               <div className="overflow-x-auto">
@@ -3410,32 +3768,41 @@ const MBA = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-sm">
-                    {t("placements.summary", defaultPlacements.summary).map(
-                      (row, index) => (
-                        <tr
-                          key={index}
-                          className="hover:bg-blue-50/30 transition-colors"
-                        >
-                          <td className="px-6 py-4 text-center font-mono text-gray-400">
-                            {index + 1}
-                          </td>
-                          <td className="px-6 py-4 text-center font-bold text-gray-700">
-                            {row.year}
-                          </td>
-                          <td className="px-6 py-4 text-center font-bold text-ssgmce-blue text-lg">
-                            {row.count}
-                          </td>
-                          <td className="px-6 py-4 text-center">
+                    {placementSummary.map((row, index) => (
+                      <tr
+                        key={row.id}
+                        className="hover:bg-blue-50/30 transition-colors"
+                      >
+                        <td className="px-6 py-4 text-center font-mono text-gray-400">
+                          {index + 1}
+                        </td>
+                        <td className="px-6 py-4 text-center font-bold text-gray-700">
+                          {row.year}
+                        </td>
+                        <td className="px-6 py-4 text-center font-bold text-ssgmce-blue text-lg">
+                          {row.count}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex items-center justify-center gap-2">
                             <button
                               onClick={() => setPlacementYear(row.id)}
                               className="text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
                             >
                               View Details
                             </button>
-                          </td>
-                        </tr>
-                      ),
-                    )}
+                            {isEditing && (
+                              <button
+                                onClick={() => handleDeletePlacementYear(row.id)}
+                                className="text-red-600 hover:text-red-700 font-medium text-xs border border-red-200 hover:border-red-300 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-full transition-all"
+                                title={`Delete ${row.year}`}
+                              >
+                                <FaTrash />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -3450,78 +3817,7 @@ const MBA = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
             >
-              <div className="flex justify-between items-center mb-6">
-                <button
-                  onClick={() => setPlacementYear(null)}
-                  className="flex items-center text-gray-600 hover:text-ssgmce-blue font-medium transition-colors"
-                >
-                  <span className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-2 text-sm group-hover:bg-blue-100">
-                    <FaAngleRight className="transform rotate-180" />
-                  </span>
-                  Back to Statistics
-                </button>
-                <div className="text-right">
-                  <h3 className="text-xl font-bold text-gray-800">
-                    Placement Record
-                  </h3>
-                  <p className="text-sm text-ssgmce-blue font-bold">
-                    Session: {placementYear}
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
-                      <tr>
-                        <th className="px-6 py-4 font-bold text-center w-16">
-                          Sr. No.
-                        </th>
-                        <th className="px-6 py-4 font-bold">Name of Student</th>
-                        <th className="px-6 py-4 font-bold">Company Name</th>
-                        <th className="px-6 py-4 font-bold text-right">CTC</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {t(
-                        `placements.details.${placementYear}`,
-                        defaultPlacements.details[placementYear] || [],
-                      ).map((student, index) => (
-                        <tr
-                          key={index}
-                          className="hover:bg-gray-50 transition-colors"
-                        >
-                          <td className="px-6 py-4 text-center font-mono text-gray-400">
-                            {index + 1}
-                          </td>
-                          <td className="px-6 py-4 font-medium text-gray-800">
-                            {student.name}
-                          </td>
-                          <td className="px-6 py-4 text-gray-600">
-                            {student.company}
-                          </td>
-                          <td className="px-6 py-4 text-right font-bold text-ssgmce-blue">
-                            {student.ctc}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {(!t(
-                  `placements.details.${placementYear}`,
-                  defaultPlacements.details[placementYear] || [],
-                ).length ||
-                  t(
-                    `placements.details.${placementYear}`,
-                    defaultPlacements.details[placementYear] || [],
-                  ).length === 0) && (
-                  <div className="p-8 text-center text-gray-400">
-                    <p>Detailed placement data will be updated soon.</p>
-                  </div>
-                )}
-              </div>
+              {renderPlacementDetails()}
             </motion.div>
           )}
         </AnimatePresence>
@@ -3566,7 +3862,19 @@ const MBA = () => {
                 Department of Master of Business Administration (MBA)
               </p>
             </div>
-            <FaDownload className="text-4xl text-blue-200 opacity-40" />
+            <div className="flex items-center gap-4">
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={addNewsletter}
+                  className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                >
+                  <FaPlus className="text-xs" />
+                  Add Newsletter
+                </button>
+              )}
+              <FaDownload className="text-4xl text-blue-200 opacity-40" />
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -3596,8 +3904,7 @@ const MBA = () => {
                       <span className="font-bold text-gray-800">
                         <EditableText
                           value={
-                            t("newsletters_latest", defaultNewsletters.latest)
-                              .title ||
+                            latestNewsletterData.title ||
                             "Newsletter Spring Semester July - December 2025"
                           }
                           onSave={(val) =>
@@ -3608,24 +3915,65 @@ const MBA = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <a
-                      href={
-                        t("newsletters_latest", defaultNewsletters.latest)
-                          .link || "#"
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
-                    >
-                      <FaDownload className="text-xs" /> Click for Details
-                    </a>
+                    {isEditing ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-gray-200 bg-blue-50 px-4 py-2 text-xs font-medium text-ssgmce-blue transition-all hover:border-blue-400 hover:bg-blue-100">
+                          <FaUpload className="text-xs" />
+                          {newsletterUploading["latest-0"]
+                            ? "Uploading..."
+                            : "Upload PDF"}
+                          <input
+                            type="file"
+                            accept="application/pdf"
+                            className="hidden"
+                            disabled={newsletterUploading["latest-0"]}
+                            onChange={(event) =>
+                              handleNewsletterFileChange("latest", 0, event)
+                            }
+                          />
+                        </label>
+                        {latestNewsletterData.link && (
+                          <a
+                            href={latestNewsletterData.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-medium text-ssgmce-blue underline underline-offset-2"
+                          >
+                            {getNewsletterFileName(
+                              latestNewsletterData.link,
+                              latestNewsletterData.fileName || "",
+                            )}
+                          </a>
+                        )}
+                        {newsletterUploadErrors["latest-0"] && (
+                          <span className="text-center text-[11px] text-red-500">
+                            {newsletterUploadErrors["latest-0"]}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => deleteNewsletter("latest", 0)}
+                          className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-600 transition hover:bg-red-100"
+                        >
+                          <FaTrash className="text-xs" />
+                          Delete
+                        </button>
+                      </div>
+                    ) : (
+                      <a
+                        href={latestNewsletterData.link || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                      >
+                        <FaDownload className="text-xs" /> Click for Details
+                      </a>
+                    )}
                   </td>
                 </tr>
 
                 {/* Archive Rows */}
-                {(
-                  t("newsletters_archives", defaultNewsletters.archives) || []
-                ).map((issue, i) => (
+                {newsletterArchivesData.map((issue, i) => (
                   <tr key={i} className="hover:bg-blue-50/30 transition-colors">
                     <td className="px-6 py-4 text-center font-mono text-gray-400">
                       {i + 2}
@@ -3641,14 +3989,57 @@ const MBA = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <a
-                        href={issue.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
-                      >
-                        <FaDownload className="text-xs" /> Click for Details
-                      </a>
+                      {isEditing ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-gray-200 bg-blue-50 px-4 py-2 text-xs font-medium text-ssgmce-blue transition-all hover:border-blue-400 hover:bg-blue-100">
+                            <FaUpload className="text-xs" />
+                            {newsletterUploading[`archives-${i}`]
+                              ? "Uploading..."
+                              : "Upload PDF"}
+                            <input
+                              type="file"
+                              accept="application/pdf"
+                              className="hidden"
+                              disabled={newsletterUploading[`archives-${i}`]}
+                              onChange={(event) =>
+                                handleNewsletterFileChange("archives", i, event)
+                              }
+                            />
+                          </label>
+                          {issue.link && (
+                            <a
+                              href={issue.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-medium text-ssgmce-blue underline underline-offset-2"
+                            >
+                              {getNewsletterFileName(issue.link, issue.fileName)}
+                            </a>
+                          )}
+                          {newsletterUploadErrors[`archives-${i}`] && (
+                            <span className="text-center text-[11px] text-red-500">
+                              {newsletterUploadErrors[`archives-${i}`]}
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => deleteNewsletter("archives", i)}
+                            className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-600 transition hover:bg-red-100"
+                          >
+                            <FaTrash className="text-xs" />
+                            Delete
+                          </button>
+                        </div>
+                      ) : (
+                        <a
+                          href={issue.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                        >
+                          <FaDownload className="text-xs" /> Click for Details
+                        </a>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -4007,142 +4398,149 @@ const MBA = () => {
                 Department of Business Administration and Research (MBA)
               </p>
             </div>
-            <FaChalkboardTeacher className="text-4xl text-orange-200 opacity-40" />
+            <div className="flex items-center gap-4">
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={addCourseMaterial}
+                  className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                >
+                  <FaPlus className="text-xs" />
+                  Add Course Material
+                </button>
+              )}
+              <FaChalkboardTeacher className="text-4xl text-orange-200 opacity-40" />
+            </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
-                  <th className="px-6 py-4 font-bold text-center w-20">
-                    Sr. No.
-                  </th>
-                  <th className="px-6 py-4 font-bold">Year / Class</th>
-                  <th className="px-6 py-4 font-bold text-center">
-                    Access Materials
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-sm">
-                {(
-                  t("courseMaterials", [
-                    {
-                      year: "First Year",
-                      title: "MBA First Year",
-                      link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Ep9IXN-R6NhNpjFEeX2eXN4BB3ef78z5_OY0agqd7p2r1w?e=FcxQeI",
-                    },
-                    {
-                      year: "Final Year",
-                      title: "MBA Final Year",
-                      link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Epr9v88heupFrY6lkHFvq0UB6kC3oakk1ow7ukD3rfBEZQ?e=KIOGXZ",
-                    },
-                  ]) || []
-                ).map((material, i) => (
-                  <tr
+          {isEditing ? (
+            <div className="divide-y divide-gray-100">
+              {courseMaterialItems.length > 0 ? (
+                courseMaterialItems.map((material, i) => (
+                  <div
                     key={i}
-                    className="hover:bg-orange-50/30 transition-colors"
+                    ref={
+                      i === courseMaterialItems.length - 1
+                        ? latestCourseMaterialRef
+                        : null
+                    }
+                    className="p-6"
                   >
-                    <td className="px-6 py-4 text-center font-mono text-gray-400">
-                      {i + 1}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="font-bold text-gray-800">
-                        <EditableText
-                          value={material.title}
-                          onSave={(val) => {
-                            const defaults = [
-                              {
-                                year: "First Year",
-                                title: "MBA First Year",
-                                link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Ep9IXN-R6NhNpjFEeX2eXN4BB3ef78z5_OY0agqd7p2r1w?e=FcxQeI",
-                              },
-                              {
-                                year: "Final Year",
-                                title: "MBA Final Year",
-                                link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Epr9v88heupFrY6lkHFvq0UB6kC3oakk1ow7ukD3rfBEZQ?e=KIOGXZ",
-                              },
-                            ];
-                            const updated = [...t("courseMaterials", defaults)];
-                            updated[i] = { ...updated[i], title: val };
-                            updateData("courseMaterials", updated);
-                          }}
-                        />
-                      </span>
-                      {isEditing && (
-                        <div className="text-xs text-blue-500 mt-1">
-                          Link:{" "}
-                          <EditableText
-                            value={material.link}
-                            onSave={(val) => {
-                              const defaults = [
-                                {
-                                  year: "First Year",
-                                  title: "MBA First Year",
-                                  link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Ep9IXN-R6NhNpjFEeX2eXN4BB3ef78z5_OY0agqd7p2r1w?e=FcxQeI",
-                                },
-                                {
-                                  year: "Final Year",
-                                  title: "MBA Final Year",
-                                  link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Epr9v88heupFrY6lkHFvq0UB6kC3oakk1ow7ukD3rfBEZQ?e=KIOGXZ",
-                                },
-                              ];
-                              const updated = [
-                                ...t("courseMaterials", defaults),
-                              ];
-                              updated[i] = { ...updated[i], link: val };
-                              updateData("courseMaterials", updated);
-                            }}
-                          />
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex min-w-0 flex-1 gap-4">
+                        <div className="w-10 flex-shrink-0 pt-2 text-center font-mono text-sm text-gray-400">
+                          {i + 1}
                         </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <a
-                        href={material.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-ssgmce-orange hover:text-orange-700 font-medium text-xs border border-gray-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
+                        <div className="min-w-0 flex-1 space-y-4">
+                          <div>
+                            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+                              Year / Class
+                            </label>
+                            <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                              <EditableText
+                                value={material.title}
+                                onSave={(val) =>
+                                  updateCourseMaterial(i, "title", val)
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+                              OneDrive Link
+                            </label>
+                            <textarea
+                              value={material.link || ""}
+                              onChange={(event) =>
+                                updateCourseMaterial(
+                                  i,
+                                  "link",
+                                  event.target.value,
+                                )
+                              }
+                              rows={3}
+                              placeholder="Paste the OneDrive share link here..."
+                              className="w-full resize-y rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 shadow-sm outline-none transition focus:border-orange-400 focus:bg-white focus:ring-2 focus:ring-orange-100"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => deleteCourseMaterial(i)}
+                        className="inline-flex flex-shrink-0 items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-600 transition hover:bg-red-100"
                       >
-                        <FaDownload className="text-xs" /> Access OneDrive
-                      </a>
-                    </td>
+                        <FaTrash className="text-xs" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="px-6 py-12 text-center text-gray-400">
+                  No course materials added yet.
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                    <th className="px-6 py-4 font-bold text-center w-20">
+                      Sr. No.
+                    </th>
+                    <th className="px-6 py-4 font-bold">Year / Class</th>
+                    <th className="px-6 py-4 font-bold text-center">
+                      Access Materials
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-sm">
+                  {courseMaterialItems.map((material, i) => (
+                    <tr
+                      key={i}
+                      className="hover:bg-orange-50/30 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-center font-mono text-gray-400">
+                        {i + 1}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-gray-800 block">
+                          {material.title}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <a
+                          href={material.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-ssgmce-orange hover:text-orange-700 font-medium text-xs border border-gray-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
+                        >
+                          <FaDownload className="text-xs" /> Access OneDrive
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                  {courseMaterialItems.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={3}
+                        className="px-6 py-12 text-center text-gray-400"
+                      >
+                        No course materials available yet. Use the admin editor
+                        to add materials.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
           <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
             Click on "Access OneDrive" to view and download course materials
             from the respective year's shared folder.
           </div>
-          {isEditing && (
-            <div className="p-4 border-t border-gray-100">
-              <button
-                onClick={() => {
-                  const defaults = [
-                    {
-                      year: "First Year",
-                      title: "MBA First Year",
-                      link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Ep9IXN-R6NhNpjFEeX2eXN4BB3ef78z5_OY0agqd7p2r1w?e=FcxQeI",
-                    },
-                    {
-                      year: "Final Year",
-                      title: "MBA Final Year",
-                      link: "https://ssgmceacin-my.sharepoint.com/:f:/g/personal/cse_cm_ssgmce_ac_in/Epr9v88heupFrY6lkHFvq0UB6kC3oakk1ow7ukD3rfBEZQ?e=KIOGXZ",
-                    },
-                  ];
-                  const updated = [
-                    ...t("courseMaterials", defaults),
-                    { year: "New Year", title: "New Semester", link: "#" },
-                  ];
-                  updateData("courseMaterials", updated);
-                }}
-                className="px-4 py-2 bg-ssgmce-blue text-white rounded hover:bg-ssgmce-dark-blue transition-colors text-sm"
-              >
-                + Add Material
-              </button>
-            </div>
-          )}
         </motion.div>
       </div>
     ),
@@ -4208,185 +4606,185 @@ const MBA = () => {
             />
           </h3>
           <span className="hidden sm:inline-block text-sm text-gray-500 bg-gray-100 px-4 py-1.5 rounded-full">
-            {t("activities", defaultActivities).length} Activities
+            {activitiesData.length} Activities
           </span>
         </div>
 
-        {/* Activity List */}
-        <div className="space-y-5">
-          {t("activities", defaultActivities)
-            .slice(0, activitiesVisible)
-            .map((activity, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.03, duration: 0.35 }}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden"
-              >
-                <div className="flex flex-col sm:flex-row">
-                  {/* Image */}
-                  <div
-                    className="sm:w-72 flex-shrink-0 cursor-pointer"
-                    onClick={() => setLightboxActivity(idx)}
-                  >
-                    {activity.image ? (
-                      <img
-                        src={activity.image}
-                        alt={activity.title}
-                        className="w-full h-48 sm:h-full object-contain bg-gray-50"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-48 sm:h-full flex items-center justify-center bg-gray-50">
-                        <FaCalendarAlt className="text-4xl text-gray-300" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Details */}
-                  <div className="flex-1 p-5 sm:p-6">
-                    {/* Date */}
-                    <span className="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded mb-3">
-                      <EditableText
-                        value={activity.date}
-                        onSave={(val) => updateActivity(idx, "date", val)}
-                      />
-                    </span>
-
-                    {/* Title */}
-                    <h4 className="text-lg font-bold text-gray-800 mb-4 leading-snug">
-                      <EditableText
-                        value={activity.title}
-                        onSave={(val) => updateActivity(idx, "title", val)}
-                        multiline
-                      />
-                    </h4>
-
-                    {/* Meta Info */}
-                    <div className="space-y-2.5 text-sm text-gray-600">
-                      <div className="flex items-start gap-2.5">
-                        <FaUsers className="text-blue-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <span className="font-medium text-gray-700">
-                            Participants:{" "}
-                          </span>
-                          <EditableText
-                            value={activity.participants}
-                            onSave={(val) =>
-                              updateActivity(idx, "participants", val)
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2.5">
-                        <FaUserGraduate className="text-orange-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <span className="font-medium text-gray-700">
-                            Organized by:{" "}
-                          </span>
-                          <EditableText
-                            value={activity.organizer}
-                            onSave={(val) =>
-                              updateActivity(idx, "organizer", val)
-                            }
-                            multiline
-                          />
-                        </div>
-                      </div>
-
-                      {(activity.resource || isEditing) && (
-                        <div className="flex items-start gap-2.5">
-                          <FaChalkboardTeacher className="text-green-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <span className="font-medium text-gray-700">
-                              Resource Person:{" "}
-                            </span>
-                            <EditableText
-                              value={
-                                activity.resource ||
-                                (isEditing ? "Add Resource Person" : "")
-                              }
-                              onSave={(val) =>
-                                updateActivity(idx, "resource", val)
-                              }
-                              multiline
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Edit: image URL + delete */}
-                    {isEditing && (
-                      <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
-                        <div className="flex items-center gap-2 text-xs">
-                          <span className="text-gray-500">Image URL:</span>
-                          <EditableText
-                            value={activity.image || "Add image URL"}
-                            onSave={(val) => updateActivity(idx, "image", val)}
-                          />
-                        </div>
-                        <button
-                          onClick={() => {
-                            const arr = [...t("activities", defaultActivities)];
-                            arr.splice(idx, 1);
-                            updateData("activities", arr);
-                          }}
-                          className="text-xs text-red-500 hover:text-red-700"
-                        >
-                          Remove Activity
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-        </div>
-
-        {/* Show More / Show Less */}
-        {t("activities", defaultActivities).length > 6 && (
-          <div className="text-center pt-2">
+        {isEditing && (
+          <div className="flex justify-end">
             <button
-              onClick={() =>
-                setActivitiesVisible((prev) =>
-                  prev >= t("activities", defaultActivities).length
-                    ? 6
-                    : prev + 6,
-                )
-              }
-              className="px-8 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
+              onClick={addActivityCard}
+              className="px-5 py-2.5 bg-ssgmce-blue text-white rounded-lg hover:bg-ssgmce-dark-blue transition-colors font-medium shadow-sm"
             >
-              {activitiesVisible >= t("activities", defaultActivities).length
-                ? "Show Less"
-                : `Show More (${t("activities", defaultActivities).length - activitiesVisible} remaining)`}
+              + Add New Activity
             </button>
           </div>
         )}
 
-        {/* Add Activity button (editing mode) */}
-        {isEditing && (
-          <div className="text-center">
-            <button
-              onClick={() => {
-                const updated = [
-                  ...t("activities", defaultActivities),
-                  {
-                    title: "New Activity",
-                    date: "Date",
-                    participants: "Participants",
-                    organizer: "Organizer",
-                    resource: "",
-                    image: "",
-                  },
-                ];
-                updateData("activities", updated);
-              }}
-              className="px-6 py-2.5 bg-ssgmce-blue text-white rounded-lg hover:bg-ssgmce-dark-blue transition-colors text-sm font-medium"
+        {/* Activity List */}
+        <div className="space-y-5">
+          {activitiesData.slice(0, activitiesVisible).map((activity, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.03, duration: 0.35 }}
+              className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden relative"
             >
-              + Add Activity
+              {isEditing && (
+                <button
+                  onClick={() => deleteActivityCard(idx)}
+                  className="absolute top-3 right-3 z-10 bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md hover:bg-red-600 transition-colors"
+                  title="Delete activity"
+                >
+                  Delete Activity
+                </button>
+              )}
+
+              <div className="flex flex-col sm:flex-row">
+                <div
+                  className={`sm:w-72 flex-shrink-0 ${isEditing ? "" : "cursor-pointer"}`}
+                  onClick={() => {
+                    if (!isEditing) {
+                      setLightboxActivity(idx);
+                    }
+                  }}
+                >
+                  {isEditing ? (
+                    <EditableImage
+                      src={activity.image}
+                      onSave={(url) => updateActivity(idx, "image", url)}
+                      alt={activity.title}
+                      className="w-full h-48 sm:h-full object-contain bg-gray-50"
+                      placeholder="Click to add activity poster"
+                    />
+                  ) : activity.image ? (
+                    <img
+                      src={getLocalMbaActivityImageUrl(activity.image)}
+                      alt={activity.title}
+                      className="w-full h-48 sm:h-full object-contain bg-gray-50"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-48 sm:h-full flex items-center justify-center bg-gray-50">
+                      <FaCalendarAlt className="text-4xl text-gray-300" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 p-5 sm:p-6">
+                  <div className="mb-4">
+                    <span className="inline-flex items-center bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded mb-3">
+                      {isEditing ? (
+                        <EditableText
+                          value={activity.date}
+                          onSave={(val) => updateActivity(idx, "date", val)}
+                        />
+                      ) : (
+                        activity.date || "Date to be updated"
+                      )}
+                    </span>
+
+                    <div className="text-lg sm:text-xl font-bold text-gray-800 leading-snug tracking-tight">
+                      {isEditing ? (
+                        <EditableText
+                          value={activity.title}
+                          onSave={(val) => updateActivity(idx, "title", val)}
+                          multiline
+                          className="w-full"
+                        />
+                      ) : (
+                        activity.title
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 text-sm text-gray-600">
+                    <div className="flex items-start gap-2.5">
+                      <FaUsers className="text-blue-500 mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0 w-full">
+                        <p className="font-semibold text-gray-800 mb-2">
+                          Participants
+                        </p>
+                        {isEditing ? (
+                          <MarkdownEditor
+                            value={activity.participants}
+                            onSave={(val) =>
+                              updateActivity(idx, "participants", val)
+                            }
+                            placeholder="Add participant details..."
+                          />
+                        ) : (
+                          renderActivityMarkdown(activity.participants)
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2.5">
+                      <FaUserGraduate className="text-orange-500 mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0 w-full">
+                        <p className="font-semibold text-gray-800 mb-2">
+                          Organized by
+                        </p>
+                        {isEditing ? (
+                          <MarkdownEditor
+                            value={activity.organizer}
+                            onSave={(val) =>
+                              updateActivity(idx, "organizer", val)
+                            }
+                            placeholder="Add organizer details..."
+                          />
+                        ) : (
+                          renderActivityMarkdown(activity.organizer)
+                        )}
+                      </div>
+                    </div>
+
+                    {(activity.resource || isEditing) && (
+                      <div className="flex items-start gap-2.5">
+                        <FaChalkboardTeacher className="text-green-600 mt-0.5 flex-shrink-0" />
+                        <div className="min-w-0 w-full">
+                          <p className="font-semibold text-gray-800 mb-2">
+                            Resource Person
+                          </p>
+                          {isEditing ? (
+                            <MarkdownEditor
+                              value={activity.resource}
+                              onSave={(val) =>
+                                updateActivity(idx, "resource", val)
+                              }
+                              placeholder="Add resource person details..."
+                            />
+                          ) : (
+                            renderActivityMarkdown(
+                              activity.resource,
+                              "Not specified",
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Show More / Show Less */}
+        {activitiesData.length > 6 && (
+          <div className="text-center pt-2">
+            <button
+              onClick={() =>
+                setActivitiesVisible((prev) =>
+                  prev >= activitiesData.length ? 6 : prev + 6,
+                )
+              }
+              className="px-8 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
+            >
+              {activitiesVisible >= activitiesData.length
+                ? "Show Less"
+                : `Show More (${activitiesData.length - activitiesVisible} remaining)`}
             </button>
           </div>
         )}
@@ -4416,17 +4814,15 @@ const MBA = () => {
                 </button>
 
                 <img
-                  src={
-                    t("activities", defaultActivities)[lightboxActivity]?.image
-                  }
-                  alt={
-                    t("activities", defaultActivities)[lightboxActivity]?.title
-                  }
+                  src={getLocalMbaActivityImageUrl(
+                    activitiesData[lightboxActivity]?.image,
+                  )}
+                  alt={activitiesData[lightboxActivity]?.title}
                   className="w-full max-h-[80vh] object-contain rounded-lg"
                 />
 
                 <div className="text-white text-center mt-3 text-sm">
-                  {t("activities", defaultActivities)[lightboxActivity]?.title}
+                  {activitiesData[lightboxActivity]?.title}
                 </div>
 
                 {/* Nav arrows */}
@@ -4440,16 +4836,12 @@ const MBA = () => {
                     <FaChevronLeft />
                   </button>
                 )}
-                {lightboxActivity <
-                  t("activities", defaultActivities).length - 1 && (
+                {lightboxActivity < activitiesData.length - 1 && (
                   <button
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-white text-3xl bg-black/40 rounded-full p-2 hover:bg-black/60"
                     onClick={() =>
                       setLightboxActivity((p) =>
-                        Math.min(
-                          t("activities", defaultActivities).length - 1,
-                          p + 1,
-                        ),
+                        Math.min(activitiesData.length - 1, p + 1),
                       )
                     }
                   >
@@ -6214,9 +6606,242 @@ const MBA = () => {
             </motion.div>
           </AnimatePresence>
         </div>
+
+        <AnimatePresence>
+          {showAddPlacementYear && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => {
+                setPlacementYearError("");
+                setShowAddPlacementYear(false);
+              }}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <FaPlus className="text-ssgmce-blue" /> Add New Academic
+                    Year
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setPlacementYearError("");
+                      setShowAddPlacementYear(false);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <FaTimes className="text-xl" />
+                  </button>
+                </div>
+
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Academic Year <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., 2025-26"
+                      value={newPlacementYear}
+                      onChange={(e) => {
+                        setNewPlacementYear(e.target.value);
+                        if (placementYearError) {
+                          setPlacementYearError("");
+                        }
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ssgmce-blue focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Enter the academic year in format YYYY-YY (e.g., 2025-26)
+                    </p>
+                    {placementYearError ? (
+                      <p className="text-xs text-red-600 mt-2">
+                        {placementYearError}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-sm text-blue-800">
+                      <strong>Note:</strong> After adding the year, you can
+                      click "View Details" to edit the placement records for
+                      this academic year.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setPlacementYearError("");
+                      setShowAddPlacementYear(false);
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddPlacementYear}
+                    disabled={!newPlacementYear.trim()}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <FaPlus /> Add Year
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </GenericPage>
   );
+};
+
+const MBA_ACTIVITY_REMOTE_IMAGE_PREFIX =
+  "https://www.ssgmce.ac.in/images/mba_faculty/";
+
+const getLocalMbaActivityImageUrl = (imageUrl = "") => {
+  const normalizedUrl = String(imageUrl || "").trim();
+  if (!normalizedUrl) return "";
+
+  if (
+    normalizedUrl
+      .toLowerCase()
+      .startsWith(MBA_ACTIVITY_REMOTE_IMAGE_PREFIX.toLowerCase())
+  ) {
+    const fileName = normalizedUrl.split("/").pop()?.split("?")[0] || "";
+    return fileName ? `/uploads/images/mba/activities/${fileName}` : normalizedUrl;
+  }
+
+  return normalizedUrl;
+};
+
+const normalizeMbaActivity = (activity = {}) => ({
+  title: String(activity.title || "").trim(),
+  date: String(activity.date || "").trim(),
+  participants: String(activity.participants || "").trim(),
+  organizer: String(activity.organizer || "").trim(),
+  resource: String(activity.resource || "").trim(),
+  image: getLocalMbaActivityImageUrl(activity.image),
+});
+
+const defaultMbaActivityCards = defaultActivities.map(normalizeMbaActivity);
+
+const formatMbaActivityMarkdownField = (label, value, includeEmpty = false) => {
+  const lines = String(value || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (!lines.length && !includeEmpty) return "";
+
+  return [
+    `- ${label}: ${lines[0] || ""}`,
+    ...lines.slice(1).map((line) => `  ${line}`),
+  ].join("\n");
+};
+
+const mbaActivitiesToMarkdown = (activities = []) =>
+  activities
+    .map((activity) => normalizeMbaActivity(activity))
+    .filter((activity) => activity.title)
+    .map((activity) =>
+      [
+        `## ${activity.title}`,
+        formatMbaActivityMarkdownField("Date", activity.date, true),
+        formatMbaActivityMarkdownField(
+          "Participants",
+          activity.participants,
+          true,
+        ),
+        formatMbaActivityMarkdownField(
+          "Organized by",
+          activity.organizer,
+          true,
+        ),
+        formatMbaActivityMarkdownField(
+          "Resource Person",
+          activity.resource,
+          true,
+        ),
+        formatMbaActivityMarkdownField("Image", activity.image, true),
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    )
+    .join("\n\n");
+
+const parseMbaActivitiesMarkdown = (markdown = "") => {
+  if (typeof markdown !== "string" || !markdown.trim()) return [];
+
+  return markdown
+    .split(/^(?=## )/m)
+    .map((section) => section.trim())
+    .filter(Boolean)
+    .map((section) => {
+      const lines = section.split("\n");
+      const titleLine = lines.shift() || "";
+      const title = titleLine.replace(/^##\s+/, "").trim();
+
+      const fieldMap = {
+        date: [],
+        participants: [],
+        organizer: [],
+        resource: [],
+        image: [],
+      };
+
+      let activeField = null;
+
+      lines.forEach((line) => {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) return;
+
+        const fieldMatch = trimmedLine.match(
+          /^-\s*(Date|Participants|Organized by|Resource Person|Image)\s*:\s*(.*)$/i,
+        );
+
+        if (fieldMatch) {
+          const [, rawLabel, rawValue] = fieldMatch;
+          const labelKey = {
+            date: "date",
+            participants: "participants",
+            "organized by": "organizer",
+            "resource person": "resource",
+            image: "image",
+          }[rawLabel.toLowerCase()];
+
+          activeField = labelKey || null;
+          if (activeField) {
+            fieldMap[activeField].push(rawValue.trim());
+          }
+          return;
+        }
+
+        if (activeField) {
+          fieldMap[activeField].push(trimmedLine);
+        }
+      });
+
+      return normalizeMbaActivity({
+        title,
+        date: fieldMap.date.join("\n").trim(),
+        participants: fieldMap.participants.join("\n").trim(),
+        organizer: fieldMap.organizer.join("\n").trim(),
+        resource: fieldMap.resource.join("\n").trim(),
+        image: fieldMap.image.join("\n").trim(),
+      });
+    })
+    .filter((activity) => activity.title);
 };
 
 export default MBA;

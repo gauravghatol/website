@@ -1,9 +1,13 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import GenericPage from "../../components/GenericPage";
 import { useDepartmentData } from "../../hooks/useDepartmentData";
 import EditableText from "../../components/admin/EditableText";
 import EditableImage from "../../components/admin/EditableImage";
+import MarkdownEditor from "../../components/admin/MarkdownEditor";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import cseBanner from "../../assets/images/departments/cse/Cse banner.png";
 import {
   FaLaptopCode,
@@ -32,6 +36,9 @@ import {
   FaChevronRight,
   FaExternalLinkAlt,
   FaFileAlt,
+  FaPlus,
+  FaTrash,
+  FaUpload,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -50,6 +57,9 @@ import {
   defaultPrideToppersBE,
   defaultPrideToppersME,
   defaultPrideAlumni,
+  prideGateToMarkdown,
+  prideToppersToMarkdown,
+  prideAlumniToMarkdown,
   defaultCsesaObjectives,
   defaultActivities,
   defaultInternships,
@@ -66,6 +76,8 @@ import {
   defaultAchievements,
   defaultPlacements,
   defaultStudentProjects,
+  cseStudentProjectsToMarkdown,
+  cseUgProjectsToMarkdown,
 } from "../../data/cseDefaults";
 
 // Import HOD photo
@@ -86,6 +98,293 @@ import smjPhoto from "../../assets/images/departments/cse/faculty/SMJawake.png";
 import tapPhoto from "../../assets/images/departments/cse/faculty/TAP.jpeg";
 import vskPhoto from "../../assets/images/departments/cse/faculty/VSK.jpeg";
 import yogeshPhoto from "../../assets/images/departments/cse/faculty/YogeshMurumkar.jpeg";
+
+// ─── Pride section: markdown view helpers ───────────────────────────────────
+const parsePrideSections = (md = "") => {
+  const sections = [];
+  const lines = md.split("\n");
+  let current = null;
+  for (const line of lines) {
+    if (line.startsWith("## ")) {
+      if (current) sections.push(current);
+      current = { heading: line.slice(3).trim(), body: [] };
+    } else if (current) {
+      current.body.push(line);
+    }
+  }
+  if (current && current.body.length > 0) sections.push(current);
+  return sections.map((s) => ({
+    heading: s.heading,
+    body: s.body.join("\n").trim(),
+  }));
+};
+
+const extractMarkdownLinkHref = (value = "") => {
+  const markdownLinkMatch = String(value || "").match(/\[[^\]]+\]\(([^)]+)\)/);
+  if (markdownLinkMatch?.[1]) return markdownLinkMatch[1].trim();
+  const trimmed = String(value || "").trim();
+  return /^https?:\/\//i.test(trimmed) || trimmed.startsWith("/uploads/")
+    ? trimmed
+    : "";
+};
+
+const parseMarkdownTableRow = (line = "") =>
+  String(line || "")
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
+
+const getFileNameFromUrl = (value = "") => {
+  const trimmed = String(value || "").trim();
+  if (!trimmed) return "";
+
+  return trimmed.split("/").pop()?.split("?")[0] || "";
+};
+
+const parseUgProjectsMarkdown = (markdown = "", fallbackYear = "2024-25") => {
+  const text = String(markdown || "").trim();
+  if (!text) {
+    return { years: [fallbackYear], records: { [fallbackYear]: [] } };
+  }
+
+  const headingMatches = [...text.matchAll(/^##\s+(.+)$/gm)];
+  const sections =
+    headingMatches.length > 0
+      ? headingMatches.map((match, index) => {
+          const start = match.index ?? 0;
+          const end =
+            index + 1 < headingMatches.length
+              ? headingMatches[index + 1].index
+              : text.length;
+          return {
+            year: match[1].trim(),
+            body: text.slice(start, end),
+          };
+        })
+      : [{ year: fallbackYear, body: text }];
+
+  const years = [];
+  const records = {};
+
+  sections.forEach(({ year, body }) => {
+    const normalizedYear = year || fallbackYear;
+    const lines = String(body || "")
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    const tableLines = lines.filter((line) => line.startsWith("|"));
+    const dataLines = tableLines.filter(
+      (line, index) =>
+        index > 1 &&
+        !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line),
+    );
+
+    records[normalizedYear] = dataLines
+      .map((line) => parseMarkdownTableRow(line))
+      .filter((cells) => cells.length >= 3)
+      .map((cells) => ({
+        id: cells[0] || "",
+        title: cells[1] || "",
+        link: extractMarkdownLinkHref(cells.slice(2).join(" | ")),
+      }))
+      .filter(
+        (project) =>
+          project.id || project.title || project.link,
+      );
+
+    if (!years.includes(normalizedYear)) {
+      years.push(normalizedYear);
+    }
+  });
+
+  return { years, records };
+};
+
+const prideTableComponents = {
+  table: ({ node, ...props }) => (
+    <table className="min-w-full divide-y divide-gray-200" {...props} />
+  ),
+  thead: ({ node, ...props }) => <thead className="bg-gray-50" {...props} />,
+  tbody: ({ node, ...props }) => (
+    <tbody className="bg-white divide-y divide-gray-200" {...props} />
+  ),
+  tr: ({ node, ...props }) => <tr className="hover:bg-gray-50" {...props} />,
+  th: ({ node, ...props }) => (
+    <th
+      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+      {...props}
+    />
+  ),
+  td: ({ node, ...props }) => (
+    <td className="px-6 py-4 text-sm text-gray-900" {...props} />
+  ),
+};
+
+const PrideMdView = ({ markdown }) => {
+  const sections = parsePrideSections(markdown);
+  if (!sections.length) {
+    return (
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="overflow-x-auto p-4">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={prideTableComponents}
+          >
+            {markdown}
+          </ReactMarkdown>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-8">
+      {sections.map((section, i) => (
+        <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
+            <h4 className="text-xl font-bold">{section.heading}</h4>
+          </div>
+          <div className="overflow-x-auto">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={prideTableComponents}
+            >
+              {section.body}
+            </ReactMarkdown>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const CSE_ACTIVITY_REMOTE_IMAGE_PREFIX =
+  "https://www.ssgmce.ac.in/images/cse_faculty/";
+
+const getLocalCseActivityImageUrl = (imageUrl = "") => {
+  const normalizedUrl = String(imageUrl || "").trim();
+  if (!normalizedUrl) return "";
+
+  if (
+    normalizedUrl
+      .toLowerCase()
+      .startsWith(CSE_ACTIVITY_REMOTE_IMAGE_PREFIX.toLowerCase())
+  ) {
+    const fileName = normalizedUrl.split("/").pop()?.split("?")[0] || "";
+    return fileName ? `/uploads/images/cse/activities/${fileName}` : normalizedUrl;
+  }
+
+  return normalizedUrl;
+};
+
+const normalizeCseActivity = (activity = {}) => ({
+  title: String(activity.title || "").trim(),
+  date: String(activity.date || "").trim(),
+  participants: String(activity.participants || "").trim(),
+  organizer: String(activity.organizer || "").trim(),
+  resource: String(activity.resource || "").trim(),
+  image: getLocalCseActivityImageUrl(activity.image),
+});
+
+const defaultActivityCards = defaultActivities.map(normalizeCseActivity);
+
+const formatActivityMarkdownField = (label, value, includeEmpty = false) => {
+  const lines = String(value || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (!lines.length && !includeEmpty) return "";
+
+  return [
+    `- ${label}: ${lines[0] || ""}`,
+    ...lines.slice(1).map((line) => `  ${line}`),
+  ].join("\n");
+};
+
+const cseActivitiesToMarkdown = (activities = []) =>
+  activities
+    .map((activity) => normalizeCseActivity(activity))
+    .filter((activity) => activity.title)
+    .map((activity) =>
+      [
+        `## ${activity.title}`,
+        formatActivityMarkdownField("Date", activity.date, true),
+        formatActivityMarkdownField("Participants", activity.participants, true),
+        formatActivityMarkdownField("Organized by", activity.organizer, true),
+        formatActivityMarkdownField("Resource Person", activity.resource, true),
+        formatActivityMarkdownField("Image", activity.image, true),
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    )
+    .join("\n\n");
+
+const parseCseActivitiesMarkdown = (markdown = "") => {
+  if (typeof markdown !== "string" || !markdown.trim()) return [];
+
+  return markdown
+    .split(/^(?=## )/m)
+    .map((section) => section.trim())
+    .filter(Boolean)
+    .map((section) => {
+      const lines = section.split("\n");
+      const titleLine = lines.shift() || "";
+      const title = titleLine.replace(/^##\s+/, "").trim();
+
+      const fieldMap = {
+        date: [],
+        participants: [],
+        organizer: [],
+        resource: [],
+        image: [],
+      };
+
+      let activeField = null;
+
+      lines.forEach((line) => {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) return;
+
+        const fieldMatch = trimmedLine.match(
+          /^-\s*(Date|Participants|Organized by|Resource Person|Image)\s*:\s*(.*)$/i,
+        );
+
+        if (fieldMatch) {
+          const [, rawLabel, rawValue] = fieldMatch;
+          const labelKey = {
+            date: "date",
+            participants: "participants",
+            "organized by": "organizer",
+            "resource person": "resource",
+            image: "image",
+          }[rawLabel.toLowerCase()];
+
+          activeField = labelKey || null;
+          if (activeField) {
+            fieldMap[activeField].push(rawValue.trim());
+          }
+          return;
+        }
+
+        if (activeField) {
+          fieldMap[activeField].push(trimmedLine);
+        }
+      });
+
+      return normalizeCseActivity({
+        title,
+        date: fieldMap.date.join("\n").trim(),
+        participants: fieldMap.participants.join("\n").trim(),
+        organizer: fieldMap.organizer.join("\n").trim(),
+        resource: fieldMap.resource.join("\n").trim(),
+        image: fieldMap.image.join("\n").trim(),
+      });
+    })
+    .filter((activity) => activity.title);
+};
 
 const photoMap = {
   jmpPhoto,
@@ -132,6 +431,700 @@ const CSE = () => {
   const [prideTab, setPrideTab] = useState("gate");
   const [achievementTab, setAchievementTab] = useState("faculty");
   const [certificateLightbox, setCertificateLightbox] = useState(null);
+  const [showAddPlacementYear, setShowAddPlacementYear] = useState(false);
+  const [newPlacementYear, setNewPlacementYear] = useState("");
+  const [placementYearError, setPlacementYearError] = useState("");
+
+  // Placement data (default) — used for summary + markdown generation
+  const defaultPlacementYearOrder = [
+    "2024-25",
+    "2023-24",
+    "2022-23",
+    "2021-22",
+    "2020-21",
+    "2019-20",
+    "2018-19",
+  ];
+
+  const placementRecordsByYear = {
+    "2024-25": [
+      {
+        name: "Apurva Patil",
+        company: "Connecticus Technologies Pvt Ltd, Pune",
+        ctc: "6 LPA",
+      },
+      {
+        name: "Chaitali Nakhate",
+        company: "Bristlecone India Ltd., Pune",
+        ctc: "4.25 LPA",
+      },
+      {
+        name: "Dnyaneshwari Mhaisne",
+        company: "Manasvi Tech Solutions Pvt. Ltd., Nashik",
+        ctc: "3.2 LPA",
+      },
+      {
+        name: "Eisha Nikam",
+        company: "Bristlecone India Ltd., Pune",
+        ctc: "4.25 LPA",
+      },
+      {
+        name: "Khushbu Chavhan",
+        company: "Arohi Software Solution Pvt. Ltd., Ahmednagar",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Kunjan Katore",
+        company: "RIA Advisory LLP, Pune",
+        ctc: "6.5 LPA",
+      },
+      {
+        name: "Palak Jasani",
+        company: "NCSI Technologies Pvt. Ltd., Pune",
+        ctc: "5.62 LPA",
+      },
+      {
+        name: "Pranita Tondre",
+        company: "Cognizant Technology Solutions India Pvt. Ltd., Pune",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Radhika Kapoor",
+        company: "QuantumSoft Technologies Pvt. Ltd., Pune",
+        ctc: "4.5 LPA",
+      },
+      {
+        name: "Samruddhi Katole",
+        company: "Bizsense Solutions Pvt. Ltd., Nagpur",
+        ctc: "5.5 LPA",
+      },
+      {
+        name: "Sanika Dose",
+        company: "SwiftNLift Media and Tech LLP, Pune",
+        ctc: "3.25 LPA",
+      },
+      {
+        name: "Shivani Digole",
+        company: "Bristlecone India Ltd., Pune",
+        ctc: "4.25 LPA",
+      },
+      {
+        name: "Shruti Sonone",
+        company: "Lend a Hand India, Pune",
+        ctc: "6 LPA",
+      },
+      { name: "Abhishek Patil", company: "TCS, Pune", ctc: "7 LPA" },
+      {
+        name: "Bhuvnesh Kale",
+        company: "Bristlecone India Ltd., Pune",
+        ctc: "4.25 LPA",
+      },
+      {
+        name: "Gaurav Dhale",
+        company: "One Smarter Inc., Ohio USA",
+        ctc: "3.6 LPA",
+      },
+      {
+        name: "Gaurav Kaple",
+        company: "One Smarter Inc., Ohio USA",
+        ctc: "3.6 LPA",
+      },
+      {
+        name: "Ishan Gawande",
+        company: "Truscholar Tech., Amravati",
+        ctc: "1.2 LPA",
+      },
+      {
+        name: "Krishna Kolekar",
+        company: "SkaleIT Technologies LLP, Pune",
+        ctc: "5 LPA",
+      },
+      {
+        name: "Nikhil Kulkarni",
+        company: "Manasvi Tech Solutions Pvt. Ltd., Nashik",
+        ctc: "3.2 LPA",
+      },
+      { name: "Nitish Sonone", company: "ApexaiQ", ctc: "4.5 LPA" },
+      {
+        name: "Prajwal Ghusalikar",
+        company: "One Smarter Inc., Ohio USA",
+        ctc: "4.8 LPA",
+      },
+      {
+        name: "Pratik Kuntawar",
+        company: "Consultadd Services Pvt. Ltd., Pune",
+        ctc: "12 LPA",
+      },
+      {
+        name: "Pratham Akkewar",
+        company: "Arohi Software Solution Pvt. Ltd., Ahmednagar",
+        ctc: "6 LPA",
+      },
+      {
+        name: "Rohit Tap",
+        company: "Manasvi Tech Solutions Pvt. Ltd., Nashik",
+        ctc: "3.2 LPA",
+      },
+      {
+        name: "Samarth Zamre",
+        company: "Softbyte India Pvt. Ltd., Pune",
+        ctc: "1.5 LPA",
+      },
+      {
+        name: "Anikesh Gadekar",
+        company: "Ayekart Pvt. Ltd., Mumbai",
+        ctc: "3.9 LPA",
+      },
+    ],
+    "2023-24": [
+      {
+        name: "Abhijeet Eknath Tathod",
+        company: "miniOrange Security Software Pvt. Ltd., Pune",
+        ctc: "4.8 LPA",
+      },
+      {
+        name: "Kunal Atmaram Chandore",
+        company: "ApexaiQ Technoogies Pvt. Ltd. USA",
+        ctc: "4.8 LPA",
+      },
+      {
+        name: "Surabhi Ghanshyamji Lahoti",
+        company: "ApexaiQ Technoogies Pvt. Ltd. USA",
+        ctc: "5.5 LPA",
+      },
+      {
+        name: "Surbhi Sohanlal Goria",
+        company: "ApexaiQ Technoogies Pvt. Ltd. USA",
+        ctc: "5.5 LPA",
+      },
+      {
+        name: "Riya Govind Dangra",
+        company: "ApexaiQ Technoogies Pvt. Ltd. USA",
+        ctc: "5.5 LPA",
+      },
+      {
+        name: "Yash Kumar Sugandhi",
+        company: "Bizsense Solutions Pvt. Ltd., Nagpur",
+        ctc: "5.52 LPA",
+      },
+      {
+        name: "Abhishek Sanjay Gawali",
+        company: "Bristlecone India Limited, Mumbai",
+        ctc: "4.25 LPA",
+      },
+      {
+        name: "Gauri Vinod Zamare",
+        company: "Bristlecone India Limited, Mumbai",
+        ctc: "4.25 LPA",
+      },
+      {
+        name: "Gauri JaisingPatil",
+        company: "Cencora Business Services (IT), Pune",
+        ctc: "5.61 LPA",
+      },
+      {
+        name: "Pallavi Gajanan Awasare",
+        company: "Cencora Business Services (IT), Pune",
+        ctc: "5.61 LPA",
+      },
+      {
+        name: "Pravadnya Dnyaneshwar More",
+        company: "Cencora Business Services (IT), Pune",
+        ctc: "5.61 LPA",
+      },
+      {
+        name: "Sneha Sunil Khatke",
+        company: "Cencora Business Services (IT), Pune",
+        ctc: "5.61 LPA",
+      },
+      {
+        name: "Abhijeet Rambhau Gadlinge",
+        company: "Circular Angle Pvt. Ltd., Thane",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Shreya Nitin Patil",
+        company: "Circular Angle Pvt. Ltd., Thane",
+        ctc: "4.00 LPA",
+      },
+      {
+        name: "Ashutosh Sanjay Gupta",
+        company: "Value Momentum Software Services Pvt. Ltd., Hyderabad",
+        ctc: "4.5 LPA",
+      },
+      {
+        name: "Gajanan Mahadev Borade",
+        company: "Institute of Plasma Research Bhat, Gandhinagar",
+        ctc: "3.75 LPA",
+      },
+      {
+        name: "Prithvirajsingh Devendrasingh Thakur",
+        company: "Genpact India Pvt. Ltd., Pune",
+        ctc: "2.85 LPA",
+      },
+      {
+        name: "Sayli Gopal Agrawal",
+        company: "Hexaware Technologies, Pune",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Vallabh Rupesh Ghongde",
+        company: "Hexaware Technologies, Pune",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Laxmi Sunil Hargunani",
+        company: "Capgemini Technology Services India Limited, Navi Mumbai",
+        ctc: "4.5 LPA",
+      },
+      {
+        name: "Mitalee Ajay Uplenchwar",
+        company: "IBM CIC, Bangalore",
+        ctc: "4.5 LPA",
+      },
+      {
+        name: "Pratibha Nandlal Yadav",
+        company: "IBM CIC, Bangalore",
+        ctc: "4.5 LPA",
+      },
+      {
+        name: "Mayur Rajesh Shastrakar",
+        company: "Inferwse, Pune",
+        ctc: "4.12 LPA",
+      },
+      {
+        name: "Harshal Wadode",
+        company: "IRIS Business Services Ltd., Mumbai",
+        ctc: "4.5 LPA",
+      },
+      {
+        name: "Prajwal Sunil Chitode",
+        company: "IRIS Business Services Ltd., Mumbai",
+        ctc: "4.5 LPA",
+      },
+      {
+        name: "Pratik Ganesh Ekhande",
+        company: "IRIS Business Services Ltd., Mumbai",
+        ctc: "4.5 LPA",
+      },
+      { name: "Uzair Amin", company: "Infosys Limited Banglore", ctc: "5 LPA" },
+      {
+        name: "Yogita Katare",
+        company: "Tristha Global Pvt. Ltd. Mumbai",
+        ctc: "3.4 LPA",
+      },
+    ],
+    "2022-23": [
+      {
+        name: "Mayuri Patil",
+        company: "ApexiaQ Technologies Pvt. Ltd., Delhi",
+        ctc: "3.60 LPA",
+      },
+      {
+        name: "Saurabh Kedar",
+        company: "Bizsense Solution Pvt. Ltd., Nagpur",
+        ctc: "6 LPA",
+      },
+      {
+        name: "ASHISH Mehare",
+        company: "DigitalLeaf Solutions, Hyderabad",
+        ctc: "7.8 LPA",
+      },
+      {
+        name: "Sanket Deshmukh",
+        company: "DigitalLeaf Solutions, Hyderabad",
+        ctc: "7.8 LPA",
+      },
+      {
+        name: "Adish Raipure",
+        company: "Expleo Solution Pvt. Ltd., Pune",
+        ctc: "5.00 LPA",
+      },
+      {
+        name: "Lokesh Chandak",
+        company: "Expleo Solution Pvt. Ltd., Pune",
+        ctc: "5.00 LPA",
+      },
+      {
+        name: "Mayuri Heda",
+        company: "FECUND Software Services Pvt. Ltd., Pune",
+        ctc: "3.5 LPA",
+      },
+      { name: "Shankar Shinde", company: "HCL Tech, Noida", ctc: "6.00 LPA" },
+      {
+        name: "Harshita Ughade",
+        company: "Hexaware Technologies, Pune",
+        ctc: "4.00 LPA",
+      },
+      {
+        name: "Tejaswini Rakhonde",
+        company: "Hexaware Technologies, Pune",
+        ctc: "4.00 LPA",
+      },
+      {
+        name: "Divya Agrawal",
+        company: "IBM India Pvt. Ltd., Bangalore",
+        ctc: "4.50 LPA",
+      },
+      {
+        name: "Hrishikesh Tholbare",
+        company: "LotFair Solutions Private Limited, Lucknow",
+        ctc: "2.75 LPA",
+      },
+      {
+        name: "Sudhanshu Deshmukh",
+        company: "Mastek Enterprise Solutions Pvt. Ltd., Ahmedabad",
+        ctc: "4.20 LPA",
+      },
+      {
+        name: "Anshul Ghumadwar",
+        company: "Micropro Software Solutions Pvt. Ltd., Nagpur",
+        ctc: "3.00 LPA",
+      },
+      {
+        name: "Himanshu Jamwal",
+        company: "Micropro Software Solutions Pvt. Ltd., Nagpur",
+        ctc: "3.00 LPA",
+      },
+      {
+        name: "Swati Khatri",
+        company: "Micropro Software Solutions Pvt. Ltd., Nagpur",
+        ctc: "3.00 LPA",
+      },
+      {
+        name: "Tanishq Nanda",
+        company: "Optical Arc Pvt. Ltd., Pune",
+        ctc: "3.00 LPA",
+      },
+      {
+        name: "Gaurav Pundkar",
+        company: "Rialtes Technologies & Solutions LLP, Pune",
+        ctc: "3.00 LPA",
+      },
+      {
+        name: "Kanchan Raut",
+        company: "Rialtes Technologies & Solutions LLP, Pune",
+        ctc: "3.00 LPA",
+      },
+      {
+        name: "Suryakant Ingle",
+        company: "Rialtes Technologies & Solutions LLP, Pune",
+        ctc: "3.00 LPA",
+      },
+      {
+        name: "Ajinkya Mahesh Pimple",
+        company: "Salesforce, Hyderabad",
+        ctc: "7.25 LPA",
+      },
+      {
+        name: "Palak Agrawal",
+        company: "Sankey Solutions, Pune",
+        ctc: "4.00 LPA",
+      },
+      {
+        name: "Yash Dalal",
+        company: "Sankey Solutions, Pune",
+        ctc: "4.00 LPA",
+      },
+      {
+        name: "Atharva Kolhe",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Bhavesh Mittal",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "7.00 LPA",
+      },
+      {
+        name: "Gagan Wanjari",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Mohd Meeran Iqbal Mohd Zafar Iqbal",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Nikhil Jadhav",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Pramey Deshmukh",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Rutika Dharangaonkar",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Sakshi Deshmukh",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Sarvesh Sonar",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Schachi Chaware",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Shubhangi Thoke",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Siddhi Taori",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Tanay Shah",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Tejas Masurkar",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Thavar Setiya",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "7 LPA",
+      },
+      {
+        name: "Trunay Wanjari",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Vinita Tiwari",
+        company: "Tata Consultancy Services Ltd., Pune",
+        ctc: "3.36 LPA",
+      },
+      {
+        name: "Apeksha Mundhada",
+        company: "TATA Technology Ltd., Pune",
+        ctc: "4.71 LPA",
+      },
+      {
+        name: "Ritesh Manusmare",
+        company: "TATA Technology Ltd., Pune",
+        ctc: "4.71 LPA",
+      },
+      {
+        name: "Shruti Lambe",
+        company: "TATA Technology Ltd., Pune",
+        ctc: "4.71 LPA",
+      },
+      {
+        name: "Radhika Maloo",
+        company: "Tech Mahindra Limited, Hyderabad",
+        ctc: "3.25 LPA",
+      },
+      {
+        name: "Sanjana Dhopte",
+        company: "Tech Mahindra Limited, Hyderabad",
+        ctc: "3.25 LPA",
+      },
+      {
+        name: "Smitesh Sonar",
+        company: "Tech Mahindra Limited, Hyderabad",
+        ctc: "3.25 LPA",
+      },
+      {
+        name: "Anand Agrawal",
+        company: "TekLink International, Hyderabad",
+        ctc: "6.00 LPA",
+      },
+      {
+        name: "Mohammed Areeb Ozair Feeroz Khan",
+        company: "TekLink International, Hyderabad",
+        ctc: "6.00 LPA",
+      },
+      {
+        name: "Vishal Rathod",
+        company:
+          "Advanced Business & Healthcare Solutions India Pvt. Ltd., Bangalore",
+        ctc: "6.00 LPA",
+      },
+      { name: "Siddhi Mehta", company: "HCL Tech, Noida", ctc: "4.25 LPA" },
+      {
+        name: "Pakhi Mujmer",
+        company: "MN World Enterprise Pvt Ltd",
+        ctc: "3.14 LPA",
+      },
+      {
+        name: "Gopal Shelke",
+        company: "Quantum Integrators Pvt. Ltd. Nagpur",
+        ctc: "3 LPA",
+      },
+      {
+        name: "Saurav Wankhade",
+        company: "Empyra Software Sol Pvt. Ltd Banglore",
+        ctc: "3.5 LPA",
+      },
+      {
+        name: "Shreyash Chatarkar",
+        company: "Decentralized Masters",
+        ctc: "12 LPA",
+      },
+      { name: "Suved Bhagwat", company: "Byju?s", ctc: "4.5 LPA" },
+    ],
+    "2021-22": [
+      {
+        name: "Shivani Joshi",
+        company: "Atos|Syntel Pvt Ltd, Pune",
+        ctc: "3.4 LPA",
+      },
+      {
+        name: "Mansi Paturkar",
+        company: "Capgemini Technology Services India Ltd, Mumbai",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Nisha Kakade",
+        company: "Capgemini Technology Services India Ltd, Mumbai",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Pooja Deshmukh",
+        company: "Capgemini Technology Services India Ltd, Mumbai",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Prajwal Gawal",
+        company: "Capgemini Technology Services India Ltd, Mumbai",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Sakshi Dhanuka",
+        company: "Capgemini Technology Services India Ltd, Mumbai",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Vijaya Narkhede",
+        company: "Capgemini Technology Services India Ltd, Mumbai",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Aditya Sambare",
+        company: "Coditas Solutions LLP, Pune",
+        ctc: "6 LPA",
+      },
+      {
+        name: "Sudhanshu Sathawane",
+        company: "Global Logic India Pvt Ltd, Nagpur",
+        ctc: "5.5 LPA",
+      },
+      {
+        name: "Abhishek Moharir",
+        company: "Hexaware Technologies, Pune",
+        ctc: "3.5 LPA",
+      },
+      { name: "Arpita Agrawal", company: "LTI Mindtree, Pune", ctc: "4 LPA" },
+      {
+        name: "Aritra Shinde",
+        company: "NSEC Technologies Pvt. Ltd., Pune",
+        ctc: "3.0 LPA",
+      },
+      { name: "Ayush Jain", company: "Sankey Solutions, Pune", ctc: "4 LPA" },
+      { name: "Chinmay More", company: "Sankey Solutions, Pune", ctc: "4 LPA" },
+      {
+        name: "Ganeshji Dongre",
+        company: "Sankey Solutions, Pune",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Gayatri Sharma",
+        company: "Sankey Solutions, Pune",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Kaustubh Patil",
+        company: "Sankey Solutions, Pune",
+        ctc: "4 LPA",
+      },
+      { name: "Kunal Dumbre", company: "Sankey Solutions, Pune", ctc: "4 LPA" },
+      { name: "Pratik Kadu", company: "Sankey Solutions, Pune", ctc: "4 LPA" },
+      { name: "Pravin Patel", company: "Sankey Solutions, Pune", ctc: "4 LPA" },
+      { name: "Rohit Patil", company: "Sankey Solutions, Pune", ctc: "4 LPA" },
+      {
+        name: "Shubham Borade",
+        company: "Sankey Solutions, Pune",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Shubham Patil",
+        company: "Sankey Solutions, Pune",
+        ctc: "4 LPA",
+      },
+      { name: "Shweta Dole", company: "Sankey Solutions, Pune", ctc: "4 LPA" },
+      {
+        name: "Siddharth Solanki",
+        company: "Sankey Solutions, Pune",
+        ctc: "4 LPA",
+      },
+      { name: "Sonal Raut", company: "Sankey Solutions, Pune", ctc: "4 LPA" },
+      {
+        name: "Sujay Choudhary",
+        company: "Sankey Solutions, Pune",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Swapnil Shelke",
+        company: "Sankey Solutions, Pune",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Vaibhav Patil",
+        company: "Sankey Solutions, Pune",
+        ctc: "4 LPA",
+      },
+      { name: "Yash Chandak", company: "Sankey Solutions, Pune", ctc: "4 LPA" },
+      { name: "Yogesh Patil", company: "Sankey Solutions, Pune", ctc: "4 LPA" },
+      {
+        name: "Yogeshrao Ghorpade",
+        company: "Sankey Solutions, Pune",
+        ctc: "4 LPA",
+      },
+      {
+        name: "Yuvraj Bhagat",
+        company: "Sankey Solutions, Pune",
+        ctc: "4 LPA",
+      },
+    ],
+    "2020-21": [],
+    "2019-20": [],
+    "2018-19": [],
+  };
+
+  // State for Curriculum (Scheme & Syllabus) management
+  const [selectedCurriculumItems, setSelectedCurriculumItems] = useState([]);
+  const [uploadingFiles, setUploadingFiles] = useState({});
+  const [newsletterUploading, setNewsletterUploading] = useState({});
+  const [newsletterUploadErrors, setNewsletterUploadErrors] = useState({});
+  const [achievementUploading, setAchievementUploading] = useState({});
+  const [achievementUploadErrors, setAchievementUploadErrors] = useState({});
+  const [achievementUploadSuccess, setAchievementUploadSuccess] = useState({});
+  const [ugProjectUploading, setUgProjectUploading] = useState({});
+  const [ugProjectUploadErrors, setUgProjectUploadErrors] = useState({});
+  const [ugProjectUploadSuccess, setUgProjectUploadSuccess] = useState({});
+  const [showAddUgProjectYear, setShowAddUgProjectYear] = useState(false);
+  const [newUgProjectYear, setNewUgProjectYear] = useState("");
+  const [ugProjectYearError, setUgProjectYearError] = useState("");
+  const [shouldScrollToNewCourseMaterial, setShouldScrollToNewCourseMaterial] =
+    useState(false);
+  const latestCourseMaterialRef = useRef(null);
 
   // State for Curricular Activities section
   const [activitiesVisible, setActivitiesVisible] = useState(6);
@@ -143,6 +1136,7 @@ const CSE = () => {
     loading: dataLoading,
     isEditing,
     updateData,
+    removeData,
     t,
   } = useDepartmentData("departments-cse");
 
@@ -151,11 +1145,514 @@ const CSE = () => {
     updateData(path, value);
   };
 
+  const academicYearPattern = /^\d{4}-\d{2}$/;
+
+  const isAcademicYearKey = (value) =>
+    typeof value === "string" && academicYearPattern.test(value.trim());
+
+  const compareAcademicYearsDesc = (a, b) => {
+    const aStart = Number(String(a).slice(0, 4));
+    const bStart = Number(String(b).slice(0, 4));
+    return bStart - aStart;
+  };
+
+  const normalizePlacementYears = (years) => {
+    const uniqueYears = [];
+
+    years.forEach((year) => {
+      const normalizedYear = String(year || "").trim();
+      if (!isAcademicYearKey(normalizedYear)) return;
+      if (!uniqueYears.includes(normalizedYear)) {
+        uniqueYears.push(normalizedYear);
+      }
+    });
+
+    return uniqueYears;
+  };
+
+  const isValidAcademicYear = (value) => {
+    const normalizedYear = String(value || "").trim();
+    if (!isAcademicYearKey(normalizedYear)) return false;
+
+    const [startYear, endSuffix] = normalizedYear.split("-");
+    return String(Number(startYear) + 1).slice(-2) === endSuffix;
+  };
+
+  const storedPlacementYears = Array.isArray(t("templateData.placements.years", null))
+    ? t("templateData.placements.years", [])
+    : [];
+  const storedPlacementDetails = t("templateData.placements.details", {});
+  const storedPlacementMarkdown = t("templateData.placements.markdown", {});
+  const storedPlacementObject = t("templateData.placements", {});
+
+  const discoveredPlacementYears = normalizePlacementYears([
+    ...Object.keys(
+      storedPlacementDetails && typeof storedPlacementDetails === "object"
+        ? storedPlacementDetails
+        : {},
+    ),
+    ...Object.keys(
+      storedPlacementMarkdown && typeof storedPlacementMarkdown === "object"
+        ? storedPlacementMarkdown
+        : {},
+    ),
+    ...Object.keys(
+      storedPlacementObject && typeof storedPlacementObject === "object"
+        ? Object.fromEntries(
+            Object.entries(storedPlacementObject).filter(
+              ([key]) => !["years", "details", "markdown"].includes(key),
+            ),
+          )
+        : {},
+    ),
+  ]).sort(compareAcademicYearsDesc);
+
+  const placementYearOrder = (() => {
+    const baseYears =
+      storedPlacementYears.length > 0
+        ? normalizePlacementYears(storedPlacementYears)
+        : [...defaultPlacementYearOrder];
+    const extraYears = discoveredPlacementYears.filter(
+      (year) => !baseYears.includes(year),
+    );
+
+    return normalizePlacementYears([...baseYears, ...extraYears]).sort(
+      compareAcademicYearsDesc,
+    );
+  })();
+
+  const currentPlacementYear = placementYearOrder[0] || null;
+
+  const handleAddPlacementYear = () => {
+    const normalizedYear = newPlacementYear.trim();
+
+    if (!isValidAcademicYear(normalizedYear)) {
+      setPlacementYearError("Enter a valid academic year like 2025-26.");
+      return;
+    }
+
+    if (placementYearOrder.includes(normalizedYear)) {
+      setPlacementYearError("That academic year already exists.");
+      return;
+    }
+
+    const nextYears = normalizePlacementYears([
+      normalizedYear,
+      ...placementYearOrder,
+    ]).sort(compareAcademicYearsDesc);
+
+    updateData("templateData.placements.years", nextYears);
+    updateData(`templateData.placements.details.${normalizedYear}`, "");
+    setNewPlacementYear("");
+    setPlacementYearError("");
+    setShowAddPlacementYear(false);
+  };
+
+  const handleDeletePlacementYear = (year) => {
+    if (!window.confirm(`Delete placement statistics for ${year}?`)) {
+      return;
+    }
+
+    const remainingYears = placementYearOrder.filter(
+      (placementEntryYear) => placementEntryYear !== year,
+    );
+
+    updateData("templateData.placements.years", remainingYears);
+    removeData(`templateData.placements.details.${year}`);
+    removeData(`templateData.placements.markdown.${year}`);
+    removeData(`templateData.placements.${year}`);
+
+    if (placementYear === year) {
+      setPlacementYear(null);
+    }
+  };
+
+  // Placement markdown helpers (moved below useDepartmentData to avoid TDZ errors)
+  const getPlacementMarkdown = (year) => {
+    const records = placementRecordsByYear[year] || [];
+    const header = `## Placement Record — ${year}`;
+    const intro =
+      year === currentPlacementYear
+        ? "*Placements still in progress for the current academic year.*\n\n"
+        : "";
+    const rows = records.map(
+      (s, i) => `| ${i + 1} | ${s.name} | ${s.company} | ${s.ctc} |`,
+    );
+
+    const table = [
+      "| Sr. No. | Name of Student | Company Name | CTC |",
+      "|--------|----------------|--------------|-----|",
+      ...rows,
+    ].join("\n");
+
+    return [header, "", intro, table].join("\n");
+  };
+
+  const getStoredPlacementValue = (year) => {
+    const candidates = [
+      `templateData.placements.details.${year}`,
+      `templateData.placements.${year}`,
+      `templateData.placements.markdown.${year}`,
+    ];
+
+    for (const path of candidates) {
+      const value = t(path, null);
+      if (value !== null && value !== undefined) {
+        if (typeof value === "string" && value.trim() === "") continue;
+        return value;
+      }
+    }
+
+    // Sometimes placements are stored as an object keyed by year
+    const placements = t("templateData.placements", null);
+    if (placements && typeof placements === "object") {
+      if (placements[year]) return placements[year];
+    }
+
+    return null;
+  };
+
+  const placementRecordsToMarkdown = (year, records) => {
+    const header = `## Placement Record — ${year}`;
+    const intro =
+      year === currentPlacementYear
+        ? "*Placements still in progress for the current academic year.*\n\n"
+        : "";
+
+    const rows = records.map(
+      (s, i) => `| ${i + 1} | ${s.name} | ${s.company} | ${s.ctc} |`,
+    );
+
+    const table = [
+      "| Sr. No. | Name of Student | Company Name | CTC |",
+      "|--------|----------------|--------------|-----|",
+      ...rows,
+    ].join("\n");
+
+    return [header, "", intro, table].join("\n");
+  };
+
+  const getCurrentPlacementMarkdown = () => {
+    if (!placementYear) return "";
+
+    const stored = getStoredPlacementValue(placementYear);
+
+    if (typeof stored === "string" && stored.trim()) return stored;
+
+    if (Array.isArray(stored) && stored.length > 0) {
+      return placementRecordsToMarkdown(placementYear, stored);
+    }
+
+    // Fallback to default hardcoded records
+    return getPlacementMarkdown(placementYear);
+  };
+
+  const getPlacementCount = (year) => {
+    const stored = getStoredPlacementValue(year);
+
+    if (Array.isArray(stored)) return stored.length;
+
+    if (typeof stored === "string" && stored.trim()) {
+      const lines = stored.split("\n").map((l) => l.trim());
+      const tableStart = lines.findIndex((l) => l.startsWith("| Sr. No."));
+      if (tableStart !== -1) {
+        const rows = lines
+          .slice(tableStart + 2)
+          .filter((l) => l.startsWith("|"));
+        return rows.length;
+      }
+    }
+
+    return placementRecordsByYear[year]?.length || 0;
+  };
+
+  const placementSummary = placementYearOrder.map((year) => ({
+    year,
+    count: `${getPlacementCount(year)}${year === currentPlacementYear ? "*" : ""}`,
+    id: year,
+  }));
+
+  const renderPlacementDetails = () => {
+    const markdown = getCurrentPlacementMarkdown();
+
+    return (
+      <div>
+        <div className="flex justify-between items-center mb-6">
+          <button
+            onClick={() => setPlacementYear(null)}
+            className="flex items-center text-gray-600 hover:text-ssgmce-blue font-medium transition-colors"
+          >
+            <span className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-2 text-sm group-hover:bg-blue-100">
+              <FaAngleRight className="transform rotate-180" />
+            </span>
+            Back to Statistics
+          </button>
+          <div className="text-right">
+            <h3 className="text-xl font-bold text-gray-800">
+              Placement Record
+            </h3>
+            <p className="text-sm text-ssgmce-blue font-bold">
+              Session: {placementYear}
+            </p>
+          </div>
+        </div>
+
+        {isEditing ? (
+          <MarkdownEditor
+            value={markdown}
+            onSave={(v) =>
+              updateData(`templateData.placements.details.${placementYear}`, v)
+            }
+            showDocImport
+            docTemplateUrl="/uploads/documents/pride_templates/cse_placement_details_template.docx"
+            docTemplateLabel="Download Placement Template"
+            placeholder="Paste or import placement data (Markdown) here..."
+          />
+        ) : (
+          <PrideMdView markdown={markdown} />
+        )}
+      </div>
+    );
+  };
+
+  // Default curriculum items for Scheme & Syllabus
+  const DEFAULT_CURRICULUM_BE = [
+    {
+      label: "NEP Scheme",
+      link: "#",
+      fileName: "NEP_Scheme.pdf",
+      fileUrl: "/uploads/documents/cse-syllabus/NEP_Scheme.pdf",
+    },
+    {
+      label: "Scheme",
+      link: "#",
+      fileName: "Scheme_CSE.pdf",
+      fileUrl: "/uploads/documents/cse-syllabus/Scheme_CSE.pdf",
+    },
+    {
+      label:
+        "Revised Syllabus of CSE (1st Sem - 8th Sem) Notification No. 121/2023",
+      link: "#",
+      fileName: "Revised_Syllabus_CSE_1st-8th_Sem_Notification_121_2023.pdf",
+      fileUrl:
+        "/uploads/documents/cse-syllabus/Revised_Syllabus_CSE_1st-8th_Sem_Notification_121_2023.pdf",
+    },
+    {
+      label: "Syllabus Second Year (3rd & 4th Sem)",
+      link: "#",
+      fileName: "Syllabus_Second_Year_3rd_4th_Sem.pdf",
+      fileUrl:
+        "/uploads/documents/cse-syllabus/Syllabus_Second_Year_3rd_4th_Sem.pdf",
+    },
+    {
+      label:
+        "Syllabus - (Universal Human Values and Ethics) Common for all branches - Sem. IV (NEP)",
+      link: "#",
+      fileName: "Syllabus_UHV_Ethics_Sem_IV_NEP.pdf",
+      fileUrl:
+        "/uploads/documents/cse-syllabus/Syllabus_UHV_Ethics_Sem_IV_NEP.pdf",
+    },
+    {
+      label:
+        "Syllabus - (Modern Indian Language) Common for all branches - Sem. IV (NEP)",
+      link: "#",
+      fileName: null,
+      fileUrl: null,
+    },
+    {
+      label: "Syllabus Third Year (5th & 6th Sem)",
+      link: "#",
+      fileName: "Syllabus_Third_Year_5th_6th_Sem.pdf",
+      fileUrl:
+        "/uploads/documents/cse-syllabus/Syllabus_Third_Year_5th_6th_Sem.pdf",
+    },
+    {
+      label: "Syllabus Final Year (7th & 8th Sem)",
+      link: "#",
+      fileName: "Syllabus_Final_Year_7th_8th_Sem.pdf",
+      fileUrl:
+        "/uploads/documents/cse-syllabus/Syllabus_Final_Year_7th_8th_Sem.pdf",
+    },
+  ];
+
+  const DEFAULT_CURRICULUM_ME = [
+    {
+      label: "Scheme and Syllabus M.E. (1st & 2nd Sem)",
+      link: "#",
+      fileName: "Scheme_Syllabus_ME_1st_2nd_Sem.pdf",
+      fileUrl:
+        "/uploads/documents/cse-syllabus/Scheme_Syllabus_ME_1st_2nd_Sem.pdf",
+    },
+  ];
+
+  // Curriculum management functions
+  const updateCurriculumItem = (section, index, field, value) => {
+    const key = `templateData.curriculum.${section}`;
+    const defaults =
+      section === "be" ? DEFAULT_CURRICULUM_BE : DEFAULT_CURRICULUM_ME;
+    const items = JSON.parse(JSON.stringify(t(key, defaults)));
+    items[index] = { ...items[index], [field]: value };
+    updateField(key, items);
+  };
+
+  const addCurriculumItem = (section) => {
+    const key = `templateData.curriculum.${section}`;
+    const defaults =
+      section === "be" ? DEFAULT_CURRICULUM_BE : DEFAULT_CURRICULUM_ME;
+    const items = JSON.parse(JSON.stringify(t(key, defaults)));
+    items.push({
+      label: "New Syllabus Item",
+      link: "#",
+      fileName: null,
+      fileUrl: null,
+    });
+    updateField(key, items);
+  };
+
+  const uploadCurriculumFile = async (section, index, file) => {
+    if (!file) return;
+    const uploadKey = `${section}-${index}`;
+    setUploadingFiles((prev) => ({ ...prev, [uploadKey]: true }));
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.data.fileUrl) {
+        // Batch all three fields in a single update to avoid stale state race condition
+        const key = `templateData.curriculum.${section}`;
+        const defaults =
+          section === "be" ? DEFAULT_CURRICULUM_BE : DEFAULT_CURRICULUM_ME;
+        const items = JSON.parse(JSON.stringify(t(key, defaults)));
+        items[index] = {
+          ...items[index],
+          fileUrl: response.data.fileUrl,
+          fileName: response.data.originalName,
+          link: response.data.fileUrl,
+        };
+        updateField(key, items);
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("Failed to upload file. Please try again.");
+    } finally {
+      setUploadingFiles((prev) => ({ ...prev, [uploadKey]: false }));
+    }
+  };
+
+  const handleCurriculumFileChange = (section, index, event) => {
+    const file = event.target.files[0];
+    if (file && file.type === "application/pdf") {
+      uploadCurriculumFile(section, index, file);
+    } else {
+      alert("Please select a PDF file.");
+    }
+  };
+
+  const removeCurriculumItem = (section, index) => {
+    const key = `templateData.curriculum.${section}`;
+    const defaults =
+      section === "be" ? DEFAULT_CURRICULUM_BE : DEFAULT_CURRICULUM_ME;
+    const items = JSON.parse(JSON.stringify(t(key, defaults)));
+    items.splice(index, 1);
+    updateField(key, items);
+    setSelectedCurriculumItems(
+      selectedCurriculumItems.filter((i) => i !== `${section}-${index}`),
+    );
+  };
+
+  const toggleCurriculumSelection = (section, index) => {
+    const key = `${section}-${index}`;
+    if (selectedCurriculumItems.includes(key)) {
+      setSelectedCurriculumItems(
+        selectedCurriculumItems.filter((i) => i !== key),
+      );
+    } else {
+      setSelectedCurriculumItems([...selectedCurriculumItems, key]);
+    }
+  };
+
+  const deleteSelectedCurriculumItems = (section) => {
+    const key = `templateData.curriculum.${section}`;
+    const defaults =
+      section === "be" ? DEFAULT_CURRICULUM_BE : DEFAULT_CURRICULUM_ME;
+    const items = JSON.parse(JSON.stringify(t(key, defaults)));
+    const sectionSelected = selectedCurriculumItems
+      .filter((k) => k.startsWith(`${section}-`))
+      .map((k) => parseInt(k.split("-")[1]));
+    const newItems = items.filter((_, i) => !sectionSelected.includes(i));
+    updateField(key, newItems);
+    setSelectedCurriculumItems(
+      selectedCurriculumItems.filter((k) => !k.startsWith(`${section}-`)),
+    );
+  };
+
   const updateArrayString = (key, defaultArr, index, value) => {
     const arr = [...t(key, defaultArr)];
     arr[index] = value;
     updateData(key, arr);
   };
+
+  const getCourseMaterials = () =>
+    JSON.parse(JSON.stringify(t("courseMaterials", defaultCourseMaterials)));
+
+  const updateCourseMaterial = (index, field, value) => {
+    const items = getCourseMaterials();
+    if (!items[index]) return;
+    items[index] = { ...items[index], [field]: value };
+    updateData("courseMaterials", items);
+  };
+
+  const addCourseMaterial = () => {
+    const items = getCourseMaterials();
+    updateData("courseMaterials", [
+      ...items,
+      {
+        year: "New Year / Class",
+        title: "New Course Material",
+        link: "#",
+      },
+    ]);
+    setShouldScrollToNewCourseMaterial(true);
+  };
+
+  const deleteCourseMaterial = (index) => {
+    const items = getCourseMaterials();
+    updateData(
+      "courseMaterials",
+      items.filter((_, itemIndex) => itemIndex !== index),
+    );
+  };
+
+  const courseMaterialItems = t("courseMaterials", defaultCourseMaterials) || [];
+
+  useEffect(() => {
+    if (
+      !shouldScrollToNewCourseMaterial ||
+      !isEditing ||
+      activeTab !== "course-material"
+    ) {
+      return;
+    }
+
+    if (latestCourseMaterialRef.current) {
+      latestCourseMaterialRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      setShouldScrollToNewCourseMaterial(false);
+    }
+  }, [
+    activeTab,
+    courseMaterialItems.length,
+    isEditing,
+    shouldScrollToNewCourseMaterial,
+  ]);
 
   const updateOverviewTable = (key, defaultArr, index, colIndex, value) => {
     const arr = JSON.parse(JSON.stringify(t(key, defaultArr)));
@@ -187,9 +1684,27 @@ const CSE = () => {
   };
 
   const updateActivity = (index, field, value) => {
-    const arr = JSON.parse(JSON.stringify(t("activities", defaultActivities)));
-    arr[index][field] = value;
-    updateData("activities", arr);
+    const storedActivitiesMarkdown = t("activitiesMarkdown", "");
+    const parsedActivities = parseCseActivitiesMarkdown(storedActivitiesMarkdown);
+    const sourceActivities = (
+      parsedActivities.length
+        ? parsedActivities
+        : t("activities", defaultActivityCards)
+    ).map(normalizeCseActivity);
+
+    if (!sourceActivities[index]) return;
+
+    const nextActivities = sourceActivities.map((activity, activityIndex) =>
+      activityIndex === index
+        ? normalizeCseActivity({
+            ...activity,
+            [field]: value,
+          })
+        : activity,
+    );
+
+    updateData("activities", nextActivities);
+    updateData("activitiesMarkdown", cseActivitiesToMarkdown(nextActivities));
   };
 
   const updateInternship = (year, index, field, value) => {
@@ -206,12 +1721,99 @@ const CSE = () => {
     updateData("research", dataObj);
   };
 
-  const updateUgProject = (year, index, field, value) => {
-    const dataObj = JSON.parse(
-      JSON.stringify(t("ugProjects.records", defaultUgProjects)),
+  const getUgProjectYears = () => {
+    const storedYears = Array.isArray(t("ugProjects.years", null))
+      ? t("ugProjects.years", [])
+      : [];
+    const recordYears = Object.keys(
+      t("ugProjects.records", defaultUgProjects) || defaultUgProjects,
     );
-    dataObj[year][index][field] = value;
-    updateData("ugProjects.records", dataObj);
+
+    return [...new Set([...storedYears, ...recordYears])]
+      .filter(Boolean)
+      .sort(compareAcademicYearsDesc);
+  };
+
+  const getUgProjectRecords = () =>
+    JSON.parse(JSON.stringify(t("ugProjects.records", defaultUgProjects)));
+
+  const persistUgProjects = (records, years = getUgProjectYears()) => {
+    const orderedYears = [...new Set([...years, ...Object.keys(records || {})])]
+      .filter(Boolean)
+      .sort(compareAcademicYearsDesc);
+
+    const normalizedRecords = orderedYears.reduce((acc, year) => {
+      acc[year] = Array.isArray(records?.[year])
+        ? records[year].map((project) => ({
+            id: String(project?.id || "").trim(),
+            title: String(project?.title || "").trim(),
+            link: String(project?.link || "").trim(),
+            fileName: String(project?.fileName || "").trim(),
+          }))
+        : [];
+      return acc;
+    }, {});
+
+    updateData("ugProjects.years", orderedYears);
+    updateData("ugProjects.records", normalizedRecords);
+    updateData(
+      "ugProjects.markdown",
+      cseUgProjectsToMarkdown(normalizedRecords, orderedYears),
+    );
+  };
+
+  const updateUgProject = (year, index, field, value) => {
+    const dataObj = getUgProjectRecords();
+    if (!dataObj?.[year]?.[index]) return;
+    dataObj[year][index] = { ...dataObj[year][index], [field]: value };
+    persistUgProjects(dataObj);
+  };
+
+  const addUgProject = (year) => {
+    const dataObj = getUgProjectRecords();
+    dataObj[year] = [
+      ...(dataObj[year] || []),
+      {
+        id: String((dataObj[year] || []).length + 1),
+        title: "New Project Title",
+        link: "",
+        fileName: "",
+      },
+    ];
+    persistUgProjects(dataObj);
+  };
+
+  const deleteUgProject = (year, index) => {
+    const dataObj = getUgProjectRecords();
+    const projectToDelete = dataObj?.[year]?.[index];
+    if (!projectToDelete) return;
+    dataObj[year] = (dataObj[year] || []).filter(
+      (_, projectIndex) => projectIndex !== index,
+    );
+    persistUgProjects(dataObj);
+    deleteNewsletterFileIfNeeded(projectToDelete?.link);
+  };
+
+  const handleUgProjectMarkdownSave = (markdown) => {
+    updateData("ugProjects.markdown", markdown);
+    const parsed = parseUgProjectsMarkdown(markdown, projectYear);
+    if (!parsed.years.length) return;
+
+    const hasExplicitYearSections = /^\s*##\s+/m.test(String(markdown || ""));
+
+    if (hasExplicitYearSections) {
+      persistUgProjects(parsed.records, parsed.years);
+      if (!parsed.years.includes(projectYear)) {
+        setProjectYear(parsed.years[0]);
+      }
+      return;
+    }
+
+    const mergedRecords = {
+      ...getUgProjectRecords(),
+      [projectYear]: parsed.records[projectYear] || [],
+    };
+    persistUgProjects(mergedRecords, ugProjectYears);
   };
 
   const updateFaculty = (index, field, value) => {
@@ -250,6 +1852,542 @@ const CSE = () => {
       archives[index][field] = value;
       updateData("newsletters.archives", archives);
     }
+  };
+
+  const getStoredDepartmentValue = (path) => {
+    const normalizedPath = String(path || "").replace(/\[(\d+)\]/g, ".$1");
+    return normalizedPath.split(".").reduce((current, part) => {
+      if (current === undefined || current === null) return undefined;
+      return current[part];
+    }, activeData);
+  };
+
+  const latestNewsletterData =
+    getStoredDepartmentValue("newsletters.latest") || defaultNewsletters.latest;
+  const newsletterArchivesData =
+    getStoredDepartmentValue("newsletters.archives") ||
+    defaultNewsletters.archives ||
+    [];
+
+  const createEmptyLatestNewsletter = () => ({
+    title: "New Newsletter",
+    description: "",
+    link: "",
+    fileName: "",
+    date: "",
+    term: "",
+  });
+
+  const createArchiveFromLatest = (latest) => ({
+    date: latest?.date || "",
+    vol: latest?.title || "New Newsletter",
+    term: latest?.term || "",
+    link: latest?.link || "",
+    fileName: latest?.fileName || "",
+  });
+
+  const createLatestFromArchive = (archive) => ({
+    title: archive?.vol || "New Newsletter",
+    description: "",
+    link: archive?.link || "",
+    fileName: archive?.fileName || "",
+    date: archive?.date || "",
+    term: archive?.term || "",
+  });
+
+  const getNewsletterFileName = (link, fileName) => {
+    if (fileName) return fileName;
+    if (!link) return "No file uploaded";
+
+    const lastSegment = String(link).split("/").pop() || "";
+    return decodeURIComponent(lastSegment);
+  };
+
+  const getDeletableUploadPath = (link) => {
+    if (typeof link !== "string" || !link.startsWith("/uploads/")) return null;
+    if (link.includes("..")) return null;
+    if (!link.startsWith("/uploads/documents/")) {
+      return null;
+    }
+    return link;
+  };
+
+  const deleteNewsletterFileIfNeeded = async (link) => {
+    const deletablePath = getDeletableUploadPath(link);
+    if (!deletablePath) return;
+
+    const token = localStorage.getItem("adminToken");
+    if (!token) return;
+
+    try {
+      await axios.delete("/api/upload/file", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          path: deletablePath,
+        },
+      });
+    } catch (error) {
+      console.error("Newsletter file delete skipped:", error);
+    }
+  };
+
+  const addNewsletter = () => {
+    const currentLatest = JSON.parse(
+      JSON.stringify(t("newsletters.latest", defaultNewsletters.latest)),
+    );
+    const currentArchives = JSON.parse(
+      JSON.stringify(t("newsletters.archives", defaultNewsletters.archives)),
+    );
+
+    const nextArchives = currentLatest?.title
+      ? [createArchiveFromLatest(currentLatest), ...currentArchives]
+      : currentArchives;
+
+    updateData("newsletters.latest", createEmptyLatestNewsletter());
+    updateData("newsletters.archives", nextArchives);
+  };
+
+  const deleteNewsletter = async (type, index) => {
+    if (type === "latest") {
+      const currentLatest = JSON.parse(
+        JSON.stringify(t("newsletters.latest", defaultNewsletters.latest)),
+      );
+      const currentArchives = JSON.parse(
+        JSON.stringify(t("newsletters.archives", defaultNewsletters.archives)),
+      );
+
+      await deleteNewsletterFileIfNeeded(currentLatest?.link);
+
+      if (currentArchives.length > 0) {
+        const [nextLatest, ...remainingArchives] = currentArchives;
+        updateData("newsletters.latest", createLatestFromArchive(nextLatest));
+        updateData("newsletters.archives", remainingArchives);
+      } else {
+        updateData("newsletters.latest", createEmptyLatestNewsletter());
+        updateData("newsletters.archives", []);
+      }
+      return;
+    }
+
+    const currentArchives = JSON.parse(
+      JSON.stringify(t("newsletters.archives", defaultNewsletters.archives)),
+    );
+    const archiveToDelete = currentArchives[index];
+
+    await deleteNewsletterFileIfNeeded(archiveToDelete?.link);
+
+    updateData(
+      "newsletters.archives",
+      currentArchives.filter((_, archiveIndex) => archiveIndex !== index),
+    );
+  };
+
+  const uploadNewsletterFile = async (type, index, file) => {
+    if (!file) return;
+
+    const uploadKey = `${type}-${index}`;
+    setNewsletterUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setNewsletterUploadErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data.fileUrl) {
+        throw new Error("Upload did not return a file URL.");
+      }
+
+      if (type === "latest") {
+        const latest = JSON.parse(
+          JSON.stringify(t("newsletters.latest", defaultNewsletters.latest)),
+        );
+        updateData("newsletters.latest", {
+          ...latest,
+          link: response.data.fileUrl,
+          fileName: response.data.originalName || file.name,
+        });
+      } else {
+        const archives = JSON.parse(
+          JSON.stringify(t("newsletters.archives", defaultNewsletters.archives)),
+        );
+        archives[index] = {
+          ...archives[index],
+          link: response.data.fileUrl,
+          fileName: response.data.originalName || file.name,
+        };
+        updateData("newsletters.archives", archives);
+      }
+    } catch (error) {
+      console.error("Newsletter upload failed:", error);
+      setNewsletterUploadErrors((prev) => ({
+        ...prev,
+        [uploadKey]:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Upload failed",
+      }));
+    } finally {
+      setNewsletterUploading((prev) => ({ ...prev, [uploadKey]: false }));
+    }
+  };
+
+  const handleNewsletterFileChange = (type, index, event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+    if (file.type !== "application/pdf") {
+      alert("Please select a PDF file for the newsletter.");
+      return;
+    }
+
+    uploadNewsletterFile(type, index, file);
+  };
+
+  const ugProjectYears = getUgProjectYears();
+  const ugProjectRecords = t("ugProjects.records", defaultUgProjects);
+  const currentUgProjects = Array.isArray(ugProjectRecords?.[projectYear])
+    ? ugProjectRecords[projectYear]
+    : [];
+  const orderedUgProjectYears = [
+    projectYear,
+    ...ugProjectYears.filter((year) => year !== projectYear),
+  ];
+  const selectedUgProjectsMarkdown = cseUgProjectsToMarkdown(
+    ugProjectRecords,
+    orderedUgProjectYears,
+  );
+
+  useEffect(() => {
+    if (!ugProjectYears.length) return;
+    if (!ugProjectYears.includes(projectYear)) {
+      setProjectYear(ugProjectYears[0]);
+    }
+  }, [projectYear, ugProjectYears]);
+
+  const handleAddUgProjectYear = () => {
+    const normalizedYear = newUgProjectYear.trim();
+
+    if (!isValidAcademicYear(normalizedYear)) {
+      setUgProjectYearError("Enter a valid academic year like 2025-26.");
+      return;
+    }
+
+    if (ugProjectYears.includes(normalizedYear)) {
+      setUgProjectYearError("That academic year already exists.");
+      return;
+    }
+
+    const dataObj = getUgProjectRecords();
+    dataObj[normalizedYear] = [];
+    persistUgProjects(dataObj, [normalizedYear, ...ugProjectYears]);
+    setProjectYear(normalizedYear);
+    setNewUgProjectYear("");
+    setUgProjectYearError("");
+    setShowAddUgProjectYear(false);
+  };
+
+  const uploadUgProjectReport = async (year, index, file) => {
+    if (!file) return;
+
+    const uploadKey = `${year}-${index}`;
+    setUgProjectUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setUgProjectUploadErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+    setUgProjectUploadSuccess((prev) => ({ ...prev, [uploadKey]: "" }));
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data.fileUrl) {
+        throw new Error("Upload did not return a file URL.");
+      }
+
+      updateUgProject(year, index, "link", response.data.fileUrl);
+      updateUgProject(
+        year,
+        index,
+        "fileName",
+        response.data.originalName || file.name,
+      );
+      setUgProjectUploadSuccess((prev) => ({
+        ...prev,
+        [uploadKey]: "Uploaded successfully",
+      }));
+    } catch (error) {
+      console.error("UG project upload failed:", error);
+      setUgProjectUploadErrors((prev) => ({
+        ...prev,
+        [uploadKey]:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Upload failed",
+      }));
+      setUgProjectUploadSuccess((prev) => ({ ...prev, [uploadKey]: "" }));
+    } finally {
+      setUgProjectUploading((prev) => ({ ...prev, [uploadKey]: false }));
+    }
+  };
+
+  const handleUgProjectFileChange = (year, index, event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    uploadUgProjectReport(year, index, file);
+  };
+
+  const getAchievementItems = (section) =>
+    JSON.parse(
+      JSON.stringify(
+        t(`achievements.${section}`, defaultAchievements[section] || []),
+      ),
+    );
+
+  const achievementsToMarkdown = (section, items = []) =>
+    items
+      .map((item) =>
+        [
+          `## ${item.name || (section === "faculty" ? "Faculty Name" : "Student Name")}`,
+          `- Achievement: ${item.achievement || ""}`,
+          `- Category: ${item.category || ""}`,
+          `- Certificate: ${item.image || ""}`,
+          "",
+          String(item.description || "").trim(),
+        ]
+          .filter((line, index, arr) => !(index === arr.length - 1 && !line))
+          .join("\n"),
+      )
+      .join("\n\n");
+
+  const persistAchievementItems = (section, items) => {
+    updateData(`achievements.${section}`, items);
+    updateData(
+      `achievementsMarkdown.${section}`,
+      achievementsToMarkdown(section, items),
+    );
+  };
+
+  const updateAchievementItem = (section, index, field, value) => {
+    const items = getAchievementItems(section);
+    items[index] = {
+      ...items[index],
+      [field]: value,
+    };
+    persistAchievementItems(section, items);
+  };
+
+  const addAchievement = (section) => {
+    const items = getAchievementItems(section);
+    items.unshift({
+      name: section === "faculty" ? "Faculty Name" : "Student Name",
+      achievement: "New Achievement",
+      description: "Add achievement description.",
+      category: section === "faculty" ? "Recognition" : "Competition",
+      image: "",
+    });
+    persistAchievementItems(section, items);
+  };
+
+  const getAchievementDeletableUploadPath = (link) => {
+    if (typeof link !== "string" || !link.startsWith("/uploads/images/")) {
+      return null;
+    }
+    if (link.includes("..")) return null;
+    if (!link.startsWith("/uploads/images/image-")) return null;
+    return link;
+  };
+
+  const deleteAchievementFileIfNeeded = async (link) => {
+    const deletablePath = getAchievementDeletableUploadPath(link);
+    if (!deletablePath) return;
+
+    const token = localStorage.getItem("adminToken");
+    if (!token) return;
+
+    try {
+      await axios.delete("/api/upload/file", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          path: deletablePath,
+        },
+      });
+    } catch (error) {
+      console.error("Achievement file delete skipped:", error);
+    }
+  };
+
+  const deleteAchievement = async (section, index) => {
+    const items = getAchievementItems(section);
+    await deleteAchievementFileIfNeeded(items[index]?.image);
+    persistAchievementItems(
+      section,
+      items.filter((_, itemIndex) => itemIndex !== index),
+    );
+  };
+
+  const getAchievementFileName = (link) => {
+    if (!link) return "No certificate uploaded";
+    const lastSegment = String(link).split("/").pop() || "";
+    return decodeURIComponent(lastSegment);
+  };
+
+  const uploadAchievementFile = async (section, index, file) => {
+    if (!file) return;
+
+    const uploadKey = `${section}-${index}`;
+    setAchievementUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setAchievementUploadErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+    setAchievementUploadSuccess((prev) => ({ ...prev, [uploadKey]: "" }));
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data.fileUrl) {
+        throw new Error("Upload did not return a file URL.");
+      }
+
+      updateAchievementItem(section, index, "image", response.data.fileUrl);
+      setAchievementUploadSuccess((prev) => ({
+        ...prev,
+        [uploadKey]: "Uploaded successfully",
+      }));
+    } catch (error) {
+      console.error("Achievement upload failed:", error);
+      setAchievementUploadErrors((prev) => ({
+        ...prev,
+        [uploadKey]:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Upload failed",
+      }));
+      setAchievementUploadSuccess((prev) => ({ ...prev, [uploadKey]: "" }));
+    } finally {
+      setAchievementUploading((prev) => ({ ...prev, [uploadKey]: false }));
+    }
+  };
+
+  const handleAchievementFileChange = (section, index, event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+    const isAllowed =
+      file.type === "application/pdf" || file.type.startsWith("image/");
+    if (!isAllowed) {
+      alert("Please select an image or PDF file for the certificate.");
+      return;
+    }
+
+    uploadAchievementFile(section, index, file);
+  };
+
+  const legacyActivities = (
+    t("activities", defaultActivityCards) || defaultActivityCards
+  ).map(normalizeCseActivity);
+  const storedActivitiesMarkdown = t("activitiesMarkdown", "");
+  const parsedActivities = parseCseActivitiesMarkdown(storedActivitiesMarkdown);
+  const activitiesData = parsedActivities.length
+    ? parsedActivities
+    : legacyActivities;
+
+  const updateActivityList = (updater) => {
+    const nextActivities = updater(
+      activitiesData.map((activity) => normalizeCseActivity(activity)),
+    );
+    updateData("activities", nextActivities);
+    updateData("activitiesMarkdown", cseActivitiesToMarkdown(nextActivities));
+  };
+
+  const addActivityCard = () => {
+    updateActivityList((items) => [
+      {
+        title: "New Curricular Activity",
+        date: "Add activity date",
+        participants: "Add participant details",
+        organizer: "Add organizer details",
+        resource: "",
+        image: "",
+      },
+      ...items,
+    ]);
+  };
+
+  const deleteActivityCard = (index) => {
+    updateActivityList((items) => items.filter((_, itemIndex) => itemIndex !== index));
+  };
+
+  const activityMarkdownComponents = {
+    p: ({ node, ...props }) => (
+      <p className="text-gray-700 leading-relaxed" {...props} />
+    ),
+    ul: ({ node, ...props }) => (
+      <ul className="list-disc pl-5 space-y-1 text-gray-700" {...props} />
+    ),
+    ol: ({ node, ...props }) => (
+      <ol className="list-decimal pl-5 space-y-1 text-gray-700" {...props} />
+    ),
+    li: ({ node, ...props }) => <li className="leading-relaxed" {...props} />,
+    strong: ({ node, ...props }) => (
+      <strong className="font-semibold text-gray-800" {...props} />
+    ),
+    a: ({ node, ...props }) => (
+      <a
+        className="text-ssgmce-blue hover:text-ssgmce-orange underline underline-offset-2"
+        target="_blank"
+        rel="noopener noreferrer"
+        {...props}
+      />
+    ),
+  };
+
+  const renderActivityMarkdown = (value, emptyText = "Not specified") => {
+    const trimmedValue = String(value || "").trim();
+    if (!trimmedValue) {
+      return <p className="text-gray-400 italic leading-relaxed">{emptyText}</p>;
+    }
+
+    return (
+      <div className="prose prose-sm max-w-none prose-p:my-0 prose-ul:my-0 prose-ol:my-0">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={activityMarkdownComponents}
+        >
+          {trimmedValue}
+        </ReactMarkdown>
+      </div>
+    );
   };
 
   // Reset Student's Best Projects year when switching to that tab
@@ -671,9 +2809,22 @@ const CSE = () => {
           </div>
 
           <div className="p-4 bg-gray-50 border-t border-gray-200">
-            <p className="text-ssgmce-blue font-medium">Dr. J. M. Patil</p>
+            <p className="text-ssgmce-blue font-medium">
+              <EditableText
+                value={t("hod.name", "Dr. J. M. Patil")}
+                onSave={(v) => updateField("hod.name", v)}
+                placeholder="Click to edit HOD name..."
+              />
+            </p>
             <p className="text-sm text-gray-500">
-              Head, Department of Computer Science & Engineering
+              <EditableText
+                value={t(
+                  "hod.designation",
+                  "Head, Department of Computer Science & Engineering",
+                )}
+                onSave={(v) => updateField("hod.designation", v)}
+                placeholder="Click to edit designation..."
+              />
             </p>
           </div>
         </div>
@@ -706,18 +2857,53 @@ const CSE = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-start gap-4 w-full"
+                className="space-y-4 w-full"
               >
-                <div className="mt-1 text-ssgmce-orange text-2xl flex-shrink-0">
-                  ➤
-                </div>
-                <div className="text-lg text-gray-700 leading-relaxed font-medium flex-1">
-                  <EditableText
-                    value={t("vision", defaultVision)}
-                    onSave={(v) => updateField("vision", v)}
-                    multiline
-                  />
-                </div>
+                {t("vision", defaultVision).map((item, i) => (
+                  <div key={i} className="flex items-start gap-4">
+                    <div className="mt-1 text-ssgmce-orange text-2xl flex-shrink-0">
+                      ➤
+                    </div>
+                    <div className="text-lg text-gray-700 leading-relaxed font-medium flex-1">
+                      <MarkdownEditor
+                        value={item}
+                        onSave={(v) =>
+                          updateArrayString("vision", defaultVision, i, v)
+                        }
+                        placeholder="Click to edit vision item..."
+                        className="w-full"
+                      />
+                    </div>
+                    {isEditing && (
+                      <button
+                        onClick={() => {
+                          const arr = t("vision", defaultVision).filter(
+                            (_, idx) => idx !== i,
+                          );
+                          updateData("vision", arr);
+                        }}
+                        className="flex-shrink-0 mt-1 text-red-400 hover:text-red-600 text-sm font-bold px-2"
+                        title="Remove item"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {isEditing && (
+                  <button
+                    onClick={() => {
+                      const arr = [
+                        ...t("vision", defaultVision),
+                        "New vision statement.",
+                      ];
+                      updateData("vision", arr);
+                    }}
+                    className="mt-2 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded text-sm font-medium"
+                  >
+                    + Add Vision Item
+                  </button>
+                )}
               </motion.div>
             )}
             {vmTab === "mission" && (
@@ -730,16 +2916,45 @@ const CSE = () => {
                   <div key={i} className="flex items-start gap-4">
                     <div className="mt-1 text-ssgmce-orange text-xl">➤</div>
                     <div className="text-gray-700 w-full">
-                      <EditableText
+                      <MarkdownEditor
                         value={item}
                         onSave={(v) =>
                           updateArrayString("mission", defaultMission, i, v)
                         }
-                        multiline
+                        placeholder="Click to edit mission item..."
+                        className="w-full"
                       />
                     </div>
+                    {isEditing && (
+                      <button
+                        onClick={() => {
+                          const arr = t("mission", defaultMission).filter(
+                            (_, idx) => idx !== i,
+                          );
+                          updateData("mission", arr);
+                        }}
+                        className="flex-shrink-0 mt-1 text-red-400 hover:text-red-600 text-sm font-bold px-2"
+                        title="Remove item"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                 ))}
+                {isEditing && (
+                  <button
+                    onClick={() => {
+                      const arr = [
+                        ...t("mission", defaultMission),
+                        "New mission statement.",
+                      ];
+                      updateData("mission", arr);
+                    }}
+                    className="mt-2 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded text-sm font-medium"
+                  >
+                    + Add Mission Item
+                  </button>
+                )}
               </motion.div>
             )}
           </div>
@@ -778,16 +2993,45 @@ const CSE = () => {
                   <div key={i} className="flex items-start gap-4">
                     <div className="mt-1 text-ssgmce-orange text-xl">➤</div>
                     <div className="text-gray-700 leading-relaxed font-medium w-full">
-                      <EditableText
+                      <MarkdownEditor
                         value={item}
                         onSave={(v) =>
                           updateArrayString("peo", defaultPeo, i, v)
                         }
-                        multiline
+                        placeholder="Click to edit PEO item..."
+                        className="w-full"
                       />
                     </div>
+                    {isEditing && (
+                      <button
+                        onClick={() => {
+                          const arr = t("peo", defaultPeo).filter(
+                            (_, idx) => idx !== i,
+                          );
+                          updateData("peo", arr);
+                        }}
+                        className="flex-shrink-0 mt-1 text-red-400 hover:text-red-600 text-sm font-bold px-2"
+                        title="Remove item"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                 ))}
+                {isEditing && (
+                  <button
+                    onClick={() => {
+                      const arr = [
+                        ...t("peo", defaultPeo),
+                        "New program educational objective.",
+                      ];
+                      updateData("peo", arr);
+                    }}
+                    className="mt-2 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded text-sm font-medium"
+                  >
+                    + Add PEO Item
+                  </button>
+                )}
               </motion.div>
             )}
 
@@ -801,16 +3045,45 @@ const CSE = () => {
                   <div key={i} className="flex items-start gap-4">
                     <div className="mt-1 text-ssgmce-orange text-xl">➤</div>
                     <div className="text-gray-700 leading-relaxed font-medium w-full">
-                      <EditableText
+                      <MarkdownEditor
                         value={item}
                         onSave={(v) =>
                           updateArrayString("pso", defaultPso, i, v)
                         }
-                        multiline
+                        placeholder="Click to edit PSO item..."
+                        className="w-full"
                       />
                     </div>
+                    {isEditing && (
+                      <button
+                        onClick={() => {
+                          const arr = t("pso", defaultPso).filter(
+                            (_, idx) => idx !== i,
+                          );
+                          updateData("pso", arr);
+                        }}
+                        className="flex-shrink-0 mt-1 text-red-400 hover:text-red-600 text-sm font-bold px-2"
+                        title="Remove item"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                 ))}
+                {isEditing && (
+                  <button
+                    onClick={() => {
+                      const arr = [
+                        ...t("pso", defaultPso),
+                        "New program specific objective.",
+                      ];
+                      updateData("pso", arr);
+                    }}
+                    className="mt-2 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded text-sm font-medium"
+                  >
+                    + Add PSO Item
+                  </button>
+                )}
               </motion.div>
             )}
 
@@ -828,20 +3101,56 @@ const CSE = () => {
                         key={i}
                         className="text-gray-700 leading-relaxed text-sm"
                       >
-                        <strong className="text-gray-900 block mb-1 text-base">
-                          <EditableText
-                            value={po.t}
-                            onSave={(v) => updatePo(i, "t", v)}
-                          />
-                        </strong>
-                        <EditableText
-                          value={po.d}
-                          onSave={(v) => updatePo(i, "d", v)}
-                          multiline
-                        />
+                        <div className="flex items-start gap-2">
+                          <div className="flex-1">
+                            <strong className="text-gray-900 block mb-1 text-base">
+                              <EditableText
+                                value={po.t}
+                                onSave={(v) => updatePo(i, "t", v)}
+                              />
+                            </strong>
+                            <MarkdownEditor
+                              value={po.d}
+                              onSave={(v) => updatePo(i, "d", v)}
+                              placeholder="Click to edit PO description..."
+                              className="w-full"
+                            />
+                          </div>
+                          {isEditing && (
+                            <button
+                              onClick={() => {
+                                const arr = t("po", defaultPo).filter(
+                                  (_, idx) => idx !== i,
+                                );
+                                updateData("po", arr);
+                              }}
+                              className="flex-shrink-0 mt-1 text-red-400 hover:text-red-600 text-sm font-bold px-2"
+                              title="Remove item"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                 </div>
+                {isEditing && (
+                  <button
+                    onClick={() => {
+                      const arr = [
+                        ...t("po", defaultPo),
+                        {
+                          t: "New Outcome",
+                          d: "Description of the new program outcome.",
+                        },
+                      ];
+                      updateData("po", arr);
+                    }}
+                    className="mt-2 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded text-sm font-medium"
+                  >
+                    + Add PO Item
+                  </button>
+                )}
 
                 <button
                   onClick={() => setShowAllPos(!showAllPos)}
@@ -926,26 +3235,42 @@ const CSE = () => {
             </div>
 
             <div className="space-y-4 text-gray-700 text-base leading-relaxed text-justify">
-              <EditableText
+              <MarkdownEditor
                 value={t("hod.message", defaultHodMessage)}
                 onSave={(v) => updateField("hod.message", v)}
-                multiline
-                className="whitespace-pre-wrap"
+                placeholder="Click to edit HOD message (Markdown supported)..."
+                className="w-full"
               />
             </div>
 
             <div className="mt-8 pt-6 border-t border-gray-100 flex justify-between items-center">
               <div>
                 <div className="font-dancing text-2xl text-ssgmce-blue">
-                  {t("hod.name", "Dr. J. M. Patil")}
+                  <EditableText
+                    value={t("hod.name", "Dr. J. M. Patil")}
+                    onSave={(v) => updateField("hod.name", v)}
+                    placeholder="Click to edit HOD name..."
+                  />
                 </div>
                 <div className="text-sm text-gray-500">
-                  {t("hod.role", "Head, Department of CSE")}
+                  <EditableText
+                    value={t("hod.role", "Head, Department of CSE")}
+                    onSave={(v) => updateField("hod.role", v)}
+                    placeholder="Click to edit designation..."
+                  />
                 </div>
               </div>
               <div className="text-right text-sm text-gray-400">
-                <p>Shri Sant Gajanan Maharaj</p>
-                <p>College of Engineering, Shegaon</p>
+                <EditableText
+                  value={t(
+                    "hod.collegeName",
+                    "Shri Sant Gajanan Maharaj\nCollege of Engineering, Shegaon",
+                  )}
+                  onSave={(v) => updateField("hod.collegeName", v)}
+                  placeholder="Click to edit college name..."
+                  multiline
+                  richText={false}
+                />
               </div>
             </div>
           </div>
@@ -983,38 +3308,16 @@ const CSE = () => {
 
               {/* Lab Photo Column */}
               <div className="md:col-span-5 bg-gray-50 p-6 border-r border-gray-100">
-                {lab.image ? (
-                  <EditableImage
-                    src={lab.image}
-                    onSave={(url) => {
-                      const updated = [...t("laboratories", defaultLabs)];
-                      updated[index].image = url;
-                      updateField("laboratories", updated);
-                    }}
-                    className="aspect-video w-full object-cover rounded-lg"
-                  />
-                ) : (
-                  <div
-                    className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:from-gray-300 hover:to-gray-400 transition-colors"
-                    onClick={() => {
-                      if (isEditing) {
-                        const url = prompt("Enter image URL:");
-                        if (url) {
-                          const updated = [...t("laboratories", defaultLabs)];
-                          updated[index].image = url;
-                          updateField("laboratories", updated);
-                        }
-                      }
-                    }}
-                  >
-                    <span className="text-6xl">🖥️</span>
-                    {isEditing && (
-                      <span className="absolute text-xs text-gray-600 mt-20">
-                        Click to add image
-                      </span>
-                    )}
-                  </div>
-                )}
+                <EditableImage
+                  src={lab.image || ""}
+                  onSave={(url) => {
+                    const updated = [...t("laboratories", defaultLabs)];
+                    updated[index].image = url;
+                    updateField("laboratories", updated);
+                  }}
+                  className="aspect-video w-full object-cover rounded-lg"
+                  placeholder="Click to add image"
+                />
                 <h4 className="font-bold text-gray-800 text-center mt-4">
                   <EditableText
                     value={lab.name}
@@ -1034,34 +3337,40 @@ const CSE = () => {
                     <h5 className="font-semibold text-red-600 text-sm mb-2">
                       Computer Systems / Configuration:
                     </h5>
-                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                      <EditableText
+                    {isEditing ? (
+                      <MarkdownEditor
                         value={lab.resources}
                         onSave={(val) => {
                           const updated = [...t("laboratories", defaultLabs)];
                           updated[index].resources = val;
                           updateField("laboratories", updated);
                         }}
-                        multiline
                       />
-                    </div>
+                    ) : (
+                      <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                        {lab.resources}
+                      </div>
+                    )}
                   </div>
                   {(lab.facilities || isEditing) && (
                     <div>
                       <h5 className="font-semibold text-red-600 text-sm mb-2">
                         Other Resources / UPS:
                       </h5>
-                      <div className="text-gray-700 text-sm leading-relaxed">
-                        <EditableText
-                          value={lab.facilities || "Additional facilities..."}
+                      {isEditing ? (
+                        <MarkdownEditor
+                          value={lab.facilities || ""}
                           onSave={(val) => {
                             const updated = [...t("laboratories", defaultLabs)];
                             updated[index].facilities = val;
                             updateField("laboratories", updated);
                           }}
-                          multiline
                         />
-                      </div>
+                      ) : (
+                        <div className="text-gray-700 text-sm leading-relaxed">
+                          {lab.facilities}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1145,287 +3454,98 @@ const CSE = () => {
           </div>
 
           {/* GATE Qualified Students */}
-          {prideTab === "gate" && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-8"
-            >
-              {t("pride.gate", defaultPrideGate).map((gateYear, yearIdx) => (
-                <div
-                  key={yearIdx}
-                  className="bg-white rounded-lg shadow-md overflow-hidden"
+          {prideTab === "gate" &&
+            (() => {
+              const md = t(
+                "pride.gateMarkdown",
+                prideGateToMarkdown(t("pride.gate", defaultPrideGate)),
+              );
+              return (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
-                    <h4 className="text-xl font-bold">
-                      <EditableText
-                        value={
-                          gateYear.title ||
-                          `List of GATE Qualified Students ${gateYear.year}`
-                        }
-                        onSave={(val) => {
-                          const newGate = JSON.parse(
-                            JSON.stringify(t("pride.gate", defaultPrideGate)),
-                          );
-                          newGate[yearIdx].title = val;
-                          updateData("pride.gate", newGate);
-                        }}
-                      />
-                    </h4>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          {[
-                            "S. N.",
-                            "Student Name",
-                            "Normalized Valid Score",
-                            "Category",
-                          ].map((h, i) => (
-                            <th
-                              key={i}
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              {h}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {gateYear.students.map((student, studentIdx) => (
-                          <tr key={studentIdx} className="hover:bg-gray-50">
-                            {student.map((cell, cellIdx) => (
-                              <td
-                                key={cellIdx}
-                                className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                              >
-                                <EditableText
-                                  value={cell}
-                                  onSave={(val) =>
-                                    updatePrideGate(
-                                      yearIdx,
-                                      studentIdx,
-                                      cellIdx,
-                                      val,
-                                    )
-                                  }
-                                />
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))}
-            </motion.div>
-          )}
+                  {isEditing ? (
+                    <MarkdownEditor
+                      value={md}
+                      onSave={(v) => updateData("pride.gateMarkdown", v)}
+                      showDocImport
+                      docTemplateUrl="/uploads/documents/pride_templates/cse_gate_template.docx"
+                      docTemplateLabel="Download GATE Template"
+                      placeholder="GATE qualified students tables (GFM Markdown)..."
+                    />
+                  ) : (
+                    <PrideMdView markdown={md} />
+                  )}
+                </motion.div>
+              );
+            })()}
 
           {/* University Toppers */}
-          {prideTab === "toppers" && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-8"
-            >
-              {[
-                {
-                  label: "B.E. UNIVERSITY RANK HOLDERS",
-                  key: "be",
-                  default: defaultPrideToppersBE,
-                },
-                {
-                  label: "M.E. UNIVERSITY RANK HOLDERS",
-                  key: "me",
-                  default: defaultPrideToppersME,
-                },
-              ].map((category) => (
-                <div
-                  key={category.key}
-                  className="bg-white rounded-lg shadow-md overflow-hidden"
+          {prideTab === "toppers" &&
+            (() => {
+              const md = t(
+                "pride.toppersMarkdown",
+                prideToppersToMarkdown({
+                  be: t("pride.toppers.be", defaultPrideToppersBE),
+                  me: t("pride.toppers.me", defaultPrideToppersME),
+                }),
+              );
+              return (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-8"
                 >
-                  <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
-                    <h4 className="text-xl font-bold">{category.label}</h4>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          {[
-                            "Year",
-                            "Name of the Student",
-                            "University Rank",
-                            "CGPA/Percentage",
-                          ].map((h, i) => (
-                            <th
-                              key={i}
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              {h}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {t(
-                          `pride.toppers.${category.key}`,
-                          category.default,
-                        ).map((yearGroup, yearIdx) => (
-                          <React.Fragment key={yearIdx}>
-                            {yearGroup.records.map((record, recordIdx) => (
-                              <tr key={recordIdx} className="hover:bg-gray-50">
-                                {recordIdx === 0 && (
-                                  <td
-                                    className="px-6 py-4 text-sm font-medium text-gray-900"
-                                    rowSpan={yearGroup.records.length}
-                                  >
-                                    <EditableText
-                                      value={yearGroup.year}
-                                      onSave={(val) => {
-                                        const newData = JSON.parse(
-                                          JSON.stringify(
-                                            t(
-                                              `pride.toppers.${category.key}`,
-                                              category.default,
-                                            ),
-                                          ),
-                                        );
-                                        newData[yearIdx].year = val;
-                                        updateData(
-                                          `pride.toppers.${category.key}`,
-                                          newData,
-                                        );
-                                      }}
-                                    />
-                                  </td>
-                                )}
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                  <EditableText
-                                    value={record.name}
-                                    onSave={(val) =>
-                                      updatePrideToppers(
-                                        category.key,
-                                        yearIdx,
-                                        recordIdx,
-                                        "name",
-                                        val,
-                                      )
-                                    }
-                                  />
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                  <EditableText
-                                    value={record.rank}
-                                    onSave={(val) =>
-                                      updatePrideToppers(
-                                        category.key,
-                                        yearIdx,
-                                        recordIdx,
-                                        "rank",
-                                        val,
-                                      )
-                                    }
-                                  />
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                  <EditableText
-                                    value={record.score}
-                                    onSave={(val) =>
-                                      updatePrideToppers(
-                                        category.key,
-                                        yearIdx,
-                                        recordIdx,
-                                        "score",
-                                        val,
-                                      )
-                                    }
-                                  />
-                                </td>
-                              </tr>
-                            ))}
-                          </React.Fragment>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))}
-            </motion.div>
-          )}
+                  {isEditing ? (
+                    <MarkdownEditor
+                      value={md}
+                      onSave={(v) => updateData("pride.toppersMarkdown", v)}
+                      showDocImport
+                      docTemplateUrl="/uploads/documents/pride_templates/cse_toppers_template.docx"
+                      docTemplateLabel="Download Toppers Template"
+                      placeholder="University toppers tables (GFM Markdown)..."
+                    />
+                  ) : (
+                    <PrideMdView markdown={md} />
+                  )}
+                </motion.div>
+              );
+            })()}
 
           {/* Top Alumni */}
-          {prideTab === "alumni" && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-lg shadow-md overflow-hidden"
-            >
-              <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white px-6 py-4">
-                <h4 className="text-xl font-bold">
-                  <EditableText
-                    value={t("pride.alumniTitle", "Top Alumni of Department")}
-                    onSave={(val) => updateData("pride.alumniTitle", val)}
-                  />
-                </h4>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      {[
-                        "S. N.",
-                        "Names of Alumni",
-                        "Position",
-                        "Names of Organisation",
-                      ].map((h, i) => (
-                        <th
-                          key={i}
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {t("pride.alumni", defaultPrideAlumni).map(
-                      (alumnus, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            {idx + 1}.
-                          </td>
-                          {alumnus.map((cell, cellIdx) => (
-                            <td
-                              key={cellIdx}
-                              className="px-6 py-4 text-sm text-gray-900"
-                            >
-                              <EditableText
-                                value={cell}
-                                onSave={(val) =>
-                                  updateOverviewTable(
-                                    "pride.alumni",
-                                    defaultPrideAlumni,
-                                    idx,
-                                    cellIdx,
-                                    val,
-                                  )
-                                }
-                              />
-                            </td>
-                          ))}
-                        </tr>
-                      ),
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </motion.div>
-          )}
+          {prideTab === "alumni" &&
+            (() => {
+              const md = t(
+                "pride.alumniMarkdown",
+                prideAlumniToMarkdown(
+                  t("pride.alumni", defaultPrideAlumni),
+                  t("pride.alumniTitle", "Top Alumni of Department"),
+                ),
+              );
+              return (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {isEditing ? (
+                    <MarkdownEditor
+                      value={md}
+                      onSave={(v) => updateData("pride.alumniMarkdown", v)}
+                      showDocImport
+                      docTemplateUrl="/uploads/documents/pride_templates/cse_alumni_template.docx"
+                      docTemplateLabel="Download Alumni Template"
+                      placeholder="Top alumni table (GFM Markdown)..."
+                    />
+                  ) : (
+                    <PrideMdView markdown={md} />
+                  )}
+                </motion.div>
+              );
+            })()}
         </motion.div>
       </div>
     ),
@@ -1561,140 +3681,178 @@ const CSE = () => {
             />
           </h3>
           <span className="hidden sm:inline-block text-sm text-gray-500 bg-gray-100 px-4 py-1.5 rounded-full">
-            {t("activities", defaultActivities).length} Activities
+            {activitiesData.length} Activities
           </span>
         </div>
 
+        {isEditing && (
+          <div className="flex justify-end">
+            <button
+              onClick={addActivityCard}
+              className="px-5 py-2.5 bg-ssgmce-blue text-white rounded-lg hover:bg-ssgmce-dark-blue transition-colors font-medium shadow-sm"
+            >
+              + Add New Activity
+            </button>
+          </div>
+        )}
+
         {/* Activity List */}
         <div className="space-y-5">
-          {t("activities", defaultActivities)
-            .slice(0, activitiesVisible)
-            .map((activity, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.03, duration: 0.35 }}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden"
-              >
-                <div className="flex flex-col sm:flex-row">
-                  {/* Image */}
-                  <div
-                    className="sm:w-72 flex-shrink-0 cursor-pointer"
-                    onClick={() => setLightboxActivity(idx)}
-                  >
-                    {activity.image ? (
-                      <img
-                        src={activity.image}
-                        alt={activity.title}
-                        className="w-full h-48 sm:h-full object-contain bg-gray-50"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-48 sm:h-full flex items-center justify-center bg-gray-50">
-                        <FaCalendarAlt className="text-4xl text-gray-300" />
-                      </div>
-                    )}
-                  </div>
+          {activitiesData.slice(0, activitiesVisible).map((activity, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.03, duration: 0.35 }}
+              className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden relative"
+            >
+              {isEditing && (
+                <button
+                  onClick={() => deleteActivityCard(idx)}
+                  className="absolute top-3 right-3 z-10 bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md hover:bg-red-600 transition-colors"
+                  title="Delete activity"
+                >
+                  Delete Activity
+                </button>
+              )}
 
-                  {/* Details */}
-                  <div className="flex-1 p-5 sm:p-6">
-                    {/* Date */}
-                    <span className="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded mb-3">
-                      <EditableText
-                        value={activity.date}
-                        onSave={(val) => updateActivity(idx, "date", val)}
-                      />
+              <div className="flex flex-col sm:flex-row">
+                <div
+                  className={`sm:w-72 flex-shrink-0 ${isEditing ? "" : "cursor-pointer"}`}
+                  onClick={() => {
+                    if (!isEditing) {
+                      setLightboxActivity(idx);
+                    }
+                  }}
+                >
+                  {isEditing ? (
+                    <EditableImage
+                      src={activity.image}
+                      onSave={(url) => updateActivity(idx, "image", url)}
+                      alt={activity.title}
+                      className="w-full h-48 sm:h-full object-contain bg-gray-50"
+                      placeholder="Click to add activity poster"
+                    />
+                  ) : activity.image ? (
+                    <img
+                      src={getLocalCseActivityImageUrl(activity.image)}
+                      alt={activity.title}
+                      className="w-full h-48 sm:h-full object-contain bg-gray-50"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-48 sm:h-full flex items-center justify-center bg-gray-50">
+                      <FaCalendarAlt className="text-4xl text-gray-300" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 p-5 sm:p-6">
+                  <div className="mb-4">
+                    <span className="inline-flex items-center bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded mb-3">
+                      {isEditing ? (
+                        <EditableText
+                          value={activity.date}
+                          onSave={(val) => updateActivity(idx, "date", val)}
+                        />
+                      ) : (
+                        activity.date || "Date to be updated"
+                      )}
                     </span>
 
-                    {/* Title */}
-                    <h4 className="text-lg font-bold text-gray-800 mb-4 leading-snug">
-                      <EditableText
-                        value={activity.title}
-                        onSave={(val) => updateActivity(idx, "title", val)}
-                        multiline
-                      />
-                    </h4>
-
-                    {/* Meta Info */}
-                    <div className="space-y-2.5 text-sm text-gray-600">
-                      <div className="flex items-start gap-2.5">
-                        <FaUsers className="text-blue-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <span className="font-medium text-gray-700">
-                            Participants:{" "}
-                          </span>
-                          <EditableText
-                            value={activity.participants}
-                            onSave={(val) =>
-                              updateActivity(idx, "participants", val)
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2.5">
-                        <FaUserGraduate className="text-orange-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <span className="font-medium text-gray-700">
-                            Organized by:{" "}
-                          </span>
-                          <EditableText
-                            value={activity.organizer}
-                            onSave={(val) =>
-                              updateActivity(idx, "organizer", val)
-                            }
-                            multiline
-                          />
-                        </div>
-                      </div>
-
-                      {(activity.resource || isEditing) && (
-                        <div className="flex items-start gap-2.5">
-                          <FaChalkboardTeacher className="text-green-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <span className="font-medium text-gray-700">
-                              Resource Person:{" "}
-                            </span>
-                            <EditableText
-                              value={
-                                activity.resource ||
-                                (isEditing ? "Add Resource Person" : "")
-                              }
-                              onSave={(val) =>
-                                updateActivity(idx, "resource", val)
-                              }
-                              multiline
-                            />
-                          </div>
-                        </div>
+                    <div className="text-lg sm:text-xl font-bold text-gray-800 leading-snug tracking-tight">
+                      {isEditing ? (
+                        <EditableText
+                          value={activity.title}
+                          onSave={(val) => updateActivity(idx, "title", val)}
+                          multiline
+                          className="w-full"
+                        />
+                      ) : (
+                        activity.title
                       )}
                     </div>
                   </div>
+
+                  <div className="space-y-4 text-sm text-gray-600">
+                    <div className="flex items-start gap-2.5">
+                      <FaUsers className="text-blue-500 mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0 w-full">
+                        <p className="font-semibold text-gray-800 mb-2">
+                          Participants
+                        </p>
+                        {isEditing ? (
+                          <MarkdownEditor
+                            value={activity.participants}
+                            onSave={(val) => updateActivity(idx, "participants", val)}
+                            placeholder="Add participant details..."
+                          />
+                        ) : (
+                          renderActivityMarkdown(activity.participants)
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2.5">
+                      <FaUserGraduate className="text-orange-500 mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0 w-full">
+                        <p className="font-semibold text-gray-800 mb-2">
+                          Organized by
+                        </p>
+                        {isEditing ? (
+                          <MarkdownEditor
+                            value={activity.organizer}
+                            onSave={(val) => updateActivity(idx, "organizer", val)}
+                            placeholder="Add organizer details..."
+                          />
+                        ) : (
+                          renderActivityMarkdown(activity.organizer)
+                        )}
+                      </div>
+                    </div>
+
+                    {(activity.resource || isEditing) && (
+                      <div className="flex items-start gap-2.5">
+                        <FaChalkboardTeacher className="text-green-600 mt-0.5 flex-shrink-0" />
+                        <div className="min-w-0 w-full">
+                          <p className="font-semibold text-gray-800 mb-2">
+                            Resource Person
+                          </p>
+                          {isEditing ? (
+                            <MarkdownEditor
+                              value={activity.resource}
+                              onSave={(val) => updateActivity(idx, "resource", val)}
+                              placeholder="Add resource person details..."
+                            />
+                          ) : (
+                            renderActivityMarkdown(activity.resource, "Not specified")
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </motion.div>
-            ))}
+              </div>
+            </motion.div>
+          ))}
         </div>
 
         {/* Load More / Show Less */}
-        {t("activities", defaultActivities).length > 6 && (
+        {activitiesData.length > 6 && (
           <div className="flex justify-center pt-2">
             <button
               onClick={() =>
                 setActivitiesVisible((prev) =>
-                  prev >= t("activities", defaultActivities).length
+                  prev >= activitiesData.length
                     ? 6
-                    : Math.min(
-                        prev + 6,
-                        t("activities", defaultActivities).length,
-                      ),
+                    : Math.min(prev + 6, activitiesData.length),
                 )
               }
               className="px-6 py-2.5 border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-600 hover:text-white transition-colors duration-200 text-sm"
             >
-              {activitiesVisible >= t("activities", defaultActivities).length
+              {activitiesVisible >= activitiesData.length
                 ? "Show Less"
-                : `Load More (${t("activities", defaultActivities).length - activitiesVisible} more)`}
+                : `Load More (${activitiesData.length - activitiesVisible} more)`}
             </button>
           </div>
         )}
@@ -1703,9 +3861,7 @@ const CSE = () => {
         <AnimatePresence>
           {lightboxActivity !== null &&
             (() => {
-              const activity = t("activities", defaultActivities)[
-                lightboxActivity
-              ];
+              const activity = activitiesData[lightboxActivity];
               if (!activity) return null;
               return (
                 <motion.div
@@ -1726,8 +3882,7 @@ const CSE = () => {
                     {/* Modal Top Bar */}
                     <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-gray-50">
                       <span className="text-sm text-gray-500">
-                        {lightboxActivity + 1} /{" "}
-                        {t("activities", defaultActivities).length}
+                        {lightboxActivity + 1} / {activitiesData.length}
                       </span>
                       <div className="flex items-center gap-1">
                         <button
@@ -1735,7 +3890,7 @@ const CSE = () => {
                             setLightboxActivity((prev) =>
                               prev > 0
                                 ? prev - 1
-                                : t("activities", defaultActivities).length - 1,
+                                : activitiesData.length - 1,
                             )
                           }
                           className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
@@ -1745,8 +3900,7 @@ const CSE = () => {
                         <button
                           onClick={() =>
                             setLightboxActivity((prev) =>
-                              prev <
-                              t("activities", defaultActivities).length - 1
+                              prev < activitiesData.length - 1
                                 ? prev + 1
                                 : 0,
                             )
@@ -1768,7 +3922,7 @@ const CSE = () => {
                     {activity.image ? (
                       <div className="bg-gray-100">
                         <img
-                          src={activity.image}
+                          src={getLocalCseActivityImageUrl(activity.image)}
                           alt={activity.title}
                           className="w-full max-h-[50vh] object-contain mx-auto"
                         />
@@ -1797,9 +3951,9 @@ const CSE = () => {
                             <p className="text-xs font-semibold text-blue-600 uppercase">
                               Participants
                             </p>
-                            <p className="text-gray-700 mt-0.5">
-                              {activity.participants}
-                            </p>
+                            <div className="mt-1">
+                              {renderActivityMarkdown(activity.participants)}
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-start gap-2.5 p-3 bg-orange-50 rounded-lg">
@@ -1808,9 +3962,9 @@ const CSE = () => {
                             <p className="text-xs font-semibold text-orange-600 uppercase">
                               Organized by
                             </p>
-                            <p className="text-gray-700 mt-0.5">
-                              {activity.organizer}
-                            </p>
+                            <div className="mt-1">
+                              {renderActivityMarkdown(activity.organizer)}
+                            </div>
                           </div>
                         </div>
                         {activity.resource && (
@@ -1820,9 +3974,9 @@ const CSE = () => {
                               <p className="text-xs font-semibold text-green-600 uppercase">
                                 Resource Person
                               </p>
-                              <p className="text-gray-700 mt-0.5">
-                                {activity.resource}
-                              </p>
+                              <div className="mt-1">
+                                {renderActivityMarkdown(activity.resource)}
+                              </div>
                             </div>
                           </div>
                         )}
@@ -1876,63 +4030,126 @@ const CSE = () => {
                 Department of Computer Science & Engineering
               </p>
             </div>
-            <FaChalkboardTeacher className="text-4xl text-orange-200 opacity-40" />
+            <div className="flex items-center gap-4">
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={addCourseMaterial}
+                  className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                >
+                  <FaPlus className="text-xs" />
+                  Add Course Material
+                </button>
+              )}
+              <FaChalkboardTeacher className="text-4xl text-orange-200 opacity-40" />
+            </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
-                  <th className="px-6 py-4 font-bold text-center w-20">
-                    Sr. No.
-                  </th>
-                  <th className="px-6 py-4 font-bold">Year / Class</th>
-                  <th className="px-6 py-4 font-bold text-center">
-                    Access Materials
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-sm">
-                {(t("courseMaterials", defaultCourseMaterials) || []).map(
-                  (material, i) => (
-                    <tr
-                      key={i}
-                      className="hover:bg-orange-50/30 transition-colors"
-                    >
-                      <td className="px-6 py-4 text-center font-mono text-gray-400">
-                        {i + 1}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="font-bold text-gray-800">
-                          <EditableText
-                            value={material.title}
-                            onSave={(val) =>
-                              updateArrayString(
-                                "courseMaterials",
-                                defaultCourseMaterials,
-                                i,
-                                { ...material, title: val },
-                              )
-                            }
-                          />
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <a
-                          href={material.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-ssgmce-orange hover:text-orange-700 font-medium text-xs border border-gray-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
-                        >
-                          <FaDownload className="text-xs" /> Access OneDrive
-                        </a>
-                      </td>
-                    </tr>
-                  ),
-                )}
-              </tbody>
-            </table>
-          </div>
+          {isEditing ? (
+            <div className="divide-y divide-gray-100">
+              {courseMaterialItems.map((material, i) => (
+                  <div
+                    key={i}
+                    ref={i === courseMaterialItems.length - 1 ? latestCourseMaterialRef : null}
+                    className="p-6"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex min-w-0 flex-1 gap-4">
+                        <div className="w-10 flex-shrink-0 pt-2 text-center font-mono text-sm text-gray-400">
+                          {i + 1}
+                        </div>
+                        <div className="min-w-0 flex-1 space-y-4">
+                          <div>
+                            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+                              Year / Class
+                            </label>
+                            <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                              <EditableText
+                                value={material.title}
+                                onSave={(val) =>
+                                  updateCourseMaterial(i, "title", val)
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+                              OneDrive Link
+                            </label>
+                            <textarea
+                              value={material.link || ""}
+                              onChange={(event) =>
+                                updateCourseMaterial(
+                                  i,
+                                  "link",
+                                  event.target.value,
+                                )
+                              }
+                              rows={3}
+                              placeholder="Paste the OneDrive share link here..."
+                              className="w-full resize-y rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 shadow-sm outline-none transition focus:border-orange-400 focus:bg-white focus:ring-2 focus:ring-orange-100"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => deleteCourseMaterial(i)}
+                        className="inline-flex flex-shrink-0 items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-600 transition hover:bg-red-100"
+                      >
+                        <FaTrash className="text-xs" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ),
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wider border-b border-gray-200">
+                    <th className="px-6 py-4 font-bold text-center w-20">
+                      Sr. No.
+                    </th>
+                    <th className="px-6 py-4 font-bold">Year / Class</th>
+                    <th className="px-6 py-4 font-bold text-center">
+                      Access Materials
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-sm">
+                  {courseMaterialItems.map((material, i) => (
+                      <tr
+                        key={i}
+                        className="hover:bg-orange-50/30 transition-colors"
+                      >
+                        <td className="px-6 py-4 text-center font-mono text-gray-400">
+                          {i + 1}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="font-bold text-gray-800 block">
+                            {material.title}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <a
+                            href={material.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-ssgmce-orange hover:text-orange-700 font-medium text-xs border border-gray-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
+                          >
+                            <FaDownload className="text-xs" /> Access OneDrive
+                          </a>
+                        </td>
+                      </tr>
+                    ),
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
           <div className="p-4 text-xs text-gray-400 text-center bg-gray-50 border-t border-gray-100">
             Click on "Access OneDrive" to view and download course materials
             from the respective year's shared folder.
@@ -1951,9 +4168,9 @@ const CSE = () => {
               onSave={(val) => updateData("ugProjects.title", val)}
             />
           </h3>
-          <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
-            {t("ugProjects.years", ["2024-25", "2023-24", "2022-23"]).map(
-              (year, idx) => (
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+              {ugProjectYears.map((year) => (
                 <button
                   key={year}
                   onClick={() => setProjectYear(year)}
@@ -1963,19 +4180,33 @@ const CSE = () => {
                       : "bg-white text-gray-500 hover:text-ssgmce-blue border border-gray-200"
                   }`}
                 >
-                  <EditableText
-                    value={year}
-                    onSave={(val) =>
-                      updateArrayString(
-                        "ugProjects.years",
-                        ["2024-25", "2023-24", "2022-23"],
-                        idx,
-                        val,
-                      )
-                    }
-                  />
+                  {year}
                 </button>
-              ),
+              ))}
+            </div>
+            {isEditing && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewUgProjectYear("");
+                    setUgProjectYearError("");
+                    setShowAddUgProjectYear(true);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-ssgmce-blue to-blue-700 px-4 py-2 text-xs font-semibold text-white transition-all hover:shadow-lg"
+                >
+                  <FaPlus className="text-xs" />
+                  Add Session
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addUgProject(projectYear)}
+                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 text-xs font-semibold text-white transition-all hover:shadow-lg"
+                >
+                  <FaPlus className="text-xs" />
+                  Add Project
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -1997,12 +4228,7 @@ const CSE = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {(
-                  t(
-                    `ugProjects.records.${projectYear}`,
-                    defaultUgProjects[projectYear],
-                  ) || []
-                ).map((project, i) => (
+                {currentUgProjects.map((project, i) => (
                   <tr key={i} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-center font-mono text-gray-400 text-xs">
                       <EditableText
@@ -2013,39 +4239,136 @@ const CSE = () => {
                       />
                     </td>
                     <td className="px-6 py-4 font-bold text-gray-800">
-                      <EditableText
-                        value={project.title}
-                        onSave={(val) =>
-                          updateUgProject(projectYear, i, "title", val)
-                        }
-                        multiline
-                      />
+                      {isEditing ? (
+                        <div className="space-y-3">
+                          <EditableText
+                            value={project.title}
+                            onSave={(val) =>
+                              updateUgProject(projectYear, i, "title", val)
+                            }
+                            multiline
+                          />
+                          <div className="flex flex-wrap items-center gap-2">
+                            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-gradient-to-r from-[#003366] to-[#004d99] px-4 py-2 text-xs font-semibold text-white transition-all duration-300 hover:from-[#004d99] hover:to-[#0066cc] hover:shadow-lg">
+                              <FaUpload className="text-yellow-300" />
+                              {ugProjectUploading[`${projectYear}-${i}`]
+                                ? "Uploading..."
+                                : "Upload Report"}
+                              <input
+                                type="file"
+                                className="hidden"
+                                disabled={ugProjectUploading[`${projectYear}-${i}`]}
+                                onChange={(event) =>
+                                  handleUgProjectFileChange(
+                                    projectYear,
+                                    i,
+                                    event,
+                                  )
+                                }
+                              />
+                            </label>
+                            {project.link && (
+                              <a
+                                href={project.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs font-medium text-ssgmce-blue underline underline-offset-2"
+                              >
+                                {getNewsletterFileName(
+                                  project.link,
+                                  project.fileName,
+                                )}
+                              </a>
+                            )}
+                            {ugProjectUploadErrors[`${projectYear}-${i}`] && (
+                              <span className="text-[11px] text-red-500">
+                                {ugProjectUploadErrors[`${projectYear}-${i}`]}
+                              </span>
+                            )}
+                            {ugProjectUploadSuccess[`${projectYear}-${i}`] && (
+                              <span className="rounded-full bg-green-50 px-3 py-1 text-[11px] font-semibold text-green-700">
+                                {ugProjectUploadSuccess[`${projectYear}-${i}`]}
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => deleteUgProject(projectYear, i)}
+                              className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100"
+                            >
+                              <FaTrash className="text-xs" />
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        project.title
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex flex-col items-end gap-1">
-                        <EditableText
-                          value={project.link || "#"}
-                          onSave={(val) =>
-                            updateUgProject(projectYear, i, "link", val)
-                          }
-                          className="text-[10px] text-blue-500 underline truncate max-w-[100px]"
-                        />
+                      {isEditing ? (
+                        <span className="text-xs text-gray-500">
+                          {project.link
+                            ? getNewsletterFileName(
+                                project.link,
+                                project.fileName || getFileNameFromUrl(project.link),
+                              )
+                            : "-"}
+                        </span>
+                      ) : project.link ? (
                         <a
-                          href={project.link || "#"}
+                          href={project.link}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs font-bold bg-blue-50 text-ssgmce-blue px-3 py-1.5 rounded-md hover:bg-blue-100 transition-colors border border-gray-200 inline-block"
                         >
                           View report
                         </a>
-                      </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">No report</span>
+                      )}
                     </td>
                   </tr>
                 ))}
+                {currentUgProjects.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={3}
+                      className="px-6 py-12 text-center text-gray-400"
+                    >
+                      No projects added for {projectYear} yet.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
         </div>
+
+        {isEditing && (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <div className="mb-4">
+                <h4 className="text-lg font-bold text-gray-800">
+                  Bulk Edit In Markdown
+                </h4>
+                <p className="text-sm text-gray-500 mt-1">
+                  Import a DOCX or edit all sessions in markdown. Saving here
+                  updates the UG Projects table above without changing the
+                  current frontend layout.
+                </p>
+              </div>
+              <MarkdownEditor
+                key={projectYear}
+                value={selectedUgProjectsMarkdown}
+                onSave={handleUgProjectMarkdownSave}
+                showDocImport
+                docTemplateUrl="/uploads/documents/pride_templates/cse_ug_projects_template.docx"
+                docTemplateLabel="Download UG Projects Template"
+                placeholder="UG project tables by year (GFM Markdown)..."
+              />
+            </div>
+          </div>
+        )}
 
         <div className="bg-blue-50 border-l-4 border-ssgmce-orange p-4 rounded-r-lg">
           <p className="text-sm text-gray-700">
@@ -2282,2721 +4605,451 @@ const CSE = () => {
       </div>
     ),
 
-    "course-outcomes": (
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-3">
-            Course Outcomes
-          </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Comprehensive course outcomes for all semesters of B.E. Computer
-            Science & Engineering
-          </p>
-        </div>
+    "course-outcomes": (() => {
+      // Default sections — content falls back to individually-saved keys for backward compat
+      const defaultBeSections = [
+        {
+          id: "be-sem3",
+          label: "B.E. Semester-III",
+          content: t(
+            "courseOutcomes.sem3",
+            `### 3KS01 ENGINEERING MATHEMATICS - III\n\nOn completion of the course, the students will be able to:\n\n1. Solve the Linear Differential equations with constant coefficients by various methods.\n2. Find Laplace Transform of various types of functions and apply this knowledge to find Laplace Transform of Periodic, Impulse & Unit step function.\n3. Use Laplace Transform to solve Linear Differential equations with constant coefficients & Find Fourier Transform of various types of functions and apply this knowledge to find Fourier Transform of functions, in their core subjects.\n4. Find the solution of partial differential equations of first order also learn statistical methods.\n5. Test the analyticity, find the harmonic conjugates and expand the function in Taylor's or Laurent's series, find conformal mapping.\n6. Differentiate vector point functions, find gradient of scalar point function, and find divergence and curl of vector point function. Integrate vector point functions Evaluate line, surface and volume integrals.`,
+          ),
+        },
+        {
+          id: "be-sem3-nep",
+          label: "B.E. Semester-III(NEP)",
+          content: t(
+            "courseOutcomes.sem3Nep",
+            `### 3CS203PC: Discrete Structure & Graph Theory\n\nOn completion of the course, the students will be able to:\n\n1. Analyze and express logic sentence in terms of predicates, quantifiers, and logical connectives.\n2. Derive the solution for a given problem using deductive logic and prove the solution based on logical inference.\n3. Classify algebraic structure for a given mathematical problem.\n4. Perform combinatorial analysis to solve counting problems.\n5. Perform operation on trees data structures.\n6. Develop the given problem as graph networks and solve with techniques of graph theory.`,
+          ),
+        },
+        {
+          id: "be-sem4",
+          label: "B.E. Semester-IV",
+          content: t(
+            "courseOutcomes.sem4",
+            `### 4KS01 ARTIFICIAL INTELLIGENCE\n\nOn completion of the course, the students will be able to:\n\n1. Explain concepts of Artificial Intelligence and different types of intelligent agents and their architecture.\n2. Formulate problems as state space search problem and efficiently solve them.\n3. Summarize the various searching techniques, constraint satisfaction problem and example problems - game playing techniques.\n4. Apply AI techniques in applications which involve perception, reasoning and learning.\n5. Compare the importance of knowledge, types of knowledge, issues related to knowledge acquisition and representation.`,
+          ),
+        },
+        {
+          id: "be-sem4-nep",
+          label: "B.E. Semester-IV(NEP)",
+          content: t(
+            "courseOutcomes.sem4Nep",
+            `### 4CS209PC: Data Communication and Networking\n\nOn completion of the course, the students will be able to:\n\n1. Analyze the functions of each layer in the OSI and TCP/IP models to interpret network communication.\n2. Evaluate different types of transmission media and justify their use in real-time applications.\n3. Analyze application and presentation layer functions and protocols used in internet communication.\n4. Apply transport layer concepts and services to ensure reliable data transmission.\n5. Analyze routing protocol classifications and apply IP addressing schemes for a given network.\n6. Analyze data link layer functions and protocols to achieve efficient and error-free communication.`,
+          ),
+        },
+        {
+          id: "be-sem5",
+          label: "B.E. Semester-V",
+          content: t(
+            "courseOutcomes.sem5",
+            `### 5KS01 DATABASE MANAGEMENT SYSTEMS\n\nOn completion of the course, the students will be able to:\n\n1. Model, design and normalize databases for real life applications.\n2. Discuss data models, conceptualize and depict a database system using ER diagram.\n3. Query Databases applications using Query Languages like SQL.\n4. Design and develop transaction processing approach for relational databases.\n5. Understand validation framework like integrity constraints, triggers and assertions.`,
+          ),
+        },
+        {
+          id: "be-sem6",
+          label: "B.E. Semester-VI",
+          content: t(
+            "courseOutcomes.sem6",
+            `### 6KS01 SECURITY POLICY & GOVERNANCE\n\nOn completion of the course, the students will be able to:\n\n1. List and discuss the key characteristics of Information Security, Leadership and Management.\n2. Differentiate between Law and Ethics.\n3. Describe why ethical codes of conduct are important to Information Security.\n4. Discuss the importance, benefits and desired outcomes of Information Security Governance.\n5. Discuss the process of developing, implementing and maintaining various types of Information Security Policies.\n6. Define Risk Management and its role in the organization.`,
+          ),
+        },
+        {
+          id: "be-sem7",
+          label: "B.E. Semester-VII",
+          content: t(
+            "courseOutcomes.sem7",
+            `### 7KS01 SOCIAL SCIENCE & ENGINEERING ECONOMICS\n\nOn completion of the course, the students will be able to:\n\n1. To identify the importance of fundamental rights as well as fundamental duties.\n2. To study the composition and powers of the Indian Parliament.\n3. To study the impact of science and technology on culture and civilization.\n4. To identify the different market structures.\n5. To study the decision-making process and the relationship between engineering and economics.\n6. To identify the importance of Economic Development on the livelihood of the citizens.`,
+          ),
+        },
+        {
+          id: "be-sem8",
+          label: "B.E. Semester-VIII",
+          content: t(
+            "courseOutcomes.sem8",
+            `Course outcomes for Semester VIII will be updated soon.`,
+          ),
+        },
+      ];
 
-        {/* B.E. Course Outcomes */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-[#003366] px-6 py-4 text-center">
-            <h3 className="text-xl font-bold text-white">
-              B.E. Computer Science & Engineering - Course Outcomes
-            </h3>
+      const defaultMeSections = [
+        {
+          id: "me-sem1",
+          label: "M.E. Semester-I",
+          content: t(
+            "courseOutcomes.meSem1",
+            `Course outcomes for M.E. Semester I will be updated soon.`,
+          ),
+        },
+        {
+          id: "me-sem2",
+          label: "M.E. Semester-II",
+          content: t(
+            "courseOutcomes.meSem2",
+            `Course outcomes for M.E. Semester II will be updated soon.`,
+          ),
+        },
+      ];
+
+      const beSections = t("courseOutcomes.beSections", defaultBeSections);
+      const meSections = t("courseOutcomes.meSections", defaultMeSections);
+
+      const updateBeSections = (updated) =>
+        updateField("courseOutcomes.beSections", updated);
+      const updateMeSections = (updated) =>
+        updateField("courseOutcomes.meSections", updated);
+
+      // Insert a new blank section after `afterIdx` (-1 = insert at beginning)
+      const insertSection = (sections, afterIdx, onUpdate) => {
+        const newSection = {
+          id: `custom-${Date.now()}`,
+          label: "New Semester",
+          content: "",
+        };
+        const updated = [...sections];
+        updated.splice(afterIdx + 1, 0, newSection);
+        onUpdate(updated);
+      };
+
+      const removeSection = (sections, idx, onUpdate) => {
+        onUpdate(sections.filter((_, i) => i !== idx));
+      };
+
+      const renderSectionList = (sections, onUpdate) => (
+        <div className="p-6 space-y-1">
+          {/* Insert-at-beginning button */}
+          {isEditing && (
+            <button
+              onClick={() => insertSection(sections, -1, onUpdate)}
+              className="w-full py-1.5 mb-2 border-2 border-dashed border-green-300 text-green-600 hover:border-green-500 hover:bg-green-50 rounded-lg text-sm font-medium transition-colors"
+            >
+              + Insert at Beginning
+            </button>
+          )}
+
+          {sections.map((semester, idx) => (
+            <React.Fragment key={semester.id}>
+              <div className="border-b border-gray-200 pb-2">
+                <button
+                  onClick={() =>
+                    setExpandedSemester(
+                      expandedSemester === semester.id ? null : semester.id,
+                    )
+                  }
+                  className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+                >
+                  <span className="font-medium text-gray-700 text-left">
+                    {isEditing ? (
+                      <EditableText
+                        value={semester.label}
+                        onSave={(val) => {
+                          const updated = [...sections];
+                          updated[idx] = { ...updated[idx], label: val };
+                          onUpdate(updated);
+                        }}
+                      />
+                    ) : (
+                      semester.label
+                    )}
+                  </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {isEditing && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (
+                            window.confirm(
+                              `Delete "${semester.label}"? This cannot be undone.`,
+                            )
+                          ) {
+                            removeSection(sections, idx, onUpdate);
+                          }
+                        }}
+                        className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    )}
+                    <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
+                      {expandedSemester === semester.id ? "Hide" : "View"}
+                    </span>
+                  </div>
+                </button>
+                <AnimatePresence>
+                  {expandedSemester === semester.id && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 py-4 bg-gray-50">
+                        <MarkdownEditor
+                          value={semester.content}
+                          onSave={(val) => {
+                            const updated = [...sections];
+                            updated[idx] = { ...updated[idx], content: val };
+                            onUpdate(updated);
+                          }}
+                          placeholder={`Click to edit ${semester.label} course outcomes (Markdown supported)...`}
+                          className="w-full"
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Insert-after button between items */}
+              {isEditing && (
+                <button
+                  onClick={() => insertSection(sections, idx, onUpdate)}
+                  className="w-full py-1 border-2 border-dashed border-green-300 text-green-600 hover:border-green-500 hover:bg-green-50 rounded-lg text-xs font-medium transition-colors"
+                >
+                  + Insert After
+                </button>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      );
+
+      return (
+        <div className="space-y-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-800 mb-3">
+              Course Outcomes
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Comprehensive course outcomes for all semesters of B.E. Computer
+              Science & Engineering
+            </p>
           </div>
 
-          <div className="p-6 space-y-2">
-            {/* B.E. Semester III */}
-            <div className="border-b border-gray-200 pb-2">
-              <button
-                onClick={() =>
-                  setExpandedSemester(
-                    expandedSemester === "be-sem3" ? null : "be-sem3",
-                  )
-                }
-                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">
-                  B.E. Semester-III
-                </span>
-                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "be-sem3" ? "Hide" : "View"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {expandedSemester === "be-sem3" && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 py-4 bg-gray-50 space-y-6">
-                      {/* 3KS01 ENGINEERING MATHEMATICS - III */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3KS01 ENGINEERING MATHEMATICS ? III
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Solve the Linear Differential equations with
-                            constant coefficients by various methods.
-                          </li>
-                          <li>
-                            Find Laplace Transform of various types of functions
-                            and apply this knowledge to find Laplace Transform
-                            of Periodic, Impulse & Unit step function.
-                          </li>
-                          <li>
-                            Use Laplace Transform to solve Linear Differential
-                            equations with constant coefficients & Find Fourier
-                            Transform of various types of functions and apply
-                            this knowledge to find Fourier Transform of
-                            functions, in their core subjects.
-                          </li>
-                          <li>
-                            Find the solution of partial differential equations
-                            of first order also learn statistical methods
-                          </li>
-                          <li>
-                            Test the analyticity, find the harmonic conjugates
-                            and expand the function in Taylor's or Laurent's
-                            series, find conformal mapping.
-                          </li>
-                          <li>
-                            Differentiate vector point functions, find gradient
-                            of scalar point function, and find divergence and
-                            curl of vector point function. Integrate vector
-                            point functions Evaluate line, surface and volume
-                            integrals.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 3KS02 DISCRETE STRUCTURES AND GRAPH THEORY */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3KS02 DISCRETE STRUCTURES AND GRAPH THEORY
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Analyze and express logic sentence in terms of
-                            predicates, quantifiers, and logical connectives.
-                          </li>
-                          <li>
-                            Derive the solution for a given problem using
-                            deductive logic and prove the solution based on
-                            logical inference.
-                          </li>
-                          <li>
-                            Classify algebraic structure for a given
-                            mathematical problem.
-                          </li>
-                          <li>
-                            Perform combinatorial analysis to solve counting
-                            problems.
-                          </li>
-                          <li>Perform operation on trees data structures.</li>
-                          <li>
-                            Develop the given problem as graph networks and
-                            solve with techniques of graph theory
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 3KS03 OBJECT ORIENTED PROGRAMMING */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3KS03 OBJECT ORIENTED PROGRAMMING
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Apply Object Oriented approach to design software.
-                          </li>
-                          <li>Implement programs using classes and objects.</li>
-                          <li>
-                            Specify the forms of inheritance and use them in
-                            programs.
-                          </li>
-                          <li>Analyze polymorphic behaviour of objects.</li>
-                          <li>Design and develop GUI programs.</li>
-                          <li>Develop Applets for web applications</li>
-                        </ol>
-                      </div>
-
-                      {/* 3KS04 DATA STRUCTURES */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3KS04 DATA STRUCTURES
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Apply various linear and nonlinear data structures
-                          </li>
-                          <li>
-                            Demonstrate operations like insertion, deletion,
-                            searching and traversing on various data structures.
-                          </li>
-                          <li>
-                            Examine the usage of various structures in
-                            approaching the problem solution.
-                          </li>
-                          <li>
-                            Choose appropriate data structure for specified
-                            problem domain
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 3KS05 ANALOG & DIGITAL ELECTRONICS */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3KS05 ANALOG & DIGITAL ELECTRONICS
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          At the end of course students will able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Explain basic concepts of semiconductor devices and
-                            its application.
-                          </li>
-                          <li>
-                            Compare different Number System and basics of
-                            conversion of number systems.
-                          </li>
-                          <li>
-                            Realize different minimization technique to obtain
-                            minimized expression.
-                          </li>
-                          <li>Design Combinational Circuits.</li>
-                          <li>Design and Develop Sequential Circuits.</li>
-                        </ol>
-                      </div>
-
-                      {/* 3KS06 OBJECT ORIENTED PROGRAMMING LAB */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3KS06 OBJECT ORIENTED PROGRAMMING LAB
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          Design, implement, test, and debug simple programs in
-                          an object-oriented programming language.
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            To develop the knowledge of object-oriented paradigm
-                            in the Java programming language.
-                          </li>
-                          <li>
-                            To evaluate classical problems using java
-                            programming.
-                          </li>
-                          <li>
-                            To develop software development skills using java
-                            programming for real world applications.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 3KS07 DATA STRUCTURE LAB */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3KS07 DATA STRUCTURE LAB
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Apply various linear and nonlinear data structure.
-                          </li>
-                          <li>
-                            Demonstrate operations like insertion, deletion,
-                            searching and traversing on various data Structures.
-                          </li>
-                          <li>
-                            Examine the usage of various structures in
-                            approaching the problem solution.
-                          </li>
-                          <li>
-                            Choose appropriate data structure for specified
-                            problem domain
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 3KS08 ANALOG & DIGITAL ELECTRONICS LAB */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3KS08 ANALOG & DIGITAL ELECTRONICS LAB
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After successfully completing the lab, the students
-                          will be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Apply practically the concepts of analog and digital
-                            electronics.
-                          </li>
-                          <li>
-                            Explain the operation and characteristics of
-                            semiconductor devices.
-                          </li>
-                          <li>
-                            Illustrate the operation of various logic gates and
-                            their implementation using digital IC"s.
-                          </li>
-                          <li>
-                            Design and implement various combinational logic
-                            circuits.
-                          </li>
-                          <li>
-                            Design and implement various sequential logic
-                            circuits
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 3KS09 C-SKILL-LAB I */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3KS09 C-SKILL-LAB I
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Describe the Numbers, Math functions, Strings, List,
-                            Tuples and Dictionaries in Python
-                          </li>
-                          <li>
-                            Interpret different Decision-Making statements,
-                            Functions, Object oriented programming in Python
-                          </li>
-                          <li>Summarize different File handling operations</li>
-                          <li>
-                            Explain how to design GUI Applications in Python and
-                            evaluate different database operations
-                          </li>
-                          <li>
-                            Develop applications using Django framework or Flask
-                          </li>
-                        </ol>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+          {/* B.E. Course Outcomes */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-[#003366] px-6 py-4 text-center">
+              <h3 className="text-xl font-bold text-white">
+                B.E. Computer Science & Engineering - Course Outcomes
+              </h3>
             </div>
 
-            {/* B.E. Semester III (NEP) */}
-            <div className="border-b border-gray-200 pb-2">
-              <button
-                onClick={() =>
-                  setExpandedSemester(
-                    expandedSemester === "be-sem3-nep" ? null : "be-sem3-nep",
-                  )
-                }
-                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">
-                  B.E. Semester-III(NEP)
-                </span>
-                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "be-sem3-nep" ? "Hide" : "View"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {expandedSemester === "be-sem3-nep" && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 py-4 bg-gray-50 space-y-6">
-                      {/* 3CS203PC: Discrete Structure & Graph Theory */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3CS203PC: Discrete Structure & Graph Theory
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Analyze and express logic sentence in terms of
-                            predicates, quantifiers, and logical connectives.
-                          </li>
-                          <li>
-                            Derive the solution for a given problem using
-                            deductive logic and prove the solution based on
-                            logical inference.
-                          </li>
-                          <li>
-                            Classify algebraic structure for a given
-                            mathematical problem.
-                          </li>
-                          <li>
-                            Perform combinatorial analysis to solve counting
-                            problems.
-                          </li>
-                          <li>Perform operation on trees data structures.</li>
-                          <li>
-                            Develop the given problem as graph networks and
-                            solve with techniques of graph theory
-                          </li>
-                        </ol>
-                      </div>
+            {renderSectionList(beSections, updateBeSections)}
+            {isEditing && (
+              <div className="px-6 pb-4">
+                <button
+                  onClick={() =>
+                    insertSection(
+                      beSections,
+                      beSections.length - 1,
+                      updateBeSections,
+                    )
+                  }
+                  className="w-full py-3 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+                >
+                  + Add New B.E. Semester
+                </button>
+              </div>
+            )}
+          </div>
 
-                      {/* 3CS201PC: Object Oriented Programming */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3CS201PC: Object Oriented Programming
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Apply knowledge of Java constructs for developing
-                            programs/applications.
-                          </li>
-                          <li>
-                            Conduct practical experiments for demonstrating
-                            features of Java.
-                          </li>
-                          <li>
-                            Distinguish between java concepts for better
-                            applicability w.r.t requirement.
-                          </li>
-                          <li>
-                            Evaluate the given Java program to identify bugs and
-                            to write correct code.
-                          </li>
-                          <li>
-                            To conjecture a prototype to solve real life
-                            problems.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 3CS202PC: Data Structure */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3CS202PC: Data Structure
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Apply various linear and nonlinear data structures
-                          </li>
-                          <li>
-                            Demonstrate operations like insertion, deletion,
-                            searching and traversing on various data structures
-                          </li>
-                          <li>
-                            Examine the usage of various structures in
-                            approaching the problem solution.
-                          </li>
-                          <li>
-                            Choose appropriate data structure for specified
-                            problem domain
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 3CS400EL: Comm.Engng.Project/Field Project Lab */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3CS400EL: Comm.Engng.Project/Field Project Lab
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Identify and analyze real community problems in
-                            selected rural development domains.
-                          </li>
-                          <li>
-                            Apply suitable digital and technological solutions
-                            to address community needs.
-                          </li>
-                          <li>
-                            Evaluate and integrate innovative and cost effective
-                            technologies for rural improvement.
-                          </li>
-                          <li>
-                            Engage with community stakeholders and interpret
-                            feedback for better outcomes.
-                          </li>
-                          <li>
-                            Create and present a comprehensive project report
-                            with outcomes and future scope.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 3CS203PC: Object Oriented Programming Lab */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3CS203PC: Object Oriented Programming Lab
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            To develop the knowledge of object-oriented paradigm
-                            in the java programming language.
-                          </li>
-                          <li>
-                            To evaluate classical problems using java
-                            programming.
-                          </li>
-                          <li>
-                            To develop software development skills using java
-                            programming for real world applications.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 3CS204PC: Data Structure Lab */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3CS204PC: Data Structure Lab
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Apply various linear and nonlinear data structure.
-                          </li>
-                          <li>
-                            Demonstrate operations like insertion, deletion,
-                            searching and traversing on various data Structures.
-                          </li>
-                          <li>
-                            Examine the usage of various structures in
-                            approaching the problem solution.
-                          </li>
-                          <li>
-                            Choose appropriate data structure for specified
-                            problem domain
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 3CS205MD: Fundamental Computer Programming */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3CS205MD: Fundamental Computer Programming
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Understand computing systems and problem-solving
-                            logic.
-                          </li>
-                          <li>
-                            Apply algorithmic thinking to solve simple problems.
-                          </li>
-                          <li>
-                            Implement basic programs using control structures
-                            and I/O operations.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 3CS206OE: E-Commerce */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3CS206OE: E-Commerce
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Explain the basic concepts of E-Commerce and its
-                            significance.
-                          </li>
-                          <li>
-                            Identify different types of online business models
-                            and their applications.
-                          </li>
-                          <li>
-                            Understand digital payment methods and their
-                            security aspects.
-                          </li>
-                          <li>
-                            Analyze the impact of digital marketing and online
-                            customer engagement.
-                          </li>
-                          <li>
-                            Recognize legal, ethical, and cybersecurity
-                            challenges in E-Commerce.
-                          </li>
-                          <li>
-                            Explore career opportunities and emerging trends in
-                            E-Commerce.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 3CS207EM: Entrepreneurship Development */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          3CS207EM: Entrepreneurship Development
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Understand and explain key entrepreneurial concepts
-                            and the startup ecosystem.
-                          </li>
-                          <li>
-                            Identify, assess and evaluate business opportunities
-                            using feasibility analysis.
-                          </li>
-                          <li>
-                            Develop a basic business plan including financial,
-                            marketing and legal elements.
-                          </li>
-                          <li>
-                            Recognize the importance of innovation, funding
-                            sources and IP rights in startup.
-                          </li>
-                          <li>
-                            Apply entrepreneurial thinking to engineering
-                            problems and real world challenges.
-                          </li>
-                        </ol>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+          {/* M.E. Course Outcomes */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-[#003366] px-6 py-4 text-center">
+              <h3 className="text-xl font-bold text-white">
+                M.E. Course Outcomes
+              </h3>
             </div>
-
-            {/* B.E. Semester IV */}
-            <div className="border-b border-gray-200 pb-2">
-              <button
-                onClick={() =>
-                  setExpandedSemester(
-                    expandedSemester === "be-sem4" ? null : "be-sem4",
-                  )
-                }
-                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">
-                  B.E. Semester-IV
-                </span>
-                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "be-sem4" ? "Hide" : "View"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {expandedSemester === "be-sem4" && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 py-4 bg-gray-50 space-y-6">
-                      {/* 4KS01 ARTIFICIAL INTELLIGENCE */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4KS01 ARTIFICIAL INTELLIGENCE
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Explain concepts of Artificial Intelligence and
-                            different types of intelligent agents and their
-                            architecture.
-                          </li>
-                          <li>
-                            Formulate problems as state space search problem &
-                            efficiently solve them.
-                          </li>
-                          <li>
-                            Summarize the various searching techniques,
-                            constraint satisfaction problem and example problems
-                            - game playing techniques.
-                          </li>
-                          <li>
-                            Apply AI techniques in applications which involve
-                            perception, reasoning and learning.
-                          </li>
-                          <li>
-                            Compare the importance of knowledge, types of
-                            knowledge, issues related to knowledge acquisition
-                            and representation.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 4KS02 DATA COMMUNICATION AND NETWORKING */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4KS02 DATA COMMUNICATION AND NETWORKING
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Describe data communication Components, Networks,
-                            Protocols and various topology-based network
-                            architecture.
-                          </li>
-                          <li>
-                            Design and Test different encoding and modulating
-                            techniques to change digital ?to? digital
-                            conversion, analog-to-digital conversion, digital to
-                            analog conversion, analog to analog conversion.
-                          </li>
-                          <li>
-                            Explain the various multiplexing methods and
-                            evaluate the different error detection & correction
-                            techniques.
-                          </li>
-                          <li>
-                            Illustrate and realize the data link control and
-                            data link protocols.
-                          </li>
-                          <li>
-                            Describe and demonstrate the various Local area
-                            networks and the IEEE standards.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 4KS03 OPERATING SYSTEM */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4KS03 OPERATING SYSTEM
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Explain memory management issues like external
-                            fragmentation, internal fragmentation.
-                          </li>
-                          <li>
-                            Illustrate multithreading and its significance.
-                          </li>
-                          <li>
-                            List various protection and security mechanisms of
-                            OS.
-                          </li>
-                          <li>Analyze and solve the scheduling algorithms.</li>
-                          <li>
-                            Analyze the deadlock situation and resolve it.
-                          </li>
-                          <li>Compare various types of operating systems.</li>
-                        </ol>
-                      </div>
-
-                      {/* 4KS04 MICROPROCESSOR & ASSEMBLY LANGUAGE PROGRAMMING */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4KS04 MICROPROCESSOR & ASSEMBLY LANGUAGE PROGRAMMING
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Describe 8086 microprocessor and its architecture;
-                            also understand instruction processing during the
-                            fetch-decode-execute cycle.
-                          </li>
-                          <li>
-                            Design and Test assembly language programs using
-                            8086 microprocessor instruction set.
-                          </li>
-                          <li>
-                            Demonstrate the implementation of standard
-                            programming constructs, including control structures
-                            and functions, in assembly language.
-                          </li>
-                          <li>
-                            Illustrate and realize the Interfacing of memory &
-                            various I/O devices with 8086 microprocessors.
-                          </li>
-                          <li>
-                            Explain the basic concepts of Internet of Things
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 4KS05 THEORY OF COMPUTATION */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4KS05 THEORY OF COMPUTATION
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            To construct finite state machines to solve problems
-                            in computing.
-                          </li>
-                          <li>
-                            To write regular expressions for the formal
-                            languages.
-                          </li>
-                          <li>
-                            To construct and apply well defined rules for
-                            parsing techniques in compiler.
-                          </li>
-                          <li>
-                            To construct and analyze Push Down Automata and
-                            Turing Machine and formal languages.
-                          </li>
-                          <li>
-                            To express the understanding of the Chomsky
-                            Hierarchy.
-                          </li>
-                          <li>
-                            To express the understanding of the decidability and
-                            un-decidability problems.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 4KS06 DATA COMMUNICATION & NETWORKING LAB */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4KS06 DATA COMMUNICATION & NETWORKING LAB
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Analyze performance of various communication
-                            protocols.
-                          </li>
-                          <li>
-                            Implement Configure various network protocols.
-                          </li>
-                          <li>Compare IP Address classes of networks.</li>
-                        </ol>
-                      </div>
-
-                      {/* 4KS07 OPERATING SYSTEM LAB */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4KS07 OPERATING SYSTEM LAB
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Explain memory management issues like external
-                            fragmentation, internal fragmentation.
-                          </li>
-                          <li>
-                            Illustrate multithreading and its significance.
-                          </li>
-                          <li>
-                            List various protection and security mechanisms of
-                            OS.
-                          </li>
-                          <li>Analyze and solve the scheduling algorithms.</li>
-                          <li>
-                            Analyze the deadlock situation and resolve it.
-                          </li>
-                          <li>Compare various types of operating systems.</li>
-                        </ol>
-                      </div>
-
-                      {/* 4KS08 MICROPROCESSOR & ASSEMBLY LANG. PROG LAB */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4KS08 MICROPROCESSOR & ASSEMBLY LANG. PROG LAB
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Analyze the internal workings of the microprocessor.
-                          </li>
-                          <li>
-                            Design and develop programs in Assembly Language
-                            Programming.
-                          </li>
-                          <li>
-                            Describe 8086 microprocessor and its architecture;
-                            also understand instruction processing during the
-                            fetch-decode-execute cycle.
-                          </li>
-                          <li>
-                            Design and Test assembly language programs using
-                            8086 microprocessor instruction set.
-                          </li>
-                          <li>
-                            Demonstrate the implementation of standard
-                            programming constructs, including control structures
-                            and functions, in assembly language.
-                          </li>
-                          <li>
-                            Illustrate and realize the Interfacing of memory &
-                            various I/O devices with 8086 microprocessor.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 4KS09 C-SKILL-LAB II */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4KS09 C-SKILL-LAB II
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, a student will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Develop client server program and web applications.
-                          </li>
-                          <li>
-                            Make use of project-based experience for web
-                            application development.
-                          </li>
-                          <li>
-                            Create embedded systems using Raspberry Pi/Arduino.
-                          </li>
-                        </ol>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* B.E. Semester IV (NEP) */}
-            <div className="border-b border-gray-200 pb-2">
-              <button
-                onClick={() =>
-                  setExpandedSemester(
-                    expandedSemester === "be-sem4-nep" ? null : "be-sem4-nep",
-                  )
-                }
-                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">
-                  B.E. Semester-IV(NEP)
-                </span>
-                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "be-sem4-nep" ? "Hide" : "View"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {expandedSemester === "be-sem4-nep" && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 py-4 bg-gray-50 space-y-6">
-                      {/* 4CS209PC: Data Communication and Networking */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4CS209PC: Data Communication and Networking
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Analyze the functions of each layer in the OSI and
-                            TCP/IP models to interpret network communication.
-                          </li>
-                          <li>
-                            Evaluate different types of transmission media and
-                            justify their use in real-time applications.
-                          </li>
-                          <li>
-                            Analyze application and presentation layer functions
-                            and protocols used in internet communication.
-                          </li>
-                          <li>
-                            Apply transport layer concepts and services to
-                            ensure reliable data transmission.
-                          </li>
-                          <li>
-                            Analyze routing protocol classifications and apply
-                            IP addressing schemes for a given network.
-                          </li>
-                          <li>
-                            Analyze data link layer functions and protocols to
-                            achieve efficient and error-free communication.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 4CS210PC: Operating System */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4CS210PC: Operating System
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Explain memory management issues like external
-                            fragmentation, internal Fragmentation.
-                          </li>
-                          <li>
-                            Illustrate multithreading and its significance.
-                          </li>
-                          <li>
-                            List various protection and security mechanisms of
-                            OS.
-                          </li>
-                          <li>Analyze and solve the scheduling algorithms.</li>
-                          <li>
-                            Analyze the deadlock situation and resolve it.
-                          </li>
-                          <li>Compare various types of operating systems</li>
-                        </ol>
-                      </div>
-
-                      {/* 4CS211PC: Theory of Computation */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4CS211PC: Theory of Computation
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            To construct finite state machines to solve problems
-                            in computing.
-                          </li>
-                          <li>
-                            To write regular expressions for the formal
-                            languages.
-                          </li>
-                          <li>
-                            To construct and apply well defined rules for
-                            parsing techniques in compiler.
-                          </li>
-                          <li>
-                            To construct and analyze Push Down, Turing Machine
-                            for formal languages
-                          </li>
-                          <li>
-                            To express the understanding of the Chomsky
-                            Hierarchy.
-                          </li>
-                          <li>
-                            To express the understanding of the decidability and
-                            un-decidability problems.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 4CS212PC: Data Communication and Networking Lab */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4CS212PC: Data Communication and Networking Lab
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Analyze performance of various communication
-                            protocols
-                          </li>
-                          <li>
-                            Implement Configure various network protocols.
-                          </li>
-                          <li>Compare IP Address classes of networks</li>
-                        </ol>
-                      </div>
-
-                      {/* 4CS213PC: Operating System Lab */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4CS213PC: Operating System Lab
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Explain memory management issues like external
-                            fragmentation, internal fragmentation.
-                          </li>
-                          <li>
-                            Illustrate multithreading and its significance.
-                          </li>
-                          <li>
-                            List various protection and security mechanisms of
-                            OS.
-                          </li>
-                          <li>Analyze and solve the scheduling algorithms.</li>
-                          <li>
-                            Analyze the deadlock situation and resolve it.
-                          </li>
-                          <li>Compare various types of operating systems</li>
-                        </ol>
-                      </div>
-
-                      {/* 4CS214MD: Data Structures and Problem Solving */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4CS214MD: Data Structures and Problem Solving
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Understand and differentiate various data structures
-                            and their use cases.
-                          </li>
-                          <li>
-                            Apply linear and non-linear data structures in
-                            solving engineering problems.
-                          </li>
-                          <li>
-                            Analyze algorithm performance and implement
-                            solutions using appropriate structures
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 4CS215VS: C Skill #1 (VSEC III) */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4CS215VS: C Skill #1 (VSEC III)
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Describe the Numbers, Math functions, Strings, List,
-                            Tuples and Dictionaries in Python
-                          </li>
-                          <li>
-                            Interpret different Decision Making statements,
-                            Functions, Object oriented programming in Python
-                          </li>
-                          <li>Summarize different File handling operations</li>
-                          <li>
-                            Explain how to design GUI Applications in Python and
-                            evaluate different database operations
-                          </li>
-                          <li>
-                            Develop applications using Django framework or Flask
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 4CS216OE: Information System for Engineers */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4CS216OE: Information System for Engineers
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Understand the basic structure and components of
-                            Information Systems used in engineering.
-                          </li>
-                          <li>
-                            Identify and evaluate applications of Information
-                            Systems across different engineering disciplines.
-                          </li>
-                          <li>
-                            Demonstrate understanding of ERP, MIS, and database
-                            systems and their integration with engineering
-                            workflows.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 4CS217EM: Social Science & Engineering Economics */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          4CS217EM: Social Science & Engineering Economics
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Understand the significance of social sciences and
-                            economic principles in engineering.
-                          </li>
-                          <li>
-                            Analyze the role of governance, laws, and policies
-                            in shaping society and business environments.
-                          </li>
-                          <li>
-                            Apply economic and market principles to assess
-                            financial systems and business trends.
-                          </li>
-                        </ol>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* B.E. Semester V */}
-            <div className="border-b border-gray-200 pb-2">
-              <button
-                onClick={() =>
-                  setExpandedSemester(
-                    expandedSemester === "be-sem5" ? null : "be-sem5",
-                  )
-                }
-                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">
-                  B.E. Semester-V
-                </span>
-                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "be-sem5" ? "Hide" : "View"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {expandedSemester === "be-sem5" && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 py-4 bg-gray-50 space-y-6">
-                      {/* 5KS01 DATABASE MANAGEMENT SYSTEMS */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS01 DATABASE MANAGEMENT SYSTEMS
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Model, design and normalize databases for real life
-                            applications.
-                          </li>
-                          <li>
-                            Discuss data models, conceptualize and depict a
-                            database system using ER diagram.
-                          </li>
-                          <li>
-                            Query Databases applications using Query Languages
-                            like SQL.
-                          </li>
-                          <li>
-                            Design & develop transaction processing approach for
-                            relational databases.
-                          </li>
-                          <li>
-                            Understand validation framework like integrity
-                            constraints, triggers and assertions.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 5KS02 COMPILER DESIGN */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS02 COMPILER DESIGN
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Describe the fundamentals of compiler and various
-                            phases of compilers.
-                          </li>
-                          <li>Design and implement LL and LR parsers.</li>
-                          <li>
-                            Solve the various parsing techniques like SLR, CLR,
-                            LALR.
-                          </li>
-                          <li>
-                            Examine the concept of Syntax-Directed-Definition
-                            and translation.
-                          </li>
-                          <li>
-                            Assess the concept of Intermediate-Code Generation
-                            and run-time environment.
-                          </li>
-                          <li>
-                            Explain the concept code generation and code
-                            optimization
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 5KS03 COMPUTER ARCHITECTURE & ORGANIZATION */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS03 COMPUTER ARCHITECTURE & ORGANIZATION
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>Discuss basic structure of computer.</li>
-                          <li>Understand the basic operation of CPU.</li>
-                          <li>
-                            Compare and select various Memory and I/O devices as
-                            per requirement.
-                          </li>
-                          <li>
-                            Solve the concepts of number representation and
-                            their operation.
-                          </li>
-                          <li>
-                            Explain the concept of parallel processing and
-                            pipelining.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 5KS04 COGNITIVE TECHNOLOGIES */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS04 COGNITIVE TECHNOLOGIES
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Describe the Cognitive computing and principles of
-                            cognitive systems.
-                          </li>
-                          <li>
-                            Identify role of Natural Language Processing in
-                            cognitive system.
-                          </li>
-                          <li>
-                            Outline application of advanced analytics in
-                            cognitive computing.
-                          </li>
-                          <li>
-                            Justify role of Cloud and Distributed Computing in
-                            Cognitive Computing.
-                          </li>
-                          <li>
-                            Assess the process of building a Cognitive
-                            Application.
-                          </li>
-                          <li>
-                            Identify the Emerging Areas and Future Applications
-                            of Cognitive Computing.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 5KS04 DATA SCIENCE AND STATISTICS */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS04 DATA SCIENCE AND STATISTICS
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>Explain basics and need of data science.</li>
-                          <li>
-                            Demonstrate proficiency with statistical analysis of
-                            data.
-                          </li>
-                          <li>
-                            Perform linear and multiple linear regression
-                            analysis.
-                          </li>
-                          <li>
-                            Develop the ability to build and assess
-                            classification-based models.
-                          </li>
-                          <li>
-                            Evaluate outcomes and make decisions based on data.
-                          </li>
-                          <li>
-                            Compare machine learning techniques to solve data
-                            science business problems.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 5KS04 INTERNET OF THINGS */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS04 INTERNET OF THINGS
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Understand the basics of IoT and its applications.
-                          </li>
-                          <li>
-                            Understand design methodology and platforms involved
-                            in IoT.
-                          </li>
-                          <li>
-                            Apply the knowledge to interface various sensors
-                            with IoT development.
-                          </li>
-                          <li>
-                            Design and Implement IoT devices for real world
-                            applications
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 5KS04 INTRODUCTION TO CYBER SECURITY */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS04 INTRODUCTION TO CYBER SECURITY
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          After completion of this course, the students should
-                          be able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Know fundamentals of Cybercrimes and Cyber offences.
-                          </li>
-                          <li>
-                            Realize the Cyber threats, attacks and
-                            Vulnerabilities.
-                          </li>
-                          <li>Explore the industry practices and tools.</li>
-                          <li>
-                            Comprehend the Access Control and Authentication
-                            Process.
-                          </li>
-                          <li>Implement Intrusion Detection and Prevention.</li>
-                        </ol>
-                      </div>
-
-                      {/* 5KS05 PRINCIPLES OF MARKETING FOR ENGINEERING */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS05 PRINCIPLES OF MARKETING FOR ENGINEERING
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Identify the importance of the digital marketing for
-                            marketing success.
-                          </li>
-                          <li>
-                            Manage customer relationships across all digital
-                            channels and build better customer relationships.
-                          </li>
-                          <li>
-                            Create a digital marketing plan, starting from the
-                            SWOT analysis and defining a target group.
-                          </li>
-                          <li>
-                            Identify digital channels, their advantages and
-                            limitations, to perceiving ways of their integration
-                            taking into consideration the available budget.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 5KS05 Open Elect. I (i) FUNDAMENTALS OF FINANCE & ACCOUNTING */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS05 Open Elect. I (i) FUNDAMENTALS OF FINANCE &
-                          ACCOUNTING
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>Define bookkeeping and accounting.</li>
-                          <li>
-                            Explain the general purposes and functions of
-                            accounting.
-                          </li>
-                          <li>
-                            Explain the differences between management and
-                            financial accounting.
-                          </li>
-                          <li>
-                            Describe the main elements of financial accounting
-                            information ? assets, liabilities, revenue and
-                            expenses.
-                          </li>
-                          <li>
-                            Identify the main financial statements and their
-                            purposes.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 5KS05 ENTREPRENEURSHIP */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS05 ENTREPRENEURSHIP
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of this course, the students should be
-                          able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Analyze the business environment in order to
-                            identify business opportunities.
-                          </li>
-                          <li>
-                            Identify the elements of success of entrepreneurial
-                            ventures.
-                          </li>
-                          <li>
-                            Evaluate the effectiveness of different
-                            entrepreneurial strategies.
-                          </li>
-                          <li>
-                            Specify the basic performance indicators of
-                            entrepreneurial activity.
-                          </li>
-                          <li>
-                            Explain the importance of marketing and management
-                            in small businesses venture.
-                          </li>
-                          <li>Interpret their own business plan.</li>
-                        </ol>
-                      </div>
-
-                      {/* 5KS06 DATABASE MANAGEMENT SYSTEMS LAB */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS06 DATABASE MANAGEMENT SYSTEMS LAB
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>Design ER model for any kind of application.</li>
-                          <li>Design and develop database.</li>
-                          <li>Apply normalization.</li>
-                          <li>Query the database.</li>
-                          <li>Apply various integrity constraints.</li>
-                          <li>Build indices, views.</li>
-                          <li>Implement triggers, assertions.</li>
-                        </ol>
-                      </div>
-
-                      {/* 5KS07 COMPILER DESIGN - Lab */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS07 COMPILER DESIGN ? Lab
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Identify the fundamentals of compiler and its
-                            phases.
-                          </li>
-                          <li>
-                            Use the powerful compiler generation tools such as
-                            Lex and Yacc.
-                          </li>
-                          <li>
-                            Write a lexical scanner, either from scratch or
-                            using Lex.
-                          </li>
-                          <li>Develop program for solving parser problems.</li>
-                          <li>Examine the various optimization techniques.</li>
-                        </ol>
-                      </div>
-
-                      {/* 5KS08 EMERGING TECHNOLOGY LAB I */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS08 EMERGING TECHNOLOGY LAB I
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Demonstrate proficiency with statistical analysis of
-                            data.
-                          </li>
-                          <li>
-                            Build skills in transformation and merging of data
-                            for use in analytic tools.
-                          </li>
-                          <li>
-                            Perform linear and multiple linear regression
-                            analysis.
-                          </li>
-                          <li>
-                            Develop the ability to build and assess data-based
-                            models.
-                          </li>
-                          <li>
-                            Evaluate outcomes and make decisions based on data.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 5KS08 DATA SCIENCE AND STATISTICS - LAB */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS08 DATA SCIENCE AND STATISTICS ? LAB
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Demonstrate proficiency with statistical analysis of
-                            data.
-                          </li>
-                          <li>
-                            Build skills in transformation and merging of data
-                            for use in analytic tools.
-                          </li>
-                          <li>
-                            Perform linear and multiple linear regression
-                            analysis.
-                          </li>
-                          <li>
-                            Develop the ability to build and assess data-based
-                            models.
-                          </li>
-                          <li>
-                            Evaluate outcomes and make decisions based on data.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 5KS09 C-Skill Lab - III */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          5KS09 C-Skill Lab ? III
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Explain the various tools, packages and modules
-                            required for Web Development.
-                          </li>
-                          <li>
-                            Discuss the workings of web server, cookies, routes,
-                            etc.
-                          </li>
-                          <li>
-                            Develop a mobile application using JS Framework.
-                          </li>
-                          <li>
-                            Design GUI using JS framework and/or Libraries.
-                          </li>
-                          <li>
-                            Create applications using Angular, React, Node and
-                            Express.
-                          </li>
-                        </ol>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* B.E. Semester VI */}
-            <div className="border-b border-gray-200 pb-2">
-              <button
-                onClick={() =>
-                  setExpandedSemester(
-                    expandedSemester === "be-sem6" ? null : "be-sem6",
-                  )
-                }
-                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">
-                  B.E. Semester-VI
-                </span>
-                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "be-sem6" ? "Hide" : "View"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {expandedSemester === "be-sem6" && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 py-4 bg-gray-50 space-y-6">
-                      {/* 6KS01 SECURITY POLICY & GOVERNANCE */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          6KS01 SECURITY POLICY & GOVERNANCE
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            List and discuss the key characteristics of
-                            Information Security, Leadership and Management
-                          </li>
-                          <li>Differentiate between Law and Ethics.</li>
-                          <li>
-                            Describe why ethical codes of conduct are important
-                            to Information Security.
-                          </li>
-                          <li>
-                            Discuss the importance, benefits and desired
-                            outcomes of Information Security Governance
-                          </li>
-                          <li>
-                            Discuss the process of developing, implementing and
-                            maintaining various types of Information Security
-                            Policies.
-                          </li>
-                          <li>
-                            Define Risk Management and its role in the
-                            organization.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 6KS02 DESIGN AND ANALYSIS OF ALGORITHMS */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          6KS02 DESIGN AND ANALYSIS OF ALGORITHMS
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Carry out the analysis of various Algorithms for
-                            mainly Time complexity.
-                          </li>
-                          <li>
-                            Apply design principles and concepts to algorithm
-                            design.
-                          </li>
-                          <li>
-                            Understand different algorithmic design strategies.
-                          </li>
-                          <li>
-                            Analyze the efficiency of algorithms using time
-                            complexity.
-                          </li>
-                          <li>Apply the standard sorting algorithms.</li>
-                        </ol>
-                      </div>
-
-                      {/* 6KS03 SOFTWARE ENGINEERING */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          6KS03 SOFTWARE ENGINEERING
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Decide on a process model for a developing a
-                            software project.
-                          </li>
-                          <li>
-                            Classify software applications and identify unique
-                            features of various domains.
-                          </li>
-                          <li>Design test cases of a software system.</li>
-                          <li>Understand basics of Project management.</li>
-                          <li>
-                            Plan, schedule and execute a project considering the
-                            risk management.
-                          </li>
-                          <li>
-                            Apply quality attributes in software development
-                            life cycle.
-                          </li>
-                          <li>
-                            Understand quality control and to ensure good
-                            quality software.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 6KS04 NATURAL LANGUAGE PROCESSING */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          6KS04 NATURAL LANGUAGE PROCESSING
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Understand how to tag a given text with basic
-                            Language features.
-                          </li>
-                          <li>
-                            Design an innovative application using NLP
-                            components.
-                          </li>
-                          <li>
-                            Implement a rule-based system to tackle
-                            morphology/syntax of a language.
-                          </li>
-                          <li>
-                            Design a tag set to be used for statistical
-                            processing for real-time applications.
-                          </li>
-                          <li>
-                            Compare and contrast the use of different
-                            statistical approaches for different types of NLP
-                            applications.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 6KS04 BIG DATA ANALYTICS */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          6KS04 BIG DATA ANALYTICS
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>Explain basics and need of data science.</li>
-                          <li>
-                            Demonstrate proficiency with statistical analysis of
-                            data.
-                          </li>
-                          <li>
-                            Perform linear and multiple linear regression
-                            analysis.
-                          </li>
-                          <li>
-                            Develop the ability to build and assess
-                            classification-based models.
-                          </li>
-                          <li>
-                            Evaluate outcomes and make decisions based on data.
-                          </li>
-                          <li>
-                            Compare machine learning techniques to solve data
-                            science business problems.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 6KS04 SENSORS AND ACTUATORS */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          6KS04 SENSORS AND ACTUATORS
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>Fabricate some of those sensors.</li>
-                          <li>
-                            Simulate sensors and characterize before fabricating
-                            it.
-                          </li>
-                          <li>
-                            Design application with sensors and actuators for
-                            real world.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 6KS04 CRYPTOGRAPHY */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          6KS04 CRYPTOGRAPHY
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>Classify the symmetric encryption techniques.</li>
-                          <li>
-                            Illustrate various public key cryptographic
-                            techniques.
-                          </li>
-                          <li>
-                            Evaluate the authentication and hash algorithms.
-                          </li>
-                          <li>Discuss authentication applications.</li>
-                          <li>
-                            Summarize the intrusion detection and its solutions
-                            to overcome the attacks.
-                          </li>
-                          <li>
-                            Understand basic concepts of system level security.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 6KS05 COMPUTATIONAL BIOLOGY */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          6KS05 COMPUTATIONAL BIOLOGY
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Understand what types of biological questions can be
-                            investigated using computers, and what limitations
-                            and assumptions go into the understanding of
-                            biology.
-                          </li>
-                          <li>
-                            Describe the properties of DNA, RNA, and proteins,
-                            the relationships among these molecules.
-                          </li>
-                          <li>
-                            Analyze how to convert a biological question into a
-                            computational problem that can be solved using
-                            computers.
-                          </li>
-                          <li>
-                            Explain general approaches for solving computational
-                            problems, and will be able to apply these approaches
-                            to new problems you encounter.
-                          </li>
-                          <li>
-                            Understand how implement the algorithms by writing
-                            computer programs.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 6KS05 CYBER LAWS & ETHICS */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          6KS05 CYBER LAWS & ETHICS
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of this course, the students should be
-                          able to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Understand Cyber Space, Cyber Crime, Information
-                            Technology, Internet & Services.
-                          </li>
-                          <li>
-                            List and discuss various forms of Cyber Crimes.
-                          </li>
-                          <li>Explain Computer and Cyber Crimes.</li>
-                          <li>
-                            Understand Cyber Crime at Global and Indian
-                            Perspective.
-                          </li>
-                          <li>
-                            Describe the ways of precaution and prevention of
-                            Cyber Crime as well as Human Rights.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 6KS05 INTELLECTUAL PROPERTY RIGHTS */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          6KS05 INTELLECTUAL PROPERTY RIGHTS
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Demonstrate a breadth of knowledge in Intellectual
-                            property.
-                          </li>
-                          <li>
-                            Assess fundamental aspects of Intellectual Property
-                            Rights.
-                          </li>
-                          <li>
-                            Discuss Patents, Searching, filling and drafting of
-                            Patents.
-                          </li>
-                          <li>
-                            Discuss the basic principles of geographical
-                            indication, industrial designs, and copyright.
-                          </li>
-                          <li>Explain of Trade Mark and Trade Secret.</li>
-                          <li>
-                            Investigate current trends in IPR and Government
-                            initiatives in fostering IPR.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 6KS06 DESIGN AND ANALYSIS OF ALGORITHMS - LAB */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          6KS06 DESIGN AND ANALYSIS OF ALGORITHMS ? LAB
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Carry out the analysis of various Algorithms for
-                            mainly Time complexity.
-                          </li>
-                          <li>
-                            Apply design principles and concepts to algorithm
-                            design.
-                          </li>
-                          <li>
-                            Understand different algorithmic design strategies.
-                          </li>
-                          <li>
-                            Analyze the efficiency of algorithms using time
-                            complexity.
-                          </li>
-                          <li>Apply the standard sorting algorithms.</li>
-                        </ol>
-                      </div>
-
-                      {/* 6KS07 SOFTWARE ENGINEERING LAB */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          6KS07 SOFTWARE ENGINEERING LAB
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Understand basic Software engineering methods and
-                            practices, and their appropriate application.
-                          </li>
-                          <li>
-                            Describe the process models such as the waterfall
-                            and evolutionary models.
-                          </li>
-                          <li>
-                            Discuss role of project management including
-                            planning, scheduling and, risk management.
-                          </li>
-                          <li>
-                            Explain data models, object models, context models
-                            and behavioral models.
-                          </li>
-                          <li>
-                            Understand of different software architectural
-                            styles and Process frame work.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 6KS09 C SKILL LAB IV- LAB (DevOps) */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          6KS09 C SKILL LAB IV? LAB (DevOps)
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>Install and setup of Jenkins on your systems.</li>
-                          <li>Create and run jobs in Jenkins.</li>
-                          <li>Add and manage plugins. Use plugins in jobs.</li>
-                          <li>Create and run pipelines in Jenkins.</li>
-                          <li>Setup, configure, and deploy jobs.</li>
-                        </ol>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* B.E. Semester VII */}
-            <div className="border-b border-gray-200 pb-2">
-              <button
-                onClick={() =>
-                  setExpandedSemester(
-                    expandedSemester === "be-sem7" ? null : "be-sem7",
-                  )
-                }
-                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">
-                  B.E. Semester-VII
-                </span>
-                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "be-sem7" ? "Hide" : "View"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {expandedSemester === "be-sem7" && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 py-4 bg-gray-50 space-y-6">
-                      {/* 7KS01 SOCIAL SCIENCE & ENGINEERING ECONOMICS */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          7KS01 SOCIAL SCIENCE & ENGINEERING ECONOMICS
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            To identify the importance of fundamental rights as
-                            well as fundamental duties.
-                          </li>
-                          <li>
-                            To study the composition and powers of the Indian
-                            Parliament.
-                          </li>
-                          <li>
-                            To study the impact of science and technology on
-                            culture and civilization.
-                          </li>
-                          <li>To identify the different market structures.</li>
-                          <li>
-                            To study the decision-making process and the
-                            relationship between engineering and economics.
-                          </li>
-                          <li>
-                            To identify the importance of Economic Development
-                            on the livelihood of the citizens.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 7KS02 COMPUTER NETWORKS */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          7KS02 COMPUTER NETWORKS
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Describe the basic concepts of Computer Graphics.
-                          </li>
-                          <li>
-                            Demonstrate various algorithms for basic graphics
-                            primitives.
-                          </li>
-                          <li>
-                            Apply 2-D geometric transformations on graphical
-                            objects.
-                          </li>
-                          <li>
-                            Use various Clipping algorithms on graphical
-                            objects.
-                          </li>
-                          <li>
-                            Explore 3-D geometric transformations, curve
-                            representation techniques and projections methods
-                          </li>
-                          <li>
-                            Explain visible surface detection techniques and
-                            Animation
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 7KS03 CLOUD COMPUTING */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          7KS03 CLOUD COMPUTING
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Describe the fundamental concept, architecture and
-                            applications of Cloud Computing.
-                          </li>
-                          <li>
-                            Discuss the problems related to cloud deployment
-                            model.
-                          </li>
-                          <li>Examine the concept of virtualization.</li>
-                          <li>
-                            Identify the role of network connectivity in the
-                            cloud.
-                          </li>
-                          <li>Assess different Cloud service providers.</li>
-                          <li>
-                            Inspect the security issues in cloud service models.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 7KS04 ROBOTICS */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          7KS04 ROBOTICS
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>Describe basic concept of robotics.</li>
-                          <li>
-                            Explain Components of a Robot System & Mechanical
-                            Systems.
-                          </li>
-                          <li>
-                            Illustrate Control of Actuators in Robotic
-                            Mechanisms.
-                          </li>
-                          <li>Compare and contrast Robotic Sensory Devices.</li>
-                          <li>
-                            Recommend Robotics Hardware & Software
-                            Considerations in Computer Vision
-                          </li>
-                          <li>
-                            Design Robotic system by taking real time
-                            considerations.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 7KS04 DATA WAREHOUSE AND MINING */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          7KS04 DATA WAREHOUSE AND MINING
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>Explain the basics of data mining techniques.</li>
-                          <li>
-                            Identify the similarity and dissimilarity between
-                            the data sets.
-                          </li>
-                          <li>Apply Data Preprocessing to the data.</li>
-                          <li>
-                            Describe Data Warehouse fundamentals, Data Mining
-                            Principles.
-                          </li>
-                          <li>
-                            Illustrate Multidimensional Data Analysis in Cube
-                            Space.
-                          </li>
-                          <li>
-                            Assess Mining Frequent Patterns, Associations, and
-                            Correlations.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 7KS04 EMBEDDED SYSTEM */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          7KS04 EMBEDDED SYSTEM
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Describe the basics of embedded systems such as core
-                            units as well as memory organization for embedded
-                            system.
-                          </li>
-                          <li>
-                            Explain components of embedded system,
-                            characteristics and quality attributes of embedded
-                            systems.
-                          </li>
-                          <li>
-                            Discuss role of 8051 microcontroller and its
-                            architecture in design of embedded systems.
-                          </li>
-                          <li>
-                            Examine the different Addressing modes and
-                            Instruction Set of 8051 microcontrollers.
-                          </li>
-                          <li>
-                            Use knowledge of C programming and embedded
-                            programming.
-                          </li>
-                          <li>
-                            Assess the Real-Time Operating System concepts with
-                            VxWorks RTOS.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 7KS04 Digital Forensics */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          7KS04 Digital Forensics
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Describe Digital Forensics and its related
-                            preparation
-                          </li>
-                          <li>Outline Data Acquisition tools</li>
-                          <li>
-                            Use knowledge to improve crime investigations.
-                          </li>
-                          <li>Examine Digital Forensic and its validation</li>
-                          <li>
-                            Assess role of email and social media in
-                            investigations
-                          </li>
-                          <li>Discuss Cloud Forensics.</li>
-                        </ol>
-                      </div>
-
-                      {/* 7KS05 BLOCK CHAIN FUNDAMENTALS */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          7KS05 BLOCK CHAIN FUNDAMENTALS
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Understand the concept of decentralization of the
-                            block chain with different layers of blockchain
-                          </li>
-                          <li>
-                            Apply basic cryptographic primitives with encryption
-                            standards.
-                          </li>
-                          <li>Analyze & Design Consensus Algorithms.</li>
-                          <li>
-                            Examine fundamentals of Bitcoin, how Bitcoin
-                            transactions are constructed and used with Bitcoin
-                            addresses, accounts, and mining.
-                          </li>
-                          <li>
-                            Understand foundation, architecture, and use of the
-                            Ethereum blockchain.
-                          </li>
-                          <li>
-                            Execute & build block chain application/
-                            transaction.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 7KS05 IMAGE PROCESSING */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          7KS05 IMAGE PROCESSING
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Explain fundamental steps in Image Processing.
-                          </li>
-                          <li>
-                            Compare different methods for image transform with
-                            its properties.
-                          </li>
-                          <li>
-                            Illustrate Image Enhancement in spatial domain.
-                          </li>
-                          <li>
-                            Examine Image Enhancement in Frequency Domain.
-                          </li>
-                          <li>
-                            Apply various methods for segmenting image and
-                            identifying image components.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 7KS05 OPTIMIZATION TECHNIQUES */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          7KS05 OPTIMIZATION TECHNIQUES
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>Describe statement of an optimization problem</li>
-                          <li>
-                            Examine linear programming procedures to solve
-                            optimization problems.
-                          </li>
-                          <li>
-                            Compare different nonlinear programming methods of
-                            optimization
-                          </li>
-                          <li>
-                            Discuss Geometric Programming with different
-                            constraint
-                          </li>
-                          <li>
-                            Identify the appropriate optimization technique for
-                            the given problem
-                          </li>
-                          <li>
-                            Synthesize algorithms to solve real time
-                            optimization problems.
-                          </li>
-                        </ol>
-                      </div>
-
-                      {/* 7KS06 COMPUTER GRAPHICS LAB */}
-                      <div>
-                        <h4 className="font-bold text-gray-800 mb-2">
-                          7KS06 COMPUTER GRAPHICS LAB
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-2">
-                          On completion of the course, the students will be able
-                          to:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                          <li>
-                            Describe the basic concepts of Computer Graphics.
-                          </li>
-                          <li>
-                            Demonstrate various algorithms for basic graphics
-                            primitives.
-                          </li>
-                          <li>
-                            Apply 2-D geometric transformations on graphical
-                            objects.
-                          </li>
-                          <li>
-                            Use various Clipping algorithms on graphical objects
-                          </li>
-                          <li>
-                            Explore 3-D geometric transformations, curve
-                            representation techniques and projections methods
-                          </li>
-                          <li>
-                            Explain visible surface detection techniques and
-                            Animation.
-                          </li>
-                        </ol>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* B.E. Semester VIII */}
-            <div className="border-b border-gray-200 pb-2">
-              <button
-                onClick={() =>
-                  setExpandedSemester(
-                    expandedSemester === "be-sem8" ? null : "be-sem8",
-                  )
-                }
-                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">
-                  B.E. Semester-VIII
-                </span>
-                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "be-sem8" ? "Hide" : "View"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {expandedSemester === "be-sem8" && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 py-4 bg-gray-50 space-y-6">
-                      <p className="text-gray-600 italic">
-                        Course outcomes data will be updated soon.
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            {renderSectionList(meSections, updateMeSections)}
+            {isEditing && (
+              <div className="px-6 pb-4">
+                <button
+                  onClick={() =>
+                    insertSection(
+                      meSections,
+                      meSections.length - 1,
+                      updateMeSections,
+                    )
+                  }
+                  className="w-full py-3 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+                >
+                  + Add New M.E. Semester
+                </button>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* M.E. Course Outcomes */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-[#003366] px-6 py-4 text-center">
-            <h3 className="text-xl font-bold text-white">
-              M.E. Course Outcomes
-            </h3>
-          </div>
-
-          <div className="p-6 space-y-2">
-            {/* M.E. Semester I */}
-            <div className="border-b border-gray-200 pb-2">
-              <button
-                onClick={() =>
-                  setExpandedSemester(
-                    expandedSemester === "me-sem1" ? null : "me-sem1",
-                  )
-                }
-                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">
-                  M.E. Semester-I
-                </span>
-                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "me-sem1" ? "Hide" : "View"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {expandedSemester === "me-sem1" && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 py-4 bg-gray-50 space-y-6">
-                      <p className="text-gray-600 italic">
-                        Course outcomes data will be updated soon.
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* M.E. Semester II */}
-            <div className="border-b border-gray-200 pb-2">
-              <button
-                onClick={() =>
-                  setExpandedSemester(
-                    expandedSemester === "me-sem2" ? null : "me-sem2",
-                  )
-                }
-                className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">
-                  M.E. Semester-II
-                </span>
-                <span className="px-4 py-1 bg-ssgmce-blue text-white text-sm rounded hover:bg-ssgmce-dark-blue transition-colors">
-                  {expandedSemester === "me-sem2" ? "Hide" : "View"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {expandedSemester === "me-sem2" && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 py-4 bg-gray-50 space-y-6">
-                      <p className="text-gray-600 italic">
-                        Course outcomes data will be updated soon.
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </div>
-    ),
+      );
+    })(),
 
     curriculum: (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
-          Scheme and Syllabus
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+            Scheme and Syllabus
+          </h3>
+        </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {/* B.E. Section */}
           <div className="grid md:grid-cols-12 border-b border-gray-200">
             <div className="md:col-span-4 bg-gray-50/50 p-6 flex items-center border-r border-gray-100">
-              <h4 className="font-bold text-lg text-gray-800">
-                B.E. (Computer Science and Engineering)
-              </h4>
+              <div className="flex items-center gap-3 w-full">
+                <h4 className="font-bold text-lg text-gray-800">
+                  B.E. (Computer Science and Engineering)
+                </h4>
+              </div>
             </div>
             <div className="md:col-span-8 p-6">
+              {isEditing && (
+                <div className="flex gap-2 mb-4 justify-end">
+                  {selectedCurriculumItems.filter((k) => k.startsWith("be-"))
+                    .length > 0 && (
+                    <button
+                      onClick={() => deleteSelectedCurriculumItems("be")}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-xs font-semibold"
+                    >
+                      <FaTrash /> Delete Selected (
+                      {
+                        selectedCurriculumItems.filter((k) =>
+                          k.startsWith("be-"),
+                        ).length
+                      }
+                      )
+                    </button>
+                  )}
+                  <button
+                    onClick={() => addCurriculumItem("be")}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-ssgmce-blue text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-semibold"
+                  >
+                    <FaPlus /> Add Item
+                  </button>
+                </div>
+              )}
               <ul className="space-y-4">
-                {[
-                  { label: "NEP Scheme", link: "#" },
-                  { label: "Scheme", link: "#" },
-                  {
-                    label:
-                      "Revised Syllabus of CSE (1st Sem - 8th Sem) Notification No. 121/2023",
-                    link: "#",
-                  },
-                  { label: "Syllabus Second Year (3rd & 4th Sem)", link: "#" },
-                  {
-                    label:
-                      "Syllabus - (Universal Human Values and Ethics) Common for all branches - Sem. IV (NEP)",
-                    link: "#",
-                  },
-                  {
-                    label:
-                      "Syllabus - (Modern Indian Language) Common for all branches - Sem. IV (NEP)",
-                    link: "#",
-                  },
-                  { label: "Syllabus Third Year (5th & 6th Sem)", link: "#" },
-                  { label: "Syllabus Final Year (7th & 8th Sem)", link: "#" },
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 group">
-                    <span className="w-2 h-2 rounded-full bg-ssgmce-orange mt-2 block group-hover:bg-ssgmce-blue transition-colors"></span>
-                    <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-50 pb-2">
-                      <span className="text-gray-700 text-sm font-medium">
-                        {item.label}
-                      </span>
-                      <button className="text-xs font-bold text-ssgmce-blue hover:text-ssgmce-orange hover:underline uppercase tracking-wide shrink-0">
-                        Download
-                      </button>
-                    </div>
-                  </li>
-                ))}
+                {t("templateData.curriculum.be", DEFAULT_CURRICULUM_BE).map(
+                  (item, i) => (
+                    <li key={i} className="flex items-start gap-3 group">
+                      {isEditing && (
+                        <input
+                          type="checkbox"
+                          checked={selectedCurriculumItems.includes(`be-${i}`)}
+                          onChange={() => toggleCurriculumSelection("be", i)}
+                          className="mt-2 w-4 h-4 rounded border-gray-300"
+                        />
+                      )}
+                      <span className="w-2 h-2 rounded-full bg-ssgmce-orange mt-2 block group-hover:bg-ssgmce-blue transition-colors"></span>
+                      <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-50 pb-2">
+                        <span className="text-gray-700 text-sm font-medium flex-1">
+                          <EditableText
+                            value={item.label}
+                            onSave={(val) =>
+                              updateCurriculumItem("be", i, "label", val)
+                            }
+                          />
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {isEditing && (
+                            <>
+                              <div className="flex flex-col gap-1">
+                                <input
+                                  type="text"
+                                  value={item.link || ""}
+                                  onChange={(e) =>
+                                    updateCurriculumItem(
+                                      "be",
+                                      i,
+                                      "link",
+                                      e.target.value,
+                                    )
+                                  }
+                                  placeholder="Link URL or use upload"
+                                  className={`text-xs px-2 py-1 border rounded w-40 ${
+                                    item.fileUrl
+                                      ? "border-green-400 bg-green-50"
+                                      : "border-gray-300"
+                                  }`}
+                                />
+                                {item.fileName && (
+                                  <span
+                                    className="text-xs text-green-700 bg-green-100 border border-green-300 rounded px-1.5 py-0.5 truncate max-w-[160px] font-medium"
+                                    title={item.fileName}
+                                  >
+                                    ✅ {item.fileName}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="relative">
+                                <input
+                                  type="file"
+                                  accept=".pdf"
+                                  onChange={(e) =>
+                                    handleCurriculumFileChange("be", i, e)
+                                  }
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                  id={`file-upload-be-${i}`}
+                                />
+                                <label
+                                  htmlFor={`file-upload-be-${i}`}
+                                  className={`flex items-center gap-1 px-2 py-1 text-xs rounded cursor-pointer transition-colors ${
+                                    uploadingFiles[`be-${i}`]
+                                      ? "bg-gray-300 text-gray-500"
+                                      : item.fileUrl
+                                        ? "bg-green-500 text-white hover:bg-green-600"
+                                        : "bg-blue-500 text-white hover:bg-blue-600"
+                                  }`}
+                                  title={
+                                    item.fileUrl
+                                      ? "Re-upload PDF"
+                                      : "Upload PDF"
+                                  }
+                                >
+                                  {uploadingFiles[`be-${i}`] ? (
+                                    "Uploading..."
+                                  ) : (
+                                    <>
+                                      <FaUpload />{" "}
+                                      {item.fileUrl ? "Re-upload" : "PDF"}
+                                    </>
+                                  )}
+                                </label>
+                              </div>
+                              <button
+                                onClick={() => removeCurriculumItem("be", i)}
+                                className="text-red-500 hover:text-red-700 p-1"
+                                title="Delete Item"
+                              >
+                                <FaTrash className="text-xs" />
+                              </button>
+                            </>
+                          )}
+                          {!isEditing && (
+                            <a
+                              href={item.fileUrl || item.link || "#"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-bold text-ssgmce-blue hover:text-ssgmce-orange hover:underline uppercase tracking-wide shrink-0"
+                              onClick={(e) => {
+                                if (
+                                  !item.fileUrl &&
+                                  (!item.link || item.link === "#")
+                                ) {
+                                  e.preventDefault();
+                                  alert("No file available for download.");
+                                }
+                              }}
+                            >
+                              Download
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  ),
+                )}
               </ul>
             </div>
           </div>
@@ -5004,23 +5057,159 @@ const CSE = () => {
           {/* M.E. Section */}
           <div className="grid md:grid-cols-12 bg-gray-50/30">
             <div className="md:col-span-4 bg-gray-50/50 p-6 flex items-center border-r border-gray-100">
-              <h4 className="font-bold text-lg text-gray-800">
-                M.E. (Computer Engineering)
-              </h4>
+              <div className="flex items-center gap-3 w-full">
+                <h4 className="font-bold text-lg text-gray-800">
+                  M.E. (Computer Engineering)
+                </h4>
+              </div>
             </div>
             <div className="md:col-span-8 p-6">
-              <ul className="space-y-4">
-                <li className="flex items-start gap-3 group">
-                  <span className="w-2 h-2 rounded-full bg-ssgmce-orange mt-2 block group-hover:bg-ssgmce-blue transition-colors"></span>
-                  <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <span className="text-gray-700 text-sm font-medium">
-                      Scheme and Syllabus M.E. (1st & 2nd Sem)
-                    </span>
-                    <button className="text-xs font-bold text-ssgmce-blue hover:text-ssgmce-orange hover:underline uppercase tracking-wide shrink-0">
-                      Download
+              {isEditing && (
+                <div className="flex gap-2 mb-4 justify-end">
+                  {selectedCurriculumItems.filter((k) => k.startsWith("me-"))
+                    .length > 0 && (
+                    <button
+                      onClick={() => deleteSelectedCurriculumItems("me")}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-xs font-semibold"
+                    >
+                      <FaTrash /> Delete Selected (
+                      {
+                        selectedCurriculumItems.filter((k) =>
+                          k.startsWith("me-"),
+                        ).length
+                      }
+                      )
                     </button>
-                  </div>
-                </li>
+                  )}
+                  <button
+                    onClick={() => addCurriculumItem("me")}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-ssgmce-blue text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-semibold"
+                  >
+                    <FaPlus /> Add Item
+                  </button>
+                </div>
+              )}
+              <ul className="space-y-4">
+                {t("templateData.curriculum.me", DEFAULT_CURRICULUM_ME).map(
+                  (item, i) => (
+                    <li key={i} className="flex items-start gap-3 group">
+                      {isEditing && (
+                        <input
+                          type="checkbox"
+                          checked={selectedCurriculumItems.includes(`me-${i}`)}
+                          onChange={() => toggleCurriculumSelection("me", i)}
+                          className="mt-2 w-4 h-4 rounded border-gray-300"
+                        />
+                      )}
+                      <span className="w-2 h-2 rounded-full bg-ssgmce-orange mt-2 block group-hover:bg-ssgmce-blue transition-colors"></span>
+                      <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-50 pb-2">
+                        <span className="text-gray-700 text-sm font-medium flex-1">
+                          <EditableText
+                            value={item.label}
+                            onSave={(val) =>
+                              updateCurriculumItem("me", i, "label", val)
+                            }
+                          />
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {isEditing && (
+                            <>
+                              <div className="flex flex-col gap-1">
+                                <input
+                                  type="text"
+                                  value={item.link || ""}
+                                  onChange={(e) =>
+                                    updateCurriculumItem(
+                                      "me",
+                                      i,
+                                      "link",
+                                      e.target.value,
+                                    )
+                                  }
+                                  placeholder="Link URL or use upload"
+                                  className={`text-xs px-2 py-1 border rounded w-40 ${
+                                    item.fileUrl
+                                      ? "border-green-400 bg-green-50"
+                                      : "border-gray-300"
+                                  }`}
+                                />
+                                {item.fileName && (
+                                  <span
+                                    className="text-xs text-green-700 bg-green-100 border border-green-300 rounded px-1.5 py-0.5 truncate max-w-[160px] font-medium"
+                                    title={item.fileName}
+                                  >
+                                    ✅ {item.fileName}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="relative">
+                                <input
+                                  type="file"
+                                  accept=".pdf"
+                                  onChange={(e) =>
+                                    handleCurriculumFileChange("me", i, e)
+                                  }
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                  id={`file-upload-me-${i}`}
+                                />
+                                <label
+                                  htmlFor={`file-upload-me-${i}`}
+                                  className={`flex items-center gap-1 px-2 py-1 text-xs rounded cursor-pointer transition-colors ${
+                                    uploadingFiles[`me-${i}`]
+                                      ? "bg-gray-300 text-gray-500"
+                                      : item.fileUrl
+                                        ? "bg-green-500 text-white hover:bg-green-600"
+                                        : "bg-blue-500 text-white hover:bg-blue-600"
+                                  }`}
+                                  title={
+                                    item.fileUrl
+                                      ? "Re-upload PDF"
+                                      : "Upload PDF"
+                                  }
+                                >
+                                  {uploadingFiles[`me-${i}`] ? (
+                                    "Uploading..."
+                                  ) : (
+                                    <>
+                                      <FaUpload />{" "}
+                                      {item.fileUrl ? "Re-upload" : "PDF"}
+                                    </>
+                                  )}
+                                </label>
+                              </div>
+                              <button
+                                onClick={() => removeCurriculumItem("me", i)}
+                                className="text-red-500 hover:text-red-700 p-1"
+                                title="Delete Item"
+                              >
+                                <FaTrash className="text-xs" />
+                              </button>
+                            </>
+                          )}
+                          {!isEditing && (
+                            <a
+                              href={item.fileUrl || item.link || "#"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-bold text-ssgmce-blue hover:text-ssgmce-orange hover:underline uppercase tracking-wide shrink-0"
+                              onClick={(e) => {
+                                if (
+                                  !item.fileUrl &&
+                                  (!item.link || item.link === "#")
+                                ) {
+                                  e.preventDefault();
+                                  alert("No file available for download.");
+                                }
+                              }}
+                            >
+                              Download
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  ),
+                )}
               </ul>
             </div>
           </div>
@@ -5106,213 +5295,37 @@ const CSE = () => {
         </div>
       </div>
     ),
-    "student-projects": (
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-gray-900">
-            Student's Best Projects
-          </h2>
-          <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
-          <p className="text-gray-600 mt-3">
-            Award-Winning Projects by Our Students
-          </p>
-        </div>
-
-        {/* Year Filter */}
-        <div className="flex justify-center mb-6">
-          <div className="inline-flex bg-gray-100 rounded-lg p-1 shadow-sm flex-wrap gap-1">
-            {["2024-25", "2023-24", "2022-23", "2021-22"].map((year) => (
-              <button
-                key={year}
-                onClick={() => setStudentProjectYear(year)}
-                className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${
-                  studentProjectYear === year
-                    ? "bg-white text-ssgmce-blue shadow-md"
-                    : "text-gray-600 hover:text-gray-800"
-                }`}
-              >
-                {year}
-              </button>
-            ))}
+    "student-projects": (() => {
+      const md = t(
+        "studentProjects.markdown",
+        cseStudentProjectsToMarkdown(defaultStudentProjects),
+      );
+      return (
+        <div className="space-y-8">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-gray-900">
+              Student's Best Projects
+            </h2>
+            <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
+            <p className="text-gray-600 mt-3">
+              Award-Winning Projects by Our Students
+            </p>
           </div>
+          {isEditing ? (
+            <MarkdownEditor
+              value={md}
+              onSave={(v) => updateData("studentProjects.markdown", v)}
+              showDocImport
+              docTemplateUrl="/uploads/documents/pride_templates/cse_projects_template.docx"
+              docTemplateLabel="Download Projects Template"
+              placeholder="Student projects tables by year (GFM Markdown)..."
+            />
+          ) : (
+            <PrideMdView markdown={md} />
+          )}
         </div>
-
-        {/* Projects Table */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-ssgmce-blue text-white">
-                <tr>
-                  <th className="px-4 py-4 text-left font-bold whitespace-nowrap">
-                    Sr. No
-                  </th>
-                  <th className="px-6 py-4 text-left font-bold">
-                    Title of Project
-                  </th>
-                  <th className="px-6 py-4 text-left font-bold">Guided By</th>
-                  <th className="px-4 py-4 text-center font-bold whitespace-nowrap">
-                    Award/Reward
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {studentProjectYear === "2024-25" &&
-                  [
-                    {
-                      no: 1,
-                      title:
-                        "GenAI-Powered Application Tracking System: Enhancing Recruitment with Skill Fitment Analysis.",
-                      guide: "Dr. J. M. Patil",
-                      award: "1st Rank",
-                    },
-                    {
-                      no: 2,
-                      title:
-                        "Automated guide for Accurate and Faster Packaging of E-Commerce Orders.",
-                      guide: "Prof. C. M. Mankar",
-                      award: "2nd Rank",
-                    },
-                  ].map((proj, i) => (
-                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-center font-mono text-gray-400 text-xs">
-                        {proj.no}
-                      </td>
-                      <td className="px-6 py-3 font-medium text-gray-800">
-                        {proj.title}
-                      </td>
-                      <td className="px-6 py-3 text-gray-600">{proj.guide}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${
-                            proj.award.includes("1st")
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-blue-100 text-blue-800"
-                          }`}
-                        >
-                          {proj.award}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-
-                {studentProjectYear === "2023-24" &&
-                  [
-                    {
-                      no: 1,
-                      title:
-                        "Digital Document Verification using Blockchain Technology.",
-                      guide: "Dr. J. M. Patil",
-                      award: "1st Rank",
-                    },
-                    {
-                      no: 2,
-                      title: "Voice Analysis for Disease Screening.",
-                      guide: "Prof. V. S. Mahalle",
-                      award: "2nd Rank",
-                    },
-                  ].map((proj, i) => (
-                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-center font-mono text-gray-400 text-xs">
-                        {proj.no}
-                      </td>
-                      <td className="px-6 py-3 font-medium text-gray-800">
-                        {proj.title}
-                      </td>
-                      <td className="px-6 py-3 text-gray-600">{proj.guide}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${
-                            proj.award.includes("1st")
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-blue-100 text-blue-800"
-                          }`}
-                        >
-                          {proj.award}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-
-                {studentProjectYear === "2022-23" &&
-                  [
-                    {
-                      no: 1,
-                      title: "Product Authentication System using Blockchain",
-                      guide: "Dr. N.M. Kandoi",
-                      award: "1st Rank",
-                    },
-                    {
-                      no: 2,
-                      title: "Mental Health Therapy App",
-                      guide: "Dr. J.M.P Patil",
-                      award: "2nd Rank",
-                    },
-                  ].map((proj, i) => (
-                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-center font-mono text-gray-400 text-xs">
-                        {proj.no}
-                      </td>
-                      <td className="px-6 py-3 font-medium text-gray-800">
-                        {proj.title}
-                      </td>
-                      <td className="px-6 py-3 text-gray-600">{proj.guide}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${
-                            proj.award.includes("1st")
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-blue-100 text-blue-800"
-                          }`}
-                        >
-                          {proj.award}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-
-                {studentProjectYear === "2021-22" &&
-                  [
-                    {
-                      no: 1,
-                      title: "Autonomous Robotics Using VSLAM Technology and Implementation Using ARM Architecture.",
-                      guide: "Prof. V. S. Mahalle",
-                      award: "1st Rank",
-                    },
-                    {
-                      no: 2,
-                      title: "Sentiment Analysis of Marathi Language.",
-                      guide: "Prof. KP Sable",
-                      award: "2nd Rank",
-                    },
-                  ].map((proj, i) => (
-                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-center font-mono text-gray-400 text-xs">
-                        {proj.no}
-                      </td>
-                      <td className="px-6 py-3 font-medium text-gray-800">
-                        {proj.title}
-                      </td>
-                      <td className="px-6 py-3 text-gray-600">{proj.guide}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${
-                            proj.award.includes("1st")
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-blue-100 text-blue-800"
-                          }`}
-                        >
-                          {proj.award}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    ),
+      );
+    })(),
 
     placements: (
       <div className="space-y-8">
@@ -5334,7 +5347,21 @@ const CSE = () => {
                     Year-wise breakdown of student placements
                   </p>
                 </div>
-                <FaChartLine className="text-4xl text-blue-100" />
+                <div className="flex items-center gap-4">
+                  {isEditing && (
+                    <button
+                      onClick={() => {
+                        setPlacementYearError("");
+                        setNewPlacementYear("");
+                        setShowAddPlacementYear(true);
+                      }}
+                      className="flex items-center gap-2 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all text-sm"
+                    >
+                      <FaPlus /> Add Year
+                    </button>
+                  )}
+                  <FaChartLine className="text-4xl text-blue-100" />
+                </div>
               </div>
 
               <div className="overflow-x-auto">
@@ -5356,15 +5383,7 @@ const CSE = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-sm">
-                    {[
-                      { year: "2024-25", count: "27*", id: "2024-25" },
-                      { year: "2023-24", count: "57", id: "2023-24" },
-                      { year: "2022-23", count: "55", id: "2022-23" },
-                      { year: "2021-22", count: "62", id: "2021-22" },
-                      { year: "2020-21", count: "47", id: "2020-21" },
-                      { year: "2019-20", count: "59", id: "2019-20" },
-                      { year: "2018-19", count: "55", id: "2018-19" },
-                    ].map((row, index) => (
+                    {placementSummary.map((row, index) => (
                       <tr
                         key={index}
                         className="hover:bg-blue-50/30 transition-colors"
@@ -5379,12 +5398,23 @@ const CSE = () => {
                           {row.count}
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <button
-                            onClick={() => setPlacementYear(row.id)}
-                            className="text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
-                          >
-                            View Details
-                          </button>
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => setPlacementYear(row.id)}
+                              className="text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                            >
+                              View Details
+                            </button>
+                            {isEditing && (
+                              <button
+                                onClick={() => handleDeletePlacementYear(row.id)}
+                                className="text-red-600 hover:text-red-700 font-medium text-xs border border-red-200 hover:border-red-300 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-full transition-all"
+                                title={`Delete ${row.year}`}
+                              >
+                                <FaTrash />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -5402,2226 +5432,7 @@ const CSE = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
             >
-              <div className="flex justify-between items-center mb-6">
-                <button
-                  onClick={() => setPlacementYear(null)}
-                  className="flex items-center text-gray-600 hover:text-ssgmce-blue font-medium transition-colors"
-                >
-                  <span className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-2 text-sm group-hover:bg-blue-100">
-                    <FaAngleRight className="transform rotate-180" />
-                  </span>
-                  Back to Statistics
-                </button>
-                <div className="text-right">
-                  <h3 className="text-xl font-bold text-gray-800">
-                    Placement Record
-                  </h3>
-                  <p className="text-sm text-ssgmce-blue font-bold">
-                    Session: {placementYear}
-                  </p>
-                </div>
-              </div>
-
-              {placementYear === "2024-25" ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
-                        <tr>
-                          <th className="px-6 py-4 font-bold text-center w-16">
-                            Sr. No.
-                          </th>
-                          <th className="px-6 py-4 font-bold">
-                            Name of Student
-                          </th>
-                          <th className="px-6 py-4 font-bold">Company Name</th>
-                          <th className="px-6 py-4 font-bold text-right">
-                            CTC
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {[
-                          {
-                            name: "Apurva Patil",
-                            company: "Connecticus Technologies Pvt Ltd, Pune",
-                            ctc: "6 LPA",
-                          },
-                          {
-                            name: "Chaitali Nakhate",
-                            company: "Bristlecone India Ltd., Pune",
-                            ctc: "4.25 LPA",
-                          },
-                          {
-                            name: "Dnyaneshwari Mhaisne",
-                            company: "Manasvi Tech Solutions Pvt. Ltd., Nashik",
-                            ctc: "3.2 LPA",
-                          },
-                          {
-                            name: "Eisha Nikam",
-                            company: "Bristlecone India Ltd., Pune",
-                            ctc: "4.25 LPA",
-                          },
-                          {
-                            name: "Khushbu Chavhan",
-                            company:
-                              "Arohi Software Solution Pvt. Ltd., Ahmednagar",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Kunjan Katore",
-                            company: "RIA Advisory LLP, Pune",
-                            ctc: "6.5 LPA",
-                          },
-                          {
-                            name: "Palak Jasani",
-                            company: "NCSI Technologies Pvt. Ltd., Pune",
-                            ctc: "5.62 LPA",
-                          },
-                          {
-                            name: "Pranita Tondre",
-                            company:
-                              "Cognizant Technology Solutions India Pvt. Ltd., Pune",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Radhika Kapoor",
-                            company: "QuantumSoft Technologies Pvt. Ltd., Pune",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Samruddhi Katole",
-                            company: "Bizsense Solutions Pvt. Ltd., Nagpur",
-                            ctc: "5.5 LPA",
-                          },
-                          {
-                            name: "Sanika Dose",
-                            company: "SwiftNLift Media and Tech LLP, Pune",
-                            ctc: "3.25 LPA",
-                          },
-                          {
-                            name: "Shivani Digole",
-                            company: "Bristlecone India Ltd., Pune",
-                            ctc: "4.25 LPA",
-                          },
-                          {
-                            name: "Shruti Sonone",
-                            company: "Lend a Hand India, Pune",
-                            ctc: "6 LPA",
-                          },
-                          {
-                            name: "Abhishek Patil",
-                            company: "TCS, Pune",
-                            ctc: "7 LPA",
-                          },
-                          {
-                            name: "Bhuvnesh Kale",
-                            company: "Bristlecone India Ltd., Pune",
-                            ctc: "4.25 LPA",
-                          },
-                          {
-                            name: "Gaurav Dhale",
-                            company: "One Smarter Inc., Ohio USA",
-                            ctc: "3.6 LPA",
-                          },
-                          {
-                            name: "Gaurav Kaple",
-                            company: "One Smarter Inc., Ohio USA",
-                            ctc: "3.6 LPA",
-                          },
-                          {
-                            name: "Ishan Gawande",
-                            company: "Truscholar Tech., Amravati",
-                            ctc: "1.2 LPA",
-                          },
-                          {
-                            name: "Krishna Kolekar",
-                            company: "SkaleIT Technologies LLP, Pune",
-                            ctc: "5 LPA",
-                          },
-                          {
-                            name: "Nikhil Kulkarni",
-                            company: "Manasvi Tech Solutions Pvt. Ltd., Nashik",
-                            ctc: "3.2 LPA",
-                          },
-                          {
-                            name: "Nitish Sonone",
-                            company: "ApexaiQ",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Prajwal Ghusalikar",
-                            company: "One Smarter Inc., Ohio USA",
-                            ctc: "4.8 LPA",
-                          },
-                          {
-                            name: "Pratik Kuntawar",
-                            company: "Consultadd Services Pvt. Ltd., Pune",
-                            ctc: "12 LPA",
-                          },
-                          {
-                            name: "Pratham Akkewar",
-                            company:
-                              "Arohi Software Solution Pvt. Ltd., Ahmednagar",
-                            ctc: "6 LPA",
-                          },
-                          {
-                            name: "Rohit Tap",
-                            company: "Manasvi Tech Solutions Pvt. Ltd., Nashik",
-                            ctc: "3.2 LPA",
-                          },
-                          {
-                            name: "Samarth Zamre",
-                            company: "Softbyte India Pvt. Ltd., Pune",
-                            ctc: "1.5 LPA",
-                          },
-                          {
-                            name: "Anikesh Gadekar",
-                            company: "Ayekart Pvt. Ltd., Mumbai",
-                            ctc: "3.9 LPA",
-                          },
-                        ].map((student, i) => (
-                          <tr
-                            key={i}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-6 py-4 text-center font-mono text-gray-400 text-xs">
-                              {i + 1}
-                            </td>
-                            <td className="px-6 py-4 font-bold text-gray-800">
-                              {student.name}
-                            </td>
-                            <td className="px-6 py-4 text-gray-600">
-                              {student.company}
-                            </td>
-                            <td className="px-6 py-4 text-right font-bold text-green-600 bg-green-50/50">
-                              {student.ctc}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : placementYear === "2023-24" ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
-                        <tr>
-                          <th className="px-6 py-4 font-bold text-center w-16">
-                            Sr. No.
-                          </th>
-                          <th className="px-6 py-4 font-bold">
-                            Name of Student
-                          </th>
-                          <th className="px-6 py-4 font-bold">Company Name</th>
-                          <th className="px-6 py-4 font-bold text-right">
-                            CTC
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {[
-                          {
-                            name: "Abhijeet Eknath Tathod",
-                            company:
-                              "miniOrange Security Software Pvt. Ltd., Pune",
-                            ctc: "4.8 LPA",
-                          },
-                          {
-                            name: "Kunal Atmaram Chandore",
-                            company: "ApexaiQ Technoogies Pvt. Ltd. USA",
-                            ctc: "4.8 LPA",
-                          },
-                          {
-                            name: "Surabhi Ghanshyamji Lahoti",
-                            company: "ApexaiQ Technoogies Pvt. Ltd. USA",
-                            ctc: "5.5 LPA",
-                          },
-                          {
-                            name: "Surbhi Sohanlal Goria",
-                            company: "ApexaiQ Technoogies Pvt. Ltd. USA",
-                            ctc: "5.5 LPA",
-                          },
-                          {
-                            name: "Riya Govind Dangra",
-                            company: "ApexaiQ Technoogies Pvt. Ltd. USA",
-                            ctc: "5.5 LPA",
-                          },
-                          {
-                            name: "Yash Kumar Sugandhi",
-                            company: "Bizsense Solutions Pvt. Ltd., Nagpur",
-                            ctc: "5.52 LPA",
-                          },
-                          {
-                            name: "Abhishek Sanjay Gawali",
-                            company: "Bristlecone India Limited, Mumbai",
-                            ctc: "4.25 LPA",
-                          },
-                          {
-                            name: "Gauri Vinod Zamare",
-                            company: "Bristlecone India Limited, Mumbai",
-                            ctc: "4.25 LPA",
-                          },
-                          {
-                            name: "Gauri JaisingPatil",
-                            company: "Cencora Business Services (IT), Pune",
-                            ctc: "5.61 LPA",
-                          },
-                          {
-                            name: "Pallavi Gajanan Awasare",
-                            company: "Cencora Business Services (IT), Pune",
-                            ctc: "5.61 LPA",
-                          },
-                          {
-                            name: "Pravadnya Dnyaneshwar More",
-                            company: "Cencora Business Services (IT), Pune",
-                            ctc: "5.61 LPA",
-                          },
-                          {
-                            name: "Sneha Sunil Khatke",
-                            company: "Cencora Business Services (IT), Pune",
-                            ctc: "5.61 LPA",
-                          },
-                          {
-                            name: "Abhijeet Rambhau Gadlinge",
-                            company: "Circular Angle Pvt. Ltd., Thane",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Shreya Nitin Patil",
-                            company: "Circular Angle Pvt. Ltd., Thane",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Ashutosh Sanjay Gupta",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Gajanan Mahadev Borade",
-                            company:
-                              "Institute of Plasma Research Bhat, Gandhinagar",
-                            ctc: "3.75 LPA",
-                          },
-                          {
-                            name: "Prithvirajsingh Devendrasingh Thakur",
-                            company: "Genpact India Pvt. Ltd., Pune",
-                            ctc: "2.85 LPA",
-                          },
-                          {
-                            name: "Sayli Gopal Agrawal",
-                            company: "Hexaware Technologies, Pune",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Vallabh Rupesh Ghongde",
-                            company: "Hexaware Technologies, Pune",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Laxmi Sunil Hargunani",
-                            company:
-                              "Capgemini Technology Services India Limited, Navi Mumbai",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Mitalee Ajay Uplenchwar",
-                            company: "IBM CIC, Bangalore",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Pratibha Nandlal Yadav",
-                            company: "IBM CIC, Bangalore",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Mayur Rajesh Shastrakar",
-                            company: "Inferwse, Pune",
-                            ctc: "4.12 LPA",
-                          },
-                          {
-                            name: "Harshal Wadode",
-                            company: "IRIS Business Services Ltd., Mumbai",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Prajwal Sunil Chitode",
-                            company: "IRIS Business Services Ltd., Mumbai",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Pratik Ganesh Ekhande",
-                            company: "IRIS Business Services Ltd., Mumbai",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Rudransh Santosh Nemade",
-                            company: "IRIS Business Services Ltd., Mumbai",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Tanay Rajesh Hisariya",
-                            company: "IRIS Business Services Ltd., Mumbai",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Ubai Feroz Badri",
-                            company: "IRIS Business Services Ltd., Mumbai",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Vaishnavi Subhash Ghanokar",
-                            company: "IRIS Business Services Ltd., Mumbai",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Vedant Gajanan Chaudhari",
-                            company: "IRIS Business Services Ltd., Mumbai",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Arpita Anil Chimanpure",
-                            company:
-                              "Micropro Software Solutions Limited, Nagpur",
-                            ctc: "3 LPA",
-                          },
-                          {
-                            name: "Revati Madhukar Khandare",
-                            company:
-                              "Micropro Software Solutions Limited, Nagpur",
-                            ctc: "3 LPA",
-                          },
-                          {
-                            name: "Sakshi Punam Koche",
-                            company:
-                              "Micropro Software Solutions Limited, Nagpur",
-                            ctc: "3 LPA",
-                          },
-                          {
-                            name: "Sanika Sudhir Sapkale",
-                            company:
-                              "Micropro Software Solutions Limited, Nagpur",
-                            ctc: "3 LPA",
-                          },
-                          {
-                            name: "Shreya Umesh Ingale",
-                            company:
-                              "Micropro Software Solutions Limited, Nagpur",
-                            ctc: "3 LPA",
-                          },
-                          {
-                            name: "Rushikesh Kailash Dhawane",
-                            company: "Mindzcloud Technology Pvt. Ltd, Nagpur",
-                            ctc: "6 LPA",
-                          },
-                          {
-                            name: "Chanchal Bhaskar Junare",
-                            company: "Persistent Systems Limited, Nagpur",
-                            ctc: "5.01 LPA",
-                          },
-                          {
-                            name: "Dnyaneshwari Chatarkar",
-                            company: "ncs Pvt. Ltd., Pune",
-                            ctc: "5.01 LPA",
-                          },
-                          {
-                            name: "Atharva Tattu",
-                            company: "TCS Limited, Pune / Nagpur",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Atharv Santosh Tipkari",
-                            company:
-                              "TrueScholar, Amravati - Asset Chain Techlligence Private Limited",
-                            ctc: "4.2 LPA",
-                          },
-                          {
-                            name: "Anjali Rajesh Garde",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Atray Rajesh Sawane",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Chitvan Ravindra Naik",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Mohammad Abuzar Mohammad Zakir Husain",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Nikhil Prakash Babhulkar",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Sakshi Nandu Bhombe",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Vaishnavi Ramkrushna Zadokar",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Sanketika Mishra",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Pallavi Sontakke",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Vaishnavi Jaiswal",
-                            company:
-                              "Capgemini Technology Services India Limited, Navi Mumbai",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Chandrakant Gawali",
-                            company: "YRC Software India LLP, Pune",
-                            ctc: "3.00 LPA",
-                          },
-                          {
-                            name: "Shubham Gorde",
-                            company: "Innodata India Pvt. Ltd., New Delhi",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Nikita Labde",
-                            company: "NCSI Technologies Pvt. Ltd., Pune",
-                            ctc: "5.6 LPA",
-                          },
-                          {
-                            name: "Vaibhav Bavaskar",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Harshal Kolhe",
-                            company: "63MOONS Technologies Ltd., Mumbai",
-                            ctc: "5.00 LPA",
-                          },
-                          {
-                            name: "Kuldeep Lunge",
-                            company:
-                              "Elab Informatics Consulting Pvt. Ltd., Pune",
-                            ctc: "3.00 LPA",
-                          },
-                        ].map((student, i) => (
-                          <tr
-                            key={i}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-6 py-4 text-center font-mono text-gray-400 text-xs">
-                              {i + 1}
-                            </td>
-                            <td className="px-6 py-4 font-bold text-gray-800">
-                              {student.name}
-                            </td>
-                            <td className="px-6 py-4 text-gray-600">
-                              {student.company}
-                            </td>
-                            <td className="px-6 py-4 text-right font-bold text-green-600 bg-green-50/50">
-                              {student.ctc}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : placementYear === "2022-23" ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
-                        <tr>
-                          <th className="px-6 py-4 font-bold text-center w-16">
-                            Sr. No.
-                          </th>
-                          <th className="px-6 py-4 font-bold">
-                            Name of Student
-                          </th>
-                          <th className="px-6 py-4 font-bold">Company Name</th>
-                          <th className="px-6 py-4 font-bold text-right">
-                            CTC
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {[
-                          {
-                            name: "Mayuri Patil",
-                            company: "ApexiaQ Technologies Pvt. Ltd., Delhi",
-                            ctc: "3.60 LPA",
-                          },
-                          {
-                            name: "Saurabh Kedar",
-                            company: "Bizsense Solution Pvt. Ltd., Nagpur",
-                            ctc: "6 LPA",
-                          },
-                          {
-                            name: "ASHISH Mehare",
-                            company: "DigitalLeaf Solutions, Hyderabad",
-                            ctc: "7.8 LPA",
-                          },
-                          {
-                            name: "Sanket Deshmukh",
-                            company: "DigitalLeaf Solutions, Hyderabad",
-                            ctc: "7.8 LPA",
-                          },
-                          {
-                            name: "Adish Raipure",
-                            company: "Expleo Solution Pvt. Ltd., Pune",
-                            ctc: "5.00 LPA",
-                          },
-                          {
-                            name: "Lokesh Chandak",
-                            company: "Expleo Solution Pvt. Ltd., Pune",
-                            ctc: "5.00 LPA",
-                          },
-                          {
-                            name: "Mayuri Heda",
-                            company: "FECUND Software Services Pvt. Ltd., Pune",
-                            ctc: "3.5 LPA",
-                          },
-                          {
-                            name: "Shankar Shinde",
-                            company: "HCL Tech, Noida",
-                            ctc: "6.00 LPA",
-                          },
-                          {
-                            name: "Harshita Ughade",
-                            company: "Hexaware Technologies, Pune",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Tejaswini Rakhonde",
-                            company: "Hexaware Technologies, Pune",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Divya Agrawal",
-                            company: "IBM India Pvt. Ltd., Bangalore",
-                            ctc: "4.50 LPA",
-                          },
-                          {
-                            name: "Hrishikesh Tholbare",
-                            company:
-                              "LotFair Solutions Private Limited, Lucknow",
-                            ctc: "2.75 LPA",
-                          },
-                          {
-                            name: "Sudhanshu Deshmukh",
-                            company:
-                              "Mastek Enterprise Solutions Pvt. Ltd., Ahmedabad",
-                            ctc: "4.20 LPA",
-                          },
-                          {
-                            name: "Anshul Ghumadwar",
-                            company:
-                              "Micropro Software Solutions Pvt. Ltd., Nagpur",
-                            ctc: "3.00 LPA",
-                          },
-                          {
-                            name: "Himanshu Jamwal",
-                            company:
-                              "Micropro Software Solutions Pvt. Ltd., Nagpur",
-                            ctc: "3.00 LPA",
-                          },
-                          {
-                            name: "Swati Khatri",
-                            company:
-                              "Micropro Software Solutions Pvt. Ltd., Nagpur",
-                            ctc: "3.00 LPA",
-                          },
-                          {
-                            name: "Tanishq Nanda",
-                            company: "Optical Arc Pvt. Ltd., Pune",
-                            ctc: "3.00 LPA",
-                          },
-                          {
-                            name: "Gaurav Pundkar",
-                            company:
-                              "Rialtes Technologies & Solutions LLP, Pune",
-                            ctc: "3.00 LPA",
-                          },
-                          {
-                            name: "Kanchan Raut",
-                            company:
-                              "Rialtes Technologies & Solutions LLP, Pune",
-                            ctc: "3.00 LPA",
-                          },
-                          {
-                            name: "Suryakant Ingle",
-                            company:
-                              "Rialtes Technologies & Solutions LLP, Pune",
-                            ctc: "3.00 LPA",
-                          },
-                          {
-                            name: "Ajinkya Mahesh Pimple",
-                            company: "Salesforce, Hyderabad",
-                            ctc: "7.25 LPA",
-                          },
-                          {
-                            name: "Palak Agrawal",
-                            company: "Sankey Solutions, Pune",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Yash Dalal",
-                            company: "Sankey Solutions, Pune",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Atharva Kolhe",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Bhavesh Mittal",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "7.00 LPA",
-                          },
-                          {
-                            name: "Gagan Wanjari",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Mohd Meeran Iqbal Mohd Zafar Iqbal",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Nikhil Jadhav",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Pramey Deshmukh",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Rutika Dharangaonkar",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Sakshi Deshmukh",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Sarvesh Sonar",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Schachi Chaware",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Shubhangi Thoke",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Siddhi Taori",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Tanay Shah",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Tejas Masurkar",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Thavar Setiya",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "7 LPA",
-                          },
-                          {
-                            name: "Trunay Wanjari",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Vinita Tiwari",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Apeksha Mundhada",
-                            company: "TATA Technology Ltd., Pune",
-                            ctc: "4.71 LPA",
-                          },
-                          {
-                            name: "Ritesh Manusmare",
-                            company: "TATA Technology Ltd., Pune",
-                            ctc: "4.71 LPA",
-                          },
-                          {
-                            name: "Shruti Lambe",
-                            company: "TATA Technology Ltd., Pune",
-                            ctc: "4.71 LPA",
-                          },
-                          {
-                            name: "Radhika Maloo",
-                            company: "Tech Mahindra Limited, Hyderabad",
-                            ctc: "3.25 LPA",
-                          },
-                          {
-                            name: "Sanjana Dhopte",
-                            company: "Tech Mahindra Limited, Hyderabad",
-                            ctc: "3.25 LPA",
-                          },
-                          {
-                            name: "Smitesh Sonar",
-                            company: "Tech Mahindra Limited, Hyderabad",
-                            ctc: "3.25 LPA",
-                          },
-                          {
-                            name: "Anand Agrawal",
-                            company: "TekLink International, Hyderabad",
-                            ctc: "6.00 LPA",
-                          },
-                          {
-                            name: "Mohammed Areeb Ozair Feeroz Khan",
-                            company: "TekLink International, Hyderabad",
-                            ctc: "6.00 LPA",
-                          },
-                          {
-                            name: "Vishal Rathod",
-                            company:
-                              "Advanced Business & Healthcare Solutions India Pvt. Ltd., Bangalore",
-                            ctc: "6.00 LPA",
-                          },
-                          {
-                            name: "Siddhi Mehta",
-                            company: "HCL Tech, Noida",
-                            ctc: "4.25 LPA",
-                          },
-                          {
-                            name: "Pakhi Mujmer",
-                            company: "MN World Enterprise Pvt Ltd",
-                            ctc: "3.14 LPA",
-                          },
-                          {
-                            name: "Gopal Shelke",
-                            company: "Quantum Integrators Pvt. Ltd. Nagpur",
-                            ctc: "3 LPA",
-                          },
-                          {
-                            name: "Saurav Wankhade",
-                            company: "Empyra Software Sol Pvt. Ltd Banglore",
-                            ctc: "3.5 LPA",
-                          },
-                          {
-                            name: "Shreyash Chatarkar",
-                            company: "Decentralized Masters",
-                            ctc: "12 LPA",
-                          },
-                          {
-                            name: "Suved Bhagwat",
-                            company: "Byju?s",
-                            ctc: "4.5 LPA",
-                          },
-                        ].map((student, i) => (
-                          <tr
-                            key={i}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-6 py-4 text-center font-mono text-gray-400 text-xs">
-                              {i + 1}
-                            </td>
-                            <td className="px-6 py-4 font-bold text-gray-800">
-                              {student.name}
-                            </td>
-                            <td className="px-6 py-4 text-gray-600">
-                              {student.company}
-                            </td>
-                            <td className="px-6 py-4 text-right font-bold text-green-600 bg-green-50/50">
-                              {student.ctc}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : placementYear === "2021-22" ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
-                        <tr>
-                          <th className="px-6 py-4 font-bold text-center w-16">
-                            Sr. No.
-                          </th>
-                          <th className="px-6 py-4 font-bold">
-                            Name of Student
-                          </th>
-                          <th className="px-6 py-4 font-bold">Company Name</th>
-                          <th className="px-6 py-4 font-bold text-right">
-                            CTC
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {[
-                          {
-                            name: "Shivani Joshi",
-                            company: "Atos|Syntel Pvt Ltd, Pune",
-                            ctc: "3.4 LPA",
-                          },
-                          {
-                            name: "Mansi Paturkar",
-                            company:
-                              "Capgemini Technology Services India Ltd, Mumbai",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Nisha Kakade",
-                            company:
-                              "Capgemini Technology Services India Ltd, Mumbai",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Pooja Deshmukh",
-                            company:
-                              "Capgemini Technology Services India Ltd, Mumbai",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Prajwal Gawal",
-                            company:
-                              "Capgemini Technology Services India Ltd, Mumbai",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Sakshi Dhanuka",
-                            company:
-                              "Capgemini Technology Services India Ltd, Mumbai",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Vijaya Narkhede",
-                            company:
-                              "Capgemini Technology Services India Ltd, Mumbai",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Aditya Sambare",
-                            company: "Coditas Solutions LLP, Pune",
-                            ctc: "6 LPA",
-                          },
-                          {
-                            name: "Sudhanshu Sathawane",
-                            company: "Global Logic India Pvt Ltd, Nagpur",
-                            ctc: "5.5 LPA",
-                          },
-                          {
-                            name: "Abhishek Moharir",
-                            company: "Hexaware Technologies, Pune",
-                            ctc: "3.5 LPA",
-                          },
-                          {
-                            name: "Aishwarya Bute",
-                            company: "Hexaware Technologies, Pune",
-                            ctc: "3.5 LPA",
-                          },
-                          {
-                            name: "Sakshi Thombare",
-                            company: "Hexaware Technologies, Pune",
-                            ctc: "3.5 LPA",
-                          },
-                          {
-                            name: "Rahul Samudrawad",
-                            company: "InfoCepts Technology, Nagpur",
-                            ctc: "3.62 LPA",
-                          },
-                          {
-                            name: "Sahil Nagrale",
-                            company: "Infosys Ltd,Bangalore",
-                            ctc: "3.6 LPA",
-                          },
-                          {
-                            name: "Radhika Deshmukh",
-                            company: "Jade global associated Pvt Ltd,Pune",
-                            ctc: "3.85 LPA",
-                          },
-                          {
-                            name: "Mitesh Sakalkar",
-                            company: "Mindtree, Bangalore",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Tanmay Thag",
-                            company: "Mindtree, Bangalore",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Bharatkumar Kedia",
-                            company: "Northern Arc Capital Mumbai",
-                            ctc: "10 LPA",
-                          },
-                          {
-                            name: "Shruti Dhave",
-                            company:
-                              "NTT Data Global Delivery Services Pvt Ltd, Bangalore",
-                            ctc: "5 LPA",
-                          },
-                          {
-                            name: "Sonal Golhar",
-                            company: "OCS Group India Pvt Ltd Bangalore",
-                            ctc: "3 LPA",
-                          },
-                          {
-                            name: "Hriday Raj",
-                            company: "Persistent SystemsPvt Ltd Nagpur",
-                            ctc: "4.71 LPA",
-                          },
-                          {
-                            name: "Sakshi Hiwrale",
-                            company: "Persistent SystemsPvt Ltd Nagpur",
-                            ctc: "4.71 LPA",
-                          },
-                          {
-                            name: "Viplav Khode",
-                            company: "Persistent SystemsPvt Ltd Nagpur",
-                            ctc: "4.71 LPA",
-                          },
-                          {
-                            name: "Akshaykumar Bhople",
-                            company: "Tata Consultancy Services Limited, Pune",
-                            ctc: "7 LPA",
-                          },
-                          {
-                            name: "Anurag Tiwari",
-                            company: "Tata Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Chetakshi Hajare",
-                            company: "Tata Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Deepali Masne",
-                            company: "Tata Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Disha Gupta",
-                            company: "Tata Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Gargi Tela",
-                            company: "Tata Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Kiran Lande",
-                            company: "Tata Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Prasad Jawadekar",
-                            company: "Tata Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Pratiksha Dake",
-                            company: "Tata Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Rasika Wadhonkar",
-                            company: "Tata Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Sejal Hasani",
-                            company: "Tata Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Shital Patil",
-                            company: "Tata Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Shreyas Patil",
-                            company: "Tata Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Tanuja Paraskar",
-                            company: "Tata Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Radha Kabra",
-                            company: "TekLink Software Pvt. Ltd., Hyderabad",
-                            ctc: "6 LPA",
-                          },
-                          {
-                            name: "Aman Sahu",
-                            company: "TietoEVRY India, Pune",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Aniket Sangle",
-                            company: "Tristha Global Pvt. Ltd., Mumbai",
-                            ctc: "3.40 LPA",
-                          },
-                          {
-                            name: "Gauri Mahalle",
-                            company: "Tudip Technologies Pvt. Ltd., Pune",
-                            ctc: "5 LPA",
-                          },
-                          {
-                            name: "Sampada Vyas",
-                            company: "Tudip Technologies Pvt. Ltd., Pune",
-                            ctc: "5 LPA",
-                          },
-                          {
-                            name: "Prasad Ugale",
-                            company:
-                              "Virtusa Consulting Services Pvt. Ltd., Pune",
-                            ctc: "6.50 LPA",
-                          },
-                          {
-                            name: "Chetan Marode",
-                            company: "Wipro Limited, Pune",
-                            ctc: "3.50 LPA",
-                          },
-                          {
-                            name: "Vishal Karhad",
-                            company: "Wipro Limited, Pune",
-                            ctc: "3.50 LPA",
-                          },
-                          {
-                            name: "Chinmay Deshkar",
-                            company: "Zensar Technologies, Pune",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Gunjan Bhagat",
-                            company: "Zensar Technologies, Pune",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Kimaya Gabhane",
-                            company: "Zensar Technologies, Pune",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Homeshwari Jadhao",
-                            company: "Wipro Limited, Pune",
-                            ctc: "3.50 LPA",
-                          },
-                          {
-                            name: "Khushbu Bhattad",
-                            company:
-                              "Capgemini Technology Services India Ltd, Mumbai",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Sakshi Thakre",
-                            company: "Bitwise Sol. Pvt. Ltd. Pune",
-                            ctc: "2.4 LPA",
-                          },
-                          {
-                            name: "Aashish Makwana",
-                            company: "Wipro Limited, Pune",
-                            ctc: "3.5 LPA",
-                          },
-                          {
-                            name: "Anishraj Singh",
-                            company: "Shiv Kailas Construction, Ahmedbad",
-                            ctc: "4.17 LPA",
-                          },
-                          {
-                            name: "Mujahidahmed Sayyed",
-                            company: "Coditas Solutions LLP, Pune",
-                            ctc: "9 LPA",
-                          },
-                          {
-                            name: "Navaneet Awajare",
-                            company: "SMS India Pvt. Ltd. Gurugaon",
-                            ctc: "6.75 LPA",
-                          },
-                          {
-                            name: "Sachin Singh",
-                            company: "Axis Bank Mumbai",
-                            ctc: "7.45 LPA",
-                          },
-                          {
-                            name: "Sanskar Mudholkar",
-                            company:
-                              "Capgemini Technology Services India Ltd, Mumbai",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Shrikant Jugnake",
-                            company: "HCL Tech.",
-                            ctc: "4.25 LPA",
-                          },
-                          {
-                            name: "Suyog Vyas",
-                            company: "Global Logic India Pvt Ltd, Nagpur",
-                            ctc: "5.54 LPA",
-                          },
-                          {
-                            name: "Tejas Wagh",
-                            company: "Delloitte",
-                            ctc: "7.8 LPA",
-                          },
-                          {
-                            name: "Vaibhav Choudhari",
-                            company: "Bitwise Sol. Pvt. Ltd. Pune",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Umang Mantri",
-                            company: "NMIMS Global Access Mumbai",
-                            ctc: "MBA",
-                          },
-                        ].map((student, i) => (
-                          <tr
-                            key={i}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-6 py-4 text-center font-mono text-gray-400 text-xs">
-                              {i + 1}
-                            </td>
-                            <td className="px-6 py-4 font-bold text-gray-800">
-                              {student.name}
-                            </td>
-                            <td className="px-6 py-4 text-gray-600">
-                              {student.company}
-                            </td>
-                            <td className="px-6 py-4 text-right font-bold text-green-600 bg-green-50/50">
-                              {student.ctc}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : placementYear === "2020-21" ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
-                        <tr>
-                          <th className="px-6 py-4 font-bold text-center w-16">
-                            Sr. No.
-                          </th>
-                          <th className="px-6 py-4 font-bold">
-                            Name of Student
-                          </th>
-                          <th className="px-6 py-4 font-bold">Company Name</th>
-                          <th className="px-6 py-4 font-bold text-right">
-                            CTC
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {[
-                          {
-                            name: "Aditi Mujmer",
-                            company: "Accenture Limited",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Kasturi Anjankar",
-                            company: "Accenture Limited",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Shantanu Kaluse",
-                            company: "Accenture Limited",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Gayatri Purohit",
-                            company: "Atos Syntel Pvt. Ltd., Pune",
-                            ctc: "3.40 LPA",
-                          },
-                          {
-                            name: "Radhika Sharma",
-                            company: "Atos Syntel Pvt. Ltd., Pune",
-                            ctc: "3.40 LPA",
-                          },
-                          {
-                            name: "Aryan Raj",
-                            company: "Bizsense Solutions Pvt Ltd., Nagpur",
-                            ctc: "4.57 LPA",
-                          },
-                          {
-                            name: "Rohit Dhatrak",
-                            company: "BYJU's, Mumbai",
-                            ctc: "7 LPA",
-                          },
-                          {
-                            name: "Manisha Hirdekar",
-                            company:
-                              "Capgemini Technology Services India Limited, Navi Mumbai",
-                            ctc: "3 LPA",
-                          },
-                          {
-                            name: "Neha Dehankar",
-                            company:
-                              "Cognizant Technology Solutions India Private Limited, Chennai",
-                            ctc: "4.01 LPA",
-                          },
-                          {
-                            name: "Neha Vyas",
-                            company:
-                              "Cognizant Technology Solutions India Private Limited, Chennai",
-                            ctc: "4.01 LPA",
-                          },
-                          {
-                            name: "Shreyash Dawake",
-                            company:
-                              "Cognizant Technology Solutions India Private Limited, Chennai",
-                            ctc: "4.01 LPA",
-                          },
-                          {
-                            name: "Komal Shukla",
-                            company:
-                              "Decos Software Development Pvt. Ltd., Pune",
-                            ctc: "3.70 LPA",
-                          },
-                          {
-                            name: "Aniket Wankhade",
-                            company: "Infosys Limited, Bangalore",
-                            ctc: "3 LPA",
-                          },
-                          {
-                            name: "Mrunal Dhabade",
-                            company: "Infosys Limited, Bangalore",
-                            ctc: "3 LPA",
-                          },
-                          {
-                            name: "Rushikesh Patil",
-                            company: "Jade Global Software Pvt. Ltd., Pune",
-                            ctc: "3.72 LPA",
-                          },
-                          {
-                            name: "Shashikant Borkar",
-                            company: "Jade Global Software Pvt. Ltd., Pune",
-                            ctc: "3.72 LPA",
-                          },
-                          {
-                            name: "Namrata Sutane",
-                            company: "Jio Platforms Limited, Ahmedabad",
-                            ctc: "3.5 LPA",
-                          },
-                          {
-                            name: "Parul Dongre",
-                            company: "Kratin SoftwareSolutions Pvt. Ltd., Pune",
-                            ctc: "5 LPA",
-                          },
-                          {
-                            name: "Prasanna Rathi",
-                            company: "MindTree, Bangalore",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Rakshada Wankhade",
-                            company: "MindTree, Bangalore",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Janvi Sarode",
-                            company: "One Smarter Inc, USA",
-                            ctc: "3.6 LPA",
-                          },
-                          {
-                            name: "Aditi Motekar",
-                            company: "Persistent Systems Limited, Pune",
-                            ctc: "4.51 LPA",
-                          },
-                          {
-                            name: "Asra Gazi",
-                            company: "Persistent Systems Limited, Pune",
-                            ctc: "4.51 LPA",
-                          },
-                          {
-                            name: "Kanishka Manakar",
-                            company: "Persistent Systems Limited, Pune",
-                            ctc: "4.51 LPA",
-                          },
-                          {
-                            name: "Rachita Patey",
-                            company: "Persistent Systems Limited, Pune",
-                            ctc: "4.51 LPA",
-                          },
-                          {
-                            name: "Saurav suman",
-                            company: "Persistent Systems Limited, Pune",
-                            ctc: "4.51 LPA",
-                          },
-                          {
-                            name: "Krishna Salampuriya",
-                            company: "PubMatic India Pvt. Ltd., Pune",
-                            ctc: "5.4 LPA",
-                          },
-                          {
-                            name: "Archana Mawale",
-                            company: "TATA Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Kaushiki Kothari",
-                            company: "TATA Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Mayur Gujar",
-                            company: "TATA Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Mayuri Kharche",
-                            company: "TATA Consultancy Services Limited, Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Bhavana Agrawal",
-                            company: "TekLink International Inc., Hyderabad",
-                            ctc: "4.25 LPA",
-                          },
-                          {
-                            name: "Shruti Wadhai",
-                            company: "TekLink International Inc., Hyderabad",
-                            ctc: "4.25 LPA",
-                          },
-                          {
-                            name: "Payal Binnod",
-                            company: "Wipro Limited, Pune",
-                            ctc: "3.25 LPA",
-                          },
-                          {
-                            name: "Poonam Shegokar",
-                            company: "Wipro Limited, Pune",
-                            ctc: "3.25 LPA",
-                          },
-                          {
-                            name: "Sumol Agrawal",
-                            company: "Wipro Limited, Pune",
-                            ctc: "3.25 LPA",
-                          },
-                          {
-                            name: "Anchal Dhok",
-                            company: "Lido Quality Tutorials Pvt Ltd",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Anushree Lajurkar",
-                            company: "Amdocs Devlopment Center India Llp.",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Sakshi Gade",
-                            company: "Tsystems",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Sonal Doiphode",
-                            company: "Infosys Limited, Bangalore",
-                            ctc: "3 LPA",
-                          },
-                          {
-                            name: "Vaishnavi Turkhade",
-                            company:
-                              "Cognizant Technology Solutions India Private Limited, Chennai",
-                            ctc: "4 LPA",
-                          },
-                          {
-                            name: "Aashwin Shegokar",
-                            company: "Accenture Limited",
-                            ctc: "3.3 LPA",
-                          },
-                          {
-                            name: "Mayank Deshmukh",
-                            company: "Infosys Limited, Bangalore",
-                            ctc: "3 LPA",
-                          },
-                          {
-                            name: "Pawan Lode",
-                            company: "Actyv.ai Digital Labs Pvt. Ltd. Banglore",
-                            ctc: "9 LPA",
-                          },
-                          {
-                            name: "Shreyash Mahankar",
-                            company:
-                              "Cognizant Technology Solutions India Private Limited, Chennai",
-                            ctc: "4.01 LPA",
-                          },
-                          {
-                            name: "Shubham Dange",
-                            company: "NEXG Healthcare Solutions Nagpur",
-                            ctc: "1.2 LPA",
-                          },
-                          {
-                            name: "Saumya Agrawal",
-                            company:
-                              "Ophiura Software & Consultancy Services Hingoli",
-                            ctc: "Entrpreneur",
-                          },
-                        ].map((student, i) => (
-                          <tr
-                            key={i}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-6 py-4 text-center font-mono text-gray-400 text-xs">
-                              {i + 1}
-                            </td>
-                            <td className="px-6 py-4 font-bold text-gray-800">
-                              {student.name}
-                            </td>
-                            <td className="px-6 py-4 text-gray-600">
-                              {student.company}
-                            </td>
-                            <td className="px-6 py-4 text-right font-bold text-green-600 bg-green-50/50">
-                              {student.ctc}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : placementYear === "2019-20" ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
-                        <tr>
-                          <th className="px-6 py-4 font-bold text-center w-16">
-                            Sr. No.
-                          </th>
-                          <th className="px-6 py-4 font-bold">
-                            Name of Student
-                          </th>
-                          <th className="px-6 py-4 font-bold">Company Name</th>
-                          <th className="px-6 py-4 font-bold text-right">
-                            CTC
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {[
-                          {
-                            name: "Bhushan Kadu",
-                            company: "Bizsense Solutions Pvt. Ltd., Nagpur",
-                            ctc: "4.30 LPA",
-                          },
-                          {
-                            name: "Sahil Mune",
-                            company: "Bizsense Solutions Pvt. Ltd., Nagpur",
-                            ctc: "4.30 LPA",
-                          },
-                          {
-                            name: "Vikram Mohite",
-                            company:
-                              "Capgemini Technology Services India Limited",
-                            ctc: "3.00 LPA",
-                          },
-                          {
-                            name: "Priya Wankhade",
-                            company:
-                              "Capgemini Technology Services India Limited",
-                            ctc: "3.00 LPA",
-                          },
-                          {
-                            name: "Akshay chandankhede",
-                            company:
-                              "Cognizant Technology Solutions India Pvt. Ltd.,Pune",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Balabhau Mali",
-                            company:
-                              "Cognizant Technology Solutions India Pvt. Ltd.,Pune",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Krishna Rathi",
-                            company:
-                              "Cognizant Technology Solutions India Pvt. Ltd.,Pune",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Priyanka Sontakke",
-                            company:
-                              "Cognizant Technology Solutions India Pvt. Ltd.,Pune",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Shubham Nimbalkar",
-                            company:
-                              "Cognizant Technology Solutions India Pvt. Ltd.,Pune",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Ajinkya Bawaskar",
-                            company: "Global Logic India Limited, Nagpur",
-                            ctc: "4.82 LPA",
-                          },
-                          {
-                            name: "Rashmi Joshi",
-                            company: "Global Logic India Limited, Nagpur",
-                            ctc: "4.82 LPA",
-                          },
-                          {
-                            name: "Bhavika Patil",
-                            company: "Infovision Lab, Pune",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Priyanka Mundhada",
-                            company: "Infovision Lab, Pune",
-                            ctc: "3.75 LPA",
-                          },
-                          {
-                            name: "Rutuja Wasu",
-                            company: "Infovision Lab, Pune",
-                            ctc: "4.00 LPA",
-                          },
-                          {
-                            name: "Shrutika Nakaskar",
-                            company: "Infovision Lab, Pune",
-                            ctc: "3.95 LPA",
-                          },
-                          {
-                            name: "Shubham Ravekar",
-                            company: "Novatech Software Pvt.Ltd., Nagpur",
-                            ctc: "4.12 LPA",
-                          },
-                          {
-                            name: "Yash Paliwal",
-                            company: "Novatech Software Pvt.Ltd., Nagpur",
-                            ctc: "4.12 LPA",
-                          },
-                          {
-                            name: "Karan Bilakhiya",
-                            company: "Persistent Systems Limited, Nagpur",
-                            ctc: "4.10 LPA",
-                          },
-                          {
-                            name: "Tejashree Kukade",
-                            company: "Persistent Systems Limited, Nagpur",
-                            ctc: "4.10 LPA",
-                          },
-                          {
-                            name: "Pranati Dey",
-                            company: "SingularityAIX",
-                            ctc: "1.80 LPA",
-                          },
-                          {
-                            name: "Devanshu Thakare",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Leena Patil",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Megha Shrawgi",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Nikita Bhansali",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Prashanthi Ghantasala",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Rajat Ninawe",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Tejal Nandapure",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Harshal Kadu",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Shruti Wadaskar",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Sachin Nair",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Shruti Umbarkar",
-                            company: "Tek Link International Inc, Hyderabad",
-                            ctc: "3.75 LPA",
-                          },
-                          {
-                            name: "Jay Chaware",
-                            company:
-                              "TTEC India Customer Solutions Pvt. Ltd.Ahmedabad",
-                            ctc: "2.80 LPA",
-                          },
-                          {
-                            name: "Vaishnavi Kale",
-                            company: "Unisys India Pvt. Ltd., Bengalru",
-                            ctc: "4.29 LPA",
-                          },
-                          {
-                            name: "Aboli Chintawar",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "3.60 LPA",
-                          },
-                          {
-                            name: "Dipali Kharat",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "3.60 LPA",
-                          },
-                          {
-                            name: "Madhu Mandhane",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "3.60 LPA",
-                          },
-                          {
-                            name: "Neha Mahalle",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "3.60 LPA",
-                          },
-                          {
-                            name: "Pranav Chaudhari",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "3.60 LPA",
-                          },
-                          {
-                            name: "Preety Panjwani",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "3.60 LPA",
-                          },
-                          {
-                            name: "Pritesh Dammani",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "3.60 LPA",
-                          },
-                          {
-                            name: "Raksha Gangan",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "3.60 LPA",
-                          },
-                          {
-                            name: "Sandeep Kumar",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "3.60 LPA",
-                          },
-                          {
-                            name: "Shraddha Karale",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "3.60 LPA",
-                          },
-                          {
-                            name: "Suyog Deshmukh",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "3.60 LPA",
-                          },
-                          {
-                            name: "Aman Gupta",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "3.60 LPA",
-                          },
-                          {
-                            name: "Hitesh Vaidya",
-                            company: "Wipro Limited, Bangalore",
-                            ctc: "3.50 LPA",
-                          },
-                          {
-                            name: "Pragati Gawande",
-                            company: "Wipro Limited, Bangalore",
-                            ctc: "3.50 LPA",
-                          },
-                          {
-                            name: "Sanchit Datir",
-                            company: "Wipro Limited, Bangalore",
-                            ctc: "3.50 LPA",
-                          },
-                          {
-                            name: "Shivam Sharma",
-                            company: "Wipro Limited, Bangalore",
-                            ctc: "3.50 LPA",
-                          },
-                          {
-                            name: "Amey Band",
-                            company: "Zensar Technologies, Pune",
-                            ctc: "3.20 LPA",
-                          },
-                          {
-                            name: "Anuradha Mahalle",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Anushree Gattani",
-                            company: "Happy Faces School Washim",
-                            ctc: "1.2 LPA",
-                          },
-                          {
-                            name: "Manali Gujarathi",
-                            company: "Casepoint Pvt. Ltd Surat",
-                            ctc: "3.20 LPA",
-                          },
-                          {
-                            name: "Mayur Rathod",
-                            company:
-                              "Yardi Software India Private Limited, Pune",
-                            ctc: "3.20 LPA",
-                          },
-                          {
-                            name: "Shrikant Thakre",
-                            company: "IBM India Private Limited",
-                            ctc: "4.25 LPA",
-                          },
-                          {
-                            name: "Sourabh Namdeo",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Sumit Asutkar",
-                            company: "ACCENTURE LTD",
-                            ctc: "4.5 LPA",
-                          },
-                          {
-                            name: "Uzair Amin",
-                            company: "Infosys Limited Banglore",
-                            ctc: "5 LPA",
-                          },
-                          {
-                            name: "Yogita Katare",
-                            company: "Tristha Global Pvt. Ltd. Mumbai",
-                            ctc: "3.4 LPA",
-                          },
-                        ].map((student, i) => (
-                          <tr
-                            key={i}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-6 py-4 text-center font-mono text-gray-400 text-xs">
-                              {i + 1}
-                            </td>
-                            <td className="px-6 py-4 font-bold text-gray-800">
-                              {student.name}
-                            </td>
-                            <td className="px-6 py-4 text-gray-600">
-                              {student.company}
-                            </td>
-                            <td className="px-6 py-4 text-right font-bold text-green-600 bg-green-50/50">
-                              {student.ctc}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : placementYear === "2018-19" ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-gray-800 text-white uppercase text-xs tracking-wider">
-                        <tr>
-                          <th className="px-6 py-4 font-bold text-center w-16">
-                            Sr. No.
-                          </th>
-                          <th className="px-6 py-4 font-bold">
-                            Name of Student
-                          </th>
-                          <th className="px-6 py-4 font-bold">Company Name</th>
-                          <th className="px-6 py-4 font-bold text-right">
-                            CTC
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {[
-                          {
-                            name: "Pranil Chimurkar",
-                            company: "Accenture Limited, Bangalore",
-                            ctc: "7.26 LPA",
-                          },
-                          {
-                            name: "Apurva Mujgewar",
-                            company: "Atos-Syntel Pvt. Ltd., Pune",
-                            ctc: "3.10 LPA",
-                          },
-                          {
-                            name: "Shamali Kawitkar",
-                            company: "Atos-Syntel Pvt. Ltd., Pune",
-                            ctc: "3.10 LPA",
-                          },
-                          {
-                            name: "Atul Jamode",
-                            company: "Cognizant Solutions India Limited, Pune",
-                            ctc: "3.83 LPA",
-                          },
-                          {
-                            name: "Narendra Chandak",
-                            company: "Cognizant Solutions India Limited, Pune",
-                            ctc: "3.83 LPA",
-                          },
-                          {
-                            name: "Abhishek Tripathi",
-                            company: "Doshaheen Solutions Pvt. Ltd.,Pune",
-                            ctc: "7.00 LPA",
-                          },
-                          {
-                            name: "Kismat Shere",
-                            company: "HCL Technologies Limited, Noida",
-                            ctc: "4.17 LPA",
-                          },
-                          {
-                            name: "Akshada Tiwari",
-                            company: "Infosys Limited, Bangalore",
-                            ctc: "3.65 LPA",
-                          },
-                          {
-                            name: "Pavan Raut",
-                            company: "Jade Global Software Pvt. Ltd., Pune",
-                            ctc: "3.00 LPA",
-                          },
-                          {
-                            name: "Shubham Wankhade",
-                            company: "Locationguru Pvt. Ltd., Nagpur",
-                            ctc: "2.8 LPA",
-                          },
-                          {
-                            name: "Tushar Singewar",
-                            company: "Locationguru Pvt. Ltd., Nagpur",
-                            ctc: "2.8 LPA",
-                          },
-                          {
-                            name: "Rahul Rajabhoj",
-                            company: "Microlise Telematics Pvt. Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Rajat Sadiwala",
-                            company: "Sthapatya Consultants (I) Pvt Ltd,Pune",
-                            ctc: "1.80 LPA",
-                          },
-                          {
-                            name: "Sakshi Hajare",
-                            company: "Sthapatya Consultants (I) Pvt Ltd,Pune",
-                            ctc: "1.80 LPA",
-                          },
-                          {
-                            name: "Abhiram Pande",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Aditi Panpalia",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Anushree Paralikar",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Arpita Gonnade",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Aruna Sambare",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Brajesh Kumar",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Chanchal Dhanuka",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Dipali Deshmane",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Hrutuja Mankar",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Madhura Patwardhan",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Mahesh Rathi",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Mukta Tayade",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Rupali Mohurle",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Shivani Deshmukh",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Shrikala Sant",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Sneha Raut",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Supriya Satao",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Swapnil Murkute",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Veena Rathi",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Vishal Zade",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Abhijit Chaudhari",
-                            company: "Tudip Technologies Pvt. Ltd., Pune",
-                            ctc: "3.00 LPA",
-                          },
-                          {
-                            name: "Mujeeb Khan",
-                            company: "Unifide Synergy Folks Pvt. Ltd., Chennai",
-                            ctc: "8.00 LPA",
-                          },
-                          {
-                            name: "Paras Mehta",
-                            company:
-                              "Value Momentum Software Services Pvt. Ltd., Hyderabad",
-                            ctc: "3.30 LPA",
-                          },
-                          {
-                            name: "Trupti Kotak",
-                            company: "Vodafone Idea Services Pvt. Ltd.,Pune",
-                            ctc: "4.25 LPA",
-                          },
-                          {
-                            name: "Rucha Rathi",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Payal Kale",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Ankita Batle",
-                            company: "Karvy DigiKonnect Ltd., Hyderabad",
-                            ctc: "1.56 LPA",
-                          },
-                          {
-                            name: "Bharati Jaware",
-                            company: "Accenture Limited",
-                            ctc: "3.75 LPA",
-                          },
-                          {
-                            name: "Gayatree Sharma",
-                            company: "Atos-Syntel Pvt. Ltd., Pune",
-                            ctc: "3.1 LPA",
-                          },
-                          {
-                            name: "Pragati Sambare",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.84 LPA",
-                          },
-                          {
-                            name: "Prerana Talole",
-                            company: "Atos-Syntel Pvt. Ltd., Pune",
-                            ctc: "3.1 LPA",
-                          },
-                          {
-                            name: "Priyanka Thakare",
-                            company: "Mindtree Ltd. Bangalore",
-                            ctc: "2.97 LPA",
-                          },
-                          {
-                            name: "Rasika Virdande",
-                            company:
-                              "Cognizant Technology Solutions India Pvt. Ltd.",
-                            ctc: "3.38 LPA",
-                          },
-                          {
-                            name: "Atharva Gharote",
-                            company: "Locationguru Pvt. Ltd., Nagpur",
-                            ctc: "2.8 LPA",
-                          },
-                          {
-                            name: "Lakhan Bhaiya",
-                            company: "Ness Digital Engineering, Hyderabad",
-                            ctc: "5 LPA",
-                          },
-                          {
-                            name: "Pranil Deshmukh",
-                            company:
-                              "DNEG India Media Services Limited, Mumbai",
-                            ctc: "2.52 LPA",
-                          },
-                          {
-                            name: "Rohit Pardhi",
-                            company: "IBM India Pvt. Ltd Banglore",
-                            ctc: "3.6 LPA",
-                          },
-                          {
-                            name: "Rohit Tidke",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                          {
-                            name: "Shivam Shrivastav",
-                            company:
-                              "Edureka Brain4ceeducation Solutions Pvt Ltd Banglore",
-                            ctc: "4.48 LPA",
-                          },
-                          {
-                            name: "Sumit Muskawar",
-                            company: "Tata Consultancy Services Ltd., Pune",
-                            ctc: "3.36 LPA",
-                          },
-                        ].map((student, i) => (
-                          <tr
-                            key={i}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-6 py-4 text-center font-mono text-gray-400 text-xs">
-                              {i + 1}
-                            </td>
-                            <td className="px-6 py-4 font-bold text-gray-800">
-                              {student.name}
-                            </td>
-                            <td className="px-6 py-4 text-gray-600">
-                              {student.company}
-                            </td>
-                            <td className="px-6 py-4 text-right font-bold text-green-600 bg-green-50/50">
-                              {student.ctc}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-64 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                  <FaUniversity className="text-4xl text-gray-300 mb-4" />
-                  <p className="text-gray-500 font-medium">
-                    Detailed report for {placementYear} will be uploaded soon.
-                  </p>
-                  {["2021-22", "2018-19"].includes(placementYear) && (
-                    <a
-                      href={`/documents/${placementYear}-Placements_CSE.pdf`}
-                      target="_blank"
-                      className="mt-4 px-6 py-2 bg-ssgmce-blue text-white rounded-lg hover:bg-ssgmce-dark-blue transition flex items-center shadow-lg shadow-blue-200"
-                    >
-                      <FaDownload className="mr-2" /> Download Full PDF
-                    </a>
-                  )}
-                </div>
-              )}
+              {renderPlacementDetails()}
             </motion.div>
           )}
         </AnimatePresence>
@@ -8672,7 +6483,19 @@ const CSE = () => {
                 Department of Computer Science & Engineering
               </p>
             </div>
-            <FaDownload className="text-4xl text-blue-200 opacity-40" />
+            <div className="flex items-center gap-4">
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={addNewsletter}
+                  className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                >
+                  <FaPlus className="text-xs" />
+                  Add Newsletter
+                </button>
+              )}
+              <FaDownload className="text-4xl text-blue-200 opacity-40" />
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -8701,11 +6524,10 @@ const CSE = () => {
                       </span>
                       <span className="font-bold text-gray-800">
                         <EditableText
-                          value={t(
-                            "newsletters.latest.title",
-                            defaultNewsletters.latest.title ||
-                              "News Letter 2025-26 (Volume I)",
-                          )}
+                          value={
+                            latestNewsletterData.title ||
+                            "News Letter 2025-26 (Volume I)"
+                          }
                           onSave={(val) =>
                             updateNewsletter("latest", 0, "title", val)
                           }
@@ -8714,24 +6536,65 @@ const CSE = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <a
-                      href={t(
-                        "newsletters.latest.link",
-                        defaultNewsletters.latest.link || "#",
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
-                    >
-                      <FaDownload className="text-xs" /> Click for Details
-                    </a>
+                    {isEditing ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-gray-200 bg-blue-50 px-4 py-2 text-xs font-medium text-ssgmce-blue transition-all hover:border-blue-400 hover:bg-blue-100">
+                          <FaUpload className="text-xs" />
+                          {newsletterUploading["latest-0"]
+                            ? "Uploading..."
+                            : "Upload PDF"}
+                          <input
+                            type="file"
+                            accept="application/pdf"
+                            className="hidden"
+                            disabled={newsletterUploading["latest-0"]}
+                            onChange={(event) =>
+                              handleNewsletterFileChange("latest", 0, event)
+                            }
+                          />
+                        </label>
+                        {latestNewsletterData.link && (
+                          <a
+                            href={latestNewsletterData.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-medium text-ssgmce-blue underline underline-offset-2"
+                          >
+                            {getNewsletterFileName(
+                              latestNewsletterData.link,
+                              latestNewsletterData.fileName || "",
+                            )}
+                          </a>
+                        )}
+                        {newsletterUploadErrors["latest-0"] && (
+                          <span className="text-center text-[11px] text-red-500">
+                            {newsletterUploadErrors["latest-0"]}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => deleteNewsletter("latest", 0)}
+                          className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-600 transition hover:bg-red-100"
+                        >
+                          <FaTrash className="text-xs" />
+                          Delete
+                        </button>
+                      </div>
+                    ) : (
+                      <a
+                        href={latestNewsletterData.link || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                      >
+                        <FaDownload className="text-xs" /> Click for Details
+                      </a>
+                    )}
                   </td>
                 </tr>
 
                 {/* Archive Rows */}
-                {(
-                  t("newsletters.archives", defaultNewsletters.archives) || []
-                ).map((issue, i) => (
+                {newsletterArchivesData.map((issue, i) => (
                   <tr key={i} className="hover:bg-blue-50/30 transition-colors">
                     <td className="px-6 py-4 text-center font-mono text-gray-400">
                       {i + 2}
@@ -8747,14 +6610,57 @@ const CSE = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <a
-                        href={issue.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
-                      >
-                        <FaDownload className="text-xs" /> Click for Details
-                      </a>
+                      {isEditing ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-gray-200 bg-blue-50 px-4 py-2 text-xs font-medium text-ssgmce-blue transition-all hover:border-blue-400 hover:bg-blue-100">
+                            <FaUpload className="text-xs" />
+                            {newsletterUploading[`archives-${i}`]
+                              ? "Uploading..."
+                              : "Upload PDF"}
+                            <input
+                              type="file"
+                              accept="application/pdf"
+                              className="hidden"
+                              disabled={newsletterUploading[`archives-${i}`]}
+                              onChange={(event) =>
+                                handleNewsletterFileChange("archives", i, event)
+                              }
+                            />
+                          </label>
+                          {issue.link && (
+                            <a
+                              href={issue.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-medium text-ssgmce-blue underline underline-offset-2"
+                            >
+                              {getNewsletterFileName(issue.link, issue.fileName)}
+                            </a>
+                          )}
+                          {newsletterUploadErrors[`archives-${i}`] && (
+                            <span className="text-center text-[11px] text-red-500">
+                              {newsletterUploadErrors[`archives-${i}`]}
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => deleteNewsletter("archives", i)}
+                            className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-600 transition hover:bg-red-100"
+                          >
+                            <FaTrash className="text-xs" />
+                            Delete
+                          </button>
+                        </div>
+                      ) : (
+                        <a
+                          href={issue.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange font-medium text-xs border border-gray-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-all"
+                        >
+                          <FaDownload className="text-xs" /> Click for Details
+                        </a>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -8881,6 +6787,18 @@ const CSE = () => {
               transition={{ duration: 0.3 }}
               className="space-y-4"
             >
+              {isEditing && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => addAchievement("faculty")}
+                    className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-ssgmce-blue to-blue-700 px-4 py-2 text-sm font-semibold text-white transition-all hover:shadow-lg"
+                  >
+                    <FaPlus className="text-xs" />
+                    Add Faculty Achievement
+                  </button>
+                </div>
+              )}
               {facultyAchievements.map((item, index) => (
                 <motion.div
                   key={index}
@@ -8892,30 +6810,119 @@ const CSE = () => {
                   <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
                     <h3 className="text-lg font-bold text-white flex items-center">
                       <FaTrophy className="mr-3 text-yellow-300" />
-                      {item.name}
+                      <EditableText
+                        value={item.name}
+                        onSave={(val) =>
+                          updateAchievementItem("faculty", index, "name", val)
+                        }
+                      />
                     </h3>
                     <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
-                      {item.category}
+                      <EditableText
+                        value={item.category}
+                        onSave={(val) =>
+                          updateAchievementItem(
+                            "faculty",
+                            index,
+                            "category",
+                            val,
+                          )
+                        }
+                      />
                     </span>
                   </div>
                   <div className="p-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <h4 className="text-sm font-bold text-[#003366] mb-2">
-                          {item.achievement}
+                          <EditableText
+                            value={item.achievement}
+                            onSave={(val) =>
+                              updateAchievementItem(
+                                "faculty",
+                                index,
+                                "achievement",
+                                val,
+                              )
+                            }
+                          />
                         </h4>
-                        <p className="text-gray-700 text-sm leading-relaxed">
-                          {item.description}
-                        </p>
+                        <div className="text-gray-700 text-sm leading-relaxed">
+                          <MarkdownEditor
+                            value={item.description}
+                            onSave={(val) =>
+                              updateAchievementItem(
+                                "faculty",
+                                index,
+                                "description",
+                                val,
+                              )
+                            }
+                            placeholder="Add achievement description in Markdown..."
+                            className="w-full"
+                          />
+                        </div>
                       </div>
-                      {item.image && (
-                        <button
-                          onClick={() => handleViewCertificate(item)}
-                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
-                        >
-                          <FaAward className="text-yellow-300" />
-                          View Certificate
-                        </button>
+                      {isEditing ? (
+                        <div className="flex min-w-[190px] flex-col items-end gap-2">
+                          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-gradient-to-r from-[#003366] to-[#004d99] px-4 py-2.5 text-xs font-semibold text-white transition-all duration-300 hover:from-[#004d99] hover:to-[#0066cc] hover:shadow-lg">
+                            <FaUpload className="text-yellow-300" />
+                            {achievementUploading[`faculty-${index}`]
+                              ? "Uploading..."
+                              : "Upload Certificate"}
+                            <input
+                              type="file"
+                              accept="image/*,application/pdf"
+                              className="hidden"
+                              disabled={achievementUploading[`faculty-${index}`]}
+                              onChange={(event) =>
+                                handleAchievementFileChange(
+                                  "faculty",
+                                  index,
+                                  event,
+                                )
+                              }
+                            />
+                          </label>
+                          {item.image && (
+                            <a
+                              href={item.image}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-right text-xs font-medium text-ssgmce-blue underline underline-offset-2"
+                            >
+                              {getAchievementFileName(item.image)}
+                            </a>
+                          )}
+                          {achievementUploadErrors[`faculty-${index}`] && (
+                            <span className="text-right text-[11px] text-red-500">
+                              {achievementUploadErrors[`faculty-${index}`]}
+                            </span>
+                          )}
+                          {achievementUploadSuccess[`faculty-${index}`] && (
+                            <span className="rounded-full bg-green-50 px-3 py-1 text-right text-[11px] font-semibold text-green-700">
+                              {achievementUploadSuccess[`faculty-${index}`]}
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => deleteAchievement("faculty", index)}
+                            className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100"
+                          >
+                            <FaTrash className="text-xs" />
+                            Delete
+                          </button>
+                        </div>
+                      ) : (
+                        item.image && (
+                          <button
+                            onClick={() => handleViewCertificate(item)}
+                            className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                          >
+                            <FaAward className="text-yellow-300" />
+                            View Certificate
+                          </button>
+                        )
                       )}
                     </div>
                   </div>
@@ -8937,6 +6944,18 @@ const CSE = () => {
               transition={{ duration: 0.3 }}
               className="space-y-4"
             >
+              {isEditing && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => addAchievement("students")}
+                    className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-ssgmce-blue to-blue-700 px-4 py-2 text-sm font-semibold text-white transition-all hover:shadow-lg"
+                  >
+                    <FaPlus className="text-xs" />
+                    Add Student Achievement
+                  </button>
+                </div>
+              )}
               {studentAchievements.map((item, index) => (
                 <motion.div
                   key={index}
@@ -8948,30 +6967,119 @@ const CSE = () => {
                   <div className="bg-[#003366] px-6 py-4 flex items-center justify-between">
                     <h3 className="text-lg font-bold text-white flex items-center">
                       <FaAward className="mr-3 text-yellow-300" />
-                      {item.name}
+                      <EditableText
+                        value={item.name}
+                        onSave={(val) =>
+                          updateAchievementItem("students", index, "name", val)
+                        }
+                      />
                     </h3>
                     <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/15 text-blue-100 border border-white/20">
-                      {item.category}
+                      <EditableText
+                        value={item.category}
+                        onSave={(val) =>
+                          updateAchievementItem(
+                            "students",
+                            index,
+                            "category",
+                            val,
+                          )
+                        }
+                      />
                     </span>
                   </div>
                   <div className="p-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <h4 className="text-sm font-bold text-[#003366] mb-2">
-                          {item.achievement}
+                          <EditableText
+                            value={item.achievement}
+                            onSave={(val) =>
+                              updateAchievementItem(
+                                "students",
+                                index,
+                                "achievement",
+                                val,
+                              )
+                            }
+                          />
                         </h4>
-                        <p className="text-gray-700 text-sm leading-relaxed">
-                          {item.description}
-                        </p>
+                        <div className="text-gray-700 text-sm leading-relaxed">
+                          <MarkdownEditor
+                            value={item.description}
+                            onSave={(val) =>
+                              updateAchievementItem(
+                                "students",
+                                index,
+                                "description",
+                                val,
+                              )
+                            }
+                            placeholder="Add achievement description in Markdown..."
+                            className="w-full"
+                          />
+                        </div>
                       </div>
-                      {item.image && (
-                        <button
-                          onClick={() => handleViewCertificate(item)}
-                          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
-                        >
-                          <FaAward className="text-yellow-300" />
-                          View Certificate
-                        </button>
+                      {isEditing ? (
+                        <div className="flex min-w-[190px] flex-col items-end gap-2">
+                          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-gradient-to-r from-[#003366] to-[#004d99] px-4 py-2.5 text-xs font-semibold text-white transition-all duration-300 hover:from-[#004d99] hover:to-[#0066cc] hover:shadow-lg">
+                            <FaUpload className="text-yellow-300" />
+                            {achievementUploading[`students-${index}`]
+                              ? "Uploading..."
+                              : "Upload Certificate"}
+                            <input
+                              type="file"
+                              accept="image/*,application/pdf"
+                              className="hidden"
+                              disabled={achievementUploading[`students-${index}`]}
+                              onChange={(event) =>
+                                handleAchievementFileChange(
+                                  "students",
+                                  index,
+                                  event,
+                                )
+                              }
+                            />
+                          </label>
+                          {item.image && (
+                            <a
+                              href={item.image}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-right text-xs font-medium text-ssgmce-blue underline underline-offset-2"
+                            >
+                              {getAchievementFileName(item.image)}
+                            </a>
+                          )}
+                          {achievementUploadErrors[`students-${index}`] && (
+                            <span className="text-right text-[11px] text-red-500">
+                              {achievementUploadErrors[`students-${index}`]}
+                            </span>
+                          )}
+                          {achievementUploadSuccess[`students-${index}`] && (
+                            <span className="rounded-full bg-green-50 px-3 py-1 text-right text-[11px] font-semibold text-green-700">
+                              {achievementUploadSuccess[`students-${index}`]}
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => deleteAchievement("students", index)}
+                            className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100"
+                          >
+                            <FaTrash className="text-xs" />
+                            Delete
+                          </button>
+                        </div>
+                      ) : (
+                        item.image && (
+                          <button
+                            onClick={() => handleViewCertificate(item)}
+                            className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#003366] to-[#004d99] text-white text-xs font-semibold rounded-lg hover:from-[#004d99] hover:to-[#0066cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                          >
+                            <FaAward className="text-yellow-300" />
+                            View Certificate
+                          </button>
+                        )
                       )}
                     </div>
                   </div>
@@ -9100,6 +7208,189 @@ const CSE = () => {
             </motion.div>
           </AnimatePresence>
         </div>
+
+        {/* Add Placement Year Modal */}
+        <AnimatePresence>
+          {showAddPlacementYear && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+              onClick={() => setShowAddPlacementYear(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <FaPlus className="text-ssgmce-blue" /> Add New Academic
+                    Year
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setPlacementYearError("");
+                      setShowAddPlacementYear(false);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <FaTimes className="text-xl" />
+                  </button>
+                </div>
+
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Academic Year <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., 2025-26"
+                      value={newPlacementYear}
+                      onChange={(e) => {
+                        setNewPlacementYear(e.target.value);
+                        if (placementYearError) {
+                          setPlacementYearError("");
+                        }
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ssgmce-blue focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Enter the academic year in format YYYY-YY (e.g., 2025-26)
+                    </p>
+                    {placementYearError ? (
+                      <p className="text-xs text-red-600 mt-2">
+                        {placementYearError}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-sm text-blue-800">
+                      <strong>Note:</strong> After adding the year, you can
+                      click "View Details" to edit the placement records for
+                      this academic year.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setPlacementYearError("");
+                      setShowAddPlacementYear(false);
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddPlacementYear}
+                    disabled={!newPlacementYear.trim()}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <FaPlus /> Add Year
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+          {showAddUgProjectYear && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+              onClick={() => setShowAddUgProjectYear(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <FaPlus className="text-ssgmce-blue" /> Add UG Project
+                    Session
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setUgProjectYearError("");
+                      setShowAddUgProjectYear(false);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <FaTimes className="text-xl" />
+                  </button>
+                </div>
+
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Academic Year <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., 2025-26"
+                      value={newUgProjectYear}
+                      onChange={(e) => {
+                        setNewUgProjectYear(e.target.value);
+                        if (ugProjectYearError) {
+                          setUgProjectYearError("");
+                        }
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ssgmce-blue focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Enter the academic year in format YYYY-YY (e.g.,
+                      2025-26)
+                    </p>
+                    {ugProjectYearError ? (
+                      <p className="text-xs text-red-600 mt-2">
+                        {ugProjectYearError}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-sm text-blue-800">
+                      <strong>Note:</strong> After adding the session, you can
+                      add project rows manually or import a DOCX into the bulk
+                      markdown editor.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setUgProjectYearError("");
+                      setShowAddUgProjectYear(false);
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddUgProjectYear}
+                    disabled={!newUgProjectYear.trim()}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <FaPlus /> Add Session
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </GenericPage>
   );

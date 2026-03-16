@@ -7,6 +7,7 @@ import {
   FaCheck,
   FaExclamationTriangle,
   FaFileImport,
+  FaUndo,
 } from "react-icons/fa";
 import { ADMIN_ROUTE_PREFIX } from "../../config/adminAccess";
 import DocImportModal from "./DocImportModal";
@@ -17,14 +18,16 @@ import DocImportModal from "./DocImportModal";
  */
 const AdminToolbar = ({ title = "Page Editor" }) => {
   const navigate = useNavigate();
-  const { hasChanges, saveData } = useEdit();
+  const { hasChanges, saveData, discardChanges } = useEdit();
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'error' | null
+  const [saveError, setSaveError] = useState("");
   const [showImportModal, setShowImportModal] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
     setSaveStatus(null);
+    setSaveError("");
 
     const result = await saveData();
 
@@ -33,7 +36,7 @@ const AdminToolbar = ({ title = "Page Editor" }) => {
       setTimeout(() => setSaveStatus(null), 3000);
     } else {
       setSaveStatus("error");
-      setTimeout(() => setSaveStatus(null), 5000);
+      setSaveError(result.error || "Unknown error");
     }
 
     setSaving(false);
@@ -81,7 +84,16 @@ const AdminToolbar = ({ title = "Page Editor" }) => {
                 {saveStatus === "error" && (
                   <span className="flex items-center gap-1 text-red-600">
                     <FaExclamationTriangle className="text-xs" />
-                    Save failed
+                    Save failed: {saveError}
+                    <button
+                      onClick={() => {
+                        setSaveStatus(null);
+                        setSaveError("");
+                      }}
+                      className="ml-2 text-xs underline hover:text-red-800"
+                    >
+                      Dismiss
+                    </button>
                   </span>
                 )}
                 {!hasChanges && !saveStatus && (
@@ -99,6 +111,31 @@ const AdminToolbar = ({ title = "Page Editor" }) => {
             >
               <FaFileImport />
               <span className="hidden sm:inline">Import Doc/PDF</span>
+            </button>
+            <button
+              onClick={() => {
+                if (
+                  window.confirm(
+                    "Discard all unsaved changes? This cannot be undone.",
+                  )
+                ) {
+                  discardChanges();
+                  setSaveStatus(null);
+                  setSaveError("");
+                }
+              }}
+              disabled={!hasChanges || saving}
+              className={`
+                flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all border
+                ${
+                  hasChanges && !saving
+                    ? "border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+                    : "border-gray-200 text-gray-400 cursor-not-allowed"
+                }
+              `}
+            >
+              <FaUndo />
+              <span className="hidden sm:inline">Discard Changes</span>
             </button>
             <button
               onClick={handleSave}
