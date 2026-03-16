@@ -2,6 +2,10 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import {
+  ACADEMICS_PAGE_LINKS,
+  academicsPathToPageId,
+} from "../../constants/academicsPages";
+import {
   FaHome, FaFileAlt, FaNewspaper, FaBullhorn, FaCalendarAlt,
   FaUserGraduate, FaBriefcase, FaUniversity, FaFileImage, FaChartLine,
   FaUsers, FaComments, FaCog, FaChevronLeft, FaChevronRight,
@@ -23,6 +27,14 @@ const AdminSidebar = ({ collapsed, setCollapsed }) => {
     : null;
   const superAdminOnly = (item) => ({ ...item, superAdminOnly: true });
 
+  const academicsPageItems = ACADEMICS_PAGE_LINKS.map((page) =>
+    superAdminOnly({
+      name: page.label,
+      path: `/admin/academics?pageId=${academicsPathToPageId(page.path)}`,
+      icon: FaFileAlt,
+    }),
+  );
+
   const allMenuItems = [
     { title: "Overview", items: [
       { name: "Dashboard", path: "/admin", icon: FaHome },
@@ -36,11 +48,13 @@ const AdminSidebar = ({ collapsed, setCollapsed }) => {
       { name: "Popup Banner", path: "/admin/popup-banner", icon: FaEye },
       { name: "Menu Manager", path: "/admin/menu-manager", icon: FaBars },
     ]},
-    { title: "Academic", items: [
+    { title: "Academics Pages", superAdminOnly: true, items: academicsPageItems },
+    { title: "Academic Management", items: [
       superAdminOnly({ name: "Departments", path: "/admin/departments", icon: FaUniversity }),
       ...(isCoordinator && coordDeptPagePath
         ? [{ name: "My Department", path: coordDeptPagePath, icon: FaUniversity }]
         : []),
+      superAdminOnly({ name: "Academics Content", path: "/admin/academics", icon: FaFileAlt }),
       superAdminOnly({ name: "Faculty", path: "/admin/faculty", icon: FaUserGraduate }),
       superAdminOnly({ name: "Research", path: "/admin/research", icon: FaFlask }),
       superAdminOnly({ name: "IQAC", path: "/admin/iqac", icon: FaClipboardList }),

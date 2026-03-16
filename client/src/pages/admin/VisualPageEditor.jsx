@@ -84,6 +84,11 @@ const VisualPageEditor = () => {
     }
   }
 
+  // Academics pages use dedicated markdown editor flow.
+  if (pageId?.startsWith("academics-")) {
+    return <Navigate to={`/admin/academics?pageId=${pageId}`} replace />;
+  }
+
   useEffect(() => {
     const fetchPageData = async () => {
       if (!pageId) return;

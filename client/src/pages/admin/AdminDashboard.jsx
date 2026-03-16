@@ -4,6 +4,7 @@ import axios from "axios";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { useAuth } from "../../hooks/useAuth";
 import { DASHBOARD_SECTIONS } from "../../constants/navConfig";
+import { isAcademicsWebsiteRoute } from "../../constants/academicsPages";
 import {
   FaPlus, FaEdit, FaClock, FaFileAlt, FaChartLine, FaArrowRight,
   FaChartPie, FaDatabase, FaUniversity, FaArrowUp, FaNewspaper,
@@ -18,6 +19,10 @@ const DEPT_TO_PAGEID = {
   ELECTRICAL: "departments-electrical", ENTC: "departments-entc",
   MBA: "departments-mba", ASH: "departments-applied-sciences",
 };
+
+const isLegacyAcademicsPage = (page) =>
+  (page.category || "").toLowerCase() === "academics" &&
+  !isAcademicsWebsiteRoute(page.route);
 
 const StatCard = ({ label, value, sub, icon: Icon, accent = "gray" }) => {
   const colors = {
@@ -59,7 +64,10 @@ const AdminDashboard = () => {
     try {
       const res = await axios.get("/api/pages");
       if (res.data.success) {
-        const pages = res.data.data;
+        const pages = (res.data.data || []).filter(
+          (page) => !isLegacyAcademicsPage(page),
+        );
+
         setTotalPages(pages.length);
         const counts = {};
         DASHBOARD_SECTIONS.forEach((c) => { counts[c.id] = 0; });

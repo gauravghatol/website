@@ -15,7 +15,7 @@ import DocImportModal from "./DocImportModal";
  * AdminToolbar - Floating toolbar for visual page editor
  * Provides save, back navigation, and change status indicators
  */
-const AdminToolbar = ({ title = "Page Editor" }) => {
+const AdminToolbar = ({ title = "Page Editor", onBack }) => {
   const navigate = useNavigate();
   const { hasChanges, saveData } = useEdit();
   const [saving, setSaving] = useState(false);
@@ -46,7 +46,8 @@ const AdminToolbar = ({ title = "Page Editor" }) => {
       );
       if (!confirmed) return;
     }
-    navigate(`${ADMIN_ROUTE_PREFIX}`);
+    if (onBack) onBack();
+    else navigate(`${ADMIN_ROUTE_PREFIX}`);
   };
 
   return (

@@ -10,6 +10,7 @@ import LibrarySidebar from "./LibrarySidebar";
 import HostelSidebar from "./HostelSidebar";
 import SportsSidebar from "./SportsSidebar";
 import DocumentsSidebar from "./DocumentsSidebar";
+import AcademicsSidebar from "./AcademicsSidebar";
 import EditableText from "./admin/EditableText";
 import EditableImage from "./admin/EditableImage";
 import EditableSection from "./admin/EditableSection";
@@ -18,6 +19,7 @@ import { useEdit } from "../contexts/EditContext";
 
 // Map pageId prefixes to their sidebar components
 const SIDEBAR_MAP = {
+  "academics-": AcademicsSidebar,
   "placements-": PlacementSidebar,
   "iqac-": IQACSidebar,
   "admissions-": AdmissionsSidebar,

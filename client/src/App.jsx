@@ -183,6 +183,7 @@ import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminIQAC from "./pages/admin/AdminIQAC";
 import AdminPlacements from "./pages/admin/AdminPlacements";
+import AdminAcademics from "./pages/admin/AdminAcademics";
 import AdminRecruiters from "./pages/admin/AdminRecruiters";
 import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminNIRF from "./pages/admin/AdminNIRF";
@@ -224,6 +225,7 @@ function App() {
           <Route path="/admin/documents" element={<ProtectedRoute><AdminDocuments /></ProtectedRoute>} />
           <Route path="/admin/iqac" element={<ProtectedRoute><AdminIQAC /></ProtectedRoute>} />
           <Route path="/admin/placements" element={<ProtectedRoute><AdminPlacements /></ProtectedRoute>} />
+          <Route path="/admin/academics" element={<ProtectedRoute><AdminAcademics /></ProtectedRoute>} />
           <Route path="/admin/recruiters" element={<ProtectedRoute><AdminRecruiters /></ProtectedRoute>} />
           <Route path="/admin/testimonials" element={<ProtectedRoute><AdminTestimonials /></ProtectedRoute>} />
           <Route path="/admin/nirf" element={<ProtectedRoute><AdminNIRF /></ProtectedRoute>} />

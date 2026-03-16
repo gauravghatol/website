@@ -3,6 +3,11 @@ import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { FaSearch, FaChevronRight, FaChevronDown } from "react-icons/fa";
+import {
+  ACADEMICS_PAGE_LABEL_BY_ROUTE,
+  ACADEMICS_PAGE_ORDER_BY_ROUTE,
+  isAcademicsWebsiteRoute,
+} from "../../constants/academicsPages";
 
 const CATEGORY_ORDER = [
   "about",
@@ -43,6 +48,24 @@ const VALID_DEPT_PAGEIDS = new Set([
   "departments-applied-sciences",
 ]);
 
+const isLegacyAcademicsPage = (page) =>
+  (page.category || "").toLowerCase() === "academics" &&
+  !isAcademicsWebsiteRoute(page.route);
+
+const isVisiblePage = (page) => {
+  if (isLegacyAcademicsPage(page)) return false;
+
+  // Exclude orphan department sub-pages (only show the 7 main departments)
+  if (
+    page.category === "departments" &&
+    !VALID_DEPT_PAGEIDS.has(page.pageId)
+  ) {
+    return false;
+  }
+
+  return true;
+};
+
 const AdminPages = () => {
   const [searchParams] = useSearchParams();
   const [pages, setPages] = useState([]);
@@ -73,24 +96,28 @@ const AdminPages = () => {
     }
   };
 
+  const visiblePages = pages.filter(isVisiblePage);
+
   const categories = [
     "all",
-    ...new Set(pages.map((p) => p.category || "Uncategorized")),
+    ...new Set(visiblePages.map((p) => p.category || "Uncategorized")),
   ];
 
-  const filteredPages = pages.filter((page) => {
-    // Exclude orphan department sub-pages (only show the 7 main departments)
-    if (
-      page.category === "departments" &&
-      !VALID_DEPT_PAGEIDS.has(page.pageId)
-    ) {
-      return false;
-    }
+  const filteredPages = visiblePages.filter((page) => {
+
+    const normalizedCategory = (page.category || "").toLowerCase();
+    const effectiveTitle =
+      normalizedCategory === "academics"
+        ? ACADEMICS_PAGE_LABEL_BY_ROUTE[page.route] || page.pageTitle
+        : page.pageTitle;
+
     const matchesSearch =
-      page.pageTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      page.category.toLowerCase().includes(searchTerm.toLowerCase());
+      (effectiveTitle || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      normalizedCategory.includes(searchTerm.toLowerCase());
+
     const matchesCategory =
       categoryFilter === "all" || page.category === categoryFilter;
+
     return matchesSearch && matchesCategory;
   });
 
@@ -131,7 +158,7 @@ const AdminPages = () => {
               Pages
             </h1>
             <p className="text-base text-gray-400 dark:text-gray-500 mt-0.5">
-              {filteredPages.length} of {pages.length} pages
+              {filteredPages.length} of {visiblePages.length} pages
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -173,6 +200,15 @@ const AdminPages = () => {
               const color =
                 CATEGORY_COLORS[category.toLowerCase()] || "#6b7280";
               const isCollapsed = collapsed[category];
+              const orderedCategoryPages =
+                category.toLowerCase() === "academics"
+                  ? [...categoryPages].sort(
+                      (a, b) =>
+                        (ACADEMICS_PAGE_ORDER_BY_ROUTE[a.route] ?? Number.MAX_SAFE_INTEGER) -
+                        (ACADEMICS_PAGE_ORDER_BY_ROUTE[b.route] ?? Number.MAX_SAFE_INTEGER),
+                    )
+                  : categoryPages;
+
               return (
                 <div key={category}>
                   {/* Category Row */}
@@ -200,18 +236,25 @@ const AdminPages = () => {
                   {/* Pages */}
                   {!isCollapsed && (
                     <div className="grid grid-cols-2 gap-x-0 border-t border-gray-100 dark:border-gray-800/60">
-                      {categoryPages.map((page) => (
-                        <Link
-                          key={page.pageId}
-                          to={`/admin/visual/${page.pageId}`}
-                          className="flex items-center px-4 py-2 pl-11 border-b border-gray-50 dark:border-gray-800/40 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
-                        >
-                          <span className="flex-1 text-base text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                            {page.pageTitle}
-                          </span>
-                          <FaChevronRight className="text-[10px] text-gray-200 dark:text-gray-700 group-hover:text-blue-400 ml-2 flex-shrink-0 transition-colors" />
-                        </Link>
-                      ))}
+                      {orderedCategoryPages.map((page) => {
+                        const displayTitle =
+                          category.toLowerCase() === "academics"
+                            ? ACADEMICS_PAGE_LABEL_BY_ROUTE[page.route] || page.pageTitle
+                            : page.pageTitle;
+
+                        return (
+                          <Link
+                            key={page.pageId}
+                            to={`/admin/visual/${page.pageId}`}
+                            className="flex items-center px-4 py-2 pl-11 border-b border-gray-50 dark:border-gray-800/40 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
+                          >
+                            <span className="flex-1 text-base text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                              {displayTitle}
+                            </span>
+                            <FaChevronRight className="text-[10px] text-gray-200 dark:text-gray-700 group-hover:text-blue-400 ml-2 flex-shrink-0 transition-colors" />
+                          </Link>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
