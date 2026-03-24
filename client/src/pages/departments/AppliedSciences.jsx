@@ -648,6 +648,8 @@ const AppliedSciences = () => {
   const [researchTab, setResearchTab] = useState("projects");
   const [projectYear, setProjectYear] = useState("2023-24");
   const [achievementTab, setAchievementTab] = useState("faculty");
+  const [expandedFacultyEditorIndex, setExpandedFacultyEditorIndex] =
+    useState(null);
 
   // Load department data (works in both edit and public view modes)
   const {
@@ -684,6 +686,24 @@ const AppliedSciences = () => {
     faculty[index] = { ...faculty[index], [field]: value };
     updateField("templateData.faculty", faculty);
   };
+
+  const splitFacultyMultiline = (value = "") =>
+    String(value || "")
+      .split("\n")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+  const createFacultySlug = (value = "") =>
+    String(value || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "faculty-member";
+
+  const resolveVidwanUrl = (facultyMember) =>
+    facultyMember?.vidwanLink?.trim?.() ||
+    (facultyMember?.vidwanId
+      ? `https://vidwan.inflibnet.ac.in/profile/${facultyMember.vidwanId}`
+      : "");
 
   const getAchievementItems = (section) =>
     JSON.parse(
@@ -1091,39 +1111,6 @@ const AppliedSciences = () => {
             <h3 className="text-3xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2 w-fit">
               Department Overview
             </h3>
-
-            {/* Department Image - Placeholder */}
-            {/* Featured Video - Larger & Cinematic */}
-            <div className="w-full rounded-2xl overflow-hidden shadow-xl bg-black aspect-video group relative">
-              {isEditing && (
-                <div className="absolute top-2 right-2 z-10 bg-white/90 p-2 rounded shadow-lg">
-                  <span className="text-xs font-bold text-gray-600 block mb-1">
-                    Video URL:
-                  </span>
-                  <EditableText
-                    value={t(
-                      "templateData.overview.videoUrl",
-                      "https://www.youtube-nocookie.com/embed/5U2eIYBDr5Y",
-                    )}
-                    onSave={(val) =>
-                      updateField("templateData.overview.videoUrl", val)
-                    }
-                    className="text-sm w-64"
-                  />
-                </div>
-              )}
-              <iframe
-                className="w-full h-full"
-                src={t(
-                  "templateData.overview.videoUrl",
-                  "https://www.youtube-nocookie.com/embed/5U2eIYBDr5Y",
-                )}
-                title="Department of Applied Sciences and Humanities"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
 
             <div className="prose max-w-none text-gray-700 leading-relaxed text-justify space-y-5">
               <MarkdownEditor
@@ -1668,14 +1655,16 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid items-start gap-6 lg:grid-cols-2">
           {t("templateData.faculty", APPLIED_DEFAULT_FACULTY).map((fac, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300  flex relative"
+              className={`group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300  flex relative ${
+                isEditing && expandedFacultyEditorIndex === i ? "lg:col-span-2" : ""
+              }`}
             >
               {/* Delete Button */}
               {isEditing && (
@@ -1861,9 +1850,9 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
                     )}
                   </div>
 
-                  {fac.vidwanId && (
+                  {resolveVidwanUrl(fac) && (
                     <a
-                      href={`https://vidwan.inflibnet.ac.in/profile/${fac.vidwanId}`}
+                      href={resolveVidwanUrl(fac)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center text-[10px] font-bold text-emerald-600 mt-1 hover:underline uppercase tracking-wide"
@@ -1878,6 +1867,70 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
                     View Profile <FaAngleRight className="ml-1" />
                   </Link>
                 </div>
+
+                {isEditing && (
+                  <div className="mt-4 border-t border-gray-100 pt-4 space-y-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedFacultyEditorIndex((current) =>
+                          current === i ? null : i,
+                        )
+                      }
+                      className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-ssgmce-blue transition hover:bg-blue-100"
+                    >
+                      {expandedFacultyEditorIndex === i
+                        ? "Hide Detailed Editor"
+                        : "Edit Detailed Profile"}
+                    </button>
+                    {expandedFacultyEditorIndex === i && (
+                      <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-3">
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-blue-700 mb-2">
+                          Detailed Profile Editor
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div>
+                            <div className="text-[11px] font-semibold text-gray-500 uppercase mb-1">Profile ID</div>
+                            <EditableText
+                              value={fac.id || createFacultySlug(fac.name)}
+                              onSave={(val) => updateFacultyMember(i, "id", createFacultySlug(val))}
+                            />
+                          </div>
+                          <div>
+                            <div className="text-[11px] font-semibold text-gray-500 uppercase mb-1">Vidwan ID</div>
+                            <EditableText
+                              value={fac.vidwanId || ""}
+                              onSave={(val) => updateFacultyMember(i, "vidwanId", val)}
+                            />
+                          </div>
+                          {[
+                            ["qualification", "Qualification", false],
+                            ["experience", "Experience", false],
+                            ["scholarIds", "Scholar IDs", false],
+                            ["area", "Research Areas", true],
+                            ["coursesTaught", "Courses Taught", true],
+                            ["membership", "Membership", true],
+                            ["publications", "Publications", true],
+                            ["research", "Research & Development", false],
+                            ["fdp", "FDP / STTP / Workshops", false],
+                            ["fellowship", "Fellowship / Awards", true],
+                            ["achievements", "Other Achievements", true],
+                          ].map(([field, label, isList]) => (
+                            <div key={field} className="md:col-span-2">
+                              <div className="text-[11px] font-semibold text-gray-500 uppercase mb-1">{label}</div>
+                              <EditableText
+                                value={isList ? (fac[field] || []).join("\n") : fac[field] || ""}
+                                onSave={(val) => updateFacultyMember(i, field, isList ? splitFacultyMultiline(val) : val)}
+                                multiline
+                                richText={false}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}
@@ -1891,12 +1944,24 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
                 const updated = [
                   ...t("templateData.faculty", APPLIED_DEFAULT_FACULTY),
                   {
+                    id: `new-faculty-${Date.now()}`,
                     name: "New Faculty Member",
                     role: "Assistant Professor",
                     area: ["Research Area"],
                     email: "newfaculty@ssgmce.ac.in",
                     phone: "+91XXXXXXXXXX",
                     photo: "",
+                    vidwanId: "",
+                    qualification: "Add qualification details",
+                    experience: "Add teaching / industry experience",
+                    coursesTaught: ["Add course"],
+                    scholarIds: "",
+                    membership: ["Add membership"],
+                    publications: ["Add publication"],
+                    research: "Add research details",
+                    fdp: "",
+                    fellowship: ["Add fellowship / award"],
+                    achievements: ["Add achievement"],
                   },
                 ];
                 updateField("templateData.faculty", updated);

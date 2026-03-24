@@ -1238,8 +1238,10 @@ const MarkdownEditor = ({
   placeholder = "Click to edit content…",
   className = "",
   showDocImport = false,
+  showTemplateDownload = true,
   docTemplateUrl = "",
   docTemplateLabel = "Download Template",
+  importHelpText = "Download template - fill rows in Word - Import DOCX - Save.",
 }) => {
   const { data, updateData, isEditing } = useEdit();
   const textareaRef = useRef(null);
@@ -2184,7 +2186,7 @@ const MarkdownEditor = ({
         >
           <FaTimes /> Cancel
         </button>
-        {showDocImport && (
+        {showDocImport && showTemplateDownload && (
           <button
             type="button"
             disabled={!docTemplateUrl}
@@ -2221,11 +2223,11 @@ const MarkdownEditor = ({
           </span>
         )}
       </div>
-      {showDocImport && (
+      {showDocImport && importHelpText ? (
         <p className="text-xs text-gray-500 mt-1">
-          Download template - fill rows in Word - Import DOCX - Save.
+          {importHelpText}
         </p>
-      )}
+      ) : null}
     </div>
   );
 };

@@ -271,6 +271,61 @@ const resolvedItFaculty = IT_DEFAULT_FACULTY.map((f) => ({
   photo: itPhotoMap[f.photo] || f.photo,
 }));
 
+const resolveCseFacultyItems = (items = []) =>
+  (Array.isArray(items) ? items : []).map((facultyMember) => ({
+    ...facultyMember,
+    photo: csePhotoMap[facultyMember.photo] || facultyMember.photo,
+  }));
+
+const getVidwanUrl = (facultyMember) => {
+  if (!facultyMember || typeof facultyMember !== "object") return "";
+
+  const directLink =
+    typeof facultyMember.vidwanLink === "string"
+      ? facultyMember.vidwanLink.trim()
+      : "";
+  if (directLink) return directLink;
+
+  const vidwanId =
+    typeof facultyMember.vidwanId === "string"
+      ? facultyMember.vidwanId.trim()
+      : "";
+  if (vidwanId) return `https://vidwan.inflibnet.ac.in/profile/${vidwanId}`;
+
+  return "";
+};
+
+const normalizeArea = (value) => {
+  if (Array.isArray(value)) return value;
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
+const normalizeLiveFaculty = (items = [], department) =>
+  (Array.isArray(items) ? items : []).map((facultyMember) => {
+    const normalized = { ...facultyMember, department };
+
+    if (department === "mba") {
+      normalized.role = facultyMember.role || facultyMember.designation || "";
+      normalized.designation =
+        facultyMember.designation || facultyMember.role || "";
+      normalized.area = normalizeArea(
+        facultyMember.area || facultyMember.specialization || "",
+      );
+      normalized.specialization =
+        facultyMember.specialization ||
+        normalized.area.join(", ");
+    }
+
+    if (!Array.isArray(normalized.area)) {
+      normalized.area = normalizeArea(normalized.area || "");
+    }
+
+    return normalized;
+  });
+
 // Department name mapping
 const DEPARTMENT_MAP = {
   cse: "Dept. of Computer Science & Engineering",
@@ -281,17 +336,6 @@ const DEPARTMENT_MAP = {
   mechanical: "Dept. of Mechanical Engineering",
   it: "Dept. of Information Technology",
 };
-
-// Combine all faculty data
-const ALL_FACULTY = [
-  ...APPLIED_DEFAULT_FACULTY,
-  ...resolvedCseFaculty,
-  ...resolvedEntcFaculty,
-  ...resolvedElectricalFaculty,
-  ...resolvedMbaFaculty,
-  ...resolvedMechFaculty,
-  ...resolvedItFaculty,
-];
 
 // Table row component for clean, consistent display
 const InfoRow = ({ label, children, borderColor = "border-blue-600" }) => {
@@ -314,13 +358,125 @@ const FacultyDetail = () => {
   const { facultyId } = useParams();
   const navigate = useNavigate();
   const [faculty, setFaculty] = useState(null);
+  const [liveFacultyByDept, setLiveFacultyByDept] = useState({});
 
   useEffect(() => {
-    const foundFaculty = ALL_FACULTY.find((f) => f.id === facultyId);
+    let isMounted = true;
+
+    const loadLiveFaculty = async () => {
+      try {
+        const pageRequests = [
+          ["cse", "/api/pages/departments-cse"],
+          ["entc", "/api/pages/departments-entc"],
+          ["it", "/api/pages/departments-it"],
+          ["electrical", "/api/pages/departments-electrical"],
+          ["mechanical", "/api/pages/departments-mechanical"],
+          ["mba", "/api/pages/departments-mba"],
+          ["applied", "/api/pages/departments-applied-sciences"],
+        ];
+
+        const responses = await Promise.allSettled(
+          pageRequests.map(([, url]) => axios.get(url)),
+        );
+
+        if (!isMounted) return;
+
+        const nextLiveFaculty = {};
+
+        responses.forEach((result, index) => {
+          if (result.status !== "fulfilled") return;
+
+          const [dept] = pageRequests[index];
+          const data = result.value?.data?.data || {};
+
+          const storedFaculty =
+            dept === "cse"
+              ? data.faculty
+              : dept === "entc"
+                ? data.templateData?.faculty?.list
+                : dept === "electrical"
+                  ? data.templateData?.facultyData
+                  : data.templateData?.faculty;
+
+          if (!Array.isArray(storedFaculty) || storedFaculty.length === 0) {
+            return;
+          }
+
+          const normalized = normalizeLiveFaculty(storedFaculty, dept);
+          nextLiveFaculty[dept] =
+            dept === "cse"
+              ? resolveCseFacultyItems(normalized)
+              : dept === "entc"
+                ? normalized.map((f) => ({
+                    ...f,
+                    photo: entcPhotoMap[f.photo] || f.photo,
+                  }))
+                : dept === "electrical"
+                  ? normalized.map((f) => ({
+                      ...f,
+                      photo: electricalPhotoMap[f.photo] || f.photo,
+                    }))
+                  : dept === "mba"
+                    ? normalized.map((f) => ({
+                        ...f,
+                        photo: mbaPhotoMap[f.photo] || f.photo,
+                      }))
+                    : dept === "mechanical"
+                      ? normalized.map((f) => ({
+                          ...f,
+                          photo: mechPhotoMap[f.photo] || f.photo,
+                        }))
+                      : dept === "it"
+                        ? normalized.map((f) => ({
+                            ...f,
+                            photo: itPhotoMap[f.photo] || f.photo,
+                          }))
+                        : normalized;
+        });
+
+        setLiveFacultyByDept(nextLiveFaculty);
+      } catch (error) {
+        console.error("Error loading live faculty data:", error);
+      }
+    };
+
+    loadLiveFaculty();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const combinedFaculty = [
+      ...(liveFacultyByDept.applied?.length
+        ? liveFacultyByDept.applied
+        : APPLIED_DEFAULT_FACULTY),
+      ...(liveFacultyByDept.cse?.length
+        ? liveFacultyByDept.cse
+        : resolvedCseFaculty),
+      ...(liveFacultyByDept.entc?.length
+        ? liveFacultyByDept.entc
+        : resolvedEntcFaculty),
+      ...(liveFacultyByDept.electrical?.length
+        ? liveFacultyByDept.electrical
+        : resolvedElectricalFaculty),
+      ...(liveFacultyByDept.mba?.length
+        ? liveFacultyByDept.mba
+        : resolvedMbaFaculty),
+      ...(liveFacultyByDept.mechanical?.length
+        ? liveFacultyByDept.mechanical
+        : resolvedMechFaculty),
+      ...(liveFacultyByDept.it?.length
+        ? liveFacultyByDept.it
+        : resolvedItFaculty),
+    ];
+
+    const foundFaculty = combinedFaculty.find((f) => f.id === facultyId);
     if (foundFaculty) {
       setFaculty(foundFaculty);
     }
-  }, [facultyId]);
+  }, [facultyId, liveFacultyByDept]);
 
   if (!faculty) {
     return (
@@ -433,10 +589,10 @@ const FacultyDetail = () => {
                 </div>
 
                 {/* Vidwan Profile Link */}
-                {faculty.vidwanId && (
+                {getVidwanUrl(faculty) && (
                   <div className="px-5 pb-5">
                     <a
-                      href={`https://vidwan.inflibnet.ac.in/profile/${faculty.vidwanId}`}
+                      href={getVidwanUrl(faculty)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 w-full py-2.5 bg-blue-50 text-blue-700 text-sm font-semibold rounded-lg border border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition-colors"
@@ -499,11 +655,11 @@ const FacultyDetail = () => {
                         }
                         borderColor="border-indigo-600"
                       >
-                        {faculty.vidwanId ? (
+                        {getVidwanUrl(faculty) ? (
                           <div className="space-y-1">
                             <span>
                               <a
-                                href={`https://vidwan.inflibnet.ac.in/profile/${faculty.vidwanId}`}
+                                href={getVidwanUrl(faculty)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-700 hover:underline font-medium inline-flex items-center gap-1"

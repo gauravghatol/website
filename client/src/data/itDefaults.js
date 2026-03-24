@@ -77,6 +77,18 @@ export const defaultPo = [
   },
 ];
 
+export const defaultOverviewTableBE = [
+  ["Degree", "Bachelor of Engineering in Information Technology"],
+  ["Duration", "4 Years (8 Semesters) Full Time"],
+  ["Intake", "60 Students per year"],
+  ["Establishment", "Year: 2001"],
+  ["Affiliation", "Sant Gadge Baba Amravati University"],
+];
+
+export const defaultOverviewTableME = [];
+
+export const defaultOverviewTablePhD = [];
+
 export const defaultActivities = [
   {
     title: "BRAINIAC 2K25",
@@ -1407,6 +1419,85 @@ export const defaultInnovativePractices = [
     rowSpanParent: false,
   },
 ];
+
+// ─── Innovative Practices: Markdown converter helpers ─────────────────────────
+
+export function itInnovativePracticesToMarkdown(practicesData = []) {
+  const rows = practicesData.map(
+    (p) =>
+      `| ${p.sn || ""} | ${p.faculty || ""} | ${p.subject || ""} | ${p.practice || ""} | ${p.link || ""} |`,
+  );
+  return [
+    "## Innovative Practices in Teaching and Learning",
+    "",
+    "| S.N. | Faculty | Subject | Practice | Link |",
+    "|------|---------|---------|----------|------|",
+    ...rows,
+  ].join("\n");
+}
+
+export function itMarkdownToInnovativePractices(markdown = "") {
+  if (!markdown || typeof markdown !== "string") {
+    return [];
+  }
+
+  const lines = markdown.split("\n");
+  const practices = [];
+
+  let inTable = false;
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Skip empty lines
+    if (!trimmed) continue;
+
+    // Skip markdown headers
+    if (trimmed.startsWith("#")) {
+      continue;
+    }
+
+    // Detect the table header row once and start parsing from the next rows.
+    if (
+      !inTable &&
+      trimmed.match(/^\|.*\|$/) &&
+      !trimmed.match(/^\|[\s-|]+\|$/)
+    ) {
+      inTable = true;
+      continue;
+    }
+
+    // Skip separator rows (all dashes and pipes)
+    if (trimmed.match(/^\|[\s-|]+\|$/)) {
+      continue;
+    }
+
+    // Parse data rows (only if we're in table mode)
+    if (inTable && trimmed.startsWith("|") && trimmed.endsWith("|")) {
+      const cells = trimmed
+        .split("|")
+        .map((cell) => cell.trim())
+        .filter((cell) => cell.length > 0);
+
+      // Only add valid rows (must have sn) and skip header rows
+      if (cells.length >= 5 && cells[0] && cells[0].length > 0 && cells[0] !== "S.N") {
+        practices.push({
+          sn: cells[0],
+          faculty: cells[1] || "",
+          subject: cells[2] || "",
+          practice: cells[3] || "",
+          link: cells[4] || "",
+          isExternal: (cells[4] || "").includes("http") || (cells[4] || "").includes("youtu"),
+        });
+      }
+    }
+  }
+
+  return practices;
+}
+
+export const defaultItInnovativePracticesMarkdown = itInnovativePracticesToMarkdown(
+  defaultInnovativePractices,
+);
 
 // ===================== PATENTS & PUBLICATIONS DATA =====================
 

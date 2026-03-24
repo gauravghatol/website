@@ -41,6 +41,21 @@ export const defaultPo = [
   },
 ];
 
+export const defaultOverviewTableBE = [
+  ["Degree", "M.B.A. (Choice based - Dual specialization)"],
+  ["Duration", "2 Year (4 Semesters) (Full time)"],
+  ["Intake", "60 Students per year"],
+  ["Establishment", "Year: 1994"],
+  ["NBA Status", "Three Times Accredited by NBA"],
+];
+
+export const defaultOverviewTableME = [];
+
+export const defaultOverviewTablePhD = [
+  ["Duration", "3 Years"],
+  ["Intake", "04 Students"],
+];
+
 export const defaultFaculty = [
   {
     id: "pmk",

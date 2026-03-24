@@ -24,6 +24,9 @@ import {
   defaultMbaConferences,
   defaultMbaBooks,
   defaultMbaCopyrights,
+  defaultOverviewTableBE,
+  defaultOverviewTableME,
+  defaultOverviewTablePhD,
   defaultVision,
   defaultMission,
   defaultPeo,
@@ -169,6 +172,1321 @@ function MbaPrideMdView({ markdown = "" }) {
 }
 // ---- End MBA Pride Markdown helpers ----
 
+const defaultMbaIndustrialVisits = [
+  {
+    sn: "01",
+    title: "Industrial Tour to KALASH SEEDS, Jalna",
+    date: "January 2025",
+    report:
+      "/uploads/documents/mba/industrial-visits/mba_iv_kalash_seeds_jan2025.pdf",
+  },
+  {
+    sn: "02",
+    title: "Experiential Study Visit to Reliance Trends, Shegaon",
+    date: "January 2025",
+    report:
+      "/uploads/documents/mba/industrial-visits/mba_iv_reliance_trends_jan2025.pdf",
+  },
+  {
+    sn: "03",
+    title: "Experiential Study Visit to Peter England, Shegaon",
+    date: "January 2025",
+    report:
+      "/uploads/documents/mba/industrial-visits/mba_iv_peter_england_jan2025.pdf",
+  },
+  {
+    sn: "04",
+    title:
+      "Visit to AAVISHKAR Social, Cultural and Specially Abled Organization, Shegaon",
+    date: "December 2024",
+    report: "/uploads/documents/mba/industrial-visits/mba_iv_aavishkar_dec2024.pdf",
+  },
+  {
+    sn: "05",
+    title: "Visit to Brahmakumari, Shegaon",
+    date: "November 2024",
+    report:
+      "/uploads/documents/mba/industrial-visits/mba_iv_brahmakumari_nov2024.pdf",
+  },
+  {
+    sn: "06",
+    title:
+      "Industrial Tour to Mahatma Gandhi Institute for Rural Industrialization (MGIRI), Wardha",
+    date: "--",
+    report: "/uploads/documents/mba/industrial-visits/mba_iv_mgiri_wardha.pdf",
+  },
+  {
+    sn: "07",
+    title: "Industrial Tour to Super Thermal Power, Chandrapur and Anandwan, Warora",
+    date: "04/02/2019 to 05/02/2019",
+    report:
+      "/uploads/documents/mba/industrial-visits/mba_iv_chandrapur_warora_feb2019.pdf",
+  },
+  {
+    sn: "08",
+    title:
+      "Industrial Visit to Jain Irrigation and Gandhi Research Foundation, Jalgaon",
+    date: "22/10/2018",
+    report:
+      "/uploads/documents/mba/industrial-visits/mba_iv_jain_irrigation_jalgaon_2018.pdf",
+  },
+  {
+    sn: "09",
+    title: "Industrial Tour to Adani Port Special Economic Zone, Mundra, Kutch, Gujarat",
+    date: "15/03/2017 to 18/03/2017",
+    report: "",
+  },
+];
+
+const mbaExtractMarkdownLinkHref = (value = "") => {
+  const match = String(value || "").match(/\[.*?\]\((.*?)\)/);
+  return match?.[1]?.trim?.() || "";
+};
+
+const mbaParseMarkdownTableRow = (line = "") =>
+  String(line || "")
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
+
+const mbaIndustrialVisitsToMarkdown = (visits = []) => {
+  const lines = [
+    "## Industry Interaction and Tours",
+    "",
+    "| Visit / Tour Details | Date | Report |",
+    "|----------------------|------|--------|",
+  ];
+
+  if (!visits.length) {
+    lines.push("| No visits added yet. | - | - |");
+    return lines.join("\n");
+  }
+
+  visits.forEach((visit) => {
+    const reportCell = visit?.report ? `[View Report](${visit.report})` : "-";
+    lines.push(
+      `| ${visit?.title || "-"} | ${visit?.date || "-"} | ${reportCell} |`,
+    );
+  });
+
+  return lines.join("\n");
+};
+
+const parseMbaIndustrialVisitsMarkdown = (markdown = "") => {
+  const text = String(markdown || "").trim();
+  if (!text) return [];
+
+  const tableLines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+
+  const dataLines = tableLines.filter(
+    (line, index) =>
+      index > 1 &&
+      !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line),
+  );
+
+  return dataLines
+    .map((line) => mbaParseMarkdownTableRow(line))
+    .filter((cells) => cells.length >= 3)
+    .map((cells) => ({
+      title: cells[0] || "",
+      date: cells[1] || "",
+      report: mbaExtractMarkdownLinkHref(cells.slice(2).join(" | ")),
+    }))
+    .filter((visit) => visit.title || visit.date || visit.report);
+};
+
+const createMbaIndustrialVisitId = () =>
+  `mba-industrial-visit-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const getMbaIndustrialVisitSignature = (visit = {}) =>
+  JSON.stringify({
+    title: String(visit?.title || "").trim().toLowerCase(),
+    date: String(visit?.date || "").trim().toLowerCase(),
+  });
+
+const defaultMbaMous = [
+  { no: "1.", org: "Bajaj Finance Limited and Bajaj Finserv Limited", date: "16-June-2025", report: "/uploads/documents/mba_mous/MOU_Bajaj_Finance_2025.pdf" },
+  { no: "2.", org: "Kalash Seeds Pvt. Ltd., Mantha Road, Jalna, M.S.", date: "04-Jan-2025", report: "/uploads/documents/mba_mous/MOU_Kalash_Seeds_2025.pdf" },
+  { no: "3.", org: "Saturday Club Global Trust â€” Co-operation in Research and Education", date: "12-Jan-2024", report: "/uploads/documents/mba_mous/MOU_Saturday_Club_Global_Trust_2024.pdf" },
+  { no: "4.", org: "Circular Angel Pvt Ltd., Mumbai â€” Research, Education and Real-time Consultancy", date: "13-Jan-2024", report: "/uploads/documents/mba_mous/MOU_Circular_Angel_2024.pdf" },
+  { no: "5.", org: "Leben Life Sciences, Akola", date: "17-Feb-2023", report: "/uploads/documents/mba_mous/MOU_Leben_Life_Sciences_2023.pdf" },
+  { no: "6.", org: "Lyceum of the Philippines University â€” Laguna", date: "14-July-2022", report: "/uploads/documents/mba_mous/MOU_LPU_Laguna_Philippines_2022.pdf" },
+];
+
+const mbaMousToMarkdown = (mous = []) => {
+  const lines = ["## MoUs", "", "| Name of the Organization | MOU Signing Date | MOU Copy / Report |", "|--------------------------|------------------|-------------------|"];
+  if (!mous.length) return [...lines, "| No MoUs added yet. | - | - |"].join("\n");
+  mous.forEach((mou) => lines.push(`| ${mou?.org || "-"} | ${mou?.date || "-"} | ${mou?.report ? `[View Document](${mou.report})` : "-"} |`));
+  return lines.join("\n");
+};
+
+const parseMbaMousMarkdown = (markdown = "") => {
+  const text = String(markdown || "").trim();
+  if (!text) return [];
+  const tableLines = text.split("\n").map((line) => line.trim()).filter((line) => line.startsWith("|"));
+  const dataLines = tableLines.filter((line, index) => index > 1 && !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line));
+  return dataLines.map((line) => mbaParseMarkdownTableRow(line)).filter((cells) => cells.length >= 3).map((cells) => ({ org: cells[0] || "", date: cells[1] || "", report: mbaExtractMarkdownLinkHref(cells.slice(2).join(" | ")) })).filter((mou) => mou.org || mou.date || mou.report);
+};
+
+const createMbaMouId = () =>
+  `mba-mou-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const getMbaMouSignature = (mou = {}) =>
+  JSON.stringify({ org: String(mou?.org || "").trim().toLowerCase(), date: String(mou?.date || "").trim().toLowerCase() });
+
+const defaultMbaRankings = [
+  {
+    year: "2025",
+    survey:
+      "Indian Institutional Ranking Framework (IIRF) Top MBA Colleges in India 2025",
+    linkLabel: "more details",
+    linkUrl:
+      "/uploads/documents/mba_ranking/IIRF_Best_B-School_Ranking_2025.pdf",
+    ranking:
+      "Ranked 47th in the State, 111th Rank among all Private B-schools in India",
+  },
+  {
+    year: "2024",
+    survey:
+      "Indian Institutional Ranking Framework (IIRF) Top MBA Colleges in India 2024",
+    linkLabel: "more details",
+    linkUrl:
+      "/uploads/documents/mba_ranking/IIRF_Best_B-School_Ranking_2024.pdf",
+    ranking:
+      "Ranked 35th in the State, 108th Rank among all Private B-schools in India",
+  },
+  {
+    year: "2023",
+    survey:
+      "Indian Institutional Ranking Framework (IIRF) Top MBA Colleges in India 2023 - Survey conducted during September-October 2022",
+    linkLabel: "more details",
+    linkUrl:
+      "/uploads/documents/mba_ranking/IIRF_Best_B-School_Ranking_2023.pdf",
+    ranking:
+      "Ranked 30th in the West Zone, 108th Rank among all Private B-schools in India",
+  },
+  {
+    year: "2022",
+    survey: "Fortune India Best B-School Ranking, August-September 2022",
+    linkLabel: "more details",
+    linkUrl:
+      "/uploads/documents/mba_ranking/Fortune_India_Best_B-School_Ranking_2022.pdf",
+    ranking:
+      "Only institute from Vidarbha, Maharashtra appearing in the Fortune India Best B-School Ranking 2022",
+  },
+  {
+    year: "2022",
+    survey:
+      "Business School Rankings by Business today published as on 29th Oct 2022",
+    linkLabel: "more details",
+    linkUrl: "https://www.businesstoday.in/bt-schools",
+    ranking: "Ranked among Top 100 B-school in India in Living as well as ROI",
+  },
+  {
+    year: "2021",
+    survey: "SSGMCE ranking in DATA QUEST T- School Employability Ranking 2021",
+    linkLabel: "more details",
+    linkUrl:
+      "/uploads/documents/mba_ranking/DataQuest_T-School_Ranking_2021.pdf",
+    ranking:
+      "Rank-73 : Private Sector\nRank - 81 : Government and private institutes",
+  },
+  {
+    year: "2018",
+    survey:
+      "Outlook-Drshti Survey 2018 ranks DBA&R at 86th amongst Indias Top 100 Management Schools",
+    linkLabel: "Click here for Details",
+    linkUrl: "/uploads/documents/mba_ranking/Outlook_Drshti_Survey_2018.pdf",
+    ranking: "Ranked 86th",
+  },
+  {
+    year: "2018",
+    survey: "Business Today ranks Shegaon MBA amongst top 100 B-Schools in India",
+    linkLabel: "Click here for Details",
+    linkUrl: "/uploads/documents/mba_ranking/Business_Today_Ranking_2018.pdf",
+    ranking: "Ranked 80th",
+  },
+  {
+    year: "2017",
+    survey:
+      "HONOURED AS MANAGEMENT COLLEGE OF THE YEAR 2017 -Program Efficacy by Higher Education Review Magazine, Nov. 2017",
+    linkLabel: "Click here for Details",
+    linkUrl:
+      "/uploads/documents/mba_ranking/Higher_Education_Review_2017.pdf",
+    ranking: "",
+  },
+  {
+    year: "2017",
+    survey:
+      "Business Today-MDRA ranks DBA&R, SSGMCE, Shegaon amongst Best B-Schools of India",
+    linkLabel: "Click here for Details",
+    linkUrl: "/uploads/documents/mba_ranking/BT_MDRA_Ranking_2017.pdf",
+    ranking: "Ranked at 146th position",
+  },
+  {
+    year: "2017",
+    survey:
+      "DBA&R, Shegaon amongst India's Top 100 B-Schools for fourth consecutive year - Outlook-Drshti Survey 2017",
+    linkLabel: "Click here for Details",
+    linkUrl: "#",
+    ranking:
+      "Ranked at 92nd place amongst all the top business schools of our country.",
+  },
+];
+
+const defaultMbaAccreditations = [
+  {
+    id: "mba-acc-2022",
+    year: "2022",
+    recognition: "Program Accreditation by NBA, New Delhi",
+    effectivePeriod: "Sept. 2013 for three years",
+    score: "771 out of 1000",
+  },
+  {
+    id: "mba-acc-2013",
+    year: "2013",
+    recognition: "Program Accreditation by NBA, New Delhi",
+    effectivePeriod: "Sept. 2013 for three years",
+    score: "771 out of 1000",
+  },
+  {
+    id: "mba-acc-2010",
+    year: "2010",
+    recognition: "Institutional Accreditation by NAAC, Bengaluru",
+    effectivePeriod: "Oct. 2010 for five years",
+    score: "B+ Grade",
+  },
+  {
+    id: "mba-acc-2007",
+    year: "2007",
+    recognition: "Program Accreditation by NBA, New Delhi",
+    effectivePeriod: "May 2007 for three years",
+    score: "748 out of 1000 (B Grade)",
+  },
+  {
+    id: "mba-acc-2003",
+    year: "2003",
+    recognition: "Institutional Accreditation by NAAC, Bengaluru",
+    effectivePeriod: "Nov. 2003 for five years",
+    score: "B+ Grade",
+  },
+  {
+    id: "mba-acc-2002-teqip",
+    year: "2002",
+    recognition:
+      "Selected as Network Institution under TEQIP, MHRD, Govt. of India",
+    effectivePeriod: "March 2002 to Feb. 2007",
+    score: "First Phase of TEQIP",
+  },
+  {
+    id: "mba-acc-2002-nba",
+    year: "2002",
+    recognition: "Program Accreditation by NBA, New Delhi",
+    effectivePeriod: "May 2002 for three years",
+    score: "-",
+  },
+  {
+    id: "mba-acc-2002-iso",
+    year: "2002",
+    recognition: "ISO 9001:2000 Certified",
+    effectivePeriod: "March 2002 to Feb. 2005",
+    score: "JAS-ANZ",
+  },
+  {
+    id: "mba-acc-2000",
+    year: "2000",
+    recognition: "UGC Recognition under Section 12B",
+    effectivePeriod: "Nov. 2000",
+    score: "College Recognition",
+  },
+  {
+    id: "mba-acc-1994-affiliation",
+    year: "1994",
+    recognition: "Affiliation to Sant Gadge Baba Amravati University",
+    effectivePeriod: "August 1994",
+    score: "Permanent Affiliation",
+  },
+  {
+    id: "mba-acc-1994-aicte",
+    year: "1994",
+    recognition: "AICTE, New Delhi Approval",
+    effectivePeriod: "w.e.f. 31.3.1994",
+    score: "First Approval",
+  },
+  {
+    id: "mba-acc-1989",
+    year: "1989",
+    recognition: "UGC Recognition Section 2f",
+    effectivePeriod: "Feb. 1989",
+    score: "College Recognition",
+  },
+];
+
+const defaultMbaMdpCepFdpPrograms = [
+  {
+    id: "mba-mdp-1",
+    title: "Management Development Program on Financial Management",
+    coordinator: "Prof. S. M. Mishra",
+    participants: "20",
+  },
+  {
+    id: "mba-mdp-2",
+    title: "Business Skill Development Program",
+    coordinator: "Prof. P. M. Kuchar",
+    participants: "25",
+  },
+  {
+    id: "mba-mdp-3",
+    title: "Entrepreneurship Development Program",
+    coordinator: "Prof. L.B. Deshmukh",
+    participants: "25",
+  },
+  {
+    id: "mba-mdp-4",
+    title: "Industrial Motivation Campaign",
+    coordinator: "Prof. M. L. Herode",
+    participants: "120",
+  },
+];
+
+const defaultMbaFdpPrograms = [
+  {
+    id: "mba-fdp-1",
+    title: "Case Development and Analysis in Management Education",
+    coordinator: "Prof. M. L. Herode",
+    participants: "26",
+  },
+];
+
+const defaultMbaWorkshopPrograms = [
+  {
+    id: "mba-workshop-1",
+    title: "Workshop on Microsoft Excel",
+    coordinator: "Dr. Bilal T. Husain",
+    participants: "17 students cleared",
+    report:
+      "/uploads/documents/mba_workshops/workshops_Workshop_on_Microsoft_Excel.pdf",
+  },
+  {
+    id: "mba-workshop-2",
+    title: "Accelerated Training and Development Program (ALDP)",
+    coordinator: "Prof. Wechansing Suliya",
+    participants: "36 students participated",
+    report:
+      "/uploads/documents/mba_workshops/workshops_Accelerated_training_and_development_program(ALDP).pdf",
+  },
+  {
+    id: "mba-workshop-3",
+    title:
+      "International Workshop on Business Analytics by DBAR, SSGMCE-Shegaon and Lyceum of the Philippines University - Laguna",
+    coordinator: "Dr. Bilal T. Husain",
+    participants: "54 students participated",
+    report:
+      "/uploads/documents/mba_workshops/workshops_International_Workshop_on_Business_Analytics_by_DBAR,_SSGMCE-Shegaon_and_Lyceum_of_the_Philippines_University-_Laguna.pdf",
+  },
+  {
+    id: "mba-workshop-4",
+    title: "Workshop on Holistic Management",
+    coordinator: "Dr. Mayur A. Dande",
+    participants: "58 students participated",
+    report:
+      "/uploads/documents/mba_workshops/workshops_Workshop_on_Holistic_Management.pdf",
+  },
+  {
+    id: "mba-workshop-5",
+    title: "A Session on Digital Marketing",
+    coordinator:
+      "Mr. Subhash Gore, Secretary, Saturday Club Global Trust, Akola Chapter",
+    participants: "MBA Department students participated",
+    report:
+      "/uploads/documents/mba_workshops/workshops_A_SESSION_ON_DIGITAL_MARKETING.pdf",
+  },
+  {
+    id: "mba-workshop-6",
+    title: "A Session on Website Creation and Creative Social Media Use",
+    coordinator:
+      "Mr. Subhash Gore, Saturday Club Global Trust, Akola Chapter; Mrs. Mohini Modak, Founder, Webmasterkey, Akola",
+    participants: "MBA Department students participated",
+    report:
+      "/uploads/documents/mba_workshops/workshops_A_SESSION_ON_WEBSITE_CREATION_AND_CREATIVE_SOCIAL_MEDIA_USE.pdf",
+  },
+];
+
+const defaultMbaConsultancyByYear = {
+  "2018 - 2019": [
+    {
+      org: "Securities Exchange Board Of India, Mumbai",
+      faculty: 'Dr. H. M. Jha "Bidyarthi"',
+      remarks: "Financial Awareness Workshop",
+    },
+    {
+      org: "Kalash Seeds, Jalna",
+      faculty: "Prof. M.A. Dande",
+      remarks: "Assistance in Sales Promotion",
+    },
+    {
+      org: "Yadav Academy",
+      faculty: "Prof. M.A. Dande",
+      remarks: "Career Counselling",
+    },
+    {
+      org: "Saraswati College, Shegaon",
+      faculty:
+        "Dr. P.V. Bokad, Dr. L.B. Deshmukh, Prof. S.M. Mishra, Prof. V.V. Patil, Prof. W.Z. Suliya",
+      remarks: "Regular Classes Of BBA",
+    },
+    {
+      org: "Nutan Udyog, Shegaon",
+      faculty:
+        'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. V.V. Patil',
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Rathi Cycles, Khamgaon",
+      faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Kunal Electronics, Khamgaon",
+      faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Gurudev Motor Driving School, Shegaon",
+      faculty: "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Reliance Jio, Shegaon",
+      faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
+      remarks: "Marketing Assistance",
+    },
+  ],
+  "2017 - 2018": [
+    {
+      org: "Securities Exchange Board Of India, Mumbai",
+      faculty: 'Dr. H. M. Jha "Bidyarthi"',
+      remarks: "Financial Awareness Workshop",
+    },
+    {
+      org: "Kalash Seeds, Jalna",
+      faculty:
+        'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. S.M. Mishra, Prof. P.M. Kuchar',
+      remarks: "Assistance in Sales Promotion",
+    },
+    {
+      org: "Yadav Academy",
+      faculty: "Prof. M.A. Dande",
+      remarks: "Career Counselling",
+    },
+    {
+      org: "Saraswati College, Shegaon",
+      faculty:
+        "Dr. P.V. Bokad, Dr. L.B. Deshmukh, Prof. S.M. Mishra, Prof. V.V. Patil, Prof. W.Z. Suliya",
+      remarks: "Regular Classes Of BBA",
+    },
+    {
+      org: "Nutan Udyog, Shegaon",
+      faculty:
+        'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. V.V. Patil',
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Mandar Sports, Shegaon",
+      faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Sarda's Career Point",
+      faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Maggi Corner, Shegaon",
+      faculty: "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Hot Chips, Shegaon",
+      faculty: "Prof. V.V. Patil, Prof. W.Z. Suliya",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Kanchan Electronics, Akola",
+      faculty: "Prof. V.V. Patil, Prof. W.Z. Suliya",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Singar Sadan, Khamgaon",
+      faculty: "Prof. W.Z. Suliya",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Bappa Dabeli, Akola",
+      faculty: "Prof. V.V. Patil, Prof. W.Z. Suliya, Prof. M.A. Dande",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Indira Co. Op. Society, Shegaon",
+      faculty: "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Hend Suzuki",
+      faculty: "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "IPL Auction",
+      faculty: "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
+      remarks: "Event Management",
+    },
+  ],
+  "2016 - 2017": [
+    {
+      org: "Securities Exchange Board of India, Mumbai",
+      faculty: 'Dr. H. M. Jha "Bidyarthi"',
+      remarks: "Post TDS, 15 FE Workshops conducted",
+    },
+    {
+      org: "Consumer Guidance Society of India, Mumbai",
+      faculty: 'Dr. H. M. Jha "Bidyarthi", Prof. S. M. Mishra',
+      remarks: "Consumer Awareness Workshop conducted",
+    },
+    {
+      org: "SNG Packaging Pvt. Ltd., Khamgaon",
+      faculty: "Dr. P. V. Bokad and Prof. W. Z. Suliya",
+      remarks: "HR Consultancy",
+    },
+    {
+      org: "M. M. Industries, Akola",
+      faculty:
+        "Prof. M. A. Dande, Prof. P. M. Kuchar and Prof. S. M. Mishra",
+      remarks: "HR Consultancy",
+    },
+    {
+      org: "Web Master Key, Akola (Subhash Gore)",
+      faculty: "Prof. M. A. Dande",
+      remarks: "Summer Internship by students (03)",
+    },
+    {
+      org: "Saraswati College, Shegaon",
+      faculty:
+        "Prof. L. B. Deshmukh, Prof. S. M. Mishra and Prof. V. V. Patil",
+      remarks: "Regular classes of BBA",
+    },
+    {
+      org: "Saraswati College, Shegaon",
+      faculty:
+        "Prof. M. A. Dande, Prof. P. M. Kuchar and Prof. S. M. Mishra",
+      remarks: "MBA Coaching classes",
+    },
+    {
+      org: "Reliance Jio, Shegaon",
+      faculty: "Prof. S. M. Mishra",
+      remarks: "Summer Internship by students (03)",
+    },
+    {
+      org: "TNS India (Mrs. Usha Ingole)",
+      faculty: "Prof. M. A. Dande",
+      remarks: "Logo and Product launch consultancy",
+    },
+    {
+      org: "Internshala",
+      faculty: "Prof. M. A. Dande",
+      remarks: "Content writing, Career counseling talk, Nursery consultancy",
+    },
+  ],
+  "2015 - 2016": [
+    {
+      org: "Securities Exchange Board Of India, Mumbai",
+      faculty: 'Dr. H. M. Jha "Bidyarthi"',
+      remarks: "Financial Awareness Workshop",
+    },
+    {
+      org: "Kalash Seeds, Jalna",
+      faculty:
+        'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Dr. P.V. Bokad, Prof. V.V. Patil',
+      remarks: "Assistance in Sales Promotion",
+    },
+    {
+      org: "Bajaj Finserv",
+      faculty: "Prof. S.M. Mishra",
+      remarks: "Summer Internship Projects",
+    },
+    {
+      org: "Reliance Jio",
+      faculty: "Prof. S.M. Mishra",
+      remarks: "Summer Internship Projects",
+    },
+    {
+      org: "Havells - Jagadamba Services And Care",
+      faculty:
+        'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. V.V. Patil',
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Buldana Urban Co Op Cr So, Shegaon",
+      faculty: "Prof. P.M. Kuchar",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "KFC",
+      faculty:
+        'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. P.M. Kuchar',
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Hend Suzuki",
+      faculty:
+        'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. P.M. Kuchar',
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "KTM Bikes, Akola",
+      faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Sakshi Constructions, Shegaon",
+      faculty: "Dr. L.B. Deshmukh, Prof. W.Z. Suliya",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "Nutan Udyog, Shegaon",
+      faculty: "Dr. L.B. Deshmukh, Prof. W.Z. Suliya",
+      remarks: "Marketing Assistance",
+    },
+    {
+      org: "ACC Cement",
+      faculty: "Prof. V. V. Patil, Prof. W.Z. Suliya",
+      remarks: "Marketing Assistance",
+    },
+  ],
+};
+
+const defaultMbaCorporateLeaderSpeaksBySession = {
+  "Session 2024-25": [
+    {
+      speaker: "Mrs. Sudha Murthy Ji",
+      topic: "A Philanthropist Speaks on Lessons from Life",
+      report:
+        "/uploads/documents/mba_corporate_leader_speaks/Session_2024-25_Mrs._Sudha_Murthy_Ji.pdf",
+    },
+    {
+      speaker:
+        "Mr. Chirag Lasod, Jain Exports, Neemuch, M.P.; Mr. Rajesh Jadhav, Founder, Surya Consumer Products, MIDC, Buldana; Mr. Soham Belokar, District Officer, PMSA Udyog, Buldana",
+      topic: "Guest Talk",
+      report:
+        "/uploads/documents/mba_corporate_leader_speaks/Session_2024-25_Mr._Chirag_Lasod,_Jain_Exports,_Neemuch,_M._P._Mr._Rajesh_Jadhav,_founder,_Surya_Consumer_Products,_MIDC.pdf",
+    },
+  ],
+  "Session 2020-22": [
+    {
+      speaker:
+        "Mr. Shrikant P. Naphade, Head, Procurement and Contract Management, Tata Power",
+      topic: "Work life - An enquiry",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Gaurav Date, Training Manager, Maharashtra EBSCO India",
+      topic: "Expanding Horizons with true knowledge",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Amol Sawant, Founder - Nisarg Katta, Member, Tiger Cell, Joint Secretary, Satpuda Foundation",
+      topic: "The Nature and Us",
+      report: "",
+    },
+    {
+      speaker: "Mrs. Mohini Modak, Founder - Webmasterkey, Akola",
+      topic: "Digital Marketing",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. K. K. Dave, Dean Academics, Pacific University, Rajasthan",
+      topic: "Leadership",
+      report: "",
+    },
+    {
+      speaker:
+        "Dr. Devesh Kumar Sharma, Senior Vice President, Credit Suisse, Geneva, Switzerland",
+      topic: "COVID 19 - India and future",
+      report: "",
+    },
+    {
+      speaker:
+        "D. Chandramohan Swamy, National Head - Operations, WardWiz India Solutions Pvt. Ltd., Pune",
+      topic: "Winning skills to succeed in corporate world",
+      report: "",
+    },
+    {
+      speaker:
+        "Dr. Ajay Trivedi, Principal and Dean, Dept of Commerce, Parul University, Vadodara, Gujarat",
+      topic: "New Perspectives of Management",
+      report: "",
+    },
+  ],
+  "Session 2018-2020": [
+    {
+      speaker:
+        "Mr. Subhash Gore, Secretary, Saturday Club Global Trust, Akola Chapter",
+      topic: "Opportunities in the digital world",
+      report: "",
+    },
+    {
+      speaker:
+        "Dr. Ajay Trivedi, Professor and Dean, Faculty of Commerce, Parul University, Baroda, Gujarat",
+      topic: 'Webinar on "New Perspectives of Management"',
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Prasanna Dharmadhikari, Chembond Chemicals Ltd., Mumbai",
+      topic:
+        "Opportunities in HR, Skills required for HR personnel and the advanced HR software",
+      report: "",
+    },
+    {
+      speaker: "Mr. Prasanna Dharmadhikari, ChemBond, Mumbai",
+      topic: "Career Avenues and Emerging trends in HR",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Vaibhav Nichit, Talent Acquisition Partner, HDFC, Nagpur",
+      topic: "Pre-requisite for a good job",
+      report: "",
+    },
+    {
+      speaker: "Mr. Hemand Sharma, VNURT, Bengaluru",
+      topic: "VNURT Role for project and platform to MBA (Motivation for job)",
+      report: "",
+    },
+    {
+      speaker: "Mr. Swapnil Meshram, Capgemini, Pune",
+      topic: "Latest Trends / Additional Important",
+      report: "",
+    },
+    {
+      speaker: "Mr. Prasad Khanzode, Professor, LTM, Wani",
+      topic: "Motivation within you",
+      report: "",
+    },
+    {
+      speaker: "Mr. Kurien Daniel, Regional Vice President, ISTD",
+      topic: "Pre-requisites at workplace in current Era",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Vinod Dubey, Branch Head, SBI Life Insurance, Khamgaon",
+      topic: "Career Opportunities - Seminar with SBI Life Insurance",
+      report: "",
+    },
+    {
+      speaker: "Mr. Rajiv Jawale, HR Manager, Kalash Seeds, Jalna",
+      topic: "Perception about ways of a successful career",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Subhash Gore, Saturday Club Global Trust, Akola Chapter",
+      topic: "Entrepreneurship - Prerequisite",
+      report: "",
+    },
+    {
+      speaker: "Mr. Shekhar Rajguru, JPM - Jio Reliance, Shegaon",
+      topic: "Marketing and Distribution",
+      report: "",
+    },
+    {
+      speaker: "Miss Sweta Sharma, Radio Jockey, Radio Orange, Nagpur",
+      topic: "Distinguished career opportunities for management aspirant",
+      report: "",
+    },
+    {
+      speaker: "Mr. Swapnil Meshram, Capgemini Technology Services, Pune",
+      topic: "Fresher's enquiry - A thorough enquiry",
+      report: "",
+    },
+    {
+      speaker: "Mrs. Sudha Murthy, Chairperson, Infosys Foundation",
+      topic: '"A Philanthropist Speaks - Lessons from Life"',
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Shekhar Rajguru, General Manager, Reliance Jio Centre, Shegaon",
+      topic: "General Management",
+      report: "",
+    },
+    {
+      speaker: "Mr. Mayur Kalore, Cybernetix, Jaipur, Rajasthan",
+      topic: "Pre-requisites for entering corporate world",
+      report: "",
+    },
+    {
+      speaker: "Mr. Rajiv Pande, GSM, Reliance Jio Centre Khamgaon",
+      topic: "Career growth and Motivation",
+      report: "",
+    },
+  ],
+  "Session 2016-17": [
+    {
+      speaker:
+        "Mr. Shekhar Rajguru, General Manager, Reliance Jio Centre, Shegaon",
+      topic: "Expectations of Corporate from fresher",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Porasnath Singh, Project Manager, Reliance Jio Centre, Shegaon",
+      topic: "Opportunities in Telecom industry for MBA students",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Piyush Nagda, CEO & Cofounder, Talking Asset Eduventure Pvt. Ltd., Thane",
+      topic:
+        "Emerging trends in capital market & career opportunities; Sales as a career choice; Investor awareness programme",
+      report: "",
+    },
+    {
+      speaker: "Mr. Nikhil Nair, NSE, Mumbai",
+      topic: "Career opportunities in Finance",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Subhash Gore, G.K. Intelligent Systems Pvt. Ltd., Saturday Club Global Trust, Akola",
+      topic: "Digital Marketing - I",
+      report: "",
+    },
+    {
+      speaker:
+        "Ms. Mohini Modak, Training Division, Webmaster Key, Akola",
+      topic: "Digital Marketing - II",
+      report: "",
+    },
+    {
+      speaker:
+        "Swami Tanmayanandji, Secretary, Vivekanand Sewashram, Ambikapur, Chhattisgarh",
+      topic: "Bhagwad Gita for the Youth; Karmayoga",
+      report: "",
+    },
+    {
+      speaker:
+        "Swami Tanmayanandji, Secretary, Vivekanand Sewashram, Ambikapur, Chhattisgarh",
+      topic: 'Ancient Indian Education System; "Bhaj Govindam" & Q/A',
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Uday Patil, Business Head, Bajaj Finserve Ltd., Pune",
+      topic: "General Management & Motivation - I",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Pankaj Yadav, HR Manager, Bajaj Finserve Ltd., Pune",
+      topic: "General Management & Motivation - II",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Nitin Wankhade, V.P. - Client Services, Value Momentum Pvt. Ltd., Hyderabad",
+      topic:
+        "Opportunities for MBA in IT & building broad skills for professional development",
+      report: "",
+    },
+    {
+      speaker: "Mr. Uday Sampat, Marketing & Sales Manager, Nashik",
+      topic: "Leaders & Managers",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Mayur Kalore, Assist. Sales Manager, Cybernetix, Gujarat",
+      topic: "Motivation and expectation of corporate world",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Vivek Dahake, Head Process Development, Essel Propack Ltd., Thane",
+      topic: "Project management and Strategic management",
+      report: "",
+    },
+    {
+      speaker: "Ms. Dipika Kolhe",
+      topic: "How to face Interview?",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Ravindra Adhau, Sr. Credit Analyst, John Deere Finance, Pune",
+      topic: "Inside you!",
+      report: "",
+    },
+    {
+      speaker: "Mr. Rajiv Jawale, Proprietor, BeBraaand, Jalna",
+      topic:
+        "Branding Concepts; Need of single roof of branding (Umbrella)",
+      report: "",
+    },
+    {
+      speaker:
+        "Mr. Samadhan Damdhar, Marketing Manager, BeBraaand, Jalna",
+      topic: "Promotional means and their uses",
+      report: "",
+    },
+  ],
+};
+
+const createMbaRankingId = () =>
+  `mba-ranking-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const getMbaRankingSignature = (item = {}) =>
+  JSON.stringify({
+    year: String(item?.year || "").trim().toLowerCase(),
+    survey: String(item?.survey || "").trim().toLowerCase(),
+  });
+
+const createMbaAccreditationId = () =>
+  `mba-accreditation-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const getMbaAccreditationSignature = (item = {}) =>
+  JSON.stringify({
+    year: String(item?.year || "").trim().toLowerCase(),
+    recognition: String(item?.recognition || "").trim().toLowerCase(),
+  });
+
+const createMbaWorkshopSectionId = (prefix) =>
+  `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const getMbaProgramSignature = (item = {}) =>
+  JSON.stringify({
+    title: String(item?.title || "").trim().toLowerCase(),
+    coordinator: String(item?.coordinator || "").trim().toLowerCase(),
+  });
+
+const mbaEscapeMarkdownTableCell = (value = "") =>
+  String(value || "").replace(/\|/g, "\\|").trim();
+
+const mbaExtractMarkdownLinkText = (value = "") => {
+  const match = String(value || "").match(/\[(.*?)\]\((.*?)\)/);
+  if (match?.[1]) return match[1].trim();
+  const cleaned = String(value || "").trim();
+  return cleaned === "-" ? "" : cleaned;
+};
+
+const mbaRankingsToMarkdown = (items = []) => {
+  const lines = [
+    "| Year | Name of Survey | Link | Ranking / Grade |",
+    "|------|----------------|------|------------------|",
+  ];
+
+  if (!items.length) {
+    lines.push("| - | No ranking data added yet. | - | - |");
+    return lines.join("\n");
+  }
+
+  items.forEach((item) => {
+    const linkCell = item?.linkUrl
+      ? `[${item?.linkLabel || "more details"}](${item.linkUrl})`
+      : mbaEscapeMarkdownTableCell(item?.linkLabel || "-") || "-";
+
+    lines.push(
+      `| ${mbaEscapeMarkdownTableCell(item?.year || "-")} | ${mbaEscapeMarkdownTableCell(item?.survey || "-")} | ${linkCell} | ${mbaEscapeMarkdownTableCell(item?.ranking || "-")} |`,
+    );
+  });
+
+  return lines.join("\n");
+};
+
+const mbaAccreditationsToMarkdown = (items = []) => {
+  const lines = [
+    "| Year | Recognition | Effective Period | Score / Grade |",
+    "|------|-------------|------------------|---------------|",
+  ];
+
+  if (!items.length) {
+    lines.push("| - | No recognitions added yet. | - | - |");
+    return lines.join("\n");
+  }
+
+  items.forEach((item) => {
+    lines.push(
+      `| ${mbaEscapeMarkdownTableCell(item?.year || "-")} | ${mbaEscapeMarkdownTableCell(item?.recognition || "-")} | ${mbaEscapeMarkdownTableCell(item?.effectivePeriod || "-")} | ${mbaEscapeMarkdownTableCell(item?.score || "-")} |`,
+    );
+  });
+
+  return lines.join("\n");
+};
+
+const mbaThreeColumnProgramsToMarkdown = (items = []) => {
+  const lines = [
+    "| Title of the Program | Faculty Coordinator | No. of Beneficiaries / Participants |",
+    "|----------------------|---------------------|-------------------------------------|",
+  ];
+
+  if (!items.length) {
+    lines.push("| No entries added yet. | - | - |");
+    return lines.join("\n");
+  }
+
+  items.forEach((item) => {
+    lines.push(
+      `| ${mbaEscapeMarkdownTableCell(item?.title || "-")} | ${mbaEscapeMarkdownTableCell(item?.coordinator || "-")} | ${mbaEscapeMarkdownTableCell(item?.participants || "-")} |`,
+    );
+  });
+
+  return lines.join("\n");
+};
+
+const mbaWorkshopProgramsToMarkdown = (items = []) => {
+  const lines = [
+    "| Title of the Workshop | Faculty Coordinator | No. of Participants | Report |",
+    "|-----------------------|---------------------|---------------------|--------|",
+  ];
+
+  if (!items.length) {
+    lines.push("| No workshops added yet. | - | - | - |");
+    return lines.join("\n");
+  }
+
+  items.forEach((item) => {
+    const reportCell = item?.report
+      ? `[View Report](${item.report})`
+      : mbaEscapeMarkdownTableCell(item?.reportLabel || "-") || "-";
+
+    lines.push(
+      `| ${mbaEscapeMarkdownTableCell(item?.title || "-")} | ${mbaEscapeMarkdownTableCell(item?.coordinator || "-")} | ${mbaEscapeMarkdownTableCell(item?.participants || "-")} | ${reportCell} |`,
+    );
+  });
+
+  return lines.join("\n");
+};
+
+const parseMbaRankingsMarkdown = (markdown = "") => {
+  const text = String(markdown || "").trim();
+  if (!text) return [];
+
+  const tableLines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+
+  const dataLines = tableLines.filter(
+    (line, index) =>
+      index > 1 &&
+      !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line),
+  );
+
+  return dataLines
+    .map((line) => mbaParseMarkdownTableRow(line))
+    .filter((cells) => cells.length >= 4)
+    .map((cells) => {
+      const linkCell = cells[2] || "";
+      return {
+        year: cells[0] || "",
+        survey: cells[1] || "",
+        linkLabel: mbaExtractMarkdownLinkText(linkCell) || "more details",
+        linkUrl: mbaExtractMarkdownLinkHref(linkCell),
+        ranking: cells.slice(3).join(" | ") || "",
+      };
+    })
+    .filter(
+      (item) => item.year || item.survey || item.linkLabel || item.linkUrl || item.ranking,
+    );
+};
+
+const parseMbaAccreditationsMarkdown = (markdown = "") => {
+  const text = String(markdown || "").trim();
+  if (!text) return [];
+
+  const tableLines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+
+  const dataLines = tableLines.filter(
+    (line, index) =>
+      index > 1 &&
+      !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line),
+  );
+
+  return dataLines
+    .map((line) => mbaParseMarkdownTableRow(line))
+    .filter((cells) => cells.length >= 4)
+    .map((cells) => ({
+      year: cells[0] || "",
+      recognition: cells[1] || "",
+      effectivePeriod: cells[2] || "",
+      score: cells.slice(3).join(" | ") || "",
+    }))
+    .filter(
+      (item) =>
+        item.year || item.recognition || item.effectivePeriod || item.score,
+    );
+};
+
+const parseMbaThreeColumnProgramsMarkdown = (markdown = "") => {
+  const text = String(markdown || "").trim();
+  if (!text) return [];
+
+  const tableLines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+
+  const dataLines = tableLines.filter(
+    (line, index) =>
+      index > 1 &&
+      !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line),
+  );
+
+  return dataLines
+    .map((line) => mbaParseMarkdownTableRow(line))
+    .filter((cells) => cells.length >= 3)
+    .map((cells) => ({
+      title: cells[0] || "",
+      coordinator: cells[1] || "",
+      participants: cells.slice(2).join(" | ") || "",
+    }))
+    .filter((item) => item.title || item.coordinator || item.participants);
+};
+
+const parseMbaWorkshopProgramsMarkdown = (markdown = "") => {
+  const text = String(markdown || "").trim();
+  if (!text) return [];
+
+  const tableLines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+
+  const dataLines = tableLines.filter(
+    (line, index) =>
+      index > 1 &&
+      !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line),
+  );
+
+  return dataLines
+    .map((line) => mbaParseMarkdownTableRow(line))
+    .filter((cells) => cells.length >= 4)
+    .map((cells) => ({
+      title: cells[0] || "",
+      coordinator: cells[1] || "",
+      participants: cells[2] || "",
+      report: mbaExtractMarkdownLinkHref(cells.slice(3).join(" | ")),
+    }))
+    .filter(
+      (item) => item.title || item.coordinator || item.participants || item.report,
+    );
+};
+
+const mbaConsultancyToMarkdown = (entries = []) => {
+  const lines = [
+    "| Consulting Organization | Consultant Faculty | Remarks |",
+    "|-------------------------|--------------------|---------|",
+  ];
+
+  if (!entries.length) {
+    lines.push("| No consultancy entries added yet. | - | - |");
+    return lines.join("\n");
+  }
+
+  entries.forEach((entry) => {
+    lines.push(
+      `| ${mbaEscapeMarkdownTableCell(entry?.org || "-")} | ${mbaEscapeMarkdownTableCell(entry?.faculty || "-")} | ${mbaEscapeMarkdownTableCell(entry?.remarks || "-")} |`,
+    );
+  });
+
+  return lines.join("\n");
+};
+
+const parseMbaConsultancyMarkdown = (markdown = "") => {
+  const text = String(markdown || "").trim();
+  if (!text) return [];
+
+  const tableLines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+
+  const dataLines = tableLines.filter(
+    (line, index) =>
+      index > 1 &&
+      !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line),
+  );
+
+  return dataLines
+    .map((line) => mbaParseMarkdownTableRow(line))
+    .filter((cells) => cells.length >= 3)
+    .map((cells) => ({
+      org: cells[0] || "",
+      faculty: cells[1] || "",
+      remarks: cells.slice(2).join(" | ") || "",
+    }))
+    .filter((entry) => entry.org || entry.faculty || entry.remarks);
+};
+
+const mbaCorporateLeaderSpeaksToMarkdown = (entries = []) => {
+  const lines = [
+    "| Name of Speaker | Topic | Report |",
+    "|-----------------|-------|--------|",
+  ];
+
+  if (!entries.length) {
+    lines.push("| No speaker entries added yet. | - | - |");
+    return lines.join("\n");
+  }
+
+  entries.forEach((entry) => {
+    const reportCell = entry?.report ? `[View Report](${entry.report})` : "-";
+    lines.push(
+      `| ${mbaEscapeMarkdownTableCell(entry?.speaker || "-")} | ${mbaEscapeMarkdownTableCell(entry?.topic || "-")} | ${reportCell} |`,
+    );
+  });
+
+  return lines.join("\n");
+};
+
+const parseMbaCorporateLeaderSpeaksMarkdown = (markdown = "") => {
+  const text = String(markdown || "").trim();
+  if (!text) return [];
+
+  const tableLines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+
+  const dataLines = tableLines.filter(
+    (line, index) =>
+      index > 1 &&
+      !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line),
+  );
+
+  return dataLines
+    .map((line) => mbaParseMarkdownTableRow(line))
+    .filter((cells) => cells.length >= 3)
+    .map((cells) => ({
+      speaker: cells[0] || "",
+      topic: cells[1] || "",
+      report: mbaExtractMarkdownLinkHref(cells.slice(2).join(" | ")),
+    }))
+    .filter((entry) => entry.speaker || entry.topic || entry.report);
+};
+
 const defaultCourseMaterials = [
   {
     year: "First Year",
@@ -182,6 +1500,271 @@ const defaultCourseMaterials = [
   },
 ];
 
+const defaultMbaProjects = {
+  "2023-24": [
+    {
+      no: 1,
+      title:
+        "A study on work life balance among working women of Maharashtra Police in Buldhana District",
+    },
+    {
+      no: 2,
+      title:
+        "A study of impact of social media in knowledge development of farmers",
+    },
+    {
+      no: 3,
+      title:
+        "A Study of Socio Economic Impact of Road Traffic Congestion in Nandura",
+    },
+    {
+      no: 4,
+      title:
+        "A Study Of Employee Motivation In Select Banks in Sangrampur region",
+    },
+    {
+      no: 5,
+      title:
+        "A study of Recruitment and Selection process in HDFC Bank Shegaon",
+    },
+    {
+      no: 6,
+      title:
+        "A Study on effective role of Human Resource Management in Vikamshi Fabrics Pvt. Ltd.",
+    },
+    {
+      no: 7,
+      title:
+        "A Study of Implications on Employees Performance and Organizational Productivity wrt Work",
+    },
+    {
+      no: 8,
+      title:
+        "A study of customer satisfaction in banking industry with special reference to private sector banks in Buldhana district",
+    },
+    {
+      no: 9,
+      title: "DIMENSIONS OF WORK FROM HOME CULTURE - A STUDY",
+    },
+    {
+      no: 10,
+      title:
+        "A study on motivational strategies and their effectiveness on employees productivity in private financial institutions in Akola region.",
+    },
+    {
+      no: 11,
+      title:
+        "Impact of Social Media on Youth's Social Life and Buying Behaviour - A Study of Khamgaon Region",
+    },
+    {
+      no: 12,
+      title:
+        "Systematic Study on Attrition of workers of Unorganized Sector in Khamgaon Region",
+    },
+    {
+      no: 13,
+      title:
+        "A comparative study on job satisfaction of teachers between Government and Private sector in Akola region",
+    },
+    {
+      no: 14,
+      title:
+        "A study on changing pattern of demand for E-Banking services in Shegaon",
+    },
+    {
+      no: 15,
+      title:
+        "A STUDY ON STRESS MANAGEMENT TECHNIQUES FOR LABOURS WITH REFERENCE TO PARAS THERMAL POWER STATION",
+    },
+    {
+      no: 16,
+      title:
+        "Comparative analysis of key players in dairy industry - A study of Khamgaon region",
+    },
+    {
+      no: 17,
+      title:
+        "A Study of Customer Satisfaction towards Fastrack Watches in Akola Region",
+    },
+    {
+      no: 18,
+      title:
+        "A study of potential of housewives to establish small scale businesses",
+    },
+    {
+      no: 19,
+      title:
+        "Prospect of financial inclusion of rural customers - A study of Lanjud village",
+    },
+    {
+      no: 20,
+      title:
+        "A Study of Self-Help Groups & Women's Empowerment in Rural Area - A Case of Akola",
+    },
+    {
+      no: 21,
+      title:
+        "A study on effectiveness of competency mapping process on employee's development at Jadhao Gear Amravati",
+    },
+    {
+      no: 22,
+      title:
+        "A STUDY ON FACTORS INFLUENCING THE INVESTMENT BEHAVIOR OF STUDENTS PURSUING HIGHER EDUCATION IN AMRAVATI.",
+    },
+    {
+      no: 23,
+      title: "A Study and design of training programs for employees in SBI, Akot",
+    },
+    {
+      no: 24,
+      title:
+        "AN ANALYSIS OF BUYING DECISION FOR ELECTRIC TWO WHEELER - A STUDY OF SHEGAON-KHAMGAON REGION",
+    },
+    {
+      no: 25,
+      title:
+        "A Comparative Study of Customer Perception Regarding Housing Loan Schemes of Public and Private Sector Banks",
+    },
+    {
+      no: 26,
+      title:
+        "A study of grievance management system with special reference to SBI customers in Shegaon",
+    },
+    {
+      no: 27,
+      title:
+        "IMPACT OF STRESS ON EMPLOYEES BEHAVIOR IN ORGANIZATION - A STUDY OF KHAMGAON REGION",
+    },
+    {
+      no: 28,
+      title:
+        "A study and design of Employee Engagement In HUL Company Khamgaon",
+    },
+    {
+      no: 29,
+      title: "Perception About Mobile Banking- A Study of Buldhana Region",
+    },
+    {
+      no: 30,
+      title:
+        "A STUDY ON INVESTMENT PATTERN OF INVESTORS IN GOLD WITH SPECIAL REFERENCE TO MIDDLE CLASS PEOPLE IN BULDHANA REGION",
+    },
+    {
+      no: 31,
+      title: "STUDY ON GST AND ITS IMPACT ON MNC MANUFACTURING INDUSTRY",
+    },
+    {
+      no: 32,
+      title: "INDIA POST PAYMENT BANK PROBLEM AND PROSPECT IN AKOLA REGION",
+    },
+    {
+      no: 33,
+      title:
+        "A Study On The Consumer Behaviour Towards Domestic Water Purifiers In Akola Region",
+    },
+    {
+      no: 34,
+      title:
+        "A study of Training & development Policies in Indorama synthetics Pvt. Ltd. Buttibori, Nagpur",
+    },
+    {
+      no: 35,
+      title:
+        "A COMPARATIVE STUDY OF SELECT INSURANCE COMPANIES & THEIR PRODUCTS IN BULDHANA REGION.",
+    },
+    {
+      no: 36,
+      title:
+        "COMPARATIVE ANALYSIS OF FINANCIAL PERFORMANCE OF SELECT PUBLIC SECTOR AND PRIVATE SECTOR BANKS FROM 2017-2022",
+    },
+    {
+      no: 37,
+      title:
+        "A STUDY ON UNDERSTANDING CUSTOMER SATISFACTION LEVEL REGARDING E-MONEY IN KARANJA REGION",
+    },
+    {
+      no: 38,
+      title:
+        "Customer Preference towards Ice Creams - A study in Malkapur region with respect to Havmor and Top-n-Town",
+    },
+    {
+      no: 39,
+      title:
+        "Exploring the factors influencing career choice and motivation of student in the transition phase of education",
+    },
+    {
+      no: 40,
+      title:
+        "A STUDY ON UNDERSTANDING CUSTOMER SATISFACTION LEVEL REGARDING E-MONEY IN KARANJA REGION",
+    },
+    {
+      no: 41,
+      title: "A Study of Insurance as a vehicle of saving in Buldhana District",
+    },
+    {
+      no: 42,
+      title:
+        "SERVQUAL: An Analytical Study of Public and Private Hospitals in Buldhana District",
+    },
+    {
+      no: 43,
+      title:
+        "A study of financial analysis with reference to Visaka Industries Ltd. Mauda, Nagpur for a period of 2019 to 2022.",
+    },
+    {
+      no: 44,
+      title:
+        "A STUDY OF MARKETING STRATEGY OF MAHARAJA MASALA UDOYG IN BULDHANA DISTRICT",
+    },
+    {
+      no: 45,
+      title:
+        "A STUDY OF DEALERS AND DISTRIBUTION OF AGRO- BUSINESS MARKETING IN MALKAPUR REGION",
+    },
+    {
+      no: 46,
+      title:
+        "A STUDY INCLINATION OF STAKEHOLDERS TOWARDS EQUITY BASED MUTUAL FUND IN AKOLA REGION",
+    },
+    {
+      no: 47,
+      title: "A study on demand of Paver Blocks in Shegaon region",
+    },
+    {
+      no: 48,
+      title: "A Study on the Customer Perception towards Electric Bike In Buldhana District",
+    },
+    {
+      no: 49,
+      title: "A STUDY OF VARIOUS BANK APPS AND ALLIED CUSTOMER SATISFACTION",
+    },
+    {
+      no: 50,
+      title: "A STUDY OF BRAND SWITCHING IN CASE OF SMARTPHONE",
+    },
+    {
+      no: 51,
+      title:
+        "COMPETITIVE ANALYSIS OF ORGANAIZATION INVOLVED IN NETWORKING SERVICES",
+    },
+    {
+      no: 52,
+      title:
+        "A comparative study of satisfaction on Asian and Indigo paint in Shegaon region",
+    },
+    {
+      no: 53,
+      title:
+        "Adoptability of Digital Marketing by the Retailers in Shegaon Region - A Study",
+    },
+    {
+      no: 54,
+      title:
+        "A STUDY ON THE FACTORS INFLUENCING DECISIONS OF THE INVESTORS TO INVEST IN SIP IN BULDHANA REGION",
+    },
+  ],
+};
+
 const MBA = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [vmTab, setVmTab] = useState("vision");
@@ -190,11 +1773,23 @@ const MBA = () => {
   const [expandedSemester, setExpandedSemester] = useState(null);
   const [researchTab, setResearchTab] = useState("toppers");
   const [projectYear, setProjectYear] = useState("2023-24");
+  const [showAddUgProjectYear, setShowAddUgProjectYear] = useState(false);
+  const [newUgProjectYear, setNewUgProjectYear] = useState("");
+  const [ugProjectYearError, setUgProjectYearError] = useState("");
   const [researchYear, setResearchYear] = useState("2023-24");
   const [placementYear, setPlacementYear] = useState(null);
   const [showAddPlacementYear, setShowAddPlacementYear] = useState(false);
   const [newPlacementYear, setNewPlacementYear] = useState("");
   const [placementYearError, setPlacementYearError] = useState("");
+  const [showAddConsultancyYear, setShowAddConsultancyYear] = useState(false);
+  const [newConsultancyYear, setNewConsultancyYear] = useState("");
+  const [consultancyYearError, setConsultancyYearError] = useState("");
+  const [showAddLeaderSession, setShowAddLeaderSession] = useState(false);
+  const [newLeaderSession, setNewLeaderSession] = useState("");
+  const [leaderSessionError, setLeaderSessionError] = useState("");
+  const [showAddResearchYear, setShowAddResearchYear] = useState(false);
+  const [newResearchYear, setNewResearchYear] = useState("");
+  const [researchYearError, setResearchYearError] = useState("");
   const [prideTab, setPrideTab] = useState("toppers");
   const [activitiesVisible, setActivitiesVisible] = useState(6);
   const [lightboxActivity, setLightboxActivity] = useState(null);
@@ -210,11 +1805,27 @@ const MBA = () => {
   const [achievementUploading, setAchievementUploading] = useState({});
   const [achievementUploadErrors, setAchievementUploadErrors] = useState({});
   const [achievementUploadSuccess, setAchievementUploadSuccess] = useState({});
+  const [industrialVisitReportUploading, setIndustrialVisitReportUploading] =
+    useState({});
+  const [industrialVisitReportErrors, setIndustrialVisitReportErrors] =
+    useState({});
+  const [mouReportUploading, setMouReportUploading] = useState({});
+  const [mouReportErrors, setMouReportErrors] = useState({});
+  const [rankingLinkUploading, setRankingLinkUploading] = useState({});
+  const [rankingLinkErrors, setRankingLinkErrors] = useState({});
+  const [workshopReportUploading, setWorkshopReportUploading] = useState({});
+  const [workshopReportErrors, setWorkshopReportErrors] = useState({});
+  const [leaderReportUploading, setLeaderReportUploading] = useState({});
+  const [leaderReportErrors, setLeaderReportErrors] = useState({});
+  const [researchReportUploading, setResearchReportUploading] = useState({});
+  const [researchReportErrors, setResearchReportErrors] = useState({});
   const [shouldScrollToNewCourseMaterial, setShouldScrollToNewCourseMaterial] =
     useState(false);
+  const [expandedFacultyEditorIndex, setExpandedFacultyEditorIndex] =
+    useState(null);
   const latestCourseMaterialRef = useRef(null);
 
-  const researchYears = [
+  const defaultResearchYears = [
     "2024-25",
     "2023-24",
     "2022-23",
@@ -236,6 +1847,1019 @@ const MBA = () => {
   // Helper for array updates
   const updateField = (path, value) => {
     updateData(path, value);
+  };
+
+  const getMbaIndustrialVisits = () =>
+    JSON.parse(JSON.stringify(t("industrialVisits.items", defaultMbaIndustrialVisits))).map(
+      (visit) => ({
+        ...visit,
+        id: String(visit?.id || createMbaIndustrialVisitId()),
+      }),
+    );
+
+  const getMbaIndustrialVisitsMarkdown = (visits = getMbaIndustrialVisits()) =>
+    mbaIndustrialVisitsToMarkdown(visits);
+
+  const persistMbaIndustrialVisits = (visits) => {
+    const normalizedVisits = (Array.isArray(visits) ? visits : []).map((visit) => ({
+      id: String(visit?.id || createMbaIndustrialVisitId()).trim(),
+      title: String(visit?.title || "").trim(),
+      date: String(visit?.date || "").trim(),
+      report: String(visit?.report || "").trim(),
+    }));
+
+    updateData("industrialVisits.items", normalizedVisits);
+    updateData("industrialVisits.markdown", mbaIndustrialVisitsToMarkdown(normalizedVisits));
+  };
+
+  const handleMbaIndustrialVisitsMarkdownSave = (markdown) => {
+    const parsed = parseMbaIndustrialVisitsMarkdown(markdown);
+    const existingVisits = getMbaIndustrialVisits();
+    const signaturePool = new Map();
+    existingVisits.forEach((visit) => {
+      const signature = getMbaIndustrialVisitSignature(visit);
+      const matches = signaturePool.get(signature) || [];
+      matches.push(visit);
+      signaturePool.set(signature, matches);
+    });
+    const usedIds = new Set();
+    const mergedVisits = parsed.map((visit, index) => {
+      const signature = getMbaIndustrialVisitSignature(visit);
+      let match = (signaturePool.get(signature) || []).find(
+        (item) => !usedIds.has(item.id),
+      );
+
+      if (!match) {
+        const fallback = existingVisits[index];
+        if (fallback && !usedIds.has(fallback.id)) {
+          match = fallback;
+        }
+      }
+
+      if (match?.id) usedIds.add(match.id);
+
+      return {
+        id: match?.id || createMbaIndustrialVisitId(),
+        title: visit.title,
+        date: visit.date,
+        report: visit.report || match?.report || "",
+      };
+    });
+    persistMbaIndustrialVisits(mergedVisits);
+  };
+
+  const addMbaIndustrialVisitRowOnTop = () => {
+    const visits = getMbaIndustrialVisits();
+    persistMbaIndustrialVisits([
+      {
+        id: createMbaIndustrialVisitId(),
+        title: "New visit / tour details",
+        date: "Add date",
+        report: "",
+      },
+      ...visits,
+    ]);
+  };
+
+  const uploadMbaIndustrialVisitReport = async (visitId, file) => {
+    if (!file) return;
+
+    const uploadKey = `mba-industrial-visit-${visitId}`;
+    setIndustrialVisitReportUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setIndustrialVisitReportErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data.fileUrl) {
+        throw new Error("Upload did not return a file URL.");
+      }
+
+      const visits = getMbaIndustrialVisits();
+      persistMbaIndustrialVisits(
+        visits.map((visit) =>
+          visit.id === visitId
+            ? {
+                ...visit,
+                report: response.data.fileUrl,
+              }
+            : visit,
+        ),
+      );
+    } catch (error) {
+      console.error("MBA industrial visit report upload failed:", error);
+      setIndustrialVisitReportErrors((prev) => ({
+        ...prev,
+        [uploadKey]:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Upload failed",
+      }));
+    } finally {
+      setIndustrialVisitReportUploading((prev) => ({
+        ...prev,
+        [uploadKey]: false,
+      }));
+    }
+  };
+
+  const getMbaMous = () =>
+    JSON.parse(JSON.stringify(t("mous.items", defaultMbaMous))).map((mou) => ({
+      ...mou,
+      id: String(mou?.id || createMbaMouId()),
+    }));
+
+  const getMbaMousMarkdown = (mous = getMbaMous()) => mbaMousToMarkdown(mous);
+
+  const persistMbaMous = (mous) => {
+    const normalizedMous = (Array.isArray(mous) ? mous : []).map((mou) => ({
+      id: String(mou?.id || createMbaMouId()).trim(),
+      org: String(mou?.org || "").trim(),
+      date: String(mou?.date || "").trim(),
+      report: String(mou?.report || "").trim(),
+    }));
+
+    updateData("mous.items", normalizedMous);
+    updateData("mous.markdown", mbaMousToMarkdown(normalizedMous));
+  };
+
+  const handleMbaMousMarkdownSave = (markdown) => {
+    const parsed = parseMbaMousMarkdown(markdown);
+    const existingMous = getMbaMous();
+    const signaturePool = new Map();
+
+    existingMous.forEach((mou) => {
+      const signature = getMbaMouSignature(mou);
+      const matches = signaturePool.get(signature) || [];
+      matches.push(mou);
+      signaturePool.set(signature, matches);
+    });
+
+    const usedIds = new Set();
+    const mergedMous = parsed.map((mou, index) => {
+      const signature = getMbaMouSignature(mou);
+      let match = (signaturePool.get(signature) || []).find(
+        (item) => !usedIds.has(item.id),
+      );
+
+      if (!match) {
+        const fallback = existingMous[index];
+        if (fallback && !usedIds.has(fallback.id)) {
+          match = fallback;
+        }
+      }
+
+      if (match?.id) usedIds.add(match.id);
+
+      return {
+        id: match?.id || createMbaMouId(),
+        org: mou.org,
+        date: mou.date,
+        report: mou.report || match?.report || "",
+      };
+    });
+
+    persistMbaMous(mergedMous);
+  };
+
+  const addMbaMouRowOnTop = () => {
+    const mous = getMbaMous();
+    persistMbaMous([
+      {
+        id: createMbaMouId(),
+        org: "New organization name",
+        date: "Add signing date",
+        report: "",
+      },
+      ...mous,
+    ]);
+  };
+
+  const uploadMbaMouReport = async (mouId, file) => {
+    if (!file) return;
+
+    const uploadKey = `mba-mou-${mouId}`;
+    setMouReportUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setMouReportErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data.fileUrl) {
+        throw new Error("Upload did not return a file URL.");
+      }
+
+      const mous = getMbaMous();
+      persistMbaMous(
+        mous.map((mou) =>
+          mou.id === mouId
+            ? {
+                ...mou,
+                report: response.data.fileUrl,
+              }
+            : mou,
+        ),
+      );
+    } catch (error) {
+      console.error("MBA MoU upload failed:", error);
+      setMouReportErrors((prev) => ({
+        ...prev,
+        [uploadKey]:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Upload failed",
+      }));
+    } finally {
+      setMouReportUploading((prev) => ({
+        ...prev,
+        [uploadKey]: false,
+      }));
+    }
+  };
+
+  const getMbaRankings = () =>
+    JSON.parse(JSON.stringify(t("ranking.items", defaultMbaRankings))).map((item) => ({
+      ...item,
+      id: String(item?.id || createMbaRankingId()),
+      linkLabel: String(item?.linkLabel || item?.link || "more details"),
+      linkUrl: String(item?.linkUrl || ""),
+    }));
+
+  const getMbaRankingsMarkdown = (items = getMbaRankings()) =>
+    String(t("ranking.markdown", mbaRankingsToMarkdown(items)) || "").trim() ||
+    mbaRankingsToMarkdown(items);
+
+  const persistMbaRankings = (items) => {
+    const normalizedItems = (Array.isArray(items) ? items : []).map((item) => ({
+      id: String(item?.id || createMbaRankingId()).trim(),
+      year: String(item?.year || "").trim(),
+      survey: String(item?.survey || "").trim(),
+      linkLabel: String(item?.linkLabel || "more details").trim() || "more details",
+      linkUrl: String(item?.linkUrl || "").trim(),
+      ranking: String(item?.ranking || "").trim(),
+    }));
+
+    updateData("ranking.items", normalizedItems);
+    updateData("ranking.markdown", mbaRankingsToMarkdown(normalizedItems));
+  };
+
+  const handleMbaRankingMarkdownSave = (markdown) => {
+    const parsed = parseMbaRankingsMarkdown(markdown);
+    const existingItems = getMbaRankings();
+    const signaturePool = new Map();
+
+    existingItems.forEach((item) => {
+      const signature = getMbaRankingSignature(item);
+      const matches = signaturePool.get(signature) || [];
+      matches.push(item);
+      signaturePool.set(signature, matches);
+    });
+
+    const usedIds = new Set();
+    const mergedItems = parsed.map((item, index) => {
+      const signature = getMbaRankingSignature(item);
+      let match = (signaturePool.get(signature) || []).find(
+        (candidate) => !usedIds.has(candidate.id),
+      );
+
+      if (!match) {
+        const fallback = existingItems[index];
+        if (fallback && !usedIds.has(fallback.id)) {
+          match = fallback;
+        }
+      }
+
+      if (match?.id) usedIds.add(match.id);
+
+      return {
+        id: match?.id || createMbaRankingId(),
+        year: item.year,
+        survey: item.survey,
+        linkLabel: item.linkLabel || match?.linkLabel || "more details",
+        linkUrl: item.linkUrl || match?.linkUrl || "",
+        ranking: item.ranking,
+      };
+    });
+
+    persistMbaRankings(mergedItems);
+  };
+
+  const addMbaRankingRowOnTop = () => {
+    const items = getMbaRankings();
+    persistMbaRankings([
+      {
+        id: createMbaRankingId(),
+        year: "Add year",
+        survey: "New survey title",
+        linkLabel: "more details",
+        linkUrl: "",
+        ranking: "Add ranking / grade",
+      },
+      ...items,
+    ]);
+  };
+
+  const getMbaAccreditations = () =>
+    JSON.parse(
+      JSON.stringify(t("accreditations.items", defaultMbaAccreditations)),
+    ).map((item) => ({
+      ...item,
+      id: String(item?.id || createMbaAccreditationId()),
+    }));
+
+  const getMbaAccreditationsMarkdown = (items = getMbaAccreditations()) =>
+    String(
+      t("accreditations.markdown", mbaAccreditationsToMarkdown(items)) || "",
+    ).trim() || mbaAccreditationsToMarkdown(items);
+
+  const persistMbaAccreditations = (items) => {
+    const normalizedItems = (Array.isArray(items) ? items : []).map((item) => ({
+      id: String(item?.id || createMbaAccreditationId()).trim(),
+      year: String(item?.year || "").trim(),
+      recognition: String(item?.recognition || "").trim(),
+      effectivePeriod: String(item?.effectivePeriod || "").trim(),
+      score: String(item?.score || "").trim(),
+    }));
+
+    updateData("accreditations.items", normalizedItems);
+    updateData(
+      "accreditations.markdown",
+      mbaAccreditationsToMarkdown(normalizedItems),
+    );
+  };
+
+  const handleMbaAccreditationsMarkdownSave = (markdown) => {
+    const parsed = parseMbaAccreditationsMarkdown(markdown);
+    const existingItems = getMbaAccreditations();
+    const signaturePool = new Map();
+
+    existingItems.forEach((item) => {
+      const signature = getMbaAccreditationSignature(item);
+      const matches = signaturePool.get(signature) || [];
+      matches.push(item);
+      signaturePool.set(signature, matches);
+    });
+
+    const usedIds = new Set();
+    const mergedItems = parsed.map((item, index) => {
+      const signature = getMbaAccreditationSignature(item);
+      let match = (signaturePool.get(signature) || []).find(
+        (candidate) => !usedIds.has(candidate.id),
+      );
+
+      if (!match) {
+        const fallback = existingItems[index];
+        if (fallback && !usedIds.has(fallback.id)) {
+          match = fallback;
+        }
+      }
+
+      if (match?.id) usedIds.add(match.id);
+
+      return {
+        id: match?.id || createMbaAccreditationId(),
+        year: item.year,
+        recognition: item.recognition,
+        effectivePeriod: item.effectivePeriod,
+        score: item.score,
+      };
+    });
+
+    persistMbaAccreditations(mergedItems);
+  };
+
+  const addMbaAccreditationRowOnTop = () => {
+    const items = getMbaAccreditations();
+    persistMbaAccreditations([
+      {
+        id: createMbaAccreditationId(),
+        year: "Add year",
+        recognition: "New recognition",
+        effectivePeriod: "Add effective period",
+        score: "Add score / grade",
+      },
+      ...items,
+    ]);
+  };
+
+  const updateMbaAccreditationRow = (accreditationId, field, value) => {
+    const items = getMbaAccreditations();
+    persistMbaAccreditations(
+      items.map((item) =>
+        item.id === accreditationId ? { ...item, [field]: value } : item,
+      ),
+    );
+  };
+
+  const deleteMbaAccreditationRow = (accreditationId) => {
+    const items = getMbaAccreditations();
+    persistMbaAccreditations(
+      items.filter((item) => item.id !== accreditationId),
+    );
+  };
+
+  const renderMbaTableCellMarkdown = (value, extraClassName = "") => (
+    <div
+      className={`prose prose-sm max-w-none prose-p:my-0 prose-ul:my-0 prose-ol:my-0 prose-strong:text-inherit prose-a:text-ssgmce-blue prose-a:no-underline hover:prose-a:underline ${extraClassName}`.trim()}
+    >
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        {String(value || "")}
+      </ReactMarkdown>
+    </div>
+  );
+
+  const getMbaMdpPrograms = () =>
+    JSON.parse(
+      JSON.stringify(t("workshops.mdpItems", defaultMbaMdpCepFdpPrograms)),
+    ).map((item) => ({
+      ...item,
+      id: String(item?.id || createMbaWorkshopSectionId("mba-mdp")),
+    }));
+
+  const getMbaMdpMarkdown = (items = getMbaMdpPrograms()) =>
+    String(
+      t("workshops.mdpMarkdown", mbaThreeColumnProgramsToMarkdown(items)) || "",
+    ).trim() || mbaThreeColumnProgramsToMarkdown(items);
+
+  const persistMbaMdpPrograms = (items) => {
+    const normalizedItems = (Array.isArray(items) ? items : []).map((item) => ({
+      id: String(item?.id || createMbaWorkshopSectionId("mba-mdp")).trim(),
+      title: String(item?.title || "").trim(),
+      coordinator: String(item?.coordinator || "").trim(),
+      participants: String(item?.participants || "").trim(),
+    }));
+
+    updateData("workshops.mdpItems", normalizedItems);
+    updateData(
+      "workshops.mdpMarkdown",
+      mbaThreeColumnProgramsToMarkdown(normalizedItems),
+    );
+  };
+
+  const handleMbaMdpMarkdownSave = (markdown) => {
+    const parsed = parseMbaThreeColumnProgramsMarkdown(markdown);
+    const existingItems = getMbaMdpPrograms();
+    const signaturePool = new Map();
+
+    existingItems.forEach((item) => {
+      const signature = getMbaProgramSignature(item);
+      const matches = signaturePool.get(signature) || [];
+      matches.push(item);
+      signaturePool.set(signature, matches);
+    });
+
+    const usedIds = new Set();
+    const mergedItems = parsed.map((item, index) => {
+      const signature = getMbaProgramSignature(item);
+      let match = (signaturePool.get(signature) || []).find(
+        (candidate) => !usedIds.has(candidate.id),
+      );
+
+      if (!match) {
+        const fallback = existingItems[index];
+        if (fallback && !usedIds.has(fallback.id)) {
+          match = fallback;
+        }
+      }
+
+      if (match?.id) usedIds.add(match.id);
+
+      return {
+        id: match?.id || createMbaWorkshopSectionId("mba-mdp"),
+        title: item.title,
+        coordinator: item.coordinator,
+        participants: item.participants,
+      };
+    });
+
+    persistMbaMdpPrograms(mergedItems);
+  };
+
+  const addMbaMdpRowOnTop = () => {
+    persistMbaMdpPrograms([
+      {
+        id: createMbaWorkshopSectionId("mba-mdp"),
+        title: "New program title",
+        coordinator: "Add faculty coordinator",
+        participants: "Add participants / beneficiaries",
+      },
+      ...getMbaMdpPrograms(),
+    ]);
+  };
+
+  const getMbaFdpPrograms = () =>
+    JSON.parse(
+      JSON.stringify(t("workshops.fdpItems", defaultMbaFdpPrograms)),
+    ).map((item) => ({
+      ...item,
+      id: String(item?.id || createMbaWorkshopSectionId("mba-fdp")),
+    }));
+
+  const getMbaFdpMarkdown = (items = getMbaFdpPrograms()) =>
+    String(
+      t("workshops.fdpMarkdown", mbaThreeColumnProgramsToMarkdown(items)) || "",
+    ).trim() || mbaThreeColumnProgramsToMarkdown(items);
+
+  const persistMbaFdpPrograms = (items) => {
+    const normalizedItems = (Array.isArray(items) ? items : []).map((item) => ({
+      id: String(item?.id || createMbaWorkshopSectionId("mba-fdp")).trim(),
+      title: String(item?.title || "").trim(),
+      coordinator: String(item?.coordinator || "").trim(),
+      participants: String(item?.participants || "").trim(),
+    }));
+
+    updateData("workshops.fdpItems", normalizedItems);
+    updateData(
+      "workshops.fdpMarkdown",
+      mbaThreeColumnProgramsToMarkdown(normalizedItems),
+    );
+  };
+
+  const handleMbaFdpMarkdownSave = (markdown) => {
+    const parsed = parseMbaThreeColumnProgramsMarkdown(markdown);
+    const existingItems = getMbaFdpPrograms();
+    const signaturePool = new Map();
+
+    existingItems.forEach((item) => {
+      const signature = getMbaProgramSignature(item);
+      const matches = signaturePool.get(signature) || [];
+      matches.push(item);
+      signaturePool.set(signature, matches);
+    });
+
+    const usedIds = new Set();
+    const mergedItems = parsed.map((item, index) => {
+      const signature = getMbaProgramSignature(item);
+      let match = (signaturePool.get(signature) || []).find(
+        (candidate) => !usedIds.has(candidate.id),
+      );
+
+      if (!match) {
+        const fallback = existingItems[index];
+        if (fallback && !usedIds.has(fallback.id)) {
+          match = fallback;
+        }
+      }
+
+      if (match?.id) usedIds.add(match.id);
+
+      return {
+        id: match?.id || createMbaWorkshopSectionId("mba-fdp"),
+        title: item.title,
+        coordinator: item.coordinator,
+        participants: item.participants,
+      };
+    });
+
+    persistMbaFdpPrograms(mergedItems);
+  };
+
+  const addMbaFdpRowOnTop = () => {
+    persistMbaFdpPrograms([
+      {
+        id: createMbaWorkshopSectionId("mba-fdp"),
+        title: "New FDP title",
+        coordinator: "Add faculty coordinator",
+        participants: "Add participants",
+      },
+      ...getMbaFdpPrograms(),
+    ]);
+  };
+
+  const getMbaWorkshopPrograms = () =>
+    JSON.parse(
+      JSON.stringify(
+        t("workshops.workshopItems", defaultMbaWorkshopPrograms),
+      ),
+    ).map((item) => ({
+      ...item,
+      id: String(item?.id || createMbaWorkshopSectionId("mba-workshop")),
+    }));
+
+  const getMbaWorkshopMarkdown = (items = getMbaWorkshopPrograms()) =>
+    String(
+      t(
+        "workshops.workshopMarkdown",
+        mbaWorkshopProgramsToMarkdown(items),
+      ) || "",
+    ).trim() || mbaWorkshopProgramsToMarkdown(items);
+
+  const persistMbaWorkshopPrograms = (items) => {
+    const normalizedItems = (Array.isArray(items) ? items : []).map((item) => ({
+      id: String(item?.id || createMbaWorkshopSectionId("mba-workshop")).trim(),
+      title: String(item?.title || "").trim(),
+      coordinator: String(item?.coordinator || "").trim(),
+      participants: String(item?.participants || "").trim(),
+      report: String(item?.report || "").trim(),
+    }));
+
+    updateData("workshops.workshopItems", normalizedItems);
+    updateData(
+      "workshops.workshopMarkdown",
+      mbaWorkshopProgramsToMarkdown(normalizedItems),
+    );
+  };
+
+  const handleMbaWorkshopMarkdownSave = (markdown) => {
+    const parsed = parseMbaWorkshopProgramsMarkdown(markdown);
+    const existingItems = getMbaWorkshopPrograms();
+    const signaturePool = new Map();
+
+    existingItems.forEach((item) => {
+      const signature = getMbaProgramSignature(item);
+      const matches = signaturePool.get(signature) || [];
+      matches.push(item);
+      signaturePool.set(signature, matches);
+    });
+
+    const usedIds = new Set();
+    const mergedItems = parsed.map((item, index) => {
+      const signature = getMbaProgramSignature(item);
+      let match = (signaturePool.get(signature) || []).find(
+        (candidate) => !usedIds.has(candidate.id),
+      );
+
+      if (!match) {
+        const fallback = existingItems[index];
+        if (fallback && !usedIds.has(fallback.id)) {
+          match = fallback;
+        }
+      }
+
+      if (match?.id) usedIds.add(match.id);
+
+      return {
+        id: match?.id || createMbaWorkshopSectionId("mba-workshop"),
+        title: item.title,
+        coordinator: item.coordinator,
+        participants: item.participants,
+        report: item.report || match?.report || "",
+      };
+    });
+
+    persistMbaWorkshopPrograms(mergedItems);
+  };
+
+  const addMbaWorkshopRowOnTop = () => {
+    persistMbaWorkshopPrograms([
+      {
+        id: createMbaWorkshopSectionId("mba-workshop"),
+        title: "New workshop title",
+        coordinator: "Add faculty coordinator",
+        participants: "Add participants",
+        report: "",
+      },
+      ...getMbaWorkshopPrograms(),
+    ]);
+  };
+
+  const uploadMbaWorkshopReport = async (workshopId, file) => {
+    if (!file || !workshopId) return;
+
+    const uploadKey = `mba-workshop-${workshopId}`;
+    setWorkshopReportUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setWorkshopReportErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data.fileUrl) {
+        throw new Error("Upload did not return a file URL.");
+      }
+
+      persistMbaWorkshopPrograms(
+        getMbaWorkshopPrograms().map((item) =>
+          item.id === workshopId
+            ? {
+                ...item,
+                report: response.data.fileUrl,
+              }
+            : item,
+        ),
+      );
+    } catch (error) {
+      console.error("MBA workshop report upload failed:", error);
+      setWorkshopReportErrors((prev) => ({
+        ...prev,
+        [uploadKey]:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Upload failed",
+      }));
+    } finally {
+      setWorkshopReportUploading((prev) => ({ ...prev, [uploadKey]: false }));
+    }
+  };
+
+  const defaultConsultancyYears = Object.keys(defaultMbaConsultancyByYear);
+
+  const getMbaConsultancyYears = () => {
+    const storedYears = Array.isArray(t("consultancy.years", null))
+      ? t("consultancy.years", [])
+      : [];
+    const markdownByYear = t("consultancy.markdownByYear", {});
+    const recordYears = Object.keys(
+      markdownByYear && typeof markdownByYear === "object" ? markdownByYear : {},
+    );
+
+    return [...new Set([...storedYears, ...recordYears, ...defaultConsultancyYears])];
+  };
+
+  const getMbaConsultancyMarkdownByYear = () => {
+    const storedMarkdown = t("consultancy.markdownByYear", {});
+    const normalizedStored =
+      storedMarkdown && typeof storedMarkdown === "object" ? storedMarkdown : {};
+
+    const defaults = Object.fromEntries(
+      defaultConsultancyYears.map((year) => [
+        year,
+        mbaConsultancyToMarkdown(defaultMbaConsultancyByYear[year] || []),
+      ]),
+    );
+
+    return {
+      ...defaults,
+      ...normalizedStored,
+    };
+  };
+
+  const persistMbaConsultancyMarkdownByYear = (markdownByYear, years) => {
+    const normalizedYears = Array.isArray(years) ? years : getMbaConsultancyYears();
+    updateData("consultancy.years", normalizedYears);
+    updateData("consultancy.markdownByYear", markdownByYear);
+  };
+
+  const handleMbaConsultancyMarkdownSave = (year, markdown) => {
+    const markdownByYear = getMbaConsultancyMarkdownByYear();
+    persistMbaConsultancyMarkdownByYear(
+      {
+        ...markdownByYear,
+        [year]: markdown,
+      },
+      getMbaConsultancyYears(),
+    );
+  };
+
+  const addMbaConsultancyYear = () => {
+    const normalizedYear = String(newConsultancyYear || "").trim();
+
+    if (!normalizedYear) {
+      setConsultancyYearError("Enter a consultancy year label.");
+      return;
+    }
+
+    const years = getMbaConsultancyYears();
+    if (years.includes(normalizedYear)) {
+      setConsultancyYearError("That consultancy year already exists.");
+      return;
+    }
+
+    const nextYears = [normalizedYear, ...years];
+    const markdownByYear = getMbaConsultancyMarkdownByYear();
+
+    persistMbaConsultancyMarkdownByYear(
+      {
+        ...markdownByYear,
+        [normalizedYear]: mbaConsultancyToMarkdown([]),
+      },
+      nextYears,
+    );
+
+    setNewConsultancyYear("");
+    setConsultancyYearError("");
+    setShowAddConsultancyYear(false);
+  };
+
+  const defaultLeaderSessions = Object.keys(defaultMbaCorporateLeaderSpeaksBySession);
+
+  const getMbaLeaderSessions = () => {
+    const storedSessions = Array.isArray(t("leaderSpeaks.sessions", null))
+      ? t("leaderSpeaks.sessions", [])
+      : [];
+    const markdownBySession = t("leaderSpeaks.markdownBySession", {});
+    const recordSessions = Object.keys(
+      markdownBySession && typeof markdownBySession === "object"
+        ? markdownBySession
+        : {},
+    );
+
+    return [...new Set([...storedSessions, ...recordSessions, ...defaultLeaderSessions])];
+  };
+
+  const getMbaLeaderMarkdownBySession = () => {
+    const storedMarkdown = t("leaderSpeaks.markdownBySession", {});
+    const normalizedStored =
+      storedMarkdown && typeof storedMarkdown === "object" ? storedMarkdown : {};
+
+    const defaults = Object.fromEntries(
+      defaultLeaderSessions.map((session) => [
+        session,
+        mbaCorporateLeaderSpeaksToMarkdown(
+          defaultMbaCorporateLeaderSpeaksBySession[session] || [],
+        ),
+      ]),
+    );
+
+    return {
+      ...defaults,
+      ...normalizedStored,
+    };
+  };
+
+  const persistMbaLeaderMarkdownBySession = (markdownBySession, sessions) => {
+    const normalizedSessions = Array.isArray(sessions)
+      ? sessions
+      : getMbaLeaderSessions();
+    updateData("leaderSpeaks.sessions", normalizedSessions);
+    updateData("leaderSpeaks.markdownBySession", markdownBySession);
+  };
+
+  const handleMbaLeaderMarkdownSave = (session, markdown) => {
+    const markdownBySession = getMbaLeaderMarkdownBySession();
+    persistMbaLeaderMarkdownBySession(
+      {
+        ...markdownBySession,
+        [session]: markdown,
+      },
+      getMbaLeaderSessions(),
+    );
+  };
+
+  const addMbaLeaderSession = () => {
+    const normalizedSession = String(newLeaderSession || "").trim();
+
+    if (!normalizedSession) {
+      setLeaderSessionError("Enter a session label.");
+      return;
+    }
+
+    const sessions = getMbaLeaderSessions();
+    if (sessions.includes(normalizedSession)) {
+      setLeaderSessionError("That session already exists.");
+      return;
+    }
+
+    const nextSessions = [normalizedSession, ...sessions];
+    const markdownBySession = getMbaLeaderMarkdownBySession();
+
+    persistMbaLeaderMarkdownBySession(
+      {
+        ...markdownBySession,
+        [normalizedSession]: mbaCorporateLeaderSpeaksToMarkdown([]),
+      },
+      nextSessions,
+    );
+
+    setNewLeaderSession("");
+    setLeaderSessionError("");
+    setShowAddLeaderSession(false);
+  };
+
+  const uploadMbaLeaderReport = async (session, entryIndex, file) => {
+    if (!file || !session) return;
+
+    const uploadKey = `mba-leader-${session}-${entryIndex}`;
+    setLeaderReportUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setLeaderReportErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data.fileUrl) {
+        throw new Error("Upload did not return a file URL.");
+      }
+
+      const markdownBySession = getMbaLeaderMarkdownBySession();
+      const entries = parseMbaCorporateLeaderSpeaksMarkdown(
+        markdownBySession[session] || "",
+      );
+      const nextEntries = entries.map((entry, idx) =>
+        idx === entryIndex ? { ...entry, report: response.data.fileUrl } : entry,
+      );
+
+      persistMbaLeaderMarkdownBySession(
+        {
+          ...markdownBySession,
+          [session]: mbaCorporateLeaderSpeaksToMarkdown(nextEntries),
+        },
+        getMbaLeaderSessions(),
+      );
+    } catch (error) {
+      console.error("MBA corporate leader report upload failed:", error);
+      setLeaderReportErrors((prev) => ({
+        ...prev,
+        [uploadKey]:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Upload failed",
+      }));
+    } finally {
+      setLeaderReportUploading((prev) => ({ ...prev, [uploadKey]: false }));
+    }
+  };
+
+  const updateMbaRankingRow = (rankingId, field, value) => {
+    const items = getMbaRankings();
+    persistMbaRankings(
+      items.map((item) =>
+        item.id === rankingId ? { ...item, [field]: value } : item,
+      ),
+    );
+  };
+
+  const deleteMbaRankingRow = (rankingId) => {
+    const items = getMbaRankings();
+    persistMbaRankings(items.filter((item) => item.id !== rankingId));
+  };
+
+  const uploadMbaRankingLinkFile = async (rankingId, file) => {
+    if (!file) return;
+
+    const uploadKey = `mba-ranking-${rankingId}`;
+    setRankingLinkUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setRankingLinkErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data.fileUrl) {
+        throw new Error("Upload did not return a file URL.");
+      }
+
+      const items = getMbaRankings();
+      persistMbaRankings(
+        items.map((item) =>
+          item.id === rankingId
+            ? {
+                ...item,
+                linkUrl: response.data.fileUrl,
+                linkLabel: item.linkLabel || "more details",
+              }
+            : item,
+        ),
+      );
+    } catch (error) {
+      console.error("MBA ranking link upload failed:", error);
+      setRankingLinkErrors((prev) => ({
+        ...prev,
+        [uploadKey]:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Upload failed",
+      }));
+    } finally {
+      setRankingLinkUploading((prev) => ({ ...prev, [uploadKey]: false }));
+    }
   };
 
   const academicYearPattern = /^\d{4}-\d{2}$/;
@@ -273,6 +2897,735 @@ const MBA = () => {
 
     const [startYear, endSuffix] = normalizedYear.split("-");
     return String(Number(startYear) + 1).slice(-2) === endSuffix;
+  };
+
+  const parseUgProjectsTableRow = (line = "") =>
+    String(line || "")
+      .trim()
+      .replace(/^\|/, "")
+      .replace(/\|$/, "")
+      .split("|")
+      .map((cell) => cell.trim());
+
+  const mbaProjectsToMarkdown = (projectsByYear = {}, preferredYears = []) => {
+    const yearOrder = [
+      ...preferredYears,
+      ...Object.keys(projectsByYear || {}).filter(
+        (year) => !preferredYears.includes(year),
+      ),
+    ];
+
+    return yearOrder
+      .filter(Boolean)
+      .map((year) => {
+        const projects = Array.isArray(projectsByYear?.[year])
+          ? projectsByYear[year]
+          : [];
+        const header = [
+          `## ${year}`,
+          "",
+          "| Group No. | Project Title |",
+          "|-----------|---------------|",
+        ];
+
+        if (!projects.length) {
+          return [...header, "| - | No projects added yet. |"].join("\n");
+        }
+
+        const rows = projects.map(
+          (project) => `| ${project?.no || "-"} | ${project?.title || "-"} |`,
+        );
+        return [...header, ...rows].join("\n");
+      })
+      .join("\n\n");
+  };
+
+const parseMbaProjectsMarkdown = (markdown = "", fallbackYear = "2023-24") => {
+    const text = String(markdown || "").trim();
+    if (!text) {
+      return { years: [fallbackYear], records: { [fallbackYear]: [] } };
+    }
+
+    const headingMatches = [...text.matchAll(/^##\s+(.+)$/gm)];
+    const sections =
+      headingMatches.length > 0
+        ? headingMatches.map((match, index) => {
+            const start = match.index ?? 0;
+            const end =
+              index + 1 < headingMatches.length
+                ? headingMatches[index + 1].index
+                : text.length;
+            return { year: match[1].trim(), body: text.slice(start, end) };
+          })
+        : [{ year: fallbackYear, body: text }];
+
+    const years = [];
+    const records = {};
+
+    sections.forEach(({ year, body }) => {
+      const normalizedYear = year || fallbackYear;
+      const lines = String(body || "")
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const tableLines = lines.filter((line) => line.startsWith("|"));
+      const dataLines = tableLines.filter(
+        (line, index) =>
+          index > 1 && !/^\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line),
+      );
+
+      records[normalizedYear] = dataLines
+        .map((line) => parseUgProjectsTableRow(line))
+        .filter((cells) => cells.length >= 2)
+        .map((cells) => ({
+          no: cells[0] || "",
+          title: cells[1] || "",
+        }))
+        .filter((project) => project.no || project.title);
+
+      if (!years.includes(normalizedYear)) years.push(normalizedYear);
+    });
+
+  return { years, records };
+};
+
+const mbaExtractMarkdownLinkHref = (value = "") => {
+  const text = String(value || "").trim();
+  if (!text) return "";
+
+  const markdownMatch = text.match(/\[[^\]]*\]\(([^)]+)\)/);
+  if (markdownMatch?.[1]) return markdownMatch[1].trim();
+
+  if (/^https?:\/\//i.test(text)) return text;
+
+  return "";
+};
+
+const mbaParseMarkdownTableRow = (line = "") =>
+  String(line || "")
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
+
+const mbaPatentsToMarkdown = (items = [], year = "2023-24") => {
+  const lines = [
+    `## ${year}`,
+    "",
+    "| Title of Invention | Status | Application No. | Inventors | Link |",
+    "|--------------------|--------|-----------------|-----------|------|",
+  ];
+
+  if (!items.length) {
+    lines.push(
+      "| Add invention title | Published | Add application no. | Add inventors | - |",
+    );
+    return lines.join("\n");
+  }
+
+  items.forEach((item) => {
+    const linkCell = item?.link ? `[Open](${item.link})` : "-";
+    lines.push(
+      `| ${item?.title || "-"} | ${item?.status || "-"} | ${item?.id || "-"} | ${item?.inventors || "-"} | ${linkCell} |`,
+    );
+  });
+
+  return lines.join("\n");
+};
+
+const parseMbaPatentsMarkdown = (markdown = "", fallbackYear = "2023-24") => {
+  const text = String(markdown || "").trim();
+  if (!text) return { year: fallbackYear, items: [] };
+
+  const headingMatch = text.match(/^##\s+(.+)$/m);
+  const year = headingMatch?.[1]?.trim() || fallbackYear;
+  const tableLines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+  const dataLines = tableLines.filter(
+    (line, index) =>
+      index > 1 &&
+      !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(
+        line,
+      ),
+  );
+
+  return {
+    year,
+    items: dataLines
+      .map((line) => mbaParseMarkdownTableRow(line))
+      .filter((cells) => cells.length >= 5)
+      .map((cells) => ({
+        title: cells[0] || "",
+        status: cells[1] || "",
+        id: cells[2] || "",
+        inventors: cells[3] || "",
+        link: mbaExtractMarkdownLinkHref(cells.slice(4).join(" | ")),
+      }))
+      .filter(
+        (item) =>
+          item.title || item.status || item.id || item.inventors || item.link,
+      ),
+  };
+};
+
+const mbaPublicationsToMarkdown = (items = [], year = "2023-24") => {
+  const lines = [
+    `## ${year}`,
+    "",
+    "| Title of Paper | Authors | Journal Details | Link |",
+    "|----------------|---------|-----------------|------|",
+  ];
+
+  if (!items.length) {
+    lines.push("| Add paper title | Add authors | Add journal details | - |");
+    return lines.join("\n");
+  }
+
+  items.forEach((item) => {
+    const linkCell = item?.link ? `[View](${item.link})` : "-";
+    lines.push(
+      `| ${item?.title || "-"} | ${item?.authors || "-"} | ${item?.journal || "-"} | ${linkCell} |`,
+    );
+  });
+
+  return lines.join("\n");
+};
+
+const parseMbaPublicationsMarkdown = (
+  markdown = "",
+  fallbackYear = "2023-24",
+) => {
+  const text = String(markdown || "").trim();
+  if (!text) return { year: fallbackYear, items: [] };
+
+  const headingMatch = text.match(/^##\s+(.+)$/m);
+  const year = headingMatch?.[1]?.trim() || fallbackYear;
+  const tableLines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+  const dataLines = tableLines.filter(
+    (line, index) =>
+      index > 1 &&
+      !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line),
+  );
+
+  return {
+    year,
+    items: dataLines
+      .map((line) => mbaParseMarkdownTableRow(line))
+      .filter((cells) => cells.length >= 4)
+      .map((cells) => ({
+        title: cells[0] || "",
+        authors: cells[1] || "",
+        journal: cells[2] || "",
+        link: mbaExtractMarkdownLinkHref(cells.slice(3).join(" | ")),
+      }))
+      .filter((item) => item.title || item.authors || item.journal || item.link),
+  };
+};
+
+const mbaConferencesToMarkdown = (items = [], year = "2023-24") => {
+  const lines = [
+    `## ${year}`,
+    "",
+    "| Title of Paper | Authors | Conference Details | Link |",
+    "|----------------|---------|--------------------|------|",
+  ];
+
+  if (!items.length) {
+    lines.push("| Add paper title | Add authors | Add conference details | - |");
+    return lines.join("\n");
+  }
+
+  items.forEach((item) => {
+    const linkCell = item?.link ? `[View](${item.link})` : "-";
+    lines.push(
+      `| ${item?.title || "-"} | ${item?.authors || "-"} | ${item?.journal || "-"} | ${linkCell} |`,
+    );
+  });
+
+  return lines.join("\n");
+};
+
+const parseMbaConferencesMarkdown = (
+  markdown = "",
+  fallbackYear = "2023-24",
+) => {
+  const text = String(markdown || "").trim();
+  if (!text) return { year: fallbackYear, items: [] };
+
+  const headingMatch = text.match(/^##\s+(.+)$/m);
+  const year = headingMatch?.[1]?.trim() || fallbackYear;
+  const tableLines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+  const dataLines = tableLines.filter(
+    (line, index) =>
+      index > 1 &&
+      !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line),
+  );
+
+  return {
+    year,
+    items: dataLines
+      .map((line) => mbaParseMarkdownTableRow(line))
+      .filter((cells) => cells.length >= 4)
+      .map((cells) => ({
+        title: cells[0] || "",
+        authors: cells[1] || "",
+        journal: cells[2] || "",
+        link: mbaExtractMarkdownLinkHref(cells.slice(3).join(" | ")),
+      }))
+      .filter((item) => item.title || item.authors || item.journal || item.link),
+  };
+};
+
+const mbaCopyrightsToMarkdown = (items = [], year = "2023-24") => {
+  const lines = [
+    `## ${year}`,
+    "",
+    "| Name of Faculty | Title of Work | Status | Link |",
+    "|-----------------|---------------|--------|------|",
+  ];
+
+  if (!items.length) {
+    lines.push("| Add faculty name | Add title of work | Published | - |");
+    return lines.join("\n");
+  }
+
+  items.forEach((item) => {
+    const linkCell = item?.link ? `[Open](${item.link})` : "-";
+    lines.push(
+      `| ${item?.name || "-"} | ${item?.title || "-"} | ${item?.status || "-"} | ${linkCell} |`,
+    );
+  });
+
+  return lines.join("\n");
+};
+
+const parseMbaCopyrightsMarkdown = (
+  markdown = "",
+  fallbackYear = "2023-24",
+) => {
+  const text = String(markdown || "").trim();
+  if (!text) return { year: fallbackYear, items: [] };
+
+  const headingMatch = text.match(/^##\s+(.+)$/m);
+  const year = headingMatch?.[1]?.trim() || fallbackYear;
+  const tableLines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+  const dataLines = tableLines.filter(
+    (line, index) =>
+      index > 1 &&
+      !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line),
+  );
+
+  return {
+    year,
+    items: dataLines
+      .map((line) => mbaParseMarkdownTableRow(line))
+      .filter((cells) => cells.length >= 4)
+      .map((cells) => ({
+        name: cells[0] || "",
+        title: cells[1] || "",
+        status: cells[2] || "",
+        link: mbaExtractMarkdownLinkHref(cells.slice(3).join(" | ")),
+      }))
+      .filter((item) => item.name || item.title || item.status || item.link),
+  };
+};
+
+const mbaBooksToMarkdown = (items = [], year = "2023-24") => {
+  const lines = [
+    `## ${year}`,
+    "",
+    "| Author(s) | Co-Authors | Title | Publisher | ISBN | Link |",
+    "|-----------|------------|-------|-----------|------|------|",
+  ];
+
+  if (!items.length) {
+    lines.push("| Add author names | - | Add title | Add publisher | Add ISBN | - |");
+    return lines.join("\n");
+  }
+
+  items.forEach((item) => {
+    const linkCell = item?.link ? `[Open](${item.link})` : "-";
+    lines.push(
+      `| ${item?.name || "-"} | ${item?.coAuthors || "-"} | ${item?.title || "-"} | ${item?.details || "-"} | ${item?.isbn || "-"} | ${linkCell} |`,
+    );
+  });
+
+  return lines.join("\n");
+};
+
+const parseMbaBooksMarkdown = (markdown = "", fallbackYear = "2023-24") => {
+  const text = String(markdown || "").trim();
+  if (!text) return { year: fallbackYear, items: [] };
+
+  const headingMatch = text.match(/^##\s+(.+)$/m);
+  const year = headingMatch?.[1]?.trim() || fallbackYear;
+  const tableLines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+  const dataLines = tableLines.filter(
+    (line, index) =>
+      index > 1 &&
+      !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(
+        line,
+      ),
+  );
+
+  return {
+    year,
+    items: dataLines
+      .map((line) => mbaParseMarkdownTableRow(line))
+      .filter((cells) => cells.length >= 6)
+      .map((cells) => ({
+        name: cells[0] || "",
+        coAuthors: cells[1] || "",
+        title: cells[2] || "",
+        details: cells[3] || "",
+        isbn: cells[4] || "",
+        link: mbaExtractMarkdownLinkHref(cells.slice(5).join(" | ")),
+      }))
+      .filter(
+        (item) =>
+          item.name ||
+          item.coAuthors ||
+          item.title ||
+          item.details ||
+          item.isbn ||
+          item.link,
+      ),
+  };
+};
+
+const MBA_RESEARCH_DEFAULTS = {
+  patents: defaultMbaPatents,
+  publications: defaultMbaPublications,
+  conferences: defaultMbaConferences,
+  books: defaultMbaBooks,
+  copyrights: defaultMbaCopyrights,
+};
+
+const MBA_RESEARCH_TO_MARKDOWN = {
+  patents: mbaPatentsToMarkdown,
+  publications: mbaPublicationsToMarkdown,
+  conferences: mbaConferencesToMarkdown,
+  books: mbaBooksToMarkdown,
+  copyrights: mbaCopyrightsToMarkdown,
+};
+
+const MBA_RESEARCH_FROM_MARKDOWN = {
+  patents: parseMbaPatentsMarkdown,
+  publications: parseMbaPublicationsMarkdown,
+  conferences: parseMbaConferencesMarkdown,
+  books: parseMbaBooksMarkdown,
+  copyrights: parseMbaCopyrightsMarkdown,
+};
+
+const MBA_RESEARCH_TEMPLATE_URLS = {
+  patents: "/uploads/documents/pride_templates/mba_patents_template.docx",
+  publications:
+    "/uploads/documents/pride_templates/mba_publications_template.docx",
+  conferences:
+    "/uploads/documents/pride_templates/mba_conferences_template.docx",
+  books: "/uploads/documents/pride_templates/mba_books_template.docx",
+  copyrights:
+    "/uploads/documents/pride_templates/mba_copyrights_template.docx",
+};
+
+  const getProjectRecords = () =>
+    JSON.parse(JSON.stringify(t("ugPgProjects", defaultMbaProjects)));
+
+  const getProjectYears = () => {
+    const storedYears = Array.isArray(t("ugPgProjectYears", null))
+      ? t("ugPgProjectYears", [])
+      : [];
+    const recordYears = Object.keys(getProjectRecords() || {});
+    return [...new Set([...storedYears, ...recordYears])]
+      .filter(Boolean)
+      .sort(compareAcademicYearsDesc);
+  };
+
+  const getProjectMarkdownByYear = () =>
+    JSON.parse(JSON.stringify(t("ugPgProjectsMarkdownByYear", {})));
+
+  const persistProjects = (records, years = getProjectYears()) => {
+    const orderedYears = [...new Set([...years, ...Object.keys(records || {})])]
+      .filter(Boolean)
+      .sort(compareAcademicYearsDesc);
+
+    const normalizedRecords = orderedYears.reduce((acc, year) => {
+      acc[year] = Array.isArray(records?.[year])
+        ? records[year].map((project) => ({
+            no: String(project?.no || "").trim(),
+            title: String(project?.title || "").trim(),
+          }))
+        : [];
+      return acc;
+    }, {});
+
+    const existingMarkdownByYear = getProjectMarkdownByYear();
+    const markdownByYear = orderedYears.reduce((acc, year) => {
+      acc[year] =
+        existingMarkdownByYear?.[year] ||
+        mbaProjectsToMarkdown({ [year]: normalizedRecords[year] || [] }, [year]);
+      return acc;
+    }, {});
+
+    updateData("ugPgProjects", normalizedRecords);
+    updateData("ugPgProjectYears", orderedYears);
+    updateData("ugPgProjectsMarkdownByYear", markdownByYear);
+  };
+
+  const handleProjectMarkdownSave = (markdown) => {
+    const parsed = parseMbaProjectsMarkdown(markdown, projectYear);
+    const mergedRecords = {
+      ...getProjectRecords(),
+      [projectYear]: parsed.records[projectYear] || [],
+    };
+    persistProjects(mergedRecords, getProjectYears());
+    updateData(`ugPgProjectsMarkdownByYear.${projectYear}`, markdown);
+  };
+
+  const handleAddProjectYear = () => {
+    const normalizedYear = newUgProjectYear.trim();
+    const projectYears = getProjectYears();
+
+    if (!isValidAcademicYear(normalizedYear)) {
+      setUgProjectYearError("Enter a valid academic year like 2025-26.");
+      return;
+    }
+
+    if (projectYears.includes(normalizedYear)) {
+      setUgProjectYearError("That academic year already exists.");
+      return;
+    }
+
+    const dataObj = getProjectRecords();
+    dataObj[normalizedYear] = [];
+    persistProjects(dataObj, [normalizedYear, ...projectYears]);
+    updateData(
+      `ugPgProjectsMarkdownByYear.${normalizedYear}`,
+      mbaProjectsToMarkdown({ [normalizedYear]: [] }, [normalizedYear]),
+    );
+    setProjectYear(normalizedYear);
+    setNewUgProjectYear("");
+    setUgProjectYearError("");
+    setShowAddUgProjectYear(false);
+  };
+
+  const getMbaResearchItems = (section, year = researchYear) =>
+    JSON.parse(
+      JSON.stringify(
+        t(`research.${section}.${year}`, MBA_RESEARCH_DEFAULTS[section]?.[year] || []),
+      ),
+    );
+
+  const getMbaResearchMarkdownValue = (section, year = researchYear) => {
+    const storedMarkdown = t(`researchMarkdown.${section}.${year}`, null);
+    if (typeof storedMarkdown === "string" && storedMarkdown.trim()) {
+      return storedMarkdown;
+    }
+
+    return MBA_RESEARCH_TO_MARKDOWN[section](
+      getMbaResearchItems(section, year),
+      year,
+    );
+  };
+
+  const getMbaResearchYears = () => {
+    const configuredYears = Array.isArray(t("researchYears", null))
+      ? t("researchYears", [])
+      : [];
+    const storedResearch = t("research", {});
+    const storedResearchMarkdown = t("researchMarkdown", {});
+
+    const discoveredYears = Object.keys(MBA_RESEARCH_DEFAULTS).flatMap(
+      (section) => [
+        ...Object.keys(MBA_RESEARCH_DEFAULTS[section] || {}),
+        ...Object.keys(
+          storedResearch?.[section] && typeof storedResearch[section] === "object"
+            ? storedResearch[section]
+            : {},
+        ),
+        ...Object.keys(
+          storedResearchMarkdown?.[section] &&
+            typeof storedResearchMarkdown[section] === "object"
+            ? storedResearchMarkdown[section]
+            : {},
+        ),
+      ],
+    );
+
+    const years = normalizePlacementYears([
+      ...defaultResearchYears,
+      ...configuredYears,
+      ...discoveredYears,
+    ]).sort(compareAcademicYearsDesc);
+
+    return years.length ? years : [...defaultResearchYears];
+  };
+
+  const persistMbaResearchSection = (section, items, year = researchYear) => {
+    const normalizedItems = Array.isArray(items) ? items : [];
+    updateData(`research.${section}.${year}`, normalizedItems);
+    updateData(
+      `researchMarkdown.${section}.${year}`,
+      MBA_RESEARCH_TO_MARKDOWN[section](normalizedItems, year),
+    );
+  };
+
+  const createEmptyMbaResearchMarkdown = (section, year) =>
+    MBA_RESEARCH_TO_MARKDOWN[section]([], year);
+
+  const handleMbaResearchMarkdownSave = (markdown) => {
+    const parser = MBA_RESEARCH_FROM_MARKDOWN[patentSubTab];
+    const parsed = parser(markdown, researchYear);
+    persistMbaResearchSection(patentSubTab, parsed.items || [], researchYear);
+  };
+
+  const addMbaResearchRowOnTop = (section = patentSubTab) => {
+    const researchItems = getMbaResearchItems(section, researchYear);
+    const blankRows = {
+      patents: {
+        title: "Add invention title",
+        status: "Published",
+        id: "Add application no.",
+        inventors: "Add inventors",
+        link: "",
+      },
+      publications: {
+        title: "Add paper title",
+        authors: "Add authors",
+        journal: "Add journal details",
+        link: "",
+      },
+      conferences: {
+        title: "Add paper title",
+        authors: "Add authors",
+        journal: "Add conference details",
+        link: "",
+      },
+      copyrights: {
+        name: "Add faculty name",
+        title: "Add title of work",
+        status: "Published",
+        link: "",
+      },
+      books: {
+        name: "Add author names",
+        coAuthors: "",
+        title: "Add title",
+        details: "Add publisher",
+        isbn: "Add ISBN",
+        link: "",
+      },
+    };
+
+    persistMbaResearchSection(
+      section,
+      [blankRows[section] || {}, ...researchItems],
+      researchYear,
+    );
+  };
+
+  const mbaResearchYears = getMbaResearchYears();
+  const selectedResearchItems = getMbaResearchItems(patentSubTab, researchYear);
+  const selectedResearchMarkdown = getMbaResearchMarkdownValue(
+    patentSubTab,
+    researchYear,
+  );
+
+  useEffect(() => {
+    if (!mbaResearchYears.length) return;
+    if (!mbaResearchYears.includes(researchYear)) {
+      setResearchYear(mbaResearchYears[0]);
+    }
+  }, [researchYear, mbaResearchYears]);
+
+  const handleAddResearchYear = () => {
+    const normalizedYear = newResearchYear.trim();
+
+    if (!isValidAcademicYear(normalizedYear)) {
+      setResearchYearError("Enter a valid academic year like 2025-26.");
+      return;
+    }
+
+    if (mbaResearchYears.includes(normalizedYear)) {
+      setResearchYearError("That academic year already exists.");
+      return;
+    }
+
+    Object.keys(MBA_RESEARCH_DEFAULTS).forEach((section) => {
+      updateData(`research.${section}.${normalizedYear}`, []);
+      updateData(
+        `researchMarkdown.${section}.${normalizedYear}`,
+        createEmptyMbaResearchMarkdown(section, normalizedYear),
+      );
+    });
+
+    updateData("researchYears", [normalizedYear, ...mbaResearchYears]);
+    setResearchYear(normalizedYear);
+    setNewResearchYear("");
+    setResearchYearError("");
+    setShowAddResearchYear(false);
+  };
+
+  const getMbaResearchReportUrl = (year) =>
+    String(
+      t(
+        `researchReports.${year}`,
+        `/uploads/documents/mba_publications/MBA_publication_${year}.pdf`,
+      ) || "",
+    ).trim();
+
+  const uploadMbaResearchReport = async (year, file) => {
+    if (!file || !year) return;
+
+    const uploadKey = `mba-research-report-${year}`;
+    setResearchReportUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setResearchReportErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data.fileUrl) {
+        throw new Error("Upload did not return a file URL.");
+      }
+
+      updateData(`researchReports.${year}`, response.data.fileUrl);
+    } catch (error) {
+      console.error("MBA research report upload failed:", error);
+      setResearchReportErrors((prev) => ({
+        ...prev,
+        [uploadKey]:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Upload failed",
+      }));
+    } finally {
+      setResearchReportUploading((prev) => ({ ...prev, [uploadKey]: false }));
+    }
   };
 
   const storedPlacementYears = Array.isArray(t("placements.years", null))
@@ -1233,6 +4586,24 @@ const MBA = () => {
     updateField("templateData.faculty", faculty);
   };
 
+  const splitFacultyMultiline = (value = "") =>
+    String(value || "")
+      .split("\n")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+  const createFacultySlug = (value = "") =>
+    String(value || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "faculty-member";
+
+  const resolveVidwanUrl = (facultyMember) =>
+    facultyMember?.vidwanLink?.trim?.() ||
+    (facultyMember?.vidwanId
+      ? `https://vidwan.inflibnet.ac.in/profile/${facultyMember.vidwanId}`
+      : "");
+
   const content = {
     overview: (
       <div className="space-y-10">
@@ -1241,38 +4612,6 @@ const MBA = () => {
             <h3 className="text-3xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2 w-fit">
               Department Overview
             </h3>
-
-            {/* Featured Video - Larger & Cinematic */}
-            <div className="w-full rounded-2xl overflow-hidden shadow-xl bg-black aspect-video group relative">
-              {isEditing && (
-                <div className="absolute top-2 right-2 z-10 bg-white/90 p-2 rounded shadow-lg">
-                  <span className="text-xs font-bold text-gray-600 block mb-1">
-                    Video URL:
-                  </span>
-                  <EditableText
-                    value={t(
-                      "templateData.overview.videoUrl",
-                      "https://www.youtube-nocookie.com/embed/5U2eIYBDr5Y",
-                    )}
-                    onSave={(val) =>
-                      updateField("templateData.overview.videoUrl", val)
-                    }
-                    className="text-sm w-64"
-                  />
-                </div>
-              )}
-              <iframe
-                className="w-full h-full"
-                src={t(
-                  "templateData.overview.videoUrl",
-                  "https://www.youtube-nocookie.com/embed/5U2eIYBDr5Y",
-                )}
-                title="Department of Business Administration SSGMCE"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
 
             <div className="prose max-w-none text-gray-600 leading-relaxed text-justify text-lg space-y-4">
               <div>
@@ -1322,66 +4661,310 @@ const MBA = () => {
                   <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
                     Course Details
                   </th>
+                  {isEditing && (
+                    <th className="px-6 py-3 text-center text-sm font-bold text-gray-600 border border-gray-200 w-32">
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {/* MBA */}
                 <tr className="bg-white">
                   <td
-                    colSpan="2"
+                    colSpan={isEditing ? 3 : 2}
                     className="px-6 py-3 font-bold text-ssgmce-blue text-base border border-gray-200"
                   >
-                    Master of Business Administration
+                    <div className="flex justify-between items-center">
+                      <EditableText
+                        value={t(
+                          "templateData.overview.headerBE",
+                          "Master of Business Administration",
+                        )}
+                        onSave={(v) =>
+                          updateField("templateData.overview.headerBE", v)
+                        }
+                      />
+                      {isEditing && (
+                        <button
+                          onClick={() => {
+                            const current = t(
+                              "overview.tableBE",
+                              defaultOverviewTableBE,
+                            );
+                            updateData("overview.tableBE", [
+                              ...current,
+                              ["New Field", "New Value"],
+                            ]);
+                          }}
+                          className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs ml-2"
+                        >
+                          + Add Row
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
-                {[
-                  ["Degree", "M.B.A. (Choice based - Dual specialization)"],
-                  ["Duration", "2 Year (4 Semesters) (Full time)"],
-                  ["Intake", "60 Students per year"],
-                  ["Establishment", "Year: 1994"],
-                  ["NBA Status", "Three Times Accredited by NBA"],
-                ].map(([label, val], i) => (
-                  <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-3 text-sm font-bold text-gray-500 w-1/3 border border-gray-200 bg-gray-50/30">
-                      {label}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-700 font-medium border border-gray-200">
-                      {val}
-                    </td>
-                  </tr>
-                ))}
+                {t("overview.tableBE", defaultOverviewTableBE).map(
+                  ([label, val], i) => (
+                    <tr
+                      key={i}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-3 text-sm font-bold text-gray-500 w-1/3 border border-gray-200 bg-gray-50/30">
+                        <EditableText
+                          value={label}
+                          onSave={(v) =>
+                            updateOverviewTable(
+                              "overview.tableBE",
+                              defaultOverviewTableBE,
+                              i,
+                              0,
+                              v,
+                            )
+                          }
+                        />
+                      </td>
+                      <td className="px-6 py-3 text-sm text-gray-700 font-medium border border-gray-200">
+                        <EditableText
+                          value={val}
+                          onSave={(v) =>
+                            updateOverviewTable(
+                              "overview.tableBE",
+                              defaultOverviewTableBE,
+                              i,
+                              1,
+                              v,
+                            )
+                          }
+                          multiline
+                        />
+                      </td>
+                      {isEditing && (
+                        <td className="px-6 py-3 text-center border border-gray-200">
+                          <button
+                            onClick={() => {
+                              const updated = t(
+                                "overview.tableBE",
+                                defaultOverviewTableBE,
+                              ).filter((_, idx) => idx !== i);
+                              updateData("overview.tableBE", updated);
+                            }}
+                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition-colors"
+                            title="Delete row"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ),
+                )}
+
+                <tr className="bg-white">
+                  <td
+                    colSpan={isEditing ? 3 : 2}
+                    className="px-6 py-3 font-bold text-ssgmce-blue text-base border border-gray-200 mt-4"
+                  >
+                    <div className="flex justify-between items-center">
+                      <EditableText
+                        value={t(
+                          "templateData.overview.headerME",
+                          "Master of Engineering",
+                        )}
+                        onSave={(v) =>
+                          updateField("templateData.overview.headerME", v)
+                        }
+                      />
+                      {isEditing && (
+                        <button
+                          onClick={() => {
+                            const current = t(
+                              "overview.tableME",
+                              defaultOverviewTableME,
+                            );
+                            updateData("overview.tableME", [
+                              ...current,
+                              ["New Field", "New Value"],
+                            ]);
+                          }}
+                          className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs ml-2"
+                        >
+                          + Add Row
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+                {t("overview.tableME", defaultOverviewTableME).map(
+                  ([label, val], i) => (
+                    <tr
+                      key={i}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-3 text-sm font-bold text-gray-500 w-1/3 border border-gray-200 bg-gray-50/30">
+                        <EditableText
+                          value={label}
+                          onSave={(v) =>
+                            updateOverviewTable(
+                              "overview.tableME",
+                              defaultOverviewTableME,
+                              i,
+                              0,
+                              v,
+                            )
+                          }
+                        />
+                      </td>
+                      <td className="px-6 py-3 text-sm text-gray-700 font-medium border border-gray-200">
+                        <EditableText
+                          value={val}
+                          onSave={(v) =>
+                            updateOverviewTable(
+                              "overview.tableME",
+                              defaultOverviewTableME,
+                              i,
+                              1,
+                              v,
+                            )
+                          }
+                          multiline
+                        />
+                      </td>
+                      {isEditing && (
+                        <td className="px-6 py-3 text-center border border-gray-200">
+                          <button
+                            onClick={() => {
+                              const updated = t(
+                                "overview.tableME",
+                                defaultOverviewTableME,
+                              ).filter((_, idx) => idx !== i);
+                              updateData("overview.tableME", updated);
+                            }}
+                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition-colors"
+                            title="Delete row"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ),
+                )}
 
                 {/* PhD */}
                 <tr className="bg-white">
                   <td
-                    colSpan="2"
+                    colSpan={isEditing ? 3 : 2}
                     className="px-6 py-3 font-bold text-ssgmce-blue text-base border border-gray-200"
                   >
-                    Ph. D in Business Management and Research
+                    <div className="flex justify-between items-center">
+                      <EditableText
+                        value={t(
+                          "templateData.overview.headerPhD",
+                          "Ph. D in Business Management and Research",
+                        )}
+                        onSave={(v) =>
+                          updateField("templateData.overview.headerPhD", v)
+                        }
+                      />
+                      {isEditing && (
+                        <button
+                          onClick={() => {
+                            const current = t(
+                              "overview.tablePhD",
+                              defaultOverviewTablePhD,
+                            );
+                            updateData("overview.tablePhD", [
+                              ...current,
+                              ["New Field", "New Value"],
+                            ]);
+                          }}
+                          className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs ml-2"
+                        >
+                          + Add Row
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
-                {[
-                  ["Duration", "3 Years"],
-                  ["Intake", "04 Students"],
-                ].map(([label, val], i) => (
-                  <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-3 text-sm font-bold text-gray-500 w-1/3 border border-gray-200 bg-gray-50/30">
-                      {label}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-700 font-medium border border-gray-200">
-                      {val}
-                    </td>
-                  </tr>
-                ))}
+                {t("overview.tablePhD", defaultOverviewTablePhD).map(
+                  ([label, val], i) => (
+                    <tr
+                      key={i}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-3 text-sm font-bold text-gray-500 w-1/3 border border-gray-200 bg-gray-50/30">
+                        <EditableText
+                          value={label}
+                          onSave={(v) =>
+                            updateOverviewTable(
+                              "overview.tablePhD",
+                              defaultOverviewTablePhD,
+                              i,
+                              0,
+                              v,
+                            )
+                          }
+                        />
+                      </td>
+                      <td className="px-6 py-3 text-sm text-gray-700 font-medium border border-gray-200">
+                        <EditableText
+                          value={val}
+                          onSave={(v) =>
+                            updateOverviewTable(
+                              "overview.tablePhD",
+                              defaultOverviewTablePhD,
+                              i,
+                              1,
+                              v,
+                            )
+                          }
+                          multiline
+                        />
+                      </td>
+                      {isEditing && (
+                        <td className="px-6 py-3 text-center border border-gray-200">
+                          <button
+                            onClick={() => {
+                              const updated = t(
+                                "overview.tablePhD",
+                                defaultOverviewTablePhD,
+                              ).filter((_, idx) => idx !== i);
+                              updateData("overview.tablePhD", updated);
+                            }}
+                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition-colors"
+                            title="Delete row"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ),
+                )}
               </tbody>
             </table>
           </div>
 
           <div className="p-4 bg-gray-50 border-t border-gray-200">
-            <p className="text-ssgmce-blue font-medium">Dr. P. M. Kuchar</p>
-            <p className="text-sm text-gray-500">
-              Head, Department of Business Administration and Research (MBA)
-            </p>
+            <div className="text-ssgmce-blue font-medium">
+              <EditableText
+                value={t("hodName", "Dr. P. M. Kuchar")}
+                onSave={(v) => updateField("hodName", v)}
+                placeholder="Click to edit HOD name..."
+              />
+            </div>
+            <div className="text-sm text-gray-500">
+              <EditableText
+                value={t(
+                  "overview.footerDesignation",
+                  "Head, Department of Business Administration and Research (MBA)",
+                )}
+                onSave={(v) => updateField("overview.footerDesignation", v)}
+                placeholder="Click to edit designation..."
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -1846,14 +5429,16 @@ const MBA = () => {
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid items-start gap-6 lg:grid-cols-2">
           {t("templateData.faculty", facultyData).map((fac, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex"
+              className={`group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex ${
+                isEditing && expandedFacultyEditorIndex === i ? "lg:col-span-2" : ""
+              }`}
             >
               {/* Image Area - Fixed Width */}
               <div className="w-32 sm:w-40 bg-gray-50 flex-shrink-0 relative overflow-hidden border-r border-gray-100">
@@ -1923,9 +5508,9 @@ const MBA = () => {
                     )}
                   </div>
 
-                  {fac.vidwanId && (
+                  {resolveVidwanUrl(fac) && (
                     <a
-                      href={`https://vidwan.inflibnet.ac.in/profile/${fac.vidwanId}`}
+                      href={resolveVidwanUrl(fac)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center text-[10px] font-bold text-emerald-600 mt-2 hover:underline uppercase tracking-wide"
@@ -1940,9 +5525,169 @@ const MBA = () => {
                     View Profile <FaAngleRight className="ml-1" />
                   </Link>
                 </div>
+
+                {isEditing && (
+                  <div className="mt-4 border-t border-gray-100 pt-4 space-y-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedFacultyEditorIndex((current) =>
+                          current === i ? null : i,
+                        )
+                      }
+                      className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-ssgmce-blue transition hover:bg-blue-100"
+                    >
+                      {expandedFacultyEditorIndex === i
+                        ? "Hide Detailed Editor"
+                        : "Edit Detailed Profile"}
+                    </button>
+
+                    {expandedFacultyEditorIndex === i && (
+                      <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-3">
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-blue-700 mb-2">
+                          Detailed Profile Editor
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div>
+                            <div className="text-[11px] font-semibold text-gray-500 uppercase mb-1">
+                              Profile ID
+                            </div>
+                            <EditableText
+                              value={fac.id || createFacultySlug(fac.name)}
+                              onSave={(val) =>
+                                updateFacultyMember(i, "id", createFacultySlug(val))
+                              }
+                            />
+                          </div>
+                          <div>
+                            <div className="text-[11px] font-semibold text-gray-500 uppercase mb-1">
+                              Vidwan ID
+                            </div>
+                            <EditableText
+                              value={fac.vidwanId || ""}
+                              onSave={(val) => updateFacultyMember(i, "vidwanId", val)}
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <div className="text-[11px] font-semibold text-gray-500 uppercase mb-1">
+                              Vidwan Link
+                            </div>
+                            <EditableText
+                              value={fac.vidwanLink || ""}
+                              onSave={(val) => updateFacultyMember(i, "vidwanLink", val)}
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <div className="text-[11px] font-semibold text-gray-500 uppercase mb-1">
+                              Designation
+                            </div>
+                            <EditableText
+                              value={fac.designation || fac.role || ""}
+                              onSave={(val) => {
+                                updateFacultyMember(i, "designation", val);
+                                updateFacultyMember(i, "role", val);
+                              }}
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <div className="text-[11px] font-semibold text-gray-500 uppercase mb-1">
+                              Specialization
+                            </div>
+                            <EditableText
+                              value={fac.specialization || ""}
+                              onSave={(val) => {
+                                updateFacultyMember(i, "specialization", val);
+                                updateFacultyMember(
+                                  i,
+                                  "area",
+                                  splitFacultyMultiline(
+                                    val.split(",").join("\n"),
+                                  ),
+                                );
+                              }}
+                              multiline
+                              richText={false}
+                            />
+                          </div>
+                          {[
+                            ["qualification", "Qualification", false],
+                            ["experience", "Experience", false],
+                            ["scholarIds", "Scholar IDs", false],
+                            ["coursesTaught", "Courses Taught", true],
+                            ["membership", "Membership", true],
+                            ["publications", "Publications", true],
+                            ["research", "Research & Development", false],
+                            ["fdp", "FDP / STTP / Workshops", false],
+                            ["fellowship", "Fellowship / Awards", true],
+                            ["achievements", "Other Achievements", true],
+                          ].map(([field, label, isList]) => (
+                            <div key={field} className="md:col-span-2">
+                              <div className="text-[11px] font-semibold text-gray-500 uppercase mb-1">
+                                {label}
+                              </div>
+                              <EditableText
+                                value={
+                                  isList
+                                    ? (fac[field] || []).join("\n")
+                                    : fac[field] || ""
+                                }
+                                onSave={(val) =>
+                                  updateFacultyMember(
+                                    i,
+                                    field,
+                                    isList ? splitFacultyMultiline(val) : val,
+                                  )
+                                }
+                                multiline
+                                richText={false}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}
+          {isEditing && (
+            <button
+              type="button"
+              onClick={() =>
+                updateField("templateData.faculty", [
+                  ...t("templateData.faculty", facultyData),
+                  {
+                    id: `new-faculty-${Date.now()}`,
+                    name: "New Faculty Member",
+                    designation: "Assistant Professor",
+                    role: "Assistant Professor",
+                    specialization: "Add specialization",
+                    area: ["Add specialization"],
+                    email: "newfaculty@ssgmce.ac.in",
+                    phone: "+91XXXXXXXXXX",
+                    photo: "",
+                    vidwanId: "",
+                    vidwanLink: "",
+                    qualification: "Add qualification details",
+                    experience: "Add teaching / industry experience",
+                    coursesTaught: ["Add course"],
+                    scholarIds: "",
+                    membership: ["Add membership"],
+                    publications: ["Add publication"],
+                    research: "Add research details",
+                    fdp: "",
+                    fellowship: ["Add fellowship / award"],
+                    achievements: ["Add achievement"],
+                    department: "mba",
+                  },
+                ])
+              }
+              className="flex items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 cursor-pointer"
+            >
+              + Add Faculty
+            </button>
+          )}
         </div>
       </div>
     ),
@@ -2512,170 +6257,232 @@ After successfully completing the course, students will be able to:
     })(),
     ranking: (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2">
-          Business School Ranking
-        </h3>
+        {(() => {
+          const rankingItems = getMbaRankings();
+          const rankingMarkdown = getMbaRankingsMarkdown(rankingItems);
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gray-50 border-b border-gray-200 p-4">
-            <h4 className="text-base font-semibold text-gray-700 text-center">
-              Ranking by different independent national level best B-Schools
-              Surveys
-            </h4>
-          </div>
+          return (
+            <>
+              <h3 className="text-2xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2">
+                Business School Ranking
+              </h3>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 border-collapse">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    Year
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    Name of Survey
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    Link
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    Ranking / Grade
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {[
-                  {
-                    year: "2025",
-                    survey:
-                      "Indian Institutional Ranking Framework (IIRF) Top MBA Colleges in India 2025",
-                    link: "more details",
-                    linkUrl:
-                      "/uploads/documents/mba_ranking/IIRF_Best_B-School_Ranking_2025.pdf",
-                    ranking:
-                      "Ranked 47th in the State, 111th Rank among all Private B-schools in India",
-                  },
-                  {
-                    year: "2024",
-                    survey:
-                      "Indian Institutional Ranking Framework (IIRF) Top MBA Colleges in India 2024",
-                    link: "more details",
-                    linkUrl:
-                      "/uploads/documents/mba_ranking/IIRF_Best_B-School_Ranking_2024.pdf",
-                    ranking:
-                      "Ranked 35th in the State, 108th Rank among all Private B-schools in India",
-                  },
-                  {
-                    year: "2023",
-                    survey:
-                      "Indian Institutional Ranking Framework (IIRF) Top MBA Colleges in India 2023 - Survey conducted during September-October 2022",
-                    link: "more details",
-                    linkUrl:
-                      "/uploads/documents/mba_ranking/IIRF_Best_B-School_Ranking_2023.pdf",
-                    ranking:
-                      "Ranked 30th in the West Zone, 108th Rank among all Private B-schools in India",
-                  },
-                  {
-                    year: "2022",
-                    survey:
-                      "Fortune India Best B-School Ranking, August-September 2022",
-                    link: "more details",
-                    linkUrl:
-                      "/uploads/documents/mba_ranking/Fortune_India_Best_B-School_Ranking_2022.pdf",
-                    ranking:
-                      "Only institute from Vidarbha, Maharashtra appearing in the Fortune India Best B-School Ranking 2022",
-                  },
-                  {
-                    year: "2022",
-                    survey:
-                      "Business School Rankings by Business today published as on 29th Oct 2022",
-                    link: "more details",
-                    linkUrl: "https://www.businesstoday.in/bt-schools",
-                    external: true,
-                    ranking:
-                      "Ranked among Top 100 B-school in India in Living as well as ROI",
-                  },
-                  {
-                    year: "2021",
-                    survey:
-                      "SSGMCE ranking in DATA QUEST T- School Employability Ranking 2021",
-                    link: "more details",
-                    linkUrl:
-                      "/uploads/documents/mba_ranking/DataQuest_T-School_Ranking_2021.pdf",
-                    ranking:
-                      "Rank-73 : Private Sector\nRank - 81 : Government and private institutes",
-                  },
-                  {
-                    year: "2018",
-                    survey:
-                      "Outlook-Drshti Survey 2018 ranks DBA&R at 86th amongst Indias Top 100 Management Schools",
-                    link: "Click here for Details",
-                    linkUrl:
-                      "/uploads/documents/mba_ranking/Outlook_Drshti_Survey_2018.pdf",
-                    ranking: "Ranked 86th",
-                  },
-                  {
-                    year: "2018",
-                    survey:
-                      "Business Today ranks Shegaon MBA amongst top 100 B-Schools in India",
-                    link: "Click here for Details",
-                    linkUrl:
-                      "/uploads/documents/mba_ranking/Business_Today_Ranking_2018.pdf",
-                    ranking: "Ranked 80th",
-                  },
-                  {
-                    year: "2017",
-                    survey:
-                      "HONOURED AS MANAGEMENT COLLEGE OF THE YEAR 2017 -Program Efficacy by Higher Education Review Magazine, Nov. 2017",
-                    link: "Click here for Details",
-                    linkUrl:
-                      "/uploads/documents/mba_ranking/Higher_Education_Review_2017.pdf",
-                    ranking: "",
-                  },
-                  {
-                    year: "2017",
-                    survey:
-                      "Business Today-MDRA ranks DBA&R, SSGMCE, Shegaon amongst Best B-Schools of India",
-                    link: "Click here for Details",
-                    linkUrl:
-                      "/uploads/documents/mba_ranking/BT_MDRA_Ranking_2017.pdf",
-                    ranking: "Ranked at 146th position",
-                  },
-                  {
-                    year: "2017",
-                    survey:
-                      "DBA&R, Shegaon amongst India's Top 100 B-Schools for fourth consecutive year - Outlook-Drshti Survey 2017",
-                    link: "Click here for Details",
-                    linkUrl: "#",
-                    ranking:
-                      "Ranked at 92nd place amongst all the top business schools of our country.",
-                  },
-                ].map((item, i) => (
-                  <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 font-medium">
-                      {item.year}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
-                      {item.survey}
-                    </td>
-                    <td className="px-6 py-3 text-sm border border-gray-200">
-                      <a
-                        href={item.linkUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-ssgmce-blue hover:text-ssgmce-orange hover:underline font-medium"
-                      >
-                        {item.link}
-                      </a>
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 whitespace-pre-line">
-                      {item.ranking}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-gray-50 border-b border-gray-200 p-4">
+                  <h4 className="text-base font-semibold text-gray-700 text-center">
+                    Ranking by different independent national level best B-Schools
+                    Surveys
+                  </h4>
+                </div>
+
+                {isEditing && (
+                  <div className="border-b border-gray-200 bg-white px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={addMbaRankingRowOnTop}
+                      className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-700"
+                    >
+                      <FaPlus className="text-xs" />
+                      Add To Top Of Table
+                    </button>
+                  </div>
+                )}
+
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 border-collapse">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                          Year
+                        </th>
+                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                          Name of Survey
+                        </th>
+                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                          Link
+                        </th>
+                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                          Ranking / Grade
+                        </th>
+                        {isEditing && (
+                          <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                            Actions
+                          </th>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {rankingItems.map((item) => {
+                        const uploadKey = `mba-ranking-${item.id}`;
+                        const isUploading = Boolean(rankingLinkUploading[uploadKey]);
+                        const uploadError = rankingLinkErrors[uploadKey];
+                        const isExternalLink = /^https?:\/\//i.test(item.linkUrl);
+
+                        return (
+                          <tr
+                            key={item.id}
+                            className="hover:bg-gray-50/50 transition-colors"
+                          >
+                            <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 font-medium align-top">
+                              {isEditing ? (
+                                <input
+                                  type="text"
+                                  value={item.year}
+                                  onChange={(e) =>
+                                    updateMbaRankingRow(item.id, "year", e.target.value)
+                                  }
+                                  className="w-24 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ssgmce-blue focus:outline-none focus:ring-2 focus:ring-blue-100"
+                                />
+                              ) : (
+                                item.year
+                              )}
+                            </td>
+                            <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 align-top">
+                              {isEditing ? (
+                                <textarea
+                                  value={item.survey}
+                                  onChange={(e) =>
+                                    updateMbaRankingRow(item.id, "survey", e.target.value)
+                                  }
+                                  rows={3}
+                                  className="w-full min-w-[280px] rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ssgmce-blue focus:outline-none focus:ring-2 focus:ring-blue-100"
+                                />
+                              ) : (
+                                item.survey
+                              )}
+                            </td>
+                            <td className="px-6 py-3 text-sm border border-gray-200 align-top">
+                              {isEditing ? (
+                                <div className="space-y-3 min-w-[220px]">
+                                  <input
+                                    type="text"
+                                    value={item.linkLabel}
+                                    onChange={(e) =>
+                                      updateMbaRankingRow(
+                                        item.id,
+                                        "linkLabel",
+                                        e.target.value,
+                                      )
+                                    }
+                                    placeholder="Link text"
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ssgmce-blue focus:outline-none focus:ring-2 focus:ring-blue-100"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={item.linkUrl}
+                                    onChange={(e) =>
+                                      updateMbaRankingRow(
+                                        item.id,
+                                        "linkUrl",
+                                        e.target.value,
+                                      )
+                                    }
+                                    placeholder="Paste URL or upload file"
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ssgmce-blue focus:outline-none focus:ring-2 focus:ring-blue-100"
+                                  />
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-ssgmce-blue transition hover:bg-blue-100">
+                                      <FaUpload className="text-xs" />
+                                      {isUploading ? "Uploading..." : "Upload Link File"}
+                                      <input
+                                        type="file"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) {
+                                            uploadMbaRankingLinkFile(item.id, file);
+                                          }
+                                          e.target.value = "";
+                                        }}
+                                      />
+                                    </label>
+                                    {item.linkUrl ? (
+                                      <a
+                                        href={item.linkUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 text-xs font-medium text-ssgmce-blue underline underline-offset-2"
+                                      >
+                                        Preview Link
+                                        <FaExternalLinkAlt className="text-[10px]" />
+                                      </a>
+                                    ) : null}
+                                  </div>
+                                  {uploadError ? (
+                                    <p className="text-xs text-red-600">{uploadError}</p>
+                                  ) : null}
+                                </div>
+                              ) : item.linkUrl ? (
+                                <a
+                                  href={item.linkUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-2 text-ssgmce-blue hover:text-ssgmce-orange hover:underline font-medium"
+                                >
+                                  {item.linkLabel || "more details"}
+                                  {isExternalLink && (
+                                    <FaExternalLinkAlt className="text-xs" />
+                                  )}
+                                </a>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 whitespace-pre-line align-top">
+                              {isEditing ? (
+                                <textarea
+                                  value={item.ranking}
+                                  onChange={(e) =>
+                                    updateMbaRankingRow(item.id, "ranking", e.target.value)
+                                  }
+                                  rows={4}
+                                  className="w-full min-w-[260px] rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ssgmce-blue focus:outline-none focus:ring-2 focus:ring-blue-100"
+                                />
+                              ) : (
+                                item.ranking
+                              )}
+                            </td>
+                            {isEditing && (
+                              <td className="px-6 py-3 text-sm border border-gray-200 align-top">
+                                <button
+                                  type="button"
+                                  onClick={() => deleteMbaRankingRow(item.id)}
+                                  className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-600 transition hover:bg-red-100"
+                                >
+                                  <FaTrash className="text-xs" />
+                                  Delete
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {isEditing && (
+                <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                  <div className="mb-4">
+                    <h4 className="text-lg font-bold text-gray-800">
+                      Edit Ranking Table in Markdown
+                    </h4>
+                    <p className="mt-1 text-sm text-gray-500">
+                      This markdown stays synced with the ranking table above, while
+                      the public page keeps the same table structure.
+                    </p>
+                  </div>
+                  <MarkdownEditor
+                    value={rankingMarkdown}
+                    onSave={handleMbaRankingMarkdownSave}
+                    placeholder="Business school ranking table (GFM Markdown)..."
+                  />
+                </div>
+              )}
+            </>
+          );
+        })()}
       </div>
     ),
 
@@ -3523,193 +7330,170 @@ After successfully completing the course, students will be able to:
     })(),
 
     accreditations: (
-      <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
-          Recognitions and Accreditations
-        </h3>
+      (() => {
+        const accreditationItems = getMbaAccreditations();
+        const accreditationMarkdown = getMbaAccreditationsMarkdown(
+          accreditationItems,
+        );
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                    Year
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                    Recognition
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                    Effective Period
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                    Score / Grade
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2022
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Program Accreditation by NBA, New Delhi
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Sept. 2013 for three years
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    771 out of 1000
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2013
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Program Accreditation by NBA, New Delhi
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Sept. 2013 for three years
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    771 out of 1000
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2010
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Institutional Accreditation by NAAC, Bengaluru
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Oct. 2010 for five years
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">B+ Grade</td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2007
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Program Accreditation by NBA, New Delhi
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    May 2007 for three years
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    748 out of 1000 (B Grade)
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2003
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Institutional Accreditation by NAAC, Bengaluru
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Nov. 2003 for five years
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">B+ Grade</td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2002
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Selected as Network Institution under TEQIP, MHRD, Govt. of
-                    India
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    March 2002 to Feb. 2007
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    First Phase of TEQIP
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2002
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Program Accreditation by NBA, New Delhi
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    May 2002 for three years
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">-</td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2002
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    ISO 9001:2000 Certified
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    March 2002 to Feb. 2005
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">JAS-ANZ</td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    2000
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    UGC Recognition under Section 12B
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">Nov. 2000</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    College Recognition
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    1994
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    Affiliation to Sant Gadge Baba Amravati University
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    August 1994
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    Permanent Affiliation
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    1994
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    AICTE, New Delhi Approval
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    w.e.f. 31.3.1994
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    First Approval
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold">
-                    1989
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    UGC Recognition Section 2f
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">Feb. 1989</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    College Recognition
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+        return (
+          <div className="space-y-8">
+            <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+              Recognitions and Accreditations
+            </h3>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
+                        Year
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
+                        Recognition
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
+                        Effective Period
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
+                        Score / Grade
+                      </th>
+                      {isEditing && (
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
+                          Actions
+                        </th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {accreditationItems.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold align-top">
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              value={item.year}
+                              onChange={(e) =>
+                                updateMbaAccreditationRow(
+                                  item.id,
+                                  "year",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full min-w-[110px] rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ssgmce-blue focus:outline-none focus:ring-2 focus:ring-blue-100"
+                            />
+                          ) : (
+                            renderMbaTableCellMarkdown(item.year)
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900 font-medium align-top">
+                          {isEditing ? (
+                            <textarea
+                              value={item.recognition}
+                              onChange={(e) =>
+                                updateMbaAccreditationRow(
+                                  item.id,
+                                  "recognition",
+                                  e.target.value,
+                                )
+                              }
+                              rows={3}
+                              className="w-full min-w-[280px] rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ssgmce-blue focus:outline-none focus:ring-2 focus:ring-blue-100"
+                            />
+                          ) : (
+                            renderMbaTableCellMarkdown(item.recognition)
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700 align-top">
+                          {isEditing ? (
+                            <textarea
+                              value={item.effectivePeriod}
+                              onChange={(e) =>
+                                updateMbaAccreditationRow(
+                                  item.id,
+                                  "effectivePeriod",
+                                  e.target.value,
+                                )
+                              }
+                              rows={3}
+                              className="w-full min-w-[220px] rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ssgmce-blue focus:outline-none focus:ring-2 focus:ring-blue-100"
+                            />
+                          ) : (
+                            renderMbaTableCellMarkdown(item.effectivePeriod)
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700 align-top">
+                          {isEditing ? (
+                            <textarea
+                              value={item.score}
+                              onChange={(e) =>
+                                updateMbaAccreditationRow(
+                                  item.id,
+                                  "score",
+                                  e.target.value,
+                                )
+                              }
+                              rows={3}
+                              className="w-full min-w-[180px] rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-ssgmce-blue focus:outline-none focus:ring-2 focus:ring-blue-100"
+                            />
+                          ) : (
+                            renderMbaTableCellMarkdown(item.score)
+                          )}
+                        </td>
+                        {isEditing && (
+                          <td className="px-6 py-4 text-sm align-top">
+                            <button
+                              type="button"
+                              onClick={() => deleteMbaAccreditationRow(item.id)}
+                              className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-600 transition hover:bg-red-100"
+                            >
+                              <FaTrash className="text-xs" />
+                              Delete
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {isEditing && (
+              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-800">
+                      Edit Recognitions Table in Markdown
+                    </h4>
+                    <p className="mt-1 text-sm text-gray-500">
+                      This markdown stays synced with the table above, while the
+                      public page keeps the same table structure.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addMbaAccreditationRowOnTop}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-ssgmce-blue text-white font-semibold hover:bg-ssgmce-dark-blue transition-colors"
+                  >
+                    <FaPlus />
+                    Add New Row On Top
+                  </button>
+                </div>
+                <MarkdownEditor
+                  value={accreditationMarkdown}
+                  onSave={handleMbaAccreditationsMarkdownSave}
+                  placeholder="Recognitions and accreditations table (GFM Markdown)..."
+                />
+              </div>
+            )}
           </div>
-        </div>
-      </div>
+        );
+      })()
     ),
 
     placements: (
@@ -4055,307 +7839,200 @@ After successfully completing the course, students will be able to:
 
     projects: (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
-          UG/PG Projects (Dissertation)
-        </h3>
+        {(() => {
+          const projectYears = getProjectYears();
+          const projectRecords = getProjectRecords();
+          const projectMarkdownByYear = getProjectMarkdownByYear();
+          const currentProjects = Array.isArray(projectRecords?.[projectYear])
+            ? projectRecords[projectYear]
+            : [];
+          const selectedProjectsMarkdown =
+            projectMarkdownByYear?.[projectYear] ||
+            mbaProjectsToMarkdown({ [projectYear]: currentProjects }, [projectYear]);
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 w-24">
-                    Group No.
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
-                    Project Title
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {[
-                  {
-                    no: 1,
-                    title:
-                      "A study on work life balance among working women of Maharashtra Police in Buldhana District",
-                  },
-                  {
-                    no: 2,
-                    title:
-                      "A study of impact of social media in knowledge development of farmers",
-                  },
-                  {
-                    no: 3,
-                    title:
-                      "A Study of Socio Economic Impact of Road Traffic Congestion in Nandura",
-                  },
-                  {
-                    no: 4,
-                    title:
-                      "A Study Of Employee Motivation In Select Banks in Sangrampur region",
-                  },
-                  {
-                    no: 5,
-                    title:
-                      "A study of Recruitment and Selection process in HDFC Bank Shegaon",
-                  },
-                  {
-                    no: 6,
-                    title:
-                      "A Study on effective role of Human Resource Management in Vikamshi Fabrics Pvt. Ltd.",
-                  },
-                  {
-                    no: 7,
-                    title:
-                      "A Study of Implications on Employees Performance and Organizational Productivity wrt Work",
-                  },
-                  {
-                    no: 8,
-                    title:
-                      "A study of customer satisfaction in banking industry with special reference to private sector banks in Buldhana district",
-                  },
-                  {
-                    no: 9,
-                    title: "DIMENSIONS OF WORK FROM HOME CULTURE - A STUDY",
-                  },
-                  {
-                    no: 10,
-                    title:
-                      "A study on motivational strategies and their effectiveness on employees productivity in private financial institutions in Akola region.",
-                  },
-                  {
-                    no: 11,
-                    title:
-                      "Impact of Social Media on Youth's Social Life and Buying Behaviour - A Study of Khamgaon Region",
-                  },
-                  {
-                    no: 12,
-                    title:
-                      "Systematic Study on Attrition of workers of Unorganized Sector in Khamgaon Region",
-                  },
-                  {
-                    no: 13,
-                    title:
-                      "A comparative study on job satisfaction of teachers between Government and Private sector in Akola region",
-                  },
-                  {
-                    no: 14,
-                    title:
-                      "A study on changing pattern of demand for E-Banking services in Shegaon",
-                  },
-                  {
-                    no: 15,
-                    title:
-                      "A STUDY ON STRESS MANAGEMENT TECHNIQUES FOR LABOURS WITH REFERENCE TO PARAS THERMAL POWER STATION",
-                  },
-                  {
-                    no: 16,
-                    title:
-                      "Comparative analysis of key players in dairy industry - A study of Khamgaon region",
-                  },
-                  {
-                    no: 17,
-                    title:
-                      "A Study of Customer Satisfaction towards Fastrack Watches in Akola Region",
-                  },
-                  {
-                    no: 18,
-                    title:
-                      "A study of potential of housewives to establish small scale businesses",
-                  },
-                  {
-                    no: 19,
-                    title:
-                      "Prospect of financial inclusion of rural customers - A study of Lanjud village",
-                  },
-                  {
-                    no: 20,
-                    title:
-                      "A Study of Self-Help Groups & Women's Empowerment in Rural Area - A Case of Akola",
-                  },
-                  {
-                    no: 21,
-                    title:
-                      "A study on effectiveness of competency mapping process on employee's development at Jadhao Gear Amravati",
-                  },
-                  {
-                    no: 22,
-                    title:
-                      "A STUDY ON FACTORS INFLUENCING THE INVESTMENT BEHAVIOR OF STUDENTS PURSUING HIGHER EDUCATION IN AMRAVATI.",
-                  },
-                  {
-                    no: 23,
-                    title:
-                      "A Study and design of training programs for employees in SBI, Akot",
-                  },
-                  {
-                    no: 24,
-                    title:
-                      "AN ANALYSIS OF BUYING DECISION FOR ELECTRIC TWO WHEELER - A STUDY OF SHEGAON-KHAMGAON REGION",
-                  },
-                  {
-                    no: 25,
-                    title:
-                      "A Comparative Study of Customer Perception Regarding Housing Loan Schemes of Public and Private Sector Banks",
-                  },
-                  {
-                    no: 26,
-                    title:
-                      "A study of grievance management system with special reference to SBI customers in Shegaon",
-                  },
-                  {
-                    no: 27,
-                    title:
-                      "IMPACT OF STRESS ON EMPLOYEES BEHAVIOR IN ORGANIZATION - A STUDY OF KHAMGAON REGION",
-                  },
-                  {
-                    no: 28,
-                    title:
-                      "A study and design of Employee Engagement In HUL Company Khamgaon",
-                  },
-                  {
-                    no: 29,
-                    title:
-                      "Perception About Mobile Banking- A Study of Buldhana Region",
-                  },
-                  {
-                    no: 30,
-                    title:
-                      "A STUDY ON INVESTMENT PATTERN OF INVESTORS IN GOLD WITH SPECIAL REFERENCE TO MIDDLE CLASS PEOPLE IN BULDHANA REGION",
-                  },
-                  {
-                    no: 31,
-                    title:
-                      "STUDY ON GST AND ITS IMPACT ON MNC MANUFACTURING INDUSTRY",
-                  },
-                  {
-                    no: 32,
-                    title:
-                      "INDIA POST PAYMENT BANK PROBLEM AND PROSPECT IN AKOLA REGION",
-                  },
-                  {
-                    no: 33,
-                    title:
-                      "A Study On The Consumer Behaviour Towards Domestic Water Purifiers In Akola Region",
-                  },
-                  {
-                    no: 34,
-                    title:
-                      "A study of Training & development Policies in Indorama synthetics Pvt. Ltd. Buttibori, Nagpur",
-                  },
-                  {
-                    no: 35,
-                    title:
-                      "A COMPARATIVE STUDY OF SELECT INSURANCE COMPANIES & THEIR PRODUCTS IN BULDHANA REGION.",
-                  },
-                  {
-                    no: 36,
-                    title:
-                      "COMPARATIVE ANALYSIS OF FINANCIAL PERFORMANCE OF SELECT PUBLIC SECTOR AND PRIVATE SECTOR BANKS FROM 2017-2022",
-                  },
-                  {
-                    no: 37,
-                    title:
-                      "A STUDY ON UNDERSTANDING CUSTOMER SATISFACTION LEVEL REGARDING E-MONEY IN KARANJA REGION",
-                  },
-                  {
-                    no: 38,
-                    title:
-                      "Customer Preference towards Ice Creams - A study in Malkapur region with respect to Havmor and Top-n-Town",
-                  },
-                  {
-                    no: 39,
-                    title:
-                      "Exploring the factors influencing career choice and motivation of student in the transition phase of education",
-                  },
-                  {
-                    no: 40,
-                    title:
-                      "A STUDY ON UNDERSTANDING CUSTOMER SATISFACTION LEVEL REGARDING E-MONEY IN KARANJA REGION",
-                  },
-                  {
-                    no: 41,
-                    title:
-                      "A Study of Insurance as a vehicle of saving in Buldhana District",
-                  },
-                  {
-                    no: 42,
-                    title:
-                      "SERVQUAL: An Analytical Study of Public and Private Hospitals in Buldhana District",
-                  },
-                  {
-                    no: 43,
-                    title:
-                      "A study of financial analysis with reference to Visaka Industries Ltd. Mauda, Nagpur for a period of 2019 to 2022.",
-                  },
-                  {
-                    no: 44,
-                    title:
-                      "A STUDY OF MARKETING STRATEGY OF MAHARAJA MASALA UDOYG IN BULDHANA DISTRICT",
-                  },
-                  {
-                    no: 45,
-                    title:
-                      "A STUDY OF DEALERS AND DISTRIBUTION OF AGRO- BUSINESS MARKETING IN MALKAPUR REGION",
-                  },
-                  {
-                    no: 46,
-                    title:
-                      "A STUDY INCLINATION OF STAKEHOLDERS TOWARDS EQUITY BASED MUTUAL FUND IN AKOLA REGION",
-                  },
-                  {
-                    no: 47,
-                    title:
-                      "A study on demand of Paver Blocks in Shegaon region",
-                  },
-                  {
-                    no: 48,
-                    title:
-                      "A Study on the Customer Perception towards Electric Bike In Buldhana District",
-                  },
-                  {
-                    no: 49,
-                    title:
-                      "A STUDY OF VARIOUS BANK APPS AND ALLIED CUSTOMER SATISFACTION",
-                  },
-                  {
-                    no: 50,
-                    title: "A STUDY OF BRAND SWITCHING IN CASE OF SMARTPHONE",
-                  },
-                  {
-                    no: 51,
-                    title:
-                      "COMPETITIVE ANALYSIS OF ORGANAIZATION INVOLVED IN NETWORKING SERVICES",
-                  },
-                  {
-                    no: 52,
-                    title:
-                      "A comparative study of satisfaction on Asian and Indigo paint in Shegaon region",
-                  },
-                  {
-                    no: 53,
-                    title:
-                      "Adoptability of Digital Marketing by the Retailers in Shegaon Region - A Study",
-                  },
-                  {
-                    no: 54,
-                    title:
-                      "A STUDY ON THE FACTORS INFLUENCING DECISIONS OF THE INVESTORS TO INVEST IN SIP IN BULDHANA REGION",
-                  },
-                ].map((project, i) => (
-                  <tr key={i} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold text-center">
-                      {project.no}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {project.title}
-                    </td>
-                  </tr>
+          return (
+            <>
+              <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+                UG/PG Projects (Dissertation)
+              </h3>
+
+              <div className="flex flex-wrap gap-2 items-center">
+                {projectYears.map((year) => (
+                  <button
+                    key={year}
+                    onClick={() => setProjectYear(year)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      projectYear === year
+                        ? "bg-ssgmce-blue text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    {year}
+                  </button>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewUgProjectYear("");
+                      setUgProjectYearError("");
+                      setShowAddUgProjectYear(true);
+                    }}
+                    className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-ssgmce-blue to-blue-700 px-4 py-2 text-xs font-semibold text-white transition-all hover:shadow-lg"
+                  >
+                    <FaPlus className="text-xs" />
+                    Add Session
+                  </button>
+                )}
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 w-24">
+                          Group No.
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
+                          Project Title
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {currentProjects.map((project, i) => (
+                        <tr key={i} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 text-sm text-ssgmce-blue font-semibold text-center">
+                            {project.no || i + 1}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-700">
+                            {project.title}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {isEditing && (
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4">
+                      <h4 className="text-lg font-bold text-gray-800">
+                        Edit {projectYear} in Markdown
+                      </h4>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Import a DOCX or edit this session in markdown. Saving
+                        here updates the UG/PG Projects table above without
+                        changing the current frontend layout.
+                      </p>
+                    </div>
+                    <MarkdownEditor
+                      key={projectYear}
+                      value={selectedProjectsMarkdown}
+                      onSave={handleProjectMarkdownSave}
+                      showDocImport
+                      docTemplateUrl="/uploads/documents/pride_templates/mba_projects_template.docx"
+                      docTemplateLabel="Download Projects Template"
+                      placeholder={`UG/PG projects for ${projectYear} (GFM Markdown)...`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <AnimatePresence>
+                {showAddUgProjectYear && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+                    onClick={() => setShowAddUgProjectYear(false)}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.95, opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                          <FaPlus className="text-ssgmce-blue" /> Add Project Session
+                        </h3>
+                        <button
+                          onClick={() => {
+                            setUgProjectYearError("");
+                            setShowAddUgProjectYear(false);
+                          }}
+                          className="text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                          <FaTimes className="text-xl" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-4 mb-6">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Academic Year <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g., 2025-26"
+                            value={newUgProjectYear}
+                            onChange={(e) => {
+                              setNewUgProjectYear(e.target.value);
+                              if (ugProjectYearError) setUgProjectYearError("");
+                            }}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ssgmce-blue focus:border-transparent"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Enter the academic year in format YYYY-YY.
+                          </p>
+                          {ugProjectYearError ? (
+                            <p className="text-xs text-red-600 mt-2">
+                              {ugProjectYearError}
+                            </p>
+                          ) : null}
+                        </div>
+
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          <p className="text-sm text-blue-800">
+                            <strong>Note:</strong> After adding the session, you
+                            will get an empty markdown editor with the same
+                            table structure and DOCX import support for that
+                            session.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => {
+                            setUgProjectYearError("");
+                            setShowAddUgProjectYear(false);
+                          }}
+                          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleAddProjectYear}
+                          disabled={!newUgProjectYear.trim()}
+                          className="flex-1 px-4 py-2 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          <FaPlus /> Add Session
+                        </button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
+          );
+        })()}
       </div>
     ),
 
@@ -4857,406 +8534,713 @@ After successfully completing the course, students will be able to:
 
     "industrial-visits": (
       <div className="space-y-8">
-        <div className="text-center mb-8">
-          <h3 className="text-3xl font-bold text-gray-800 mb-3">
-            <FaIndustry className="inline-block mr-2 text-ssgmce-blue" />
-            Industry Interaction and Tours
-          </h3>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Industrial tours organized by the department for students of MBA
-            first and final years along with faculty members to provide
-            practical exposure to business operations and management practices.
-          </p>
-        </div>
+        {(() => {
+          const industrialVisits = getMbaIndustrialVisits();
+          const industrialVisitsMarkdown =
+            getMbaIndustrialVisitsMarkdown(industrialVisits);
 
-        {/* Industrial Visits Table */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-ssgmce-blue text-white">
-                <tr>
-                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
-                    S.N.
-                  </th>
-                  <th className="px-6 py-4 text-left font-bold">
-                    Visit / Tour Details
-                  </th>
-                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
-                    Date
-                  </th>
-                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
-                    Report
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {[
-                  {
-                    sn: "01",
-                    title: "Industrial Tour to KALASH SEEDS, Jalna",
-                    date: "January 2025",
-                    report:
-                      "/uploads/documents/mba/industrial-visits/mba_iv_kalash_seeds_jan2025.pdf",
-                  },
-                  {
-                    sn: "02",
-                    title:
-                      "Experiential Study Visit to Reliance Trends, Shegaon",
-                    date: "January 2025",
-                    report:
-                      "/uploads/documents/mba/industrial-visits/mba_iv_reliance_trends_jan2025.pdf",
-                  },
-                  {
-                    sn: "03",
-                    title: "Experiential Study Visit to Peter England, Shegaon",
-                    date: "January 2025",
-                    report:
-                      "/uploads/documents/mba/industrial-visits/mba_iv_peter_england_jan2025.pdf",
-                  },
-                  {
-                    sn: "04",
-                    title:
-                      "Visit to AAVISHKAR Social, Cultural and Specially Abled Organization, Shegaon",
-                    date: "December 2024",
-                    report:
-                      "/uploads/documents/mba/industrial-visits/mba_iv_aavishkar_dec2024.pdf",
-                  },
-                  {
-                    sn: "05",
-                    title: "Visit to Brahmakumari, Shegaon",
-                    date: "November 2024",
-                    report:
-                      "/uploads/documents/mba/industrial-visits/mba_iv_brahmakumari_nov2024.pdf",
-                  },
-                  {
-                    sn: "06",
-                    title:
-                      "Industrial Tour to Mahatma Gandhi Institute for Rural Industrialization (MGIRI), Wardha",
-                    date: "--",
-                    report:
-                      "/uploads/documents/mba/industrial-visits/mba_iv_mgiri_wardha.pdf",
-                  },
-                  {
-                    sn: "07",
-                    title:
-                      "Industrial Tour to Super Thermal Power, Chandrapur and Anandwan, Warora",
-                    date: "04/02/2019 to 05/02/2019",
-                    report:
-                      "/uploads/documents/mba/industrial-visits/mba_iv_chandrapur_warora_feb2019.pdf",
-                  },
-                  {
-                    sn: "08",
-                    title:
-                      "Industrial Visit to Jain Irrigation and Gandhi Research Foundation, Jalgaon",
-                    date: "22/10/2018",
-                    report:
-                      "/uploads/documents/mba/industrial-visits/mba_iv_jain_irrigation_jalgaon_2018.pdf",
-                  },
-                  {
-                    sn: "09",
-                    title:
-                      "Industrial Tour to Adani Port Special Economic Zone, Mundra, Kutch, Gujarat",
-                    date: "15/03/2017 to 18/03/2017",
-                    report: null,
-                  },
-                ].map((visit, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      {visit.sn}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">{visit.title}</td>
-                    <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
-                      {visit.date}
-                    </td>
-                    <td className="px-6 py-4">
-                      {visit.report ? (
-                        <a
-                          href={visit.report}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-ssgmce-blue hover:underline text-xs"
+          return (
+            <>
+              <div className="text-center mb-8">
+                <h3 className="text-3xl font-bold text-gray-800 mb-3">
+                  <FaIndustry className="inline-block mr-2 text-ssgmce-blue" />
+                  Industry Interaction and Tours
+                </h3>
+                <p className="text-gray-600 max-w-2xl mx-auto">
+                  Industrial tours organized by the department for students of MBA
+                  first and final years along with faculty members to provide
+                  practical exposure to business operations and management practices.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-ssgmce-blue text-white">
+                      <tr>
+                        <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                          S.N.
+                        </th>
+                        <th className="px-6 py-4 text-left font-bold">
+                          Visit / Tour Details
+                        </th>
+                        <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                          Date
+                        </th>
+                        <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                          Report
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {industrialVisits.map((visit, idx) => (
+                        <tr key={visit.id || idx} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 font-medium text-gray-900">
+                            {String(idx + 1).padStart(2, "0")}
+                          </td>
+                          <td className="px-6 py-4 text-gray-700">{visit.title}</td>
+                          <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                            {visit.date}
+                          </td>
+                          <td className="px-6 py-4">
+                            {visit.report ? (
+                              <a
+                                href={visit.report}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-ssgmce-blue hover:text-ssgmce-orange font-semibold text-xs"
+                              >
+                                <FaFileAlt className="text-xs" />
+                                View Report
+                              </a>
+                            ) : (
+                              <span className="text-gray-400 text-xs">--</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {isEditing && (
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4">
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <h4 className="text-lg font-bold text-gray-800">
+                            Edit Industry Interaction and Tours in Markdown
+                          </h4>
+                          <p className="text-sm text-gray-500 mt-1">
+                            Serial numbers are automatic now. Add a new blank row on top, then edit only the actual visit details.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={addMbaIndustrialVisitRowOnTop}
+                          className="inline-flex items-center gap-2 rounded-lg bg-ssgmce-blue px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ssgmce-orange"
                         >
-                          <FaFileAlt className="text-xs" />
-                          View Report
-                        </a>
-                      ) : (
-                        <span className="text-gray-400 text-xs">--</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                          <FaPlus className="text-xs" />
+                          Add New Row On Top
+                        </button>
+                      </div>
+                    </div>
+                    <MarkdownEditor
+                      value={industrialVisitsMarkdown}
+                      onSave={handleMbaIndustrialVisitsMarkdownSave}
+                      placeholder="Industry interaction and tours table without serial-number column (GFM Markdown)..."
+                    />
+                  </div>
+
+                  <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4">
+                      <h4 className="text-lg font-bold text-gray-800">
+                        Optional Detailed Reports
+                      </h4>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Upload a detailed report only for the visit rows that need one.
+                      </p>
+                    </div>
+                    <div className="space-y-3">
+                      {industrialVisits.map((visit, idx) => {
+                        const uploadKey = `mba-industrial-visit-${visit.id}`;
+                        return (
+                          <div
+                            key={visit.id || idx}
+                            className="rounded-lg border border-gray-200 p-4"
+                          >
+                            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                              <div>
+                                <p className="text-sm font-semibold text-gray-800">
+                                  {idx + 1}. {visit.title || "Visit / Tour"}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {visit.date || "Date not set"}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                {visit.report ? (
+                                  <a
+                                    href={visit.report}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-xs font-semibold text-ssgmce-blue hover:text-ssgmce-orange"
+                                  >
+                                    <FaFileAlt className="text-xs" />
+                                    Current Report
+                                  </a>
+                                ) : (
+                                  <span className="text-xs text-gray-400">
+                                    No report uploaded
+                                  </span>
+                                )}
+                                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-ssgmce-blue px-3 py-2 text-xs font-semibold text-white hover:bg-ssgmce-dark-blue">
+                                  <FaUpload className="text-xs" />
+                                  {industrialVisitReportUploading[uploadKey]
+                                    ? "Uploading..."
+                                    : "Upload Report"}
+                                  <input
+                                    type="file"
+                                    accept=".pdf,.doc,.docx"
+                                    className="hidden"
+                                    disabled={industrialVisitReportUploading[uploadKey]}
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        uploadMbaIndustrialVisitReport(visit.id, file);
+                                      }
+                                      e.target.value = "";
+                                    }}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                            {industrialVisitReportErrors[uploadKey] ? (
+                              <p className="mt-2 text-xs text-red-600">
+                                {industrialVisitReportErrors[uploadKey]}
+                              </p>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          );
+        })()}
       </div>
     ),
 
-    "guest-lectures": (
-      <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2">
-          Corporate Leader Speak's
-        </h3>
+    "guest-lectures": (() => {
+      const leaderSessions = getMbaLeaderSessions();
+      const leaderMarkdownBySession = getMbaLeaderMarkdownBySession();
 
-        {[
-          {
-            session: "Session 2024-25",
-            entries: [
-              {
-                speaker: "Mrs. Sudha Murthy Ji",
-                topic: "A Philanthropist Speaks on Lessons from Life",
-                report:
-                  "/uploads/documents/mba_corporate_leader_speaks/Session_2024-25_Mrs._Sudha_Murthy_Ji.pdf",
-              },
-              {
-                speaker:
-                  "Mr. Chirag Lasod, Jain Exports, Neemuch, M.P.; Mr. Rajesh Jadhav, Founder, Surya Consumer Products, MIDC, Buldana; Mr. Soham Belokar, District Officer, PMSA Udyog, Buldana",
-                topic: "Guest Talk",
-                report:
-                  "/uploads/documents/mba_corporate_leader_speaks/Session_2024-25_Mr._Chirag_Lasod,_Jain_Exports,_Neemuch,_M._P._Mr._Rajesh_Jadhav,_founder,_Surya_Consumer_Products,_MIDC.pdf",
-              },
-            ],
-          },
-          {
-            session: "Session 2020-22",
-            entries: [
-              {
-                speaker:
-                  "Mr. Shrikant P. Naphade, Head, Procurement and Contract Management, Tata Power",
-                topic: "Work life - An enquiry",
-              },
-              {
-                speaker:
-                  "Mr. Gaurav Date, Training Manager, Maharashtra EBSCO India",
-                topic: "Expanding Horizons with true knowledge",
-              },
-              {
-                speaker:
-                  "Mr. Amol Sawant, Founder - Nisarg Katta, Member, Tiger Cell, Joint Secretary, Satpuda Foundation",
-                topic: "The Nature and Us",
-              },
-              {
-                speaker: "Mrs. Mohini Modak, Founder - Webmasterkey, Akola",
-                topic: "Digital Marketing",
-              },
-              {
-                speaker:
-                  "Mr. K. K. Dave, Dean Academics, Pacific University, Rajasthan",
-                topic: "Leadership",
-              },
-              {
-                speaker:
-                  "Dr. Devesh Kumar Sharma, Senior Vice President, Credit Suisse, Geneva, Switzerland",
-                topic: "COVID 19 - India and future",
-              },
-              {
-                speaker:
-                  "D. Chandramohan Swamy, National Head - Operations, WardWiz India Solutions Pvt. Ltd., Pune",
-                topic: "Winning skills to succeed in corporate world",
-              },
-              {
-                speaker:
-                  "Dr. Ajay Trivedi, Principal and Dean, Dept of Commerce, Parul University, Vadodara, Gujarat",
-                topic: "New Perspectives of Management",
-              },
-            ],
-          },
-          {
-            session: "Session 2018-2020",
-            entries: [
-              {
-                speaker:
-                  "Mr. Subhash Gore, Secretary, Saturday Club Global Trust, Akola Chapter",
-                topic: "Opportunities in the digital world",
-              },
-              {
-                speaker:
-                  "Dr. Ajay Trivedi, Professor and Dean, Faculty of Commerce, Parul University, Baroda, Gujarat",
-                topic: 'Webinar on "New Perspectives of Management"',
-              },
-              {
-                speaker:
-                  "Mr. Prasanna Dharmadhikari, Chembond Chemicals Ltd., Mumbai",
-                topic:
-                  "Opportunities in HR, Skills required for HR personnel and the advanced HR software",
-              },
-              {
-                speaker: "Mr. Prasanna Dharmadhikari, ChemBond, Mumbai",
-                topic: "Career Avenues and Emerging trends in HR",
-              },
-              {
-                speaker:
-                  "Mr. Vaibhav Nichit, Talent Acquisition Partner, HDFC, Nagpur",
-                topic: "Pre-requisite for a good job",
-              },
-              {
-                speaker: "Mr. Hemand Sharma, VNURT, Bengaluru",
-                topic:
-                  "VNURT Role for project and platform to MBA (Motivation for job)",
-              },
-              {
-                speaker: "Mr. Swapnil Meshram, Capgemini, Pune",
-                topic: "Latest Trends / Additional Important",
-              },
-              {
-                speaker: "Mr. Prasad Khanzode, Professor, LTM, Wani",
-                topic: "Motivation within you",
-              },
-              {
-                speaker: "Mr. Kurien Daniel, Regional Vice President, ISTD",
-                topic: "Pre-requisites at workplace in current Era",
-              },
-              {
-                speaker:
-                  "Mr. Vinod Dubey, Branch Head, SBI Life Insurance, Khamgaon",
-                topic: "Career Opportunities - Seminar with SBI Life Insurance",
-              },
-              {
-                speaker: "Mr. Rajiv Jawale, HR Manager, Kalash Seeds, Jalna",
-                topic: "Perception about ways of a successful career",
-              },
-              {
-                speaker:
-                  "Mr. Subhash Gore, Saturday Club Global Trust, Akola Chapter",
-                topic: "Entrepreneurship - Prerequisite",
-              },
-              {
-                speaker: "Mr. Shekhar Rajguru, JPM - Jio Reliance, Shegaon",
-                topic: "Marketing and Distribution",
-              },
-              {
-                speaker:
-                  "Miss Sweta Sharma, Radio Jockey, Radio Orange, Nagpur",
-                topic:
-                  "Distinguished career opportunities for management aspirant",
-              },
-              {
-                speaker:
-                  "Mr. Swapnil Meshram, Capgemini Technology Services, Pune",
-                topic: "Fresher's enquiry - A thorough enquiry",
-              },
-              {
-                speaker: "Mrs. Sudha Murthy, Chairperson, Infosys Foundation",
-                topic: '"A Philanthropist Speaks - Lessons from Life"',
-              },
-              {
-                speaker:
-                  "Mr. Shekhar Rajguru, General Manager, Reliance Jio Centre, Shegaon",
-                topic: "General Management",
-              },
-              {
-                speaker: "Mr. Mayur Kalore, Cybernetix, Jaipur, Rajasthan",
-                topic: "Pre-requisites for entering corporate world",
-              },
-              {
-                speaker: "Mr. Rajiv Pande, GSM, Reliance Jio Centre Khamgaon",
-                topic: "Career growth and Motivation",
-              },
-            ],
-          },
-          {
-            session: "Session 2016-17",
-            entries: [
-              {
-                speaker:
-                  "Mr. Shekhar Rajguru, General Manager, Reliance Jio Centre, Shegaon",
-                topic: "Expectations of Corporate from fresher",
-              },
-              {
-                speaker:
-                  "Mr. Porasnath Singh, Project Manager, Reliance Jio Centre, Shegaon",
-                topic: "Opportunities in Telecom industry for MBA students",
-              },
-              {
-                speaker:
-                  "Mr. Piyush Nagda, CEO & Cofounder, Talking Asset Eduventure Pvt. Ltd., Thane",
-                topic:
-                  "Emerging trends in capital market & career opportunities; Sales as a career choice; Investor awareness programme",
-              },
-              {
-                speaker: "Mr. Nikhil Nair, NSE, Mumbai",
-                topic: "Career opportunities in Finance",
-              },
-              {
-                speaker:
-                  "Mr. Subhash Gore, G.K. Intelligent Systems Pvt. Ltd., Saturday Club Global Trust, Akola",
-                topic: "Digital Marketing - I",
-              },
-              {
-                speaker:
-                  "Ms. Mohini Modak, Training Division, Webmaster Key, Akola",
-                topic: "Digital Marketing - II",
-              },
-              {
-                speaker:
-                  "Swami Tanmayanandji, Secretary, Vivekanand Sewashram, Ambikapur, Chhattisgarh",
-                topic: "Bhagwad Gita for the Youth; Karmayoga",
-              },
-              {
-                speaker:
-                  "Swami Tanmayanandji, Secretary, Vivekanand Sewashram, Ambikapur, Chhattisgarh",
-                topic: 'Ancient Indian Education System; "Bhaj Govindam" & Q/A',
-              },
-              {
-                speaker:
-                  "Mr. Uday Patil, Business Head, Bajaj Finserve Ltd., Pune",
-                topic: "General Management & Motivation - I",
-              },
-              {
-                speaker:
-                  "Mr. Pankaj Yadav, HR Manager, Bajaj Finserve Ltd., Pune",
-                topic: "General Management & Motivation - II",
-              },
-              {
-                speaker:
-                  "Mr. Nitin Wankhade, V.P. - Client Services, Value Momentum Pvt. Ltd., Hyderabad",
-                topic:
-                  "Opportunities for MBA in IT & building broad skills for professional development",
-              },
-              {
-                speaker: "Mr. Uday Sampat, Marketing & Sales Manager, Nashik",
-                topic: "Leaders & Managers",
-              },
-              {
-                speaker:
-                  "Mr. Mayur Kalore, Assist. Sales Manager, Cybernetix, Gujarat",
-                topic: "Motivation and expectation of corporate world",
-              },
-              {
-                speaker:
-                  "Mr. Vivek Dahake, Head Process Development, Essel Propack Ltd., Thane",
-                topic: "Project management and Strategic management",
-              },
-              {
-                speaker: "Ms. Dipika Kolhe",
-                topic: "How to face Interview?",
-              },
-              {
-                speaker:
-                  "Mr. Ravindra Adhau, Sr. Credit Analyst, John Deere Finance, Pune",
-                topic: "Inside you!",
-              },
-              {
-                speaker: "Mr. Rajiv Jawale, Proprietor, BeBraaand, Jalna",
-                topic:
-                  "Branding Concepts; Need of single roof of branding (Umbrella)",
-              },
-              {
-                speaker:
-                  "Mr. Samadhan Damdhar, Marketing Manager, BeBraaand, Jalna",
-                topic: "Promotional means and their uses",
-              },
-            ],
-          },
-        ].map((sessionGroup, sIdx) => (
-          <div
-            key={sIdx}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6"
-          >
+      return (
+        <div className="space-y-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <h3 className="text-2xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2">
+              Corporate Leader Speak&apos;s
+            </h3>
+            {isEditing && (
+              <button
+                type="button"
+                onClick={() => {
+                  setNewLeaderSession("");
+                  setLeaderSessionError("");
+                  setShowAddLeaderSession(true);
+                }}
+                className="inline-flex items-center gap-2 rounded-full bg-ssgmce-blue px-4 py-2 text-sm font-bold text-white transition-all hover:bg-ssgmce-orange"
+              >
+                <FaPlus className="text-xs" />
+                Add Session Year
+              </button>
+            )}
+          </div>
+
+          {leaderSessions.map((session) => {
+            const markdown =
+              leaderMarkdownBySession[session] ||
+              mbaCorporateLeaderSpeaksToMarkdown([]);
+            const entries = parseMbaCorporateLeaderSpeaksMarkdown(markdown);
+
+            return (
+              <div
+                key={session}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6"
+              >
+                <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3">
+                  <h4 className="text-white font-bold text-lg">{session}</h4>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200 w-12">
+                          Sr.
+                        </th>
+                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                          Name of Speaker
+                        </th>
+                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                          Topic
+                        </th>
+                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200 w-28">
+                          Report
+                        </th>
+                        {isEditing && (
+                          <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200 w-44">
+                            Actions
+                          </th>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {entries.map((entry, eIdx) => (
+                        <tr
+                          key={`${session}-${eIdx}`}
+                          className="hover:bg-gray-50/50 transition-colors"
+                        >
+                          <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 font-medium text-center">
+                            {eIdx + 1}
+                          </td>
+                          <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                            {renderMbaTableCellMarkdown(entry.speaker)}
+                          </td>
+                          <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                            {renderMbaTableCellMarkdown(entry.topic)}
+                          </td>
+                          <td className="px-6 py-3 text-sm border border-gray-200 text-center">
+                            {entry.report ? (
+                              <a
+                                href={entry.report}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-ssgmce-blue hover:text-ssgmce-orange hover:underline font-medium text-xs"
+                              >
+                                <FaFileAlt className="text-xs" />
+                                View
+                              </a>
+                            ) : (
+                              <span className="text-gray-400 text-xs">--</span>
+                            )}
+                          </td>
+                          {isEditing && (
+                            <td className="px-6 py-3 text-sm border border-gray-200 align-top">
+                              {(() => {
+                                const uploadKey = `mba-leader-${session}-${eIdx}`;
+                                const isUploading = Boolean(
+                                  leaderReportUploading[uploadKey],
+                                );
+                                const uploadError =
+                                  leaderReportErrors[uploadKey] || "";
+
+                                return (
+                                  <div className="space-y-2 min-w-[150px]">
+                                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 transition hover:bg-green-100">
+                                      <FaUpload className="text-xs" />
+                                      {isUploading
+                                        ? "Uploading..."
+                                        : "Upload Report"}
+                                      <input
+                                        type="file"
+                                        accept=".pdf,.doc,.docx"
+                                        className="hidden"
+                                        disabled={isUploading}
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) {
+                                            uploadMbaLeaderReport(
+                                              session,
+                                              eIdx,
+                                              file,
+                                            );
+                                          }
+                                          e.target.value = "";
+                                        }}
+                                      />
+                                    </label>
+                                    {uploadError ? (
+                                      <p className="text-xs text-red-600">
+                                        {uploadError}
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                );
+                              })()}
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {isEditing && (
+                  <div className="border-t border-gray-200 bg-white p-5">
+                    <div className="mb-4">
+                      <h4 className="text-base font-bold text-gray-800">
+                        Edit {session} in Markdown
+                      </h4>
+                      <p className="text-sm text-gray-500">
+                        This section is markdown-only in admin while the public
+                        table layout stays unchanged. Use the upload button on
+                        each row to attach that entry&apos;s report.
+                      </p>
+                    </div>
+                    <MarkdownEditor
+                      value={markdown}
+                      onSave={(value) =>
+                        handleMbaLeaderMarkdownSave(session, value)
+                      }
+                      showDocImport
+                      showTemplateDownload={false}
+                      importHelpText="Import a DOCX to append the whole session table into this markdown editor, then review and save."
+                      placeholder={`Corporate Leader Speak table for ${session} (GFM Markdown)...`}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      );
+    })(),
+
+    mous: (
+      <div className="space-y-8">
+        {(() => {
+          const mous = getMbaMous();
+          const mousMarkdown = getMbaMousMarkdown(mous);
+
+          return (
+            <>
+              <div className="text-center mb-8">
+                <h3 className="text-3xl font-bold text-gray-800 mb-3">MoUs</h3>
+                <p className="text-gray-600 max-w-2xl mx-auto">
+                  Strategic partnerships with industry leaders and academic
+                  institutions to enhance learning outcomes and provide
+                  students with real-world exposure.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-ssgmce-blue text-white">
+                      <tr>
+                        <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                          Sr. No.
+                        </th>
+                        <th className="px-6 py-4 text-left font-bold">
+                          Name of the Organization
+                        </th>
+                        <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                          MOU Signing Date
+                        </th>
+                        <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
+                          MOU Copy / Report
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {mous.map((mou, idx) => (
+                        <tr
+                          key={mou.id || idx}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-6 py-4 font-medium text-gray-900">
+                            {idx + 1}.
+                          </td>
+                          <td className="px-6 py-4 text-gray-700">
+                            {mou.org}
+                          </td>
+                          <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                            {mou.date}
+                          </td>
+                          <td className="px-6 py-4">
+                            {mou.report ? (
+                              <a
+                                href={mou.report}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-orange font-semibold text-sm transition-colors"
+                              >
+                                <FaFileAlt className="mr-1.5" />
+                                View Document
+                              </a>
+                            ) : (
+                              <span className="text-gray-400 text-xs">--</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {isEditing && (
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4">
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <h4 className="text-lg font-bold text-gray-800">
+                            Edit MoUs in Markdown
+                          </h4>
+                          <p className="text-sm text-gray-500 mt-1">
+                            Serial numbers are automatic now. Add a new blank
+                            row on top, then edit only the actual MoU details.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={addMbaMouRowOnTop}
+                          className="inline-flex items-center gap-2 rounded-lg bg-ssgmce-blue px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ssgmce-orange"
+                        >
+                          <FaPlus className="text-xs" />
+                          Add New Row On Top
+                        </button>
+                      </div>
+                    </div>
+                    <MarkdownEditor
+                      value={mousMarkdown}
+                      onSave={handleMbaMousMarkdownSave}
+                      placeholder="MoUs table without serial-number column (GFM Markdown)..."
+                    />
+                  </div>
+
+                  <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4">
+                      <h4 className="text-lg font-bold text-gray-800">
+                        Upload MoU PDF / Report
+                      </h4>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Upload the PDF only for the row you want to attach a
+                        document to.
+                      </p>
+                    </div>
+                    <div className="space-y-3">
+                      {mous.map((mou, idx) => {
+                        const uploadKey = `mba-mou-${mou.id}`;
+                        return (
+                          <div
+                            key={mou.id || idx}
+                            className="rounded-lg border border-gray-200 p-4"
+                          >
+                            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                              <div>
+                                <p className="text-sm font-semibold text-gray-800">
+                                  {idx + 1}. {mou.org || "MoU"}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {mou.date || "Signing date not set"}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                {mou.report ? (
+                                  <a
+                                    href={mou.report}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-xs font-semibold text-ssgmce-blue hover:text-ssgmce-orange"
+                                  >
+                                    <FaFileAlt className="text-xs" />
+                                    Current Document
+                                  </a>
+                                ) : (
+                                  <span className="text-xs text-gray-400">
+                                    No document uploaded
+                                  </span>
+                                )}
+                                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-ssgmce-blue px-3 py-2 text-xs font-semibold text-white hover:bg-ssgmce-dark-blue">
+                                  <FaUpload className="text-xs" />
+                                  {mouReportUploading[uploadKey]
+                                    ? "Uploading..."
+                                    : "Upload PDF"}
+                                  <input
+                                    type="file"
+                                    accept=".pdf,.doc,.docx"
+                                    className="hidden"
+                                    disabled={mouReportUploading[uploadKey]}
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        uploadMbaMouReport(mou.id, file);
+                                      }
+                                      e.target.value = "";
+                                    }}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                            {mouReportErrors[uploadKey] ? (
+                              <p className="mt-2 text-xs text-red-600">
+                                {mouReportErrors[uploadKey]}
+                              </p>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          );
+        })()}
+      </div>
+    ),
+
+    workshops: (() => {
+      const mdpItems = getMbaMdpPrograms();
+      const fdpItems = getMbaFdpPrograms();
+      const workshopItems = getMbaWorkshopPrograms();
+      const mdpMarkdown = getMbaMdpMarkdown(mdpItems);
+      const fdpMarkdown = getMbaFdpMarkdown(fdpItems);
+      const workshopMarkdown = getMbaWorkshopMarkdown(workshopItems);
+
+      return (
+        <div className="space-y-8">
+          <h3 className="text-2xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2">
+            MDP&apos;s, FDP&apos;s and Workshop
+          </h3>
+
+          <p className="text-gray-600 text-sm leading-relaxed">
+            SEBI sponsored Financial Education Workshops conducted by Dr. H. M.
+            Jha "Bidyarthi", a SEBI (Securities Exchange Board of India)
+            empanelled Resource Person during current year
+          </p>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3">
               <h4 className="text-white font-bold text-lg">
-                {sessionGroup.session}
+                MDP&apos;s, CEP&apos;s and FDP&apos;s
               </h4>
+              <p className="text-orange-100 text-xs mt-1">
+                Programs conducted under the auspices of MSME DI Nagpur
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                      Title of the Program
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                      Faculty Coordinator
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                      No. of Beneficiaries
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {mdpItems.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                        {renderMbaTableCellMarkdown(item.title)}
+                      </td>
+                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                        {renderMbaTableCellMarkdown(item.coordinator)}
+                      </td>
+                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 text-center">
+                        {renderMbaTableCellMarkdown(item.participants)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {isEditing && (
+              <div className="border-t border-gray-200 bg-white p-5 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-base font-bold text-gray-800">
+                      Edit MDP / CEP / FDP Table in Markdown
+                    </h4>
+                    <p className="text-sm text-gray-500">
+                      The public table layout stays the same.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addMbaMdpRowOnTop}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-ssgmce-blue text-white font-semibold hover:bg-ssgmce-dark-blue transition-colors"
+                  >
+                    <FaPlus />
+                    Add New Row On Top
+                  </button>
+                </div>
+                <MarkdownEditor
+                  value={mdpMarkdown}
+                  onSave={handleMbaMdpMarkdownSave}
+                  placeholder="MDP / CEP / FDP table (GFM Markdown)..."
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3">
+              <h4 className="text-white font-bold text-lg">
+                Faculty Development Program (FDP)
+              </h4>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                      Title of the Program
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                      Faculty Coordinator
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                      No. of Participants
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {fdpItems.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                        {renderMbaTableCellMarkdown(item.title)}
+                      </td>
+                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                        {renderMbaTableCellMarkdown(item.coordinator)}
+                      </td>
+                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 text-center">
+                        {renderMbaTableCellMarkdown(item.participants)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {isEditing && (
+              <div className="border-t border-gray-200 bg-white p-5 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-base font-bold text-gray-800">
+                      Edit FDP Table in Markdown
+                    </h4>
+                    <p className="text-sm text-gray-500">
+                      The public table layout stays the same.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addMbaFdpRowOnTop}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-ssgmce-blue text-white font-semibold hover:bg-ssgmce-dark-blue transition-colors"
+                  >
+                    <FaPlus />
+                    Add New Row On Top
+                  </button>
+                </div>
+                <MarkdownEditor
+                  value={fdpMarkdown}
+                  onSave={handleMbaFdpMarkdownSave}
+                  placeholder="FDP table (GFM Markdown)..."
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-3">
+              <h4 className="text-white font-bold text-lg">Workshops</h4>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -5266,35 +9250,46 @@ After successfully completing the course, students will be able to:
                       Sr.
                     </th>
                     <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                      Name of Speaker
+                      Title of the Workshop
                     </th>
                     <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                      Topic
+                      Faculty Coordinator
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                      No. of Participants
                     </th>
                     <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200 w-28">
                       Report
                     </th>
+                    {isEditing && (
+                      <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200 w-44">
+                        Actions
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {sessionGroup.entries.map((entry, eIdx) => (
+                  {workshopItems.map((item, i) => (
                     <tr
-                      key={eIdx}
+                      key={item.id}
                       className="hover:bg-gray-50/50 transition-colors"
                     >
                       <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 font-medium text-center">
-                        {eIdx + 1}
+                        {i + 1}
                       </td>
                       <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
-                        {entry.speaker}
+                        {renderMbaTableCellMarkdown(item.title)}
                       </td>
                       <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
-                        {entry.topic}
+                        {renderMbaTableCellMarkdown(item.coordinator)}
+                      </td>
+                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                        {renderMbaTableCellMarkdown(item.participants)}
                       </td>
                       <td className="px-6 py-3 text-sm border border-gray-200 text-center">
-                        {entry.report ? (
+                        {item.report ? (
                           <a
-                            href={entry.report}
+                            href={item.report}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-ssgmce-blue hover:text-ssgmce-orange hover:underline font-medium text-xs"
@@ -5306,690 +9301,190 @@ After successfully completing the course, students will be able to:
                           <span className="text-gray-400 text-xs">--</span>
                         )}
                       </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ))}
-      </div>
-    ),
+                      {isEditing && (
+                        <td className="px-6 py-3 text-sm border border-gray-200 align-top">
+                          {(() => {
+                            const uploadKey = `mba-workshop-${item.id}`;
+                            const isUploading = Boolean(
+                              workshopReportUploading[uploadKey],
+                            );
+                            const uploadError =
+                              workshopReportErrors[uploadKey] || "";
 
-    mous: (
-      <div className="space-y-8">
-        <div className="text-center mb-8">
-          <h3 className="text-3xl font-bold text-gray-800 mb-3">MoUs</h3>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Strategic partnerships with industry leaders and academic
-            institutions to enhance learning outcomes and provide students with
-            real-world exposure.
-          </p>
-        </div>
-
-        {/* Table */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-ssgmce-blue text-white">
-                <tr>
-                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
-                    Sr. No.
-                  </th>
-                  <th className="px-6 py-4 text-left font-bold">
-                    Name of the Organization
-                  </th>
-                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
-                    MOU Signing Date
-                  </th>
-                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
-                    MOU Copy / Report
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {[
-                  {
-                    no: "1.",
-                    org: "Bajaj Finance Limited and Bajaj Finserv Limited",
-                    date: "16-June-2025",
-                    report:
-                      "/uploads/documents/mba_mous/MOU_Bajaj_Finance_2025.pdf",
-                  },
-                  {
-                    no: "2.",
-                    org: "Kalash Seeds Pvt. Ltd., Mantha Road, Jalna, M.S.",
-                    date: "04-Jan-2025",
-                    report:
-                      "/uploads/documents/mba_mous/MOU_Kalash_Seeds_2025.pdf",
-                  },
-                  {
-                    no: "3.",
-                    org: "Saturday Club Global Trust — Co-operation in Research and Education",
-                    date: "12-Jan-2024",
-                    report:
-                      "/uploads/documents/mba_mous/MOU_Saturday_Club_Global_Trust_2024.pdf",
-                  },
-                  {
-                    no: "4.",
-                    org: "Circular Angel Pvt Ltd., Mumbai — Research, Education and Real-time Consultancy",
-                    date: "13-Jan-2024",
-                    report:
-                      "/uploads/documents/mba_mous/MOU_Circular_Angel_2024.pdf",
-                  },
-                  {
-                    no: "5.",
-                    org: "Leben Life Sciences, Akola",
-                    date: "17-Feb-2023",
-                    report:
-                      "/uploads/documents/mba_mous/MOU_Leben_Life_Sciences_2023.pdf",
-                  },
-                  {
-                    no: "6.",
-                    org: "Lyceum of the Philippines University — Laguna",
-                    date: "14-July-2022",
-                    report:
-                      "/uploads/documents/mba_mous/MOU_LPU_Laguna_Philippines_2022.pdf",
-                  },
-                ].map((mou, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      {mou.no}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">{mou.org}</td>
-                    <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
-                      {mou.date}
-                    </td>
-                    <td className="px-6 py-4">
-                      <a
-                        href={mou.report}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-orange font-semibold text-sm transition-colors"
-                      >
-                        <FaFileAlt className="mr-1.5" />
-                        View Document
-                      </a>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    ),
-
-    workshops: (
-      <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2">
-          MDP's, FDP's and Workshop
-        </h3>
-
-        <p className="text-gray-600 text-sm leading-relaxed">
-          SEBI sponsored Financial Education Workshops conducted by Dr. H. M.
-          Jha "Bidyarthi", a SEBI (Securities Exchange Board of India)
-          empanelled Resource Person during current year
-        </p>
-
-        {/* MDP's, CEP's and FDP's */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3">
-            <h4 className="text-white font-bold text-lg">
-              MDP's, CEP's and FDP's
-            </h4>
-            <p className="text-orange-100 text-xs mt-1">
-              Programs conducted under the auspices of MSME DI Nagpur
-            </p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    Title of the Program
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    Faculty Coordinator
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    No. of Beneficiaries
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {[
-                  {
-                    title:
-                      "Management Development Program on Financial Management",
-                    coordinator: "Prof. S. M. Mishra",
-                    participants: "20",
-                  },
-                  {
-                    title: "Business Skill Development Program",
-                    coordinator: "Prof. P. M. Kuchar",
-                    participants: "25",
-                  },
-                  {
-                    title: "Entrepreneurship Development Program",
-                    coordinator: "Prof. L.B. Deshmukh",
-                    participants: "25",
-                  },
-                  {
-                    title: "Industrial Motivation Campaign",
-                    coordinator: "Prof. M. L. Herode",
-                    participants: "120",
-                  },
-                ].map((item, i) => (
-                  <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
-                      {item.title}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
-                      {item.coordinator}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 text-center">
-                      {item.participants}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* FDP */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3">
-            <h4 className="text-white font-bold text-lg">
-              Faculty Development Program (FDP)
-            </h4>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    Title of the Program
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    Faculty Coordinator
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    No. of Participants
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {[
-                  {
-                    title:
-                      "Case Development and Analysis in Management Education",
-                    coordinator: "Prof. M. L. Herode",
-                    participants: "26",
-                  },
-                ].map((item, i) => (
-                  <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
-                      {item.title}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
-                      {item.coordinator}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 text-center">
-                      {item.participants}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Workshops */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-3">
-            <h4 className="text-white font-bold text-lg">Workshops</h4>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200 w-12">
-                    Sr.
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    Title of the Workshop
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    Faculty Coordinator
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                    No. of Participants
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200 w-28">
-                    Report
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {[
-                  {
-                    title: "Workshop on Microsoft Excel",
-                    coordinator: "Dr. Bilal T. Husain",
-                    participants: "17 students cleared",
-                    report:
-                      "/uploads/documents/mba_workshops/workshops_Workshop_on_Microsoft_Excel.pdf",
-                  },
-                  {
-                    title:
-                      "Accelerated Training and Development Program (ALDP)",
-                    coordinator: "Prof. Wechansing Suliya",
-                    participants: "36 students participated",
-                    report:
-                      "/uploads/documents/mba_workshops/workshops_Accelerated_training_and_development_program(ALDP).pdf",
-                  },
-                  {
-                    title:
-                      "International Workshop on Business Analytics by DBAR, SSGMCE-Shegaon and Lyceum of the Philippines University - Laguna",
-                    coordinator: "Dr. Bilal T. Husain",
-                    participants: "54 students participated",
-                    report:
-                      "/uploads/documents/mba_workshops/workshops_International_Workshop_on_Business_Analytics_by_DBAR,_SSGMCE-Shegaon_and_Lyceum_of_the_Philippines_University-_Laguna.pdf",
-                  },
-                  {
-                    title: "Workshop on Holistic Management",
-                    coordinator: "Dr. Mayur A. Dande",
-                    participants: "58 students participated",
-                    report:
-                      "/uploads/documents/mba_workshops/workshops_Workshop_on_Holistic_Management.pdf",
-                  },
-                  {
-                    title: "A Session on Digital Marketing",
-                    coordinator:
-                      "Mr. Subhash Gore, Secretary, Saturday Club Global Trust, Akola Chapter",
-                    participants: "MBA Department students participated",
-                    report:
-                      "/uploads/documents/mba_workshops/workshops_A_SESSION_ON_DIGITAL_MARKETING.pdf",
-                  },
-                  {
-                    title:
-                      "A Session on Website Creation and Creative Social Media Use",
-                    coordinator:
-                      "Mr. Subhash Gore, Saturday Club Global Trust, Akola Chapter; Mrs. Mohini Modak, Founder, Webmasterkey, Akola",
-                    participants: "MBA Department students participated",
-                    report:
-                      "/uploads/documents/mba_workshops/workshops_A_SESSION_ON_WEBSITE_CREATION_AND_CREATIVE_SOCIAL_MEDIA_USE.pdf",
-                  },
-                ].map((item, i) => (
-                  <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 font-medium text-center">
-                      {i + 1}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
-                      {item.title}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
-                      {item.coordinator}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
-                      {item.participants}
-                    </td>
-                    <td className="px-6 py-3 text-sm border border-gray-200 text-center">
-                      {item.report ? (
-                        <a
-                          href={item.report}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-ssgmce-blue hover:text-ssgmce-orange hover:underline font-medium text-xs"
-                        >
-                          <FaFileAlt className="text-xs" />
-                          View
-                        </a>
-                      ) : (
-                        <span className="text-gray-400 text-xs">--</span>
+                            return (
+                              <div className="space-y-2 min-w-[150px]">
+                                <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 transition hover:bg-green-100">
+                                  <FaUpload className="text-xs" />
+                                  {isUploading ? "Uploading..." : "Upload PDF"}
+                                  <input
+                                    type="file"
+                                    accept=".pdf"
+                                    className="hidden"
+                                    disabled={isUploading}
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        uploadMbaWorkshopReport(item.id, file);
+                                      }
+                                      e.target.value = "";
+                                    }}
+                                  />
+                                </label>
+                                {uploadError ? (
+                                  <p className="text-xs text-red-600">
+                                    {uploadError}
+                                  </p>
+                                ) : null}
+                              </div>
+                            );
+                          })()}
+                        </td>
                       )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    ),
-
-    consultancy: (
-      <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2">
-          Consultancy
-        </h3>
-
-        {[
-          {
-            year: "2018 - 2019",
-            entries: [
-              {
-                org: "Securities Exchange Board Of India, Mumbai",
-                faculty: 'Dr. H. M. Jha "Bidyarthi"',
-                remarks: "Financial Awareness Workshop",
-              },
-              {
-                org: "Kalash Seeds, Jalna",
-                faculty: "Prof. M.A. Dande",
-                remarks: "Assistance in Sales Promotion",
-              },
-              {
-                org: "Yadav Academy",
-                faculty: "Prof. M.A. Dande",
-                remarks: "Career Counselling",
-              },
-              {
-                org: "Saraswati College, Shegaon",
-                faculty:
-                  "Dr. P.V. Bokad, Dr. L.B. Deshmukh, Prof. S.M. Mishra, Prof. V.V. Patil, Prof. W.Z. Suliya",
-                remarks: "Regular Classes Of BBA",
-              },
-              {
-                org: "Nutan Udyog, Shegaon",
-                faculty:
-                  'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. V.V. Patil',
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Rathi Cycles, Khamgaon",
-                faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Kunal Electronics, Khamgaon",
-                faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Gurudev Motor Driving School, Shegaon",
-                faculty:
-                  "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Reliance Jio, Shegaon",
-                faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
-                remarks: "Marketing Assistance",
-              },
-            ],
-          },
-          {
-            year: "2017 - 2018",
-            entries: [
-              {
-                org: "Securities Exchange Board Of India, Mumbai",
-                faculty: 'Dr. H. M. Jha "Bidyarthi"',
-                remarks: "Financial Awareness Workshop",
-              },
-              {
-                org: "Kalash Seeds, Jalna",
-                faculty:
-                  'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. S.M. Mishra, Prof. P.M. Kuchar',
-                remarks: "Assistance in Sales Promotion",
-              },
-              {
-                org: "Yadav Academy",
-                faculty: "Prof. M.A. Dande",
-                remarks: "Career Counselling",
-              },
-              {
-                org: "Saraswati College, Shegaon",
-                faculty:
-                  "Dr. P.V. Bokad, Dr. L.B. Deshmukh, Prof. S.M. Mishra, Prof. V.V. Patil, Prof. W.Z. Suliya",
-                remarks: "Regular Classes Of BBA",
-              },
-              {
-                org: "Nutan Udyog, Shegaon",
-                faculty:
-                  'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. V.V. Patil',
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Mandar Sports, Shegaon",
-                faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Sarda's Career Point",
-                faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Maggi Corner, Shegaon",
-                faculty:
-                  "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Hot Chips, Shegaon",
-                faculty: "Prof. V.V. Patil, Prof. W.Z. Suliya",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Kanchan Electronics, Akola",
-                faculty: "Prof. V.V. Patil, Prof. W.Z. Suliya",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Singar Sadan, Khamgaon",
-                faculty: "Prof. W.Z. Suliya",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Bappa Dabeli, Akola",
-                faculty:
-                  "Prof. V.V. Patil, Prof. W.Z. Suliya, Prof. M.A. Dande",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Indira Co. Op. Society, Shegaon",
-                faculty:
-                  "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Hend Suzuki",
-                faculty:
-                  "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "IPL Auction",
-                faculty:
-                  "Prof. S.M. Mishra, Prof. M.A. Dande, Prof. P.M. Kuchar",
-                remarks: "Event Management",
-              },
-            ],
-          },
-          {
-            year: "2016 - 2017",
-            entries: [
-              {
-                org: "Securities Exchange Board of India, Mumbai",
-                faculty: 'Dr. H. M. Jha "Bidyarthi"',
-                remarks: "Post TDS, 15 FE Workshops conducted",
-              },
-              {
-                org: "Consumer Guidance Society of India, Mumbai",
-                faculty: 'Dr. H. M. Jha "Bidyarthi", Prof. S. M. Mishra',
-                remarks: "Consumer Awareness Workshop conducted",
-              },
-              {
-                org: "SNG Packaging Pvt. Ltd., Khamgaon",
-                faculty: "Dr. P. V. Bokad and Prof. W. Z. Suliya",
-                remarks: "HR Consultancy",
-              },
-              {
-                org: "M. M. Industries, Akola",
-                faculty:
-                  "Prof. M. A. Dande, Prof. P. M. Kuchar and Prof. S. M. Mishra",
-                remarks: "HR Consultancy",
-              },
-              {
-                org: "Web Master Key, Akola (Subhash Gore)",
-                faculty: "Prof. M. A. Dande",
-                remarks: "Summer Internship by students (03)",
-              },
-              {
-                org: "Saraswati College, Shegaon",
-                faculty:
-                  "Prof. L. B. Deshmukh, Prof. S. M. Mishra and Prof. V. V. Patil",
-                remarks: "Regular classes of BBA",
-              },
-              {
-                org: "Saraswati College, Shegaon",
-                faculty:
-                  "Prof. M. A. Dande, Prof. P. M. Kuchar and Prof. S. M. Mishra",
-                remarks: "MBA Coaching classes",
-              },
-              {
-                org: "Reliance Jio, Shegaon",
-                faculty: "Prof. S. M. Mishra",
-                remarks: "Summer Internship by students (03)",
-              },
-              {
-                org: "TNS India (Mrs. Usha Ingole)",
-                faculty: "Prof. M. A. Dande",
-                remarks: "Logo and Product launch consultancy",
-              },
-              {
-                org: "Internshala",
-                faculty: "Prof. M. A. Dande",
-                remarks:
-                  "Content writing, Career counseling talk, Nursery consultancy",
-              },
-            ],
-          },
-          {
-            year: "2015 - 2016",
-            entries: [
-              {
-                org: "Securities Exchange Board Of India, Mumbai",
-                faculty: 'Dr. H. M. Jha "Bidyarthi"',
-                remarks: "Financial Awareness Workshop",
-              },
-              {
-                org: "Kalash Seeds, Jalna",
-                faculty:
-                  'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Dr. P.V. Bokad, Prof. V.V. Patil',
-                remarks: "Assistance in Sales Promotion",
-              },
-              {
-                org: "Bajaj Finserv",
-                faculty: "Prof. S.M. Mishra",
-                remarks: "Summer Internship Projects",
-              },
-              {
-                org: "Reliance Jio",
-                faculty: "Prof. S.M. Mishra",
-                remarks: "Summer Internship Projects",
-              },
-              {
-                org: "Havells - Jagadamba Services And Care",
-                faculty:
-                  'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. V.V. Patil',
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Buldana Urban Co Op Cr So, Shegaon",
-                faculty: "Prof. P.M. Kuchar",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "KFC",
-                faculty:
-                  'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. P.M. Kuchar',
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Hend Suzuki",
-                faculty:
-                  'Dr. H. M. Jha "Bidyarthi", Prof. M.A. Dande, Prof. P.M. Kuchar',
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "KTM Bikes, Akola",
-                faculty: "Prof. S.M. Mishra, Prof. P.M. Kuchar",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Sakshi Constructions, Shegaon",
-                faculty: "Dr. L.B. Deshmukh, Prof. W.Z. Suliya",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "Nutan Udyog, Shegaon",
-                faculty: "Dr. L.B. Deshmukh, Prof. W.Z. Suliya",
-                remarks: "Marketing Assistance",
-              },
-              {
-                org: "ACC Cement",
-                faculty: "Prof. V. V. Patil, Prof. W.Z. Suliya",
-                remarks: "Marketing Assistance",
-              },
-            ],
-          },
-        ].map((yearGroup, yIdx) => (
-          <div
-            key={yIdx}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6"
-          >
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3">
-              <h4 className="text-white font-bold text-lg">
-                Consultancy {yearGroup.year}
-              </h4>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200 w-12">
-                      Sr.
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                      Consulting Organization
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                      Consultant Faculty
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
-                      Remarks
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {yearGroup.entries.map((entry, eIdx) => (
-                    <tr
-                      key={eIdx}
-                      className="hover:bg-gray-50/50 transition-colors"
-                    >
-                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 font-medium text-center">
-                        {eIdx + 1}
-                      </td>
-                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 font-medium">
-                        {entry.org}
-                      </td>
-                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
-                        {entry.faculty}
-                      </td>
-                      <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
-                        {entry.remarks}
-                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+            {isEditing && (
+              <div className="border-t border-gray-200 bg-white p-5 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-base font-bold text-gray-800">
+                      Edit Workshops Table in Markdown
+                    </h4>
+                    <p className="text-sm text-gray-500">
+                      Use the upload button on each workshop row to attach that
+                      entry&apos;s PDF report while keeping this markdown synced.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addMbaWorkshopRowOnTop}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-ssgmce-blue text-white font-semibold hover:bg-ssgmce-dark-blue transition-colors"
+                  >
+                    <FaPlus />
+                    Add New Row On Top
+                  </button>
+                </div>
+                <MarkdownEditor
+                  value={workshopMarkdown}
+                  onSave={handleMbaWorkshopMarkdownSave}
+                  placeholder="Workshop table (GFM Markdown)..."
+                />
+              </div>
+            )}
           </div>
-        ))}
-      </div>
-    ),
+        </div>
+      );
+    })(),
+
+    consultancy: (() => {
+      const consultancyYears = getMbaConsultancyYears();
+      const consultancyMarkdownByYear = getMbaConsultancyMarkdownByYear();
+
+      return (
+        <div className="space-y-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <h3 className="text-2xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2">
+              Consultancy
+            </h3>
+            {isEditing && (
+              <button
+                type="button"
+                onClick={() => {
+                  setNewConsultancyYear("");
+                  setConsultancyYearError("");
+                  setShowAddConsultancyYear(true);
+                }}
+                className="inline-flex items-center gap-2 rounded-full bg-ssgmce-blue px-4 py-2 text-sm font-bold text-white transition-all hover:bg-ssgmce-orange"
+              >
+                <FaPlus className="text-xs" />
+                Add New Consultancy Year
+              </button>
+            )}
+          </div>
+
+          {consultancyYears.map((year) => {
+            const markdown = consultancyMarkdownByYear[year] || mbaConsultancyToMarkdown([]);
+            const entries = parseMbaConsultancyMarkdown(markdown);
+
+            return (
+              <div
+                key={year}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6"
+              >
+                <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3">
+                  <h4 className="text-white font-bold text-lg">
+                    Consultancy {year}
+                  </h4>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200 w-12">
+                          Sr.
+                        </th>
+                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                          Consulting Organization
+                        </th>
+                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                          Consultant Faculty
+                        </th>
+                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-600 border border-gray-200">
+                          Remarks
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {entries.map((entry, eIdx) => (
+                        <tr
+                          key={`${year}-${eIdx}`}
+                          className="hover:bg-gray-50/50 transition-colors"
+                        >
+                          <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 font-medium text-center">
+                            {eIdx + 1}
+                          </td>
+                          <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200 font-medium">
+                            {renderMbaTableCellMarkdown(entry.org)}
+                          </td>
+                          <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                            {renderMbaTableCellMarkdown(entry.faculty)}
+                          </td>
+                          <td className="px-6 py-3 text-sm text-gray-700 border border-gray-200">
+                            {renderMbaTableCellMarkdown(entry.remarks)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {isEditing && (
+                  <div className="border-t border-gray-200 bg-white p-5">
+                    <div className="mb-4">
+                      <h4 className="text-base font-bold text-gray-800">
+                        Edit Consultancy {year} in Markdown
+                      </h4>
+                      <p className="text-sm text-gray-500">
+                        This table is markdown-only in admin while the public
+                        table layout stays unchanged.
+                      </p>
+                    </div>
+                    <MarkdownEditor
+                      value={markdown}
+                      onSave={(value) =>
+                        handleMbaConsultancyMarkdownSave(year, value)
+                      }
+                      placeholder="Consultancy table (GFM Markdown)..."
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      );
+    })(),
 
     patents: (
       <div className="space-y-8">
@@ -6019,26 +9514,6 @@ After successfully completing the course, students will be able to:
           ))}
         </div>
 
-        {/* Report PDFs Download Links */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-          <h4 className="text-sm font-bold text-ssgmce-blue mb-2 flex items-center">
-            <FaDownload className="mr-2" /> Year-wise Detailed Reports (PDF)
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            {researchYears.map((year) => (
-              <a
-                key={year}
-                href={`/uploads/documents/mba_publications/MBA_publication_${year}.pdf`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-3 py-1.5 text-xs font-bold bg-white text-ssgmce-blue rounded-lg border border-blue-200 hover:bg-ssgmce-blue hover:text-white transition-all"
-              >
-                <FaFileAlt className="mr-1.5" /> {year}
-              </a>
-            ))}
-          </div>
-        </div>
-
         <AnimatePresence mode="wait">
           {patentSubTab === "patents" ? (
             <motion.div
@@ -6054,7 +9529,7 @@ After successfully completing the course, students will be able to:
                   Patents Granted & Published
                 </h3>
                 <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
-                  {researchYears.map((year) => (
+                  {mbaResearchYears.map((year) => (
                     <button
                       key={year}
                       onClick={() => setResearchYear(year)}
@@ -6067,9 +9542,23 @@ After successfully completing the course, students will be able to:
                       {year}
                     </button>
                   ))}
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewResearchYear("");
+                        setResearchYearError("");
+                        setShowAddResearchYear(true);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full bg-ssgmce-blue px-4 py-1 text-xs font-bold whitespace-nowrap text-white transition-all hover:bg-ssgmce-orange"
+                    >
+                      <FaPlus className="text-[10px]" />
+                      Add Session
+                    </button>
+                  )}
                 </div>
               </div>
-              {(defaultMbaPatents[researchYear] || []).length === 0 ? (
+              {selectedResearchItems.length === 0 ? (
                 <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
                   <p className="text-gray-500 text-sm">
                     No patents recorded for {researchYear}.
@@ -6096,7 +9585,7 @@ After successfully completing the course, students will be able to:
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {(defaultMbaPatents[researchYear] || []).map(
+                        {selectedResearchItems.map(
                           (pat, i) => (
                             <tr
                               key={i}
@@ -6114,7 +9603,18 @@ After successfully completing the course, students will be able to:
                                 </span>
                               </td>
                               <td className="px-6 py-4 font-mono text-xs text-gray-500 whitespace-nowrap text-right">
-                                {pat.id}
+                                {pat.link ? (
+                                  <a
+                                    href={pat.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-ssgmce-blue hover:text-ssgmce-dark-blue underline underline-offset-2"
+                                  >
+                                    {pat.id}
+                                  </a>
+                                ) : (
+                                  pat.id
+                                )}
                               </td>
                               <td className="px-6 py-4 text-gray-500 italic text-right">
                                 {pat.inventors}
@@ -6142,7 +9642,7 @@ After successfully completing the course, students will be able to:
                   Research Publications (Journals)
                 </h3>
                 <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
-                  {researchYears.map((year) => (
+                  {mbaResearchYears.map((year) => (
                     <button
                       key={year}
                       onClick={() => setResearchYear(year)}
@@ -6155,9 +9655,23 @@ After successfully completing the course, students will be able to:
                       {year}
                     </button>
                   ))}
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewResearchYear("");
+                        setResearchYearError("");
+                        setShowAddResearchYear(true);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full bg-ssgmce-blue px-4 py-1 text-xs font-bold whitespace-nowrap text-white transition-all hover:bg-ssgmce-orange"
+                    >
+                      <FaPlus className="text-[10px]" />
+                      Add Session
+                    </button>
+                  )}
                 </div>
               </div>
-              {(defaultMbaPublications[researchYear] || []).length === 0 ? (
+              {selectedResearchItems.length === 0 ? (
                 <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
                   <p className="text-gray-500 text-sm">
                     No publications recorded for {researchYear}.
@@ -6187,7 +9701,7 @@ After successfully completing the course, students will be able to:
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {(defaultMbaPublications[researchYear] || []).map(
+                        {selectedResearchItems.map(
                           (pub, i) => (
                             <tr
                               key={i}
@@ -6245,7 +9759,7 @@ After successfully completing the course, students will be able to:
                   Conference Publications
                 </h3>
                 <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
-                  {researchYears.map((year) => (
+                  {mbaResearchYears.map((year) => (
                     <button
                       key={year}
                       onClick={() => setResearchYear(year)}
@@ -6258,9 +9772,23 @@ After successfully completing the course, students will be able to:
                       {year}
                     </button>
                   ))}
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewResearchYear("");
+                        setResearchYearError("");
+                        setShowAddResearchYear(true);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full bg-ssgmce-blue px-4 py-1 text-xs font-bold whitespace-nowrap text-white transition-all hover:bg-ssgmce-orange"
+                    >
+                      <FaPlus className="text-[10px]" />
+                      Add Session
+                    </button>
+                  )}
                 </div>
               </div>
-              {(defaultMbaConferences[researchYear] || []).length === 0 ? (
+              {selectedResearchItems.length === 0 ? (
                 <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
                   <p className="text-gray-500 text-sm">
                     No conference publications recorded for {researchYear}.
@@ -6290,7 +9818,7 @@ After successfully completing the course, students will be able to:
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {(defaultMbaConferences[researchYear] || []).map(
+                        {selectedResearchItems.map(
                           (conf, i) => (
                             <tr
                               key={i}
@@ -6348,7 +9876,7 @@ After successfully completing the course, students will be able to:
                   Copyrights
                 </h3>
                 <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
-                  {researchYears.map((year) => (
+                  {mbaResearchYears.map((year) => (
                     <button
                       key={year}
                       onClick={() => setResearchYear(year)}
@@ -6361,9 +9889,23 @@ After successfully completing the course, students will be able to:
                       {year}
                     </button>
                   ))}
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewResearchYear("");
+                        setResearchYearError("");
+                        setShowAddResearchYear(true);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full bg-ssgmce-blue px-4 py-1 text-xs font-bold whitespace-nowrap text-white transition-all hover:bg-ssgmce-orange"
+                    >
+                      <FaPlus className="text-[10px]" />
+                      Add Session
+                    </button>
+                  )}
                 </div>
               </div>
-              {(defaultMbaCopyrights[researchYear] || []).length === 0 ? (
+              {selectedResearchItems.length === 0 ? (
                 <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
                   <p className="text-gray-500 text-sm">
                     No copyrights recorded for {researchYear}.
@@ -6390,7 +9932,7 @@ After successfully completing the course, students will be able to:
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {(defaultMbaCopyrights[researchYear] || []).map(
+                        {selectedResearchItems.map(
                           (cr, i) => (
                             <tr
                               key={i}
@@ -6403,7 +9945,18 @@ After successfully completing the course, students will be able to:
                                 {cr.name}
                               </td>
                               <td className="px-6 py-4 text-gray-700">
-                                {cr.title}
+                                {cr.link ? (
+                                  <a
+                                    href={cr.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-ssgmce-blue hover:text-ssgmce-dark-blue underline underline-offset-2"
+                                  >
+                                    {cr.title}
+                                  </a>
+                                ) : (
+                                  cr.title
+                                )}
                               </td>
                               <td className="px-6 py-4 text-right">
                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700">
@@ -6433,7 +9986,7 @@ After successfully completing the course, students will be able to:
                   Books / Book Chapters Published
                 </h3>
                 <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
-                  {researchYears.map((year) => (
+                  {mbaResearchYears.map((year) => (
                     <button
                       key={year}
                       onClick={() => setResearchYear(year)}
@@ -6446,9 +9999,23 @@ After successfully completing the course, students will be able to:
                       {year}
                     </button>
                   ))}
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewResearchYear("");
+                        setResearchYearError("");
+                        setShowAddResearchYear(true);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full bg-ssgmce-blue px-4 py-1 text-xs font-bold whitespace-nowrap text-white transition-all hover:bg-ssgmce-orange"
+                    >
+                      <FaPlus className="text-[10px]" />
+                      Add Session
+                    </button>
+                  )}
                 </div>
               </div>
-              {(defaultMbaBooks[researchYear] || []).length === 0 ? (
+              {selectedResearchItems.length === 0 ? (
                 <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
                   <p className="text-gray-500 text-sm">
                     No books published for {researchYear}.
@@ -6478,7 +10045,7 @@ After successfully completing the course, students will be able to:
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {(defaultMbaBooks[researchYear] || []).map(
+                        {selectedResearchItems.map(
                           (book, i) => (
                             <tr
                               key={i}
@@ -6492,7 +10059,18 @@ After successfully completing the course, students will be able to:
                                 {book.coAuthors ? `, ${book.coAuthors}` : ""}
                               </td>
                               <td className="px-6 py-4 text-gray-700">
-                                {book.title}
+                                {book.link ? (
+                                  <a
+                                    href={book.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-ssgmce-blue hover:text-ssgmce-dark-blue underline underline-offset-2"
+                                  >
+                                    {book.title}
+                                  </a>
+                                ) : (
+                                  book.title
+                                )}
                               </td>
                               <td className="px-6 py-4 text-gray-500 italic text-xs">
                                 {book.details}
@@ -6511,6 +10089,133 @@ After successfully completing the course, students will be able to:
             </motion.div>
           ) : null}
         </AnimatePresence>
+        {isEditing && (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <div className="mb-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-800">
+                      Edit {researchYear} {patentSubTab} in Markdown
+                    </h4>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Keep the public table layout as it is while editing this
+                      session through markdown, DOCX import, and the matching
+                      template.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => addMbaResearchRowOnTop()}
+                    className="inline-flex items-center gap-2 rounded-lg bg-ssgmce-blue px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ssgmce-orange"
+                  >
+                    <FaPlus className="text-xs" />
+                    Add New Row On Top
+                  </button>
+                </div>
+              </div>
+              <MarkdownEditor
+                key={`${patentSubTab}-${researchYear}`}
+                value={selectedResearchMarkdown}
+                onSave={handleMbaResearchMarkdownSave}
+                showDocImport
+                docTemplateUrl={MBA_RESEARCH_TEMPLATE_URLS[patentSubTab]}
+                docTemplateLabel="Download Template"
+                placeholder={`${patentSubTab} table for ${researchYear} (GFM Markdown)...`}
+              />
+            </div>
+          </div>
+        )}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <h4 className="text-sm font-bold text-ssgmce-blue mb-2 flex items-center">
+            <FaDownload className="mr-2" /> Year-wise Detailed Reports (PDF)
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {mbaResearchYears.map((year) => (
+              <a
+                key={year}
+                href={getMbaResearchReportUrl(year)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-3 py-1.5 text-xs font-bold bg-white text-ssgmce-blue rounded-lg border border-blue-200 hover:bg-ssgmce-blue hover:text-white transition-all"
+              >
+                <FaFileAlt className="mr-1.5" /> {year}
+              </a>
+            ))}
+          </div>
+        </div>
+        {isEditing && (
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div className="mb-4">
+              <h4 className="text-lg font-bold text-gray-800">
+                Upload Year-wise Detailed Reports
+              </h4>
+              <p className="text-sm text-gray-500 mt-1">
+                Upload one detailed report PDF per academic year. The public
+                download strip above will use these saved files.
+              </p>
+            </div>
+            <div className="space-y-3">
+              {mbaResearchYears.map((year) => {
+                const uploadKey = `mba-research-report-${year}`;
+                const reportUrl = getMbaResearchReportUrl(year);
+                return (
+                  <div
+                    key={`research-report-${year}`}
+                    className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 md:flex-row md:items-center md:justify-between"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">
+                        {year}
+                      </p>
+                      {reportUrl ? (
+                        <a
+                          href={reportUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 inline-flex items-center gap-2 text-xs font-medium text-ssgmce-blue underline underline-offset-2"
+                        >
+                          <FaFileAlt className="text-xs" />
+                          Current Detailed Report
+                        </a>
+                      ) : (
+                        <p className="mt-1 text-xs text-gray-400">
+                          No detailed report uploaded
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-start gap-2 md:items-end">
+                      <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-gradient-to-r from-[#003366] to-[#004d99] px-4 py-2.5 text-xs font-semibold text-white transition-all duration-300 hover:from-[#004d99] hover:to-[#0066cc] hover:shadow-lg">
+                        <FaUpload className="text-yellow-300" />
+                        {researchReportUploading[uploadKey]
+                          ? "Uploading..."
+                          : "Upload Report"}
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          className="hidden"
+                          disabled={researchReportUploading[uploadKey]}
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            event.target.value = "";
+                            if (file) {
+                              uploadMbaResearchReport(year, file);
+                            }
+                          }}
+                        />
+                      </label>
+                      {researchReportErrors[uploadKey] ? (
+                        <span className="text-right text-[11px] text-red-500">
+                          {researchReportErrors[uploadKey]}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     ),
   };
@@ -6695,6 +10400,290 @@ After successfully completing the course, students will be able to:
                     className="flex-1 px-4 py-2 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <FaPlus /> Add Year
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showAddConsultancyYear && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => {
+                setConsultancyYearError("");
+                setShowAddConsultancyYear(false);
+              }}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <FaPlus className="text-ssgmce-blue" /> Add Consultancy Year
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setConsultancyYearError("");
+                      setShowAddConsultancyYear(false);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <FaTimes className="text-xl" />
+                  </button>
+                </div>
+
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Consultancy Year <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., 2025 - 2026"
+                      value={newConsultancyYear}
+                      onChange={(e) => {
+                        setNewConsultancyYear(e.target.value);
+                        if (consultancyYearError) {
+                          setConsultancyYearError("");
+                        }
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ssgmce-blue focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Use the same year label style shown in the consultancy
+                      section, for example `2018 - 2019`.
+                    </p>
+                    {consultancyYearError ? (
+                      <p className="text-xs text-red-600 mt-2">
+                        {consultancyYearError}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-sm text-blue-800">
+                      <strong>Note:</strong> The new consultancy year will be
+                      added at the top with an empty markdown table.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setConsultancyYearError("");
+                      setShowAddConsultancyYear(false);
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={addMbaConsultancyYear}
+                    disabled={!newConsultancyYear.trim()}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <FaPlus /> Add Year
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showAddLeaderSession && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => {
+                setLeaderSessionError("");
+                setShowAddLeaderSession(false);
+              }}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <FaPlus className="text-ssgmce-blue" /> Add Session Year
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setLeaderSessionError("");
+                      setShowAddLeaderSession(false);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <FaTimes className="text-xl" />
+                  </button>
+                </div>
+
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Session Label <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., Session 2025-26"
+                      value={newLeaderSession}
+                      onChange={(e) => {
+                        setNewLeaderSession(e.target.value);
+                        if (leaderSessionError) {
+                          setLeaderSessionError("");
+                        }
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ssgmce-blue focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Use the same label style already shown in the Corporate
+                      Leader Speak&apos;s section.
+                    </p>
+                    {leaderSessionError ? (
+                      <p className="text-xs text-red-600 mt-2">
+                        {leaderSessionError}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-sm text-blue-800">
+                      <strong>Note:</strong> The new session will be added at
+                      the top with an empty markdown table.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setLeaderSessionError("");
+                      setShowAddLeaderSession(false);
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={addMbaLeaderSession}
+                    disabled={!newLeaderSession.trim()}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <FaPlus /> Add Session
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showAddResearchYear && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => {
+                setResearchYearError("");
+                setShowAddResearchYear(false);
+              }}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <FaPlus className="text-ssgmce-blue" /> Add Research
+                    Session
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setResearchYearError("");
+                      setShowAddResearchYear(false);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <FaTimes className="text-xl" />
+                  </button>
+                </div>
+
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Academic Year <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., 2025-26"
+                      value={newResearchYear}
+                      onChange={(e) => {
+                        setNewResearchYear(e.target.value);
+                        if (researchYearError) {
+                          setResearchYearError("");
+                        }
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ssgmce-blue focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Enter the academic year in format YYYY-YY.
+                    </p>
+                    {researchYearError ? (
+                      <p className="text-xs text-red-600 mt-2">
+                        {researchYearError}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-sm text-blue-800">
+                      <strong>Note:</strong> The new session will be created for
+                      patents, publications, conferences, books, and
+                      copyrights with an empty markdown table plus DOCX import
+                      and template download support.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setResearchYearError("");
+                      setShowAddResearchYear(false);
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddResearchYear}
+                    disabled={!newResearchYear.trim()}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <FaPlus /> Add Session
                   </button>
                 </div>
               </motion.div>

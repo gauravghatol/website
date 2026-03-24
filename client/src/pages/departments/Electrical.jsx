@@ -130,6 +130,632 @@ function elecGateToMarkdown(gate = []) {
   ].join("\n");
 }
 
+function electricalInnovativePracticesToMarkdown(practicesData = []) {
+  const rows = practicesData.map(
+    (p) =>
+      `| ${p.sn || ""} | ${p.faculty || ""} | ${p.subject || ""} | ${p.practice || ""} | ${p.link || ""} |`,
+  );
+  return [
+    "## Innovative Practices in Teaching and Learning",
+    "",
+    "| S.N. | Faculty | Subject | Practice | Link |",
+    "|------|---------|---------|----------|------|",
+    ...rows,
+  ].join("\n");
+}
+
+function electricalMarkdownToInnovativePractices(markdown = "") {
+  if (!markdown || typeof markdown !== "string") {
+    return [];
+  }
+
+  const lines = markdown.split("\n");
+  const practices = [];
+  let inTable = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (!trimmed) continue;
+    if (trimmed.startsWith("#")) continue;
+
+    if (
+      !inTable &&
+      trimmed.match(/^\|.*\|$/) &&
+      !trimmed.match(/^\|[\s-|]+\|$/)
+    ) {
+      inTable = true;
+      continue;
+    }
+
+    if (trimmed.match(/^\|[\s-|]+\|$/)) {
+      continue;
+    }
+
+    if (inTable && trimmed.startsWith("|") && trimmed.endsWith("|")) {
+      const cells = trimmed
+        .split("|")
+        .map((cell) => cell.trim())
+        .slice(1, -1);
+
+      if (cells.length >= 5) {
+        practices.push({
+          sn: cells[0] || "",
+          faculty: cells[1] || "",
+          subject: cells[2] || "",
+          practice: cells[3] || "",
+          link: cells[4] || "",
+          isExternal:
+            (cells[4] || "").includes("http") ||
+            (cells[4] || "").includes("youtu"),
+        });
+      }
+    }
+  }
+
+  return practices;
+}
+
+const defaultElectricalIndustrialVisits = [
+  {
+    sn: "01",
+    industries: ["Adani Dahanu Thermal Power Station, Mumbai"],
+    class: "Third Year",
+    date: "26/06/2025",
+    students: "-",
+    report: "",
+  },
+  {
+    sn: "02",
+    industries: ["400 KV Transmission Station, APATAPA Akola"],
+    class: "Third Year",
+    date: "27/03/2025",
+    students: "-",
+    report: "",
+  },
+  {
+    sn: "03",
+    industries: ["Avaada Energy 100 MW Solar Power Plant, Balapur"],
+    class: "Third Year",
+    date: "27/03/2025",
+    students: "-",
+    report: "",
+  },
+  {
+    sn: "04",
+    industries: ["TATA Power Shahad, Mumbai"],
+    class: "Second Year",
+    date: "27/11/2024",
+    students: "-",
+    report: "",
+  },
+  {
+    sn: "05",
+    industries: ["Adani Dahanu Thermal Power Station, Mumbai"],
+    class: "Third Year",
+    date: "08/06/2024",
+    students: "-",
+    report: "",
+  },
+  {
+    sn: "06",
+    industries: ["TATA Power, Mumbai"],
+    class: "Third Year",
+    date: "11/12/2023",
+    students: "-",
+    report: "",
+  },
+  {
+    sn: "07",
+    industries: ["Thermal Power Station, Paras"],
+    class: "Second Year",
+    date: "26/10/2023",
+    students: "-",
+    report: "",
+  },
+  {
+    sn: "08",
+    industries: ["Adani Power Station, Mumbai"],
+    class: "Third Year",
+    date: "2022-23",
+    students: "-",
+    report: "",
+  },
+  {
+    sn: "09",
+    industries: ["Thermal Power Station, Paras"],
+    class: "Second Year",
+    date: "28/11/2022",
+    students: "-",
+    report: "",
+  },
+  {
+    sn: "10",
+    industries: ["M/s. ABB Ltd., Nashik"],
+    class: "Third Year",
+    date: "27/08/2018",
+    students: "-",
+    report: "",
+  },
+  {
+    sn: "11",
+    industries: ["M/s. Powerinst Pvt. Ltd., Nashik"],
+    class: "Third Year",
+    date: "27/08/2018",
+    students: "-",
+    report: "",
+  },
+  {
+    sn: "12",
+    industries: ["M/s Legrand (India) Pvt. Ltd., Nashik"],
+    class: "Third Year",
+    date: "28/08/2018",
+    students: "-",
+    report: "",
+  },
+  {
+    sn: "13",
+    industries: ["Thermal Power Station, Paras"],
+    class: "Second Year",
+    date: "12/09/2018",
+    students: "-",
+    report: "",
+  },
+  {
+    sn: "14",
+    industries: ["Vishwajeet Capacitors Pvt Ltd., Nashik"],
+    class: "Third Year",
+    date: "2017-18",
+    students: "-",
+    report: "",
+  },
+  {
+    sn: "15",
+    industries: ["Adani Power Plant, Mundra, Gujarat"],
+    class: "Third Year",
+    date: "04-06/03/2016",
+    students: "-",
+    report: "",
+  },
+];
+
+const defaultElectricalIndustrialVisitGallery = [
+  {
+    image: ivAdaniDahanu2025,
+    caption:
+      "Industrial visit to Adani Dahanu Thermal Power Station, Mumbai on 26 June 2025",
+    location: "Mumbai",
+    date: "26 June 2025",
+  },
+  {
+    image: ivApatapaAkola2025,
+    caption:
+      "Industrial visit to 400 KV Transmission Station, APATAPA Akola on 27 March 2025",
+    location: "Akola",
+    date: "27 March 2025",
+  },
+  {
+    image: ivAvaadaSolar2025,
+    caption:
+      "Industrial visit to Avaada Energy 100 MW Solar Power Plant, Balapur on 27 March 2025",
+    location: "Balapur",
+    date: "27 March 2025",
+  },
+  {
+    image: ivTataPowerShahad2024,
+    caption:
+      "Industrial visit to TATA Power Shahad, Mumbai on 27 November 2024",
+    location: "Mumbai",
+    date: "27 November 2024",
+  },
+  {
+    image: ivAdaniDahanu2024,
+    caption:
+      "Industrial visit to Adani Dahanu Thermal Power Station, Mumbai on 8 June 2024",
+    location: "Mumbai",
+    date: "8 June 2024",
+  },
+  {
+    image: ivTataPowerMumbai2023,
+    caption: "Industrial visit to TATA Power, Mumbai on 11 December 2023",
+    location: "Mumbai",
+    date: "11 December 2023",
+  },
+  {
+    image: ivThermalParas2023,
+    caption:
+      "Second Year BE Electrical Engineering students visited Thermal Power Station, Paras on 26 October 2023",
+    location: "Paras",
+    date: "26 October 2023",
+  },
+  {
+    image: ivAdaniPowerMumbai,
+    caption: "Industrial visit to Adani Power Station, Mumbai during 2022-23",
+    location: "Mumbai",
+    date: "2022-23",
+  },
+  {
+    image: ivThermalParas2022,
+    caption:
+      "Second Year BE Electrical Engineering students visited Thermal Power Station, Paras on 28 November 2022",
+    location: "Paras",
+    date: "28 November 2022",
+  },
+  {
+    image: ivAbbNashik2018,
+    caption:
+      "Industrial visit to M/s. ABB Ltd., Nashik on 27 August 2018",
+    location: "Nashik",
+    date: "27 August 2018",
+  },
+  {
+    image: ivPowerinstNashik2018,
+    caption:
+      "Industrial visit to M/s. Powerinst Pvt. Ltd., Nashik on 27 August 2018",
+    location: "Nashik",
+    date: "27 August 2018",
+  },
+  {
+    image: ivLegrandNashik2018,
+    caption:
+      "Industrial visit to M/s Legrand (India) Pvt. Ltd., Nashik on 28 August 2018",
+    location: "Nashik",
+    date: "28 August 2018",
+  },
+  {
+    image: ivParasThermal2018,
+    caption:
+      "Second Year BE Electrical Engineering students visited Thermal Power Station Paras on 12th September 2018",
+    location: "Paras",
+    date: "12 September 2018",
+  },
+  {
+    image: ivVishwajeetNashik,
+    caption:
+      "Discussion with Expert from Industries during visit at Vishwajeet Capacitors Pvt Ltd. Nashik",
+    location: "Nashik",
+    date: "2017-18",
+  },
+  {
+    image: ivAdaniMundra2016,
+    caption:
+      "Industrial visit at Adani Power Plant, Mundra Gujarat on 4-6 March 2016",
+    location: "Mundra, Gujarat",
+    date: "4-6 March 2016",
+  },
+];
+
+const electricalExtractMarkdownLinkHref = (value = "") => {
+  const match = String(value || "").match(/\[.*?\]\((.*?)\)/);
+  return match?.[1]?.trim?.() || "";
+};
+
+const electricalParseMarkdownTableRow = (line = "") =>
+  String(line || "")
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
+
+const electricalParseIndustrialVisitIndustries = (value = "") =>
+  String(value || "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .split(/\n|;/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const electricalIndustrialVisitsToMarkdown = (visits = []) => {
+  const lines = [
+    "## Industrial Visits",
+    "",
+    "| Industry / Organization | Class | Date | No. of Students | Detailed Report |",
+    "|--------------------------|-------|------|-----------------|-----------------|",
+  ];
+
+  if (!visits.length) {
+    lines.push("| No visits added yet. | - | - | - | - |");
+    return lines.join("\n");
+  }
+
+  visits.forEach((visit) => {
+    const industries = Array.isArray(visit?.industries)
+      ? visit.industries.filter(Boolean).join("<br>")
+      : String(visit?.industries || "").trim();
+    const reportCell = visit?.report
+      ? `[Detailed Report](${visit.report})`
+      : "-";
+
+    lines.push(
+      `| ${industries || "-"} | ${visit?.class || "-"} | ${visit?.date || "-"} | ${visit?.students || "-"} | ${reportCell} |`,
+    );
+  });
+
+  return lines.join("\n");
+};
+
+const electricalParseIndustrialVisitsMarkdown = (markdown = "") => {
+  const text = String(markdown || "").trim();
+  if (!text) return [];
+
+  const tableLines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+
+  const dataLines = tableLines.filter(
+    (line, index) =>
+      index > 1 &&
+      !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(
+        line,
+      ),
+  );
+
+  return dataLines
+    .map((line) => electricalParseMarkdownTableRow(line))
+    .filter((cells) => cells.length >= 5)
+    .map((cells) => {
+      const offset = cells.length >= 6 ? 1 : 0;
+      return {
+        industries: electricalParseIndustrialVisitIndustries(cells[offset] || ""),
+        class: cells[offset + 1] || "",
+        date: cells[offset + 2] || "",
+        students: cells[offset + 3] || "",
+        report: electricalExtractMarkdownLinkHref(cells.slice(offset + 4).join(" | ")),
+      };
+    })
+    .filter(
+      (visit) =>
+        visit.industries.length ||
+        visit.class ||
+        visit.date ||
+        visit.students ||
+        visit.report,
+    );
+};
+
+const createElectricalIndustrialVisitId = () =>
+  `electrical-industrial-visit-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const getElectricalIndustrialVisitSignature = (visit = {}) =>
+  JSON.stringify({
+    industries: (Array.isArray(visit?.industries) ? visit.industries : [])
+      .map((item) => String(item || "").trim().toLowerCase())
+      .filter(Boolean),
+    class: String(visit?.class || "").trim().toLowerCase(),
+    date: String(visit?.date || "").trim().toLowerCase(),
+    students: String(visit?.students || "").trim().toLowerCase(),
+  });
+
+const defaultElectricalMous = [
+  { no: "1.", org: "I Robots Innovative Solutions, Pune", date: "05-Apr-2025", report: "/uploads/documents/electrical_mous/MOU_IRobots_Innovative_2025.pdf" },
+  { no: "2.", org: "TATA Power Skill Development Institute (TPSDI), Shahad Mumbai", date: "21-Jun-2024", report: "/uploads/documents/electrical_mous/MOU_TPSDI_Mumbai_2024.pdf" },
+  { no: "3.", org: "Adani Electricity Mumbai Limited, ADTPS, Dahanu", date: "01-Jun-2024", report: "/uploads/documents/electrical_mous/MOU_Adani_ADTPS_Dahanu_2024.pdf" },
+  { no: "4.", org: "Mew Technology, Bengaluru", date: "04-Mar-2024", report: "/uploads/documents/electrical_mous/MOU_Mew_Technology_Bengaluru_2024.pdf" },
+  { no: "5.", org: "Samarthan System Private Limited, Pune", date: "10-Jan-2024", report: "/uploads/documents/electrical_mous/MOU_Samarthan_System_Pune_2024.pdf" },
+  { no: "6.", org: "SCR Elektronics, Mumbai", date: "08-Feb-2023", report: "/uploads/documents/electrical_mous/MOU_SCR_Elektronics_Mumbai_2023.pdf" },
+  { no: "7.", org: "Mitsubishi Electric India Private Limited", date: "06-Jan-2023", report: "/uploads/documents/electrical_mous/MOU_Mitsubishi_Electric_2023.pdf" },
+  { no: "8.", org: "Adani Electricity Mumbai Limited, ADTPS, Dahanu", date: "12-Feb-2022", report: "/uploads/documents/electrical_mous/MOU_Adani_ADTPS_Dahanu_2022.pdf" },
+  { no: "9.", org: "ISIE INDIA, Noida", date: "18-Jan-2022", report: "/uploads/documents/electrical_mous/MOU_ISIE_India_Noida_2022.pdf" },
+  { no: "10.", org: "VI Solutions, Bangalore", date: "28-Jan-2021", report: "/uploads/documents/electrical_mous/MOU_VI_Solutions_Bangalore_2021.pdf" },
+  { no: "11.", org: "SCR Elektronics, Mumbai", date: "08-Feb-2020", report: "/uploads/documents/electrical_mous/MOU_SCR_Elektronics_Mumbai_2020.pdf" },
+  { no: "12.", org: "TPSDI, Shahad Mumbai", date: "08-Sep-2018", report: "/uploads/documents/electrical_mous/MOU_TPSDI_Mumbai_2018.pdf" },
+];
+
+const electricalMousToMarkdown = (mous = []) => {
+  const lines = ["## MoUs", "", "| Name of the Organization | MOU Signing Date | MOU Copy / Report |", "|--------------------------|------------------|-------------------|"];
+  if (!mous.length) {
+    lines.push("| No MoUs added yet. | - | - |");
+    return lines.join("\n");
+  }
+  mous.forEach((mou) => {
+    const reportCell = mou?.report ? `[View Document](${mou.report})` : "-";
+    lines.push(`| ${mou?.org || "-"} | ${mou?.date || "-"} | ${reportCell} |`);
+  });
+  return lines.join("\n");
+};
+
+const parseElectricalMousMarkdown = (markdown = "") => {
+  const text = String(markdown || "").trim();
+  if (!text) return [];
+  const tableLines = text.split("\n").map((line) => line.trim()).filter((line) => line.startsWith("|"));
+  const dataLines = tableLines.filter((line, index) => index > 1 && !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line));
+  return dataLines
+    .map((line) => electricalParseMarkdownTableRow(line))
+    .filter((cells) => cells.length >= 3)
+    .map((cells) => ({ org: cells[0] || "", date: cells[1] || "", report: electricalExtractMarkdownLinkHref(cells.slice(2).join(" | ")) }))
+    .filter((mou) => mou.org || mou.date || mou.report);
+};
+
+const createElectricalMouId = () =>
+  `electrical-mou-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const getElectricalMouSignature = (mou = {}) =>
+  JSON.stringify({ org: String(mou?.org || "").trim().toLowerCase(), date: String(mou?.date || "").trim().toLowerCase() });
+
+const electricalPatentsToMarkdown = (items = [], year = "2024-25") => {
+  const lines = [
+    `## ${year}`,
+    "",
+    "| Title of Invention | Status | Application No. | Inventors | Link |",
+    "|--------------------|--------|-----------------|-----------|------|",
+  ];
+  if (!items.length) return [...lines, "| Add invention title | Published | Add application no. | Add inventors | - |"].join("\n");
+  items.forEach((item) => {
+    lines.push(
+      `| ${item?.title || "-"} | ${item?.status || "-"} | ${item?.id || "-"} | ${item?.inventors || "-"} | ${item?.link ? `[Open](${item.link})` : "-"} |`,
+    );
+  });
+  return lines.join("\n");
+};
+
+const parseElectricalPatentsMarkdown = (markdown = "", fallbackYear = "2024-25") => {
+  const text = String(markdown || "").trim();
+  if (!text) return { year: fallbackYear, items: [] };
+  const headingMatch = text.match(/^##\s+(.+)$/m);
+  const year = headingMatch?.[1]?.trim() || fallbackYear;
+  const tableLines = text.split("\n").map((line) => line.trim()).filter((line) => line.startsWith("|"));
+  const dataLines = tableLines.filter((line, index) => index > 1 && !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line));
+  return {
+    year,
+    items: dataLines
+      .map((line) => electricalParseMarkdownTableRow(line))
+      .filter((cells) => cells.length >= 5)
+      .map((cells) => ({
+        title: cells[0] || "",
+        status: cells[1] || "",
+        id: cells[2] || "",
+        inventors: cells[3] || "",
+        link: electricalExtractMarkdownLinkHref(cells.slice(4).join(" | ")),
+      }))
+      .filter((item) => item.title || item.status || item.id || item.inventors || item.link),
+  };
+};
+
+const electricalPublicationsToMarkdown = (items = [], year = "2024-25") => {
+  const lines = [
+    `## ${year}`,
+    "",
+    "| Title of Paper | Authors | Journal Details | Link |",
+    "|----------------|---------|-----------------|------|",
+  ];
+  if (!items.length) return [...lines, "| Add paper title | Add authors | Add journal details | - |"].join("\n");
+  items.forEach((item) => {
+    lines.push(
+      `| ${item?.title || "-"} | ${item?.authors || "-"} | ${item?.journal || "-"} | ${item?.link ? `[View](${item.link})` : "-"} |`,
+    );
+  });
+  return lines.join("\n");
+};
+
+const parseElectricalPublicationsMarkdown = (markdown = "", fallbackYear = "2024-25") => {
+  const text = String(markdown || "").trim();
+  if (!text) return { year: fallbackYear, items: [] };
+  const headingMatch = text.match(/^##\s+(.+)$/m);
+  const year = headingMatch?.[1]?.trim() || fallbackYear;
+  const tableLines = text.split("\n").map((line) => line.trim()).filter((line) => line.startsWith("|"));
+  const dataLines = tableLines.filter((line, index) => index > 1 && !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line));
+  return {
+    year,
+    items: dataLines
+      .map((line) => electricalParseMarkdownTableRow(line))
+      .filter((cells) => cells.length >= 4)
+      .map((cells) => ({
+        title: cells[0] || "",
+        authors: cells[1] || "",
+        journal: cells[2] || "",
+        link: electricalExtractMarkdownLinkHref(cells.slice(3).join(" | ")),
+      }))
+      .filter((item) => item.title || item.authors || item.journal || item.link),
+  };
+};
+
+const electricalCopyrightsToMarkdown = (items = [], year = "2024-25") => {
+  const lines = [
+    `## ${year}`,
+    "",
+    "| Name of Faculty | Title of Work | Status | Link |",
+    "|-----------------|---------------|--------|------|",
+  ];
+  if (!items.length) return [...lines, "| Add faculty name | Add title of work | Published | - |"].join("\n");
+  items.forEach((item) => {
+    lines.push(
+      `| ${item?.name || "-"} | ${item?.title || "-"} | ${item?.status || "-"} | ${item?.link ? `[Open](${item.link})` : "-"} |`,
+    );
+  });
+  return lines.join("\n");
+};
+
+const parseElectricalCopyrightsMarkdown = (markdown = "", fallbackYear = "2024-25") => {
+  const text = String(markdown || "").trim();
+  if (!text) return { year: fallbackYear, items: [] };
+  const headingMatch = text.match(/^##\s+(.+)$/m);
+  const year = headingMatch?.[1]?.trim() || fallbackYear;
+  const tableLines = text.split("\n").map((line) => line.trim()).filter((line) => line.startsWith("|"));
+  const dataLines = tableLines.filter((line, index) => index > 1 && !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line));
+  return {
+    year,
+    items: dataLines
+      .map((line) => electricalParseMarkdownTableRow(line))
+      .filter((cells) => cells.length >= 4)
+      .map((cells) => ({
+        name: cells[0] || "",
+        title: cells[1] || "",
+        status: cells[2] || "",
+        link: electricalExtractMarkdownLinkHref(cells.slice(3).join(" | ")),
+      }))
+      .filter((item) => item.name || item.title || item.status || item.link),
+  };
+};
+
+const electricalBooksToMarkdown = (items = [], year = "2024-25") => {
+  const lines = [
+    `## ${year}`,
+    "",
+    "| Author(s) | Co-Authors | Title | Publisher | ISBN | Link |",
+    "|-----------|------------|-------|-----------|------|------|",
+  ];
+  if (!items.length) return [...lines, "| Add author names | - | Add title | Add publisher | Add ISBN | - |"].join("\n");
+  items.forEach((item) => {
+    lines.push(
+      `| ${item?.name || "-"} | ${item?.coAuthors || "-"} | ${item?.title || "-"} | ${item?.details || "-"} | ${item?.isbn || "-"} | ${item?.link ? `[Open](${item.link})` : "-"} |`,
+    );
+  });
+  return lines.join("\n");
+};
+
+const parseElectricalBooksMarkdown = (markdown = "", fallbackYear = "2024-25") => {
+  const text = String(markdown || "").trim();
+  if (!text) return { year: fallbackYear, items: [] };
+  const headingMatch = text.match(/^##\s+(.+)$/m);
+  const year = headingMatch?.[1]?.trim() || fallbackYear;
+  const tableLines = text.split("\n").map((line) => line.trim()).filter((line) => line.startsWith("|"));
+  const dataLines = tableLines.filter((line, index) => index > 1 && !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line));
+  return {
+    year,
+    items: dataLines
+      .map((line) => electricalParseMarkdownTableRow(line))
+      .filter((cells) => cells.length >= 6)
+      .map((cells) => ({
+        name: cells[0] || "",
+        coAuthors: cells[1] || "",
+        title: cells[2] || "",
+        details: cells[3] || "",
+        isbn: cells[4] || "",
+        link: electricalExtractMarkdownLinkHref(cells.slice(5).join(" | ")),
+      }))
+      .filter((item) => item.name || item.coAuthors || item.title || item.details || item.isbn || item.link),
+  };
+};
+
+const ELECTRICAL_RESEARCH_DEFAULTS = {
+  patents: defaultElectricalPatents,
+  publications: defaultElectricalPublications,
+  copyrights: defaultElectricalCopyrights,
+  books: defaultElectricalBooks,
+};
+
+const ELECTRICAL_RESEARCH_TO_MARKDOWN = {
+  patents: electricalPatentsToMarkdown,
+  publications: electricalPublicationsToMarkdown,
+  copyrights: electricalCopyrightsToMarkdown,
+  books: electricalBooksToMarkdown,
+};
+
+const ELECTRICAL_RESEARCH_FROM_MARKDOWN = {
+  patents: parseElectricalPatentsMarkdown,
+  publications: parseElectricalPublicationsMarkdown,
+  copyrights: parseElectricalCopyrightsMarkdown,
+  books: parseElectricalBooksMarkdown,
+};
+
+const ELECTRICAL_RESEARCH_TEMPLATE_URLS = {
+  patents: "/uploads/documents/pride_templates/electrical_patents_template.docx",
+  publications: "/uploads/documents/pride_templates/electrical_publications_template.docx",
+  copyrights: "/uploads/documents/pride_templates/electrical_copyrights_template.docx",
+  books: "/uploads/documents/pride_templates/electrical_books_template.docx",
+};
+
 const elecPrideTableComponents = {
   table: ({ node, ...props }) => <table className="w-full" {...props} />,
   thead: ({ node, ...props }) => (
@@ -217,6 +843,14 @@ const Electrical = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [achievementTab, setAchievementTab] = useState("faculty");
   const [certificateLightbox, setCertificateLightbox] = useState(null);
+  const [projectYear, setProjectYear] = useState("2024-25");
+  const [showAddUgProjectYear, setShowAddUgProjectYear] = useState(false);
+  const [newUgProjectYear, setNewUgProjectYear] = useState("");
+  const [ugProjectYearError, setUgProjectYearError] = useState("");
+  const [internshipYear, setInternshipYear] = useState("2024-25");
+  const [showAddInternshipYear, setShowAddInternshipYear] = useState(false);
+  const [newInternshipYear, setNewInternshipYear] = useState("");
+  const [internshipYearError, setInternshipYearError] = useState("");
 
   // State for Curricular Activities section
   const [activitiesVisible, setActivitiesVisible] = useState(6);
@@ -233,8 +867,22 @@ const Electrical = () => {
   const [achievementUploading, setAchievementUploading] = useState({});
   const [achievementUploadErrors, setAchievementUploadErrors] = useState({});
   const [achievementUploadSuccess, setAchievementUploadSuccess] = useState({});
+  const [industrialVisitReportUploading, setIndustrialVisitReportUploading] =
+    useState({});
+  const [industrialVisitReportErrors, setIndustrialVisitReportErrors] =
+    useState({});
+  const [industrialVisitGalleryUploading, setIndustrialVisitGalleryUploading] =
+    useState({});
+  const [industrialVisitGalleryErrors, setIndustrialVisitGalleryErrors] =
+    useState({});
+  const [mouReportUploading, setMouReportUploading] = useState({});
+  const [mouReportErrors, setMouReportErrors] = useState({});
+  const [researchReportUploading, setResearchReportUploading] = useState({});
+  const [researchReportErrors, setResearchReportErrors] = useState({});
   const [shouldScrollToNewCourseMaterial, setShouldScrollToNewCourseMaterial] =
     useState(false);
+  const [expandedFacultyEditorIndex, setExpandedFacultyEditorIndex] =
+    useState(null);
   const latestCourseMaterialRef = useRef(null);
 
   // Helper to access data safely
@@ -249,6 +897,413 @@ const Electrical = () => {
   // Helper to update data
   const updateField = (key, value) => {
     updateData(`templateData.${key}`, value);
+  };
+
+  const updateFacultyMember = (index, field, value) => {
+    const faculty = JSON.parse(
+      JSON.stringify(t("facultyData", defaultFacultyData)),
+    );
+    faculty[index] = { ...faculty[index], [field]: value };
+    updateField("facultyData", faculty);
+  };
+
+  const splitFacultyMultiline = (value = "") =>
+    String(value || "")
+      .split("\n")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+  const createFacultySlug = (value = "") =>
+    String(value || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "faculty-member";
+
+  const resolveVidwanUrl = (facultyMember) =>
+    facultyMember?.vidwanLink?.trim?.() ||
+    (facultyMember?.vidwanId
+      ? `https://vidwan.inflibnet.ac.in/profile/${facultyMember.vidwanId}`
+      : "");
+
+  const electricalInternshipsToMarkdown = (records = [], year = "2024-25") => {
+    const lines = [
+      `## ${year}`,
+      "",
+      "| SIS ID | Name of Student | Class | Training / Internship | Name of Company | Duration | Start Date | End Date |",
+      "|--------|-----------------|-------|------------------------|-----------------|----------|------------|----------|",
+    ];
+
+    if (!records.length) {
+      lines.push("| Add SIS ID | Add student name | Add class | Add training type | Add company | Add duration | Add start date | Add end date |");
+      return lines.join("\n");
+    }
+
+    records.forEach((intern) => {
+      lines.push(
+        `| ${intern?.sis || "-"} | ${intern?.name || "-"} | ${intern?.class || "-"} | ${intern?.training || "-"} | ${intern?.org || "-"} | ${intern?.duration || "-"} | ${intern?.startDate || "-"} | ${intern?.endDate || "-"} |`,
+      );
+    });
+
+    return lines.join("\n");
+  };
+
+  const parseElectricalInternshipsMarkdown = (markdown = "", fallbackYear = "2024-25") => {
+    const text = String(markdown || "").trim();
+    if (!text) return { year: fallbackYear, records: [] };
+
+    const headingMatch = text.match(/^##\s+(.+)$/m);
+    const year = headingMatch?.[1]?.trim() || fallbackYear;
+    const tableLines = text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.startsWith("|"));
+
+    const dataLines = tableLines.filter(
+      (line, index) =>
+        index > 1 &&
+        !/^\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(
+          line,
+        ),
+    );
+
+    return {
+      year,
+      records: dataLines
+        .map((line) => electricalParseMarkdownTableRow(line))
+        .filter((cells) => cells.length >= 8)
+        .map((cells, index) => ({
+          no: String(index + 1),
+          sis: cells[0] || "",
+          name: cells[1] || "",
+          class: cells[2] || "",
+          training: cells[3] || "",
+          org: cells[4] || "",
+          duration: cells[5] || "",
+          startDate: cells[6] || "",
+          endDate: cells[7] || "",
+        }))
+        .filter(
+          (intern) =>
+            intern.sis ||
+            intern.name ||
+            intern.class ||
+            intern.training ||
+            intern.org ||
+            intern.duration ||
+            intern.startDate ||
+            intern.endDate,
+        ),
+    };
+  };
+
+  const getElectricalIndustrialVisits = () =>
+    JSON.parse(
+      JSON.stringify(
+        contextData?.templateData?.industrialVisits?.items ||
+          tBase(
+            "templateData.industrialVisits.items",
+            defaultElectricalIndustrialVisits,
+          ) ||
+          defaultElectricalIndustrialVisits,
+      ),
+    ).map((visit) => ({
+      ...visit,
+      id: String(visit?.id || createElectricalIndustrialVisitId()),
+    }));
+
+  const getElectricalIndustrialVisitsMarkdown = (visits) =>
+    electricalIndustrialVisitsToMarkdown(visits);
+
+  const persistElectricalIndustrialVisits = (visits) => {
+    const normalizedVisits = (Array.isArray(visits) ? visits : []).map((visit) => ({
+      id: String(visit?.id || createElectricalIndustrialVisitId()).trim(),
+      industries: Array.isArray(visit?.industries)
+        ? visit.industries.map((item) => String(item || "").trim()).filter(Boolean)
+        : [],
+      class: String(visit?.class || "").trim(),
+      date: String(visit?.date || "").trim(),
+      students: String(visit?.students || "").trim(),
+      report: String(visit?.report || "").trim(),
+    }));
+
+    updateData("templateData.industrialVisits.items", normalizedVisits);
+    updateData(
+      "templateData.industrialVisits.markdown",
+      electricalIndustrialVisitsToMarkdown(normalizedVisits),
+    );
+  };
+
+  const handleElectricalIndustrialVisitsMarkdownSave = (markdown) => {
+    const parsed = electricalParseIndustrialVisitsMarkdown(markdown);
+    const existingVisits = getElectricalIndustrialVisits();
+    const signaturePool = new Map();
+    existingVisits.forEach((visit) => {
+      const signature = getElectricalIndustrialVisitSignature(visit);
+      const matches = signaturePool.get(signature) || [];
+      matches.push(visit);
+      signaturePool.set(signature, matches);
+    });
+    const usedIds = new Set();
+    const mergedVisits = parsed.map((visit, index) => {
+      const signature = getElectricalIndustrialVisitSignature(visit);
+      let match = (signaturePool.get(signature) || []).find(
+        (item) => !usedIds.has(item.id),
+      );
+
+      if (!match) {
+        const fallback = existingVisits[index];
+        if (fallback && !usedIds.has(fallback.id)) {
+          match = fallback;
+        }
+      }
+
+      if (match?.id) usedIds.add(match.id);
+
+      return {
+        id: match?.id || createElectricalIndustrialVisitId(),
+        industries: visit.industries,
+        class: visit.class,
+        date: visit.date,
+        students: visit.students,
+        report: visit.report || match?.report || "",
+      };
+    });
+    persistElectricalIndustrialVisits(mergedVisits);
+  };
+
+  const addElectricalIndustrialVisitRowOnTop = () => {
+    const visits = getElectricalIndustrialVisits();
+    persistElectricalIndustrialVisits([
+      {
+        id: createElectricalIndustrialVisitId(),
+        industries: ["New Industry / Organization"],
+        class: "Add class",
+        date: "Add date",
+        students: "Add students",
+        report: "",
+      },
+      ...visits,
+    ]);
+  };
+
+  const uploadElectricalIndustrialVisitReport = async (visitId, file) => {
+    if (!file) return;
+
+    const uploadKey = `electrical-industrial-visit-${visitId}`;
+    setIndustrialVisitReportUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setIndustrialVisitReportErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data.fileUrl) {
+        throw new Error("Upload did not return a file URL.");
+      }
+
+      const visits = getElectricalIndustrialVisits();
+      persistElectricalIndustrialVisits(
+        visits.map((visit) =>
+          visit.id === visitId
+            ? {
+                ...visit,
+                report: response.data.fileUrl,
+              }
+            : visit,
+        ),
+      );
+    } catch (error) {
+      console.error("Electrical industrial visit report upload failed:", error);
+      setIndustrialVisitReportErrors((prev) => ({
+        ...prev,
+        [uploadKey]:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Upload failed",
+      }));
+    } finally {
+      setIndustrialVisitReportUploading((prev) => ({
+        ...prev,
+        [uploadKey]: false,
+      }));
+    }
+  };
+
+  const getElectricalIndustrialVisitGallery = () =>
+    JSON.parse(
+      JSON.stringify(
+        contextData?.templateData?.industrialVisits?.gallery ||
+          tBase(
+            "templateData.industrialVisits.gallery",
+            defaultElectricalIndustrialVisitGallery,
+          ) ||
+          defaultElectricalIndustrialVisitGallery,
+      ),
+    );
+
+  const persistElectricalIndustrialVisitGallery = (photos) => {
+    const normalizedPhotos = (Array.isArray(photos) ? photos : []).map((photo) => ({
+      image: String(photo?.image || "").trim(),
+      caption: String(photo?.caption || "").trim(),
+      location: String(photo?.location || "").trim(),
+      date: String(photo?.date || "").trim(),
+    }));
+
+    updateData("templateData.industrialVisits.gallery", normalizedPhotos);
+  };
+
+  const addElectricalIndustrialVisitPhoto = () => {
+    const photos = getElectricalIndustrialVisitGallery();
+    photos.unshift({
+      image: "",
+      caption: "Add visit photo caption",
+      location: "Add location",
+      date: "Add date",
+    });
+    persistElectricalIndustrialVisitGallery(photos);
+  };
+
+  const updateElectricalIndustrialVisitPhoto = (index, field, value) => {
+    const photos = getElectricalIndustrialVisitGallery();
+    photos[index] = {
+      ...photos[index],
+      [field]: value,
+    };
+    persistElectricalIndustrialVisitGallery(photos);
+  };
+
+  const deleteElectricalIndustrialVisitPhoto = (index) => {
+    const photos = getElectricalIndustrialVisitGallery();
+    persistElectricalIndustrialVisitGallery(
+      photos.filter((_, photoIndex) => photoIndex !== index),
+    );
+  };
+
+  const uploadElectricalIndustrialVisitPhoto = async (index, file) => {
+    if (!file) return;
+
+    const uploadKey = `electrical-gallery-${index}`;
+    setIndustrialVisitGalleryUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setIndustrialVisitGalleryErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data.fileUrl) {
+        throw new Error("Upload did not return a file URL.");
+      }
+
+      updateElectricalIndustrialVisitPhoto(index, "image", response.data.fileUrl);
+    } catch (error) {
+      console.error("Electrical industrial visit gallery upload failed:", error);
+      setIndustrialVisitGalleryErrors((prev) => ({
+        ...prev,
+        [uploadKey]:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Upload failed",
+      }));
+    } finally {
+      setIndustrialVisitGalleryUploading((prev) => ({
+        ...prev,
+        [uploadKey]: false,
+      }));
+    }
+  };
+
+  const getElectricalMous = () =>
+    JSON.parse(
+      JSON.stringify(
+        contextData?.templateData?.mous?.items ||
+          tBase("templateData.mous.items", defaultElectricalMous) ||
+          defaultElectricalMous,
+      ),
+    ).map((mou) => ({ ...mou, id: String(mou?.id || createElectricalMouId()) }));
+
+  const getElectricalMousMarkdown = (mous = getElectricalMous()) =>
+    electricalMousToMarkdown(mous);
+
+  const persistElectricalMous = (mous) => {
+    const normalizedMous = (Array.isArray(mous) ? mous : []).map((mou) => ({
+      id: String(mou?.id || createElectricalMouId()).trim(),
+      org: String(mou?.org || "").trim(),
+      date: String(mou?.date || "").trim(),
+      report: String(mou?.report || "").trim(),
+    }));
+    updateData("templateData.mous.items", normalizedMous);
+    updateData("templateData.mous.markdown", electricalMousToMarkdown(normalizedMous));
+  };
+
+  const handleElectricalMousMarkdownSave = (markdown) => {
+    const parsed = parseElectricalMousMarkdown(markdown);
+    const existingMous = getElectricalMous();
+    const signaturePool = new Map();
+    existingMous.forEach((mou) => {
+      const signature = getElectricalMouSignature(mou);
+      const matches = signaturePool.get(signature) || [];
+      matches.push(mou);
+      signaturePool.set(signature, matches);
+    });
+    const usedIds = new Set();
+    const mergedMous = parsed.map((mou, index) => {
+      const signature = getElectricalMouSignature(mou);
+      let match = (signaturePool.get(signature) || []).find((item) => !usedIds.has(item.id));
+      if (!match) {
+        const fallback = existingMous[index];
+        if (fallback && !usedIds.has(fallback.id)) match = fallback;
+      }
+      if (match?.id) usedIds.add(match.id);
+      return { id: match?.id || createElectricalMouId(), org: mou.org, date: mou.date, report: mou.report || match?.report || "" };
+    });
+    persistElectricalMous(mergedMous);
+  };
+
+  const addElectricalMouRowOnTop = () => {
+    const mous = getElectricalMous();
+    persistElectricalMous([{ id: createElectricalMouId(), org: "New organization", date: "Add signing date", report: "" }, ...mous]);
+  };
+
+  const uploadElectricalMouReport = async (mouId, file) => {
+    if (!file) return;
+    const uploadKey = `electrical-mou-${mouId}`;
+    setMouReportUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setMouReportErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/file", formData, {
+        headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` },
+      });
+      if (response.data.fileUrl) {
+        const mous = getElectricalMous();
+        persistElectricalMous(mous.map((mou) => (mou.id === mouId ? { ...mou, report: response.data.fileUrl } : mou)));
+      }
+    } catch (error) {
+      console.error("Electrical MOU upload failed:", error);
+      setMouReportErrors((prev) => ({ ...prev, [uploadKey]: "Failed to upload report." }));
+    } finally {
+      setMouReportUploading((prev) => ({ ...prev, [uploadKey]: false }));
+    }
   };
 
   const academicYearPattern = /^\d{4}-\d{2}$/;
@@ -286,6 +1341,511 @@ const Electrical = () => {
 
     const [startYear, endSuffix] = normalizedYear.split("-");
     return String(Number(startYear) + 1).slice(-2) === endSuffix;
+  };
+
+  const [researchTab, setResearchTab] = useState("toppers");
+  const [researchYear, setResearchYear] = useState("2024-25");
+  const [patentsTab, setPatentsTab] = useState("patents");
+  const [patentsYear, setPatentsYear] = useState("2024-25");
+  const patentsYears = [
+    "2024-25",
+    "2023-24",
+    "2022-23",
+    "2021-22",
+    "2020-21",
+    "2019-20",
+    "2018-19",
+  ];
+  const [placementYear, setPlacementYear] = useState(null);
+  const [showAddPlacementYear, setShowAddPlacementYear] = useState(false);
+  const [newPlacementYear, setNewPlacementYear] = useState("");
+  const [placementYearError, setPlacementYearError] = useState("");
+  const [showAddResearchYear, setShowAddResearchYear] = useState(false);
+  const [newResearchYear, setNewResearchYear] = useState("");
+  const [researchYearError, setResearchYearError] = useState("");
+  const [expandedSemester, setExpandedSemester] = useState(null);
+
+  const getElectricalResearchItems = (section, year = patentsYear) =>
+    JSON.parse(
+      JSON.stringify(
+        contextData?.templateData?.research?.[section]?.[year] ||
+          tBase(`templateData.research.${section}.${year}`, ELECTRICAL_RESEARCH_DEFAULTS[section]?.[year] || []) ||
+          ELECTRICAL_RESEARCH_DEFAULTS[section]?.[year] ||
+          [],
+      ),
+    );
+
+  const getElectricalResearchMarkdownValue = (section, year = patentsYear) => {
+    const storedMarkdown =
+      contextData?.templateData?.researchMarkdown?.[section]?.[year] ??
+      tBase(`templateData.researchMarkdown.${section}.${year}`, null);
+    if (typeof storedMarkdown === "string" && storedMarkdown.trim()) {
+      return storedMarkdown;
+    }
+    return ELECTRICAL_RESEARCH_TO_MARKDOWN[section](
+      getElectricalResearchItems(section, year),
+      year,
+    );
+  };
+
+  const getElectricalResearchYears = () => {
+    const defaultResearchYears = [
+      "2024-25",
+      "2023-24",
+      "2022-23",
+      "2021-22",
+      "2020-21",
+      "2019-20",
+      "2018-19",
+    ];
+    const configuredYears = Array.isArray(tBase("templateData.researchYears", null))
+      ? tBase("templateData.researchYears", [])
+      : [];
+    const storedResearch = contextData?.templateData?.research || tBase("templateData.research", {});
+    const storedResearchMarkdown =
+      contextData?.templateData?.researchMarkdown || tBase("templateData.researchMarkdown", {});
+    const discoveredYears = Object.keys(ELECTRICAL_RESEARCH_DEFAULTS).flatMap((section) => [
+      ...Object.keys(ELECTRICAL_RESEARCH_DEFAULTS[section] || {}),
+      ...Object.keys(storedResearch?.[section] && typeof storedResearch[section] === "object" ? storedResearch[section] : {}),
+      ...Object.keys(
+        storedResearchMarkdown?.[section] && typeof storedResearchMarkdown[section] === "object"
+          ? storedResearchMarkdown[section]
+          : {},
+      ),
+    ]);
+    const years = normalizePlacementYears([
+      ...defaultResearchYears,
+      ...configuredYears,
+      ...discoveredYears,
+    ]).sort(compareAcademicYearsDesc);
+    return years.length ? years : [...defaultResearchYears];
+  };
+
+  const persistElectricalResearchSection = (section, items, year = patentsYear) => {
+    const normalizedItems = Array.isArray(items) ? items : [];
+    updateData(`templateData.research.${section}.${year}`, normalizedItems);
+    updateData(
+      `templateData.researchMarkdown.${section}.${year}`,
+      ELECTRICAL_RESEARCH_TO_MARKDOWN[section](normalizedItems, year),
+    );
+  };
+
+  const createEmptyElectricalResearchMarkdown = (section, year) =>
+    ELECTRICAL_RESEARCH_TO_MARKDOWN[section]([], year);
+
+  const handleElectricalResearchMarkdownSave = (markdown) => {
+    const parser = ELECTRICAL_RESEARCH_FROM_MARKDOWN[patentsTab];
+    const parsed = parser(markdown, patentsYear);
+    persistElectricalResearchSection(patentsTab, parsed.items || [], patentsYear);
+  };
+
+  const addElectricalResearchRowOnTop = (section = patentsTab) => {
+    const items = getElectricalResearchItems(section, patentsYear);
+    const blankRows = {
+      patents: { title: "Add invention title", status: "Published", id: "Add application no.", inventors: "Add inventors", link: "" },
+      publications: { title: "Add paper title", authors: "Add authors", journal: "Add journal details", link: "" },
+      copyrights: { name: "Add faculty name", title: "Add title of work", status: "Published", link: "" },
+      books: { name: "Add author names", coAuthors: "", title: "Add title", details: "Add publisher", isbn: "Add ISBN", link: "" },
+    };
+    persistElectricalResearchSection(section, [blankRows[section] || {}, ...items], patentsYear);
+  };
+
+  const dynamicPatentsYears = getElectricalResearchYears();
+  const selectedResearchItems = getElectricalResearchItems(patentsTab, patentsYear);
+  const selectedResearchMarkdown = getElectricalResearchMarkdownValue(
+    patentsTab,
+    patentsYear,
+  );
+
+  useEffect(() => {
+    if (!dynamicPatentsYears.length) return;
+    if (!dynamicPatentsYears.includes(patentsYear)) {
+      setPatentsYear(dynamicPatentsYears[0]);
+    }
+  }, [patentsYear, dynamicPatentsYears]);
+
+  const handleAddResearchYear = () => {
+    const normalizedYear = newResearchYear.trim();
+    if (!isValidAcademicYear(normalizedYear)) {
+      setResearchYearError("Enter a valid academic year like 2025-26.");
+      return;
+    }
+    if (dynamicPatentsYears.includes(normalizedYear)) {
+      setResearchYearError("That academic year already exists.");
+      return;
+    }
+    Object.keys(ELECTRICAL_RESEARCH_DEFAULTS).forEach((section) => {
+      updateData(`templateData.research.${section}.${normalizedYear}`, []);
+      updateData(
+        `templateData.researchMarkdown.${section}.${normalizedYear}`,
+        createEmptyElectricalResearchMarkdown(section, normalizedYear),
+      );
+    });
+    updateData("templateData.researchYears", [normalizedYear, ...dynamicPatentsYears]);
+    setPatentsYear(normalizedYear);
+    setNewResearchYear("");
+    setResearchYearError("");
+    setShowAddResearchYear(false);
+  };
+
+  const getElectricalResearchReportUrl = (year) =>
+    String(
+      (contextData?.templateData?.researchReports?.[year] ??
+        tBase(
+          `templateData.researchReports.${year}`,
+          `/uploads/documents/electrical_publications/Electrical_${year}_Patent_Publication_Data.pdf`,
+        )) ||
+        "",
+    ).trim();
+
+  const uploadElectricalResearchReport = async (year, file) => {
+    if (!file || !year) return;
+    const uploadKey = `electrical-research-report-${year}`;
+    setResearchReportUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    setResearchReportErrors((prev) => ({ ...prev, [uploadKey]: "" }));
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("/api/upload/file", formData, {
+        headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` },
+      });
+      if (!response.data.fileUrl) throw new Error("Upload did not return a file URL.");
+      updateData(`templateData.researchReports.${year}`, response.data.fileUrl);
+    } catch (error) {
+      console.error("Electrical research report upload failed:", error);
+      setResearchReportErrors((prev) => ({
+        ...prev,
+        [uploadKey]:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Upload failed",
+      }));
+    } finally {
+      setResearchReportUploading((prev) => ({ ...prev, [uploadKey]: false }));
+    }
+  };
+
+  const parseUgProjectsTableRow = (line = "") =>
+    String(line || "")
+      .trim()
+      .replace(/^\|/, "")
+      .replace(/\|$/, "")
+      .split("|")
+      .map((cell) => cell.trim());
+
+  const electricalUgProjectsToMarkdown = (
+    projectsByYear = {},
+    preferredYears = [],
+  ) => {
+    const yearOrder = [
+      ...preferredYears,
+      ...Object.keys(projectsByYear || {}).filter(
+        (year) => !preferredYears.includes(year),
+      ),
+    ];
+
+    return yearOrder
+      .filter(Boolean)
+      .map((year) => {
+        const projects = Array.isArray(projectsByYear?.[year])
+          ? projectsByYear[year]
+          : [];
+        const header = [
+          `## ${year}`,
+          "",
+          "| Group No. | Project Title |",
+          "|-----------|---------------|",
+        ];
+
+        if (!projects.length) {
+          return [...header, "| - | No projects added yet. |"].join("\n");
+        }
+
+        const rows = projects.map(
+          (project) => `| ${project?.no || "-"} | ${project?.title || "-"} |`,
+        );
+        return [...header, ...rows].join("\n");
+      })
+      .join("\n\n");
+  };
+
+  const parseElectricalUgProjectsMarkdown = (
+    markdown = "",
+    fallbackYear = "2024-25",
+  ) => {
+    const text = String(markdown || "").trim();
+    if (!text) {
+      return { years: [fallbackYear], records: { [fallbackYear]: [] } };
+    }
+
+    const headingMatches = [...text.matchAll(/^##\s+(.+)$/gm)];
+    const sections =
+      headingMatches.length > 0
+        ? headingMatches.map((match, index) => {
+            const start = match.index ?? 0;
+            const end =
+              index + 1 < headingMatches.length
+                ? headingMatches[index + 1].index
+                : text.length;
+            return { year: match[1].trim(), body: text.slice(start, end) };
+          })
+        : [{ year: fallbackYear, body: text }];
+
+    const years = [];
+    const records = {};
+
+    sections.forEach(({ year, body }) => {
+      const normalizedYear = year || fallbackYear;
+      const lines = String(body || "")
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const tableLines = lines.filter((line) => line.startsWith("|"));
+      const dataLines = tableLines.filter(
+        (line, index) =>
+          index > 1 && !/^\|\s*[-: ]+\|\s*[-: ]+\|?\s*$/.test(line),
+      );
+
+      records[normalizedYear] = dataLines
+        .map((line) => parseUgProjectsTableRow(line))
+        .filter((cells) => cells.length >= 2)
+        .map((cells) => ({
+          no: cells[0] || "",
+          title: cells[1] || "",
+        }))
+        .filter((project) => project.no || project.title);
+
+      if (!years.includes(normalizedYear)) years.push(normalizedYear);
+    });
+
+    return { years, records };
+  };
+
+  const getUgProjectRecords = () => {
+    const mergedRecords = {
+      "2024-25": JSON.parse(
+        JSON.stringify(t("ugProjects2425", defaultUgProjects2425)),
+      ),
+      "2023-24": JSON.parse(
+        JSON.stringify(t("ugProjects2324", defaultUgProjects2324)),
+      ),
+    };
+
+    const unifiedRecords = t("ugProjects", null);
+    if (unifiedRecords && typeof unifiedRecords === "object") {
+      Object.entries(unifiedRecords).forEach(([year, projects]) => {
+        mergedRecords[year] = Array.isArray(projects)
+          ? JSON.parse(JSON.stringify(projects))
+          : [];
+      });
+    }
+
+    return mergedRecords;
+  };
+
+  const getUgProjectYears = () => {
+    const storedYears = Array.isArray(t("ugProjectYears", null))
+      ? t("ugProjectYears", [])
+      : [];
+    const recordYears = Object.keys(getUgProjectRecords() || {});
+
+    return [...new Set([...storedYears, ...recordYears])]
+      .filter(Boolean)
+      .sort(compareAcademicYearsDesc);
+  };
+
+  const getUgProjectMarkdownByYear = () =>
+    JSON.parse(JSON.stringify(t("ugProjectsMarkdownByYear", {})));
+
+  const persistUgProjects = (records, years = getUgProjectYears()) => {
+    const orderedYears = [...new Set([...years, ...Object.keys(records || {})])]
+      .filter(Boolean)
+      .sort(compareAcademicYearsDesc);
+
+    const normalizedRecords = orderedYears.reduce((acc, year) => {
+      acc[year] = Array.isArray(records?.[year])
+        ? records[year].map((project) => ({
+            no: String(project?.no || "").trim(),
+            title: String(project?.title || "").trim(),
+          }))
+        : [];
+      return acc;
+    }, {});
+
+    const existingMarkdownByYear = getUgProjectMarkdownByYear();
+    const markdownByYear = orderedYears.reduce((acc, year) => {
+      acc[year] =
+        existingMarkdownByYear?.[year] ||
+        electricalUgProjectsToMarkdown(
+          { [year]: normalizedRecords[year] || [] },
+          [year],
+        );
+      return acc;
+    }, {});
+
+    updateData("templateData.ugProjects", normalizedRecords);
+    updateData("templateData.ugProjectYears", orderedYears);
+    updateData("templateData.ugProjectsMarkdownByYear", markdownByYear);
+    updateData(
+      "templateData.ugProjects2425",
+      normalizedRecords["2024-25"] || [],
+    );
+    updateData(
+      "templateData.ugProjects2324",
+      normalizedRecords["2023-24"] || [],
+    );
+  };
+
+  const handleUgProjectMarkdownSave = (markdown) => {
+    const parsed = parseElectricalUgProjectsMarkdown(markdown, projectYear);
+    const mergedRecords = {
+      ...getUgProjectRecords(),
+      [projectYear]: parsed.records[projectYear] || [],
+    };
+    persistUgProjects(mergedRecords, getUgProjectYears());
+    updateData(`templateData.ugProjectsMarkdownByYear.${projectYear}`, markdown);
+  };
+
+  const handleAddUgProjectYear = () => {
+    const normalizedYear = newUgProjectYear.trim();
+    const ugProjectYears = getUgProjectYears();
+
+    if (!isValidAcademicYear(normalizedYear)) {
+      setUgProjectYearError("Enter a valid academic year like 2025-26.");
+      return;
+    }
+
+    if (ugProjectYears.includes(normalizedYear)) {
+      setUgProjectYearError("That academic year already exists.");
+      return;
+    }
+
+    const dataObj = getUgProjectRecords();
+    dataObj[normalizedYear] = [];
+    persistUgProjects(dataObj, [normalizedYear, ...ugProjectYears]);
+    updateData(
+      `templateData.ugProjectsMarkdownByYear.${normalizedYear}`,
+      electricalUgProjectsToMarkdown({ [normalizedYear]: [] }, [normalizedYear]),
+    );
+    setProjectYear(normalizedYear);
+    setNewUgProjectYear("");
+    setUgProjectYearError("");
+    setShowAddUgProjectYear(false);
+  };
+
+  const getInternshipYears = () => {
+    const storedYears = Array.isArray(t("internshipsYears", null))
+      ? t("internshipsYears", [])
+      : [];
+    const recordYears = Object.keys(
+      t("internships", defaultElectricalInternships) || defaultElectricalInternships,
+    ).filter(isAcademicYearKey);
+
+    return [...new Set([...storedYears, ...recordYears])]
+      .filter(Boolean)
+      .sort(compareAcademicYearsDesc);
+  };
+
+  const getInternshipRecords = () =>
+    JSON.parse(JSON.stringify(t("internships", defaultElectricalInternships)));
+
+  const getInternshipMarkdownByYear = () =>
+    JSON.parse(JSON.stringify(t("internshipsMarkdownByYear", {})));
+
+  const createEmptyInternshipMarkdown = (year) =>
+    electricalInternshipsToMarkdown([], year);
+
+  const persistInternships = (records, years = getInternshipYears()) => {
+    const orderedYears = [...new Set([...years, ...Object.keys(records || {})])]
+      .filter(isAcademicYearKey)
+      .sort(compareAcademicYearsDesc);
+
+    const normalizedRecords = orderedYears.reduce((acc, year) => {
+      acc[year] = (Array.isArray(records?.[year]) ? records[year] : []).map(
+        (intern, index) => ({
+          no: String(index + 1),
+          sis: String(intern?.sis || "").trim(),
+          name: String(intern?.name || "").trim(),
+          class: String(intern?.class || "").trim(),
+          training: String(intern?.training || "").trim(),
+          org: String(intern?.org || "").trim(),
+          duration: String(intern?.duration || "").trim(),
+          startDate: String(intern?.startDate || "").trim(),
+          endDate: String(intern?.endDate || "").trim(),
+        }),
+      );
+      return acc;
+    }, {});
+
+    const existingMarkdownByYear = getInternshipMarkdownByYear();
+    const markdownByYear = orderedYears.reduce((acc, year) => {
+      acc[year] =
+        existingMarkdownByYear?.[year] ||
+        electricalInternshipsToMarkdown(normalizedRecords[year] || [], year);
+      return acc;
+    }, {});
+
+    updateData("templateData.internships", normalizedRecords);
+    updateData("templateData.internshipsYears", orderedYears);
+    updateData("templateData.internshipsMarkdownByYear", markdownByYear);
+  };
+
+  const internshipYears = getInternshipYears();
+  const internshipRecords = getInternshipRecords();
+  const internshipMarkdownByYear = getInternshipMarkdownByYear();
+  const currentInternships = Array.isArray(internshipRecords?.[internshipYear])
+    ? internshipRecords[internshipYear]
+    : [];
+  const selectedInternshipsMarkdown =
+    internshipMarkdownByYear?.[internshipYear] ||
+    electricalInternshipsToMarkdown(currentInternships, internshipYear);
+
+  useEffect(() => {
+    if (!internshipYears.length) return;
+    if (!internshipYears.includes(internshipYear)) {
+      setInternshipYear(internshipYears[0]);
+    }
+  }, [internshipYear, internshipYears]);
+
+  const handleInternshipsMarkdownSave = (markdown) => {
+    const parsed = parseElectricalInternshipsMarkdown(markdown, internshipYear);
+    const records = {
+      ...getInternshipRecords(),
+      [internshipYear]: parsed.records || [],
+    };
+    persistInternships(records, internshipYears);
+    updateData(
+      `templateData.internshipsMarkdownByYear.${internshipYear}`,
+      electricalInternshipsToMarkdown(parsed.records || [], internshipYear),
+    );
+  };
+
+  const handleAddInternshipYear = () => {
+    const normalizedYear = newInternshipYear.trim();
+
+    if (!isValidAcademicYear(normalizedYear)) {
+      setInternshipYearError("Enter a valid academic year like 2025-26.");
+      return;
+    }
+
+    if (internshipYears.includes(normalizedYear)) {
+      setInternshipYearError("That academic year already exists.");
+      return;
+    }
+
+    const records = getInternshipRecords();
+    records[normalizedYear] = [];
+    persistInternships(records, [normalizedYear, ...internshipYears]);
+    updateData(
+      `templateData.internshipsMarkdownByYear.${normalizedYear}`,
+      createEmptyInternshipMarkdown(normalizedYear),
+    );
+    setInternshipYear(normalizedYear);
+    setNewInternshipYear("");
+    setInternshipYearError("");
+    setShowAddInternshipYear(false);
   };
 
   const storedPlacementYears = Array.isArray(t("placements.years", null))
@@ -1915,27 +3475,6 @@ const Electrical = () => {
   const [vmTab, setVmTab] = useState("vision");
   const [poTab, setPoTab] = useState("peo");
   const [showAllPos, setShowAllPos] = useState(false);
-  const [researchTab, setResearchTab] = useState("toppers");
-  const [projectYear, setProjectYear] = useState("2024-25");
-  const [researchYear, setResearchYear] = useState("2024-25");
-  const [patentsTab, setPatentsTab] = useState("patents");
-  const [patentsYear, setPatentsYear] = useState("2024-25");
-  const patentsYears = [
-    "2024-25",
-    "2023-24",
-    "2022-23",
-    "2021-22",
-    "2020-21",
-    "2019-20",
-    "2018-19",
-  ];
-  const [placementYear, setPlacementYear] = useState(null);
-  const [showAddPlacementYear, setShowAddPlacementYear] = useState(false);
-  const [newPlacementYear, setNewPlacementYear] = useState("");
-  const [placementYearError, setPlacementYearError] = useState("");
-  const [expandedSemester, setExpandedSemester] = useState(null);
-  const [internshipYear, setInternshipYear] = useState("2024-25");
-
   const defaultAcademicsLinks = [
     { id: "overview", label: "Department Overview" },
     { id: "hod", label: "Words from HOD" },
@@ -1977,36 +3516,6 @@ const Electrical = () => {
                 onSave={(val) => updateField("heroTitle", val)}
               />
             </h3>
-
-            {/* Featured Video - Larger & Cinematic */}
-            <div className="w-full rounded-2xl overflow-hidden shadow-xl bg-black aspect-video group relative">
-              {isEditing && (
-                <div className="absolute top-2 right-2 z-10 bg-white/90 p-2 rounded shadow-lg">
-                  <span className="text-xs font-bold text-gray-600 block mb-1">
-                    Video URL (Embed Link):
-                  </span>
-                  <EditableText
-                    value={t(
-                      "heroVideo",
-                      "https://www.youtube-nocookie.com/embed/1uezKM1fWOU",
-                    )}
-                    onSave={(val) => updateField("heroVideo", val)}
-                    className="text-sm w-64"
-                  />
-                </div>
-              )}
-              <iframe
-                className="w-full h-full"
-                src={t(
-                  "heroVideo",
-                  "https://www.youtube-nocookie.com/embed/1uezKM1fWOU",
-                )}
-                title="Department of Electrical Engineering, SSGMCE, Shegaon"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
 
             <div className="prose max-w-none text-gray-600 leading-relaxed text-justify text-lg space-y-4">
               <EditableText
@@ -4327,14 +5836,16 @@ Upon successful completion of this course, students will be able to:
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid items-start gap-6 lg:grid-cols-2">
           {t("facultyData", defaultFacultyData).map((fac, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300  flex relative"
+              className={`group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300  flex relative ${
+                isEditing && expandedFacultyEditorIndex === i ? "lg:col-span-2" : ""
+              }`}
             >
               {/* Delete Button */}
               {isEditing && (
@@ -4490,9 +6001,9 @@ Upon successful completion of this course, students will be able to:
                     )}
                   </div>
 
-                  {fac.vidwanId && (
+                  {resolveVidwanUrl(fac) && (
                     <a
-                      href={`https://vidwan.inflibnet.ac.in/profile/${fac.vidwanId}`}
+                      href={resolveVidwanUrl(fac)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center text-[10px] font-bold text-emerald-600 mt-1 hover:underline uppercase tracking-wide"
@@ -4507,6 +6018,70 @@ Upon successful completion of this course, students will be able to:
                     View Profile <FaAngleRight className="ml-1" />
                   </Link>
                 </div>
+
+                {isEditing && (
+                  <div className="mt-4 border-t border-gray-100 pt-4 space-y-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedFacultyEditorIndex((current) =>
+                          current === i ? null : i,
+                        )
+                      }
+                      className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-ssgmce-blue transition hover:bg-blue-100"
+                    >
+                      {expandedFacultyEditorIndex === i
+                        ? "Hide Detailed Editor"
+                        : "Edit Detailed Profile"}
+                    </button>
+                    {expandedFacultyEditorIndex === i && (
+                      <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-3">
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-blue-700 mb-2">
+                          Detailed Profile Editor
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div>
+                            <div className="text-[11px] font-semibold text-gray-500 uppercase mb-1">Profile ID</div>
+                            <EditableText
+                              value={fac.id || createFacultySlug(fac.name)}
+                              onSave={(val) => updateFacultyMember(i, "id", createFacultySlug(val))}
+                            />
+                          </div>
+                          <div>
+                            <div className="text-[11px] font-semibold text-gray-500 uppercase mb-1">Vidwan ID</div>
+                            <EditableText
+                              value={fac.vidwanId || ""}
+                              onSave={(val) => updateFacultyMember(i, "vidwanId", val)}
+                            />
+                          </div>
+                          {[
+                            ["qualification", "Qualification", false],
+                            ["experience", "Experience", false],
+                            ["scholarIds", "Scholar IDs", false],
+                            ["area", "Research Areas", true],
+                            ["coursesTaught", "Courses Taught", true],
+                            ["membership", "Membership", true],
+                            ["publications", "Publications", true],
+                            ["research", "Research & Development", false],
+                            ["fdp", "FDP / STTP / Workshops", false],
+                            ["fellowship", "Fellowship / Awards", true],
+                            ["achievements", "Other Achievements", true],
+                          ].map(([field, label, isList]) => (
+                            <div key={field} className="md:col-span-2">
+                              <div className="text-[11px] font-semibold text-gray-500 uppercase mb-1">{label}</div>
+                              <EditableText
+                                value={isList ? (fac[field] || []).join("\n") : fac[field] || ""}
+                                onSave={(val) => updateFacultyMember(i, field, isList ? splitFacultyMultiline(val) : val)}
+                                multiline
+                                richText={false}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}
@@ -4520,12 +6095,24 @@ Upon successful completion of this course, students will be able to:
                 const updated = [
                   ...t("facultyData", defaultFacultyData),
                   {
+                    id: `new-faculty-${Date.now()}`,
                     name: "New Faculty Member",
                     role: "Assistant Professor",
                     area: ["Research Area"],
                     email: "newfaculty@ssgmce.ac.in",
                     phone: "+91XXXXXXXXXX",
                     photo: "",
+                    vidwanId: "",
+                    qualification: "Add qualification details",
+                    experience: "Add teaching / industry experience",
+                    coursesTaught: ["Add course"],
+                    scholarIds: "",
+                    membership: ["Add membership"],
+                    publications: ["Add publication"],
+                    research: "Add research details",
+                    fdp: "",
+                    fellowship: ["Add fellowship / award"],
+                    achievements: ["Add achievement"],
                   },
                 ];
                 updateField("facultyData", updated);
@@ -4775,192 +6362,215 @@ Upon successful completion of this course, students will be able to:
 
     projects: (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
-          UG Projects
-        </h3>
+        {(() => {
+          const ugProjectYears = getUgProjectYears();
+          const ugProjectRecords = getUgProjectRecords();
+          const ugProjectMarkdownByYear = getUgProjectMarkdownByYear();
+          const currentUgProjects = Array.isArray(ugProjectRecords?.[projectYear])
+            ? ugProjectRecords[projectYear]
+            : [];
+          const selectedUgProjectsMarkdown =
+            ugProjectMarkdownByYear?.[projectYear] ||
+            electricalUgProjectsToMarkdown({ [projectYear]: currentUgProjects }, [
+              projectYear,
+            ]);
 
-        {/* Year Tabs */}
-        <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-4">
-          {["2024-25", "2023-24"].map((year) => (
-            <button
-              key={year}
-              onClick={() => setProjectYear(year)}
-              className={`px-6 py-2.5 rounded-lg font-medium transition-all text-sm ${
-                projectYear === year
-                  ? "bg-[#003366] text-white shadow-md"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              UG Project {year}
-            </button>
-          ))}
-        </div>
+          return (
+            <>
+              <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+                UG Projects
+              </h3>
 
-        {/* Projects for 2024-25 */}
-        {projectYear === "2024-25" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-ssgmce-blue">
-                      <EditableText
-                        value={t("projectGroupNoHeader", "Group No.")}
-                        onSave={(val) =>
-                          updateField("projectGroupNoHeader", val)
-                        }
-                      />
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-ssgmce-blue">
-                      <EditableText
-                        value={t("projectTitleHeader", "Project Title")}
-                        onSave={(val) => updateField("projectTitleHeader", val)}
-                      />
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {t("ugProjects2425", defaultUgProjects2425).map(
-                    (project, i) => (
-                      <tr
-                        key={i}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-6 py-4 text-sm text-gray-700 font-medium">
-                          <EditableText
-                            value={project.no}
-                            onSave={(val) => {
-                              const updated = [
-                                ...t("ugProjects2425", defaultUgProjects2425),
-                              ];
-                              updated[i].no = val;
-                              updateField("ugProjects2425", updated);
-                            }}
-                          />
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
-                          <EditableText
-                            value={project.title}
-                            onSave={(val) => {
-                              const updated = [
-                                ...t("ugProjects2425", defaultUgProjects2425),
-                              ];
-                              updated[i].title = val;
-                              updateField("ugProjects2425", updated);
-                            }}
-                            multiline
-                          />
-                        </td>
-                      </tr>
-                    ),
-                  )}
-                </tbody>
-              </table>
-              {isEditing && (
-                <div className="p-4 bg-gray-50 border-t border-gray-200">
+              <div className="flex flex-wrap gap-2 items-center border-b border-gray-200 pb-4">
+                {ugProjectYears.map((year) => (
                   <button
-                    onClick={() => {
-                      const updated = [
-                        ...t("ugProjects2425", defaultUgProjects2425),
-                        {
-                          no: `${t("ugProjects2425", defaultUgProjects2425).length + 1}.`,
-                          title: "New Project Title",
-                        },
-                      ];
-                      updateField("ugProjects2425", updated);
-                    }}
-                    className="w-full py-2 bg-ssgmce-blue text-white rounded hover:bg-ssgmce-dark-blue transition-colors text-sm"
+                    key={year}
+                    onClick={() => setProjectYear(year)}
+                    className={`px-6 py-2.5 rounded-lg font-medium transition-all text-sm ${
+                      projectYear === year
+                        ? "bg-[#003366] text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
                   >
-                    + Add New Project
+                    UG Project {year}
                   </button>
+                ))}
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewUgProjectYear("");
+                      setUgProjectYearError("");
+                      setShowAddUgProjectYear(true);
+                    }}
+                    className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#003366] to-[#0b4d91] px-4 py-2 text-xs font-semibold text-white transition-all hover:shadow-lg"
+                  >
+                    <FaPlus className="text-xs" />
+                    Add Session
+                  </button>
+                )}
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-ssgmce-blue">
+                          <EditableText
+                            value={t("projectGroupNoHeader", "Group No.")}
+                            onSave={(val) =>
+                              updateField("projectGroupNoHeader", val)
+                            }
+                          />
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-ssgmce-blue">
+                          <EditableText
+                            value={t("projectTitleHeader", "Project Title")}
+                            onSave={(val) =>
+                              updateField("projectTitleHeader", val)
+                            }
+                          />
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {currentUgProjects.map((project, i) => (
+                        <tr
+                          key={i}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-sm text-gray-700 font-medium">
+                            {project.no || i + 1}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900">
+                            {project.title}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {isEditing && (
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4">
+                      <h4 className="text-lg font-bold text-gray-800">
+                        Edit {projectYear} in Markdown
+                      </h4>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Import a DOCX or edit this session in markdown. Saving
+                        here updates the UG Projects table above without
+                        changing the current frontend layout.
+                      </p>
+                    </div>
+                    <MarkdownEditor
+                      key={projectYear}
+                      value={selectedUgProjectsMarkdown}
+                      onSave={handleUgProjectMarkdownSave}
+                      showDocImport
+                      docTemplateUrl="/uploads/documents/pride_templates/electrical_ug_projects_template.docx"
+                      docTemplateLabel="Download UG Projects Template"
+                      placeholder={`UG projects for ${projectYear} (GFM Markdown)...`}
+                    />
+                  </div>
                 </div>
               )}
-            </div>
-          </div>
-        )}
 
-        {/* Projects for 2023-24 */}
-        {projectYear === "2023-24" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-ssgmce-blue">
-                      <EditableText
-                        value={t("projectGroupNoHeader", "Group No.")}
-                        onSave={(val) =>
-                          updateField("projectGroupNoHeader", val)
-                        }
-                      />
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-ssgmce-blue">
-                      <EditableText
-                        value={t("projectTitleHeader", "Project Title")}
-                        onSave={(val) => updateField("projectTitleHeader", val)}
-                      />
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {t("ugProjects2324", defaultUgProjects2324).map(
-                    (project, i) => (
-                      <tr
-                        key={i}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-6 py-4 text-sm text-gray-700 font-medium">
-                          <EditableText
-                            value={project.no}
-                            onSave={(val) => {
-                              const updated = [
-                                ...t("ugProjects2324", defaultUgProjects2324),
-                              ];
-                              updated[i].no = val;
-                              updateField("ugProjects2324", updated);
-                            }}
-                          />
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
-                          <EditableText
-                            value={project.title}
-                            onSave={(val) => {
-                              const updated = [
-                                ...t("ugProjects2324", defaultUgProjects2324),
-                              ];
-                              updated[i].title = val;
-                              updateField("ugProjects2324", updated);
-                            }}
-                            multiline
-                          />
-                        </td>
-                      </tr>
-                    ),
-                  )}
-                </tbody>
-              </table>
-              {isEditing && (
-                <div className="p-4 bg-gray-50 border-t border-gray-200">
-                  <button
-                    onClick={() => {
-                      const updated = [
-                        ...t("ugProjects2324", defaultUgProjects2324),
-                        {
-                          no: `${t("ugProjects2324", defaultUgProjects2324).length + 1}.`,
-                          title: "New Project Title",
-                        },
-                      ];
-                      updateField("ugProjects2324", updated);
-                    }}
-                    className="w-full py-2 bg-ssgmce-blue text-white rounded hover:bg-ssgmce-dark-blue transition-colors text-sm"
+              <AnimatePresence>
+                {showAddUgProjectYear && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+                    onClick={() => setShowAddUgProjectYear(false)}
                   >
-                    + Add New Project
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+                    <motion.div
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.95, opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                          <FaPlus className="text-ssgmce-blue" /> Add UG Project Session
+                        </h3>
+                        <button
+                          onClick={() => {
+                            setUgProjectYearError("");
+                            setShowAddUgProjectYear(false);
+                          }}
+                          className="text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                          <FaTimes className="text-xl" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-4 mb-6">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Academic Year <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g., 2025-26"
+                            value={newUgProjectYear}
+                            onChange={(e) => {
+                              setNewUgProjectYear(e.target.value);
+                              if (ugProjectYearError) setUgProjectYearError("");
+                            }}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ssgmce-blue focus:border-transparent"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Enter the academic year in format YYYY-YY.
+                          </p>
+                          {ugProjectYearError ? (
+                            <p className="text-xs text-red-600 mt-2">
+                              {ugProjectYearError}
+                            </p>
+                          ) : null}
+                        </div>
+
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          <p className="text-sm text-blue-800">
+                            <strong>Note:</strong> After adding the session, you
+                            will get an empty markdown editor with the same UG
+                            Projects table structure and DOCX import support
+                            for that session.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => {
+                            setUgProjectYearError("");
+                            setShowAddUgProjectYear(false);
+                          }}
+                          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleAddUgProjectYear}
+                          disabled={!newUgProjectYear.trim()}
+                          className="flex-1 px-4 py-2 bg-gradient-to-r from-[#003366] to-[#0b4d91] text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          <FaPlus /> Add Session
+                        </button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
+          );
+        })()}
       </div>
     ),
     placements: (
@@ -6160,328 +7770,125 @@ Upon successful completion of this course, students will be able to:
           </h3>
         </div>
 
-        {/* Innovative Practice Table */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead
-                style={{ backgroundColor: "#003366" }}
-                className="text-white"
-              >
-                <tr>
-                  <th className="px-6 py-4 text-center font-semibold whitespace-nowrap text-sm">
-                    S.N.
-                  </th>
-                  <th className="px-6 py-4 text-center font-semibold text-sm">
-                    Name of The Faculty
-                  </th>
-                  <th className="px-6 py-4 text-center font-semibold text-sm">
-                    Subject
-                  </th>
-                  <th className="px-6 py-4 text-center font-semibold text-sm">
-                    Innovative Practice
-                  </th>
-                  <th className="px-6 py-4 text-center font-semibold text-sm">
-                    Link
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {t("innovativePractices", defaultInnovativePractices).map(
-                  (item, idx) => (
-                    <tr
-                      key={idx}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      {item.rowSpanParent !== false && (
-                        <td
-                          className="px-6 py-4 text-center font-medium text-gray-900"
-                          rowSpan={
-                            // Calculate rowspan: count consecutive items after this one with rowSpanParent === false
-                            (() => {
-                              if (!item.sn) return undefined;
-                              const practices = t(
-                                "innovativePractices",
-                                defaultInnovativePractices,
-                              );
-                              let span = 1;
-                              for (let j = idx + 1; j < practices.length; j++) {
-                                if (practices[j].rowSpanParent === false)
-                                  span++;
-                                else break;
-                              }
-                              return span > 1 ? span : undefined;
-                            })()
-                          }
-                        >
-                          {item.sn}
-                        </td>
-                      )}
-                      {item.rowSpanParent !== false && (
-                        <td
-                          className="px-6 py-4 text-center whitespace-nowrap"
-                          style={{ color: "#003366" }}
-                          rowSpan={(() => {
-                            if (!item.faculty) return undefined;
-                            const practices = t(
-                              "innovativePractices",
-                              defaultInnovativePractices,
-                            );
-                            let span = 1;
-                            for (let j = idx + 1; j < practices.length; j++) {
-                              if (practices[j].rowSpanParent === false) span++;
-                              else break;
-                            }
-                            return span > 1 ? span : undefined;
-                          })()}
-                        >
-                          <span className="font-medium">{item.faculty}</span>
-                        </td>
-                      )}
-                      <td className="px-6 py-4 text-gray-700">
-                        {item.subject}
-                      </td>
-                      <td className="px-6 py-4 text-gray-700">
-                        {item.practice}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {item.link && (
-                          <a
-                            href={item.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
-                          >
-                            <FaExternalLinkAlt className="text-xs" />
+        {/* Innovative Practice Editor/View */}
+        {(() => {
+          const storedMarkdown =
+            t("templateData.innovativePractices.markdown", null) ||
+            t("innovativePractices.markdown", null);
+          const storedPractices =
+            t("templateData.innovativePractices.items", null) ||
+            t("innovativePractices", null);
+          const defaultPractices = Array.isArray(storedPractices)
+            ? storedPractices
+            : defaultInnovativePractices;
+          const md =
+            storedMarkdown ||
+            electricalInnovativePracticesToMarkdown(defaultPractices);
+          const parsedPractices = electricalMarkdownToInnovativePractices(md);
+          const practices =
+            parsedPractices && parsedPractices.length > 0
+              ? parsedPractices
+              : defaultPractices;
+
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              {isEditing ? (
+                <MarkdownEditor
+                  value={md}
+                  onSave={(v) => {
+                    const parsed = electricalMarkdownToInnovativePractices(v);
+                    updateData("templateData.innovativePractices.markdown", v);
+                    updateData("templateData.innovativePractices.items", parsed);
+                    updateData("innovativePractices.markdown", v);
+                    updateData("innovativePractices", parsed);
+                  }}
+                  showDocImport
+                  docTemplateUrl="/uploads/documents/innovative_practice_templates/electrical_template.docx"
+                  docTemplateLabel="Download Template"
+                  placeholder="Innovative Practices table (GFM Markdown)..."
+                />
+              ) : (
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead
+                        style={{ backgroundColor: "#003366" }}
+                        className="text-white"
+                      >
+                        <tr>
+                          <th className="px-6 py-4 text-center font-semibold whitespace-nowrap text-sm">
+                            S.N.
+                          </th>
+                          <th className="px-6 py-4 text-center font-semibold text-sm">
+                            Name of The Faculty
+                          </th>
+                          <th className="px-6 py-4 text-center font-semibold text-sm">
+                            Subject
+                          </th>
+                          <th className="px-6 py-4 text-center font-semibold text-sm">
+                            Innovative Practice
+                          </th>
+                          <th className="px-6 py-4 text-center font-semibold text-sm">
                             Link
-                          </a>
-                        )}
-                      </td>
-                    </tr>
-                  ),
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {practices.map((item, idx) => (
+                          <tr
+                            key={idx}
+                            className="hover:bg-gray-50 transition-colors"
+                          >
+                            <td className="px-6 py-4 text-center font-medium text-gray-900">
+                              {item.sn}
+                            </td>
+                            <td
+                              className="px-6 py-4 text-center whitespace-nowrap"
+                              style={{ color: "#003366" }}
+                            >
+                              <span className="font-medium">{item.faculty}</span>
+                            </td>
+                            <td className="px-6 py-4 text-gray-700">
+                              {item.subject}
+                            </td>
+                            <td className="px-6 py-4 text-gray-700">
+                              {item.practice}
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              {item.link && (
+                                <a
+                                  href={item.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                                >
+                                  <FaExternalLinkAlt className="text-xs" />
+                                  Link
+                                </a>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          );
+        })()}
       </div>
     ),
     "industrial-visits": (() => {
-      const industrialVisitPhotos = [
-        {
-          image: ivAdaniDahanu2025,
-          caption:
-            "Third year BE Electrical Engineering students along with faculty members visited Adani Dahanu Thermal Power Station, Mumbai on 26 June 2025",
-          location: "Mumbai",
-          date: "26 June 2025",
-        },
-        {
-          image: ivApatapaAkola2025,
-          caption:
-            "Third Year BE Electrical Engineering students along with faculty members visited 400 KV Transmission Station at APATAPA Akola on 27 March 2025",
-          location: "Akola",
-          date: "27 March 2025",
-        },
-        {
-          image: ivAvaadaSolar2025,
-          caption:
-            "Third Year BE Electrical Engineering students along with faculty members visited Avaada Energy 100 MW Solar Power Plant Near Balapur on 27 March 2025",
-          location: "Balapur",
-          date: "27 March 2025",
-        },
-        {
-          image: ivTataPowerShahad2024,
-          caption:
-            "Second Year BE Electrical Engineering students along with faculty members visited TATA Power Shahad, Mumbai on 27 November 2024",
-          location: "Mumbai",
-          date: "27 November 2024",
-        },
-        {
-          image: ivAdaniDahanu2024,
-          caption:
-            "Third year BE Electrical Engineering students along with faculty members visited Adani Dahanu Thermal Power Station, Mumbai on 8 June 2024",
-          location: "Mumbai",
-          date: "8 June 2024",
-        },
-        {
-          image: ivTataPowerMumbai2023,
-          caption:
-            "Third Year BE Electrical Engineering students along with faculty members visited TATA Power, Mumbai on 11 December 2023",
-          location: "Mumbai",
-          date: "11 December 2023",
-        },
-        {
-          image: ivThermalParas2023,
-          caption:
-            "Second Year BE Electrical Engineering students along with faculty members visited Thermal Power Station, Paras on 26th October 2023",
-          location: "Paras",
-          date: "26 October 2023",
-        },
-        {
-          image: ivAdaniPowerMumbai,
-          caption:
-            "Third Year BE Electrical Engineering students along with faculty members visited Adani Power Station, Mumbai",
-          location: "Mumbai",
-          date: "2022-23",
-        },
-        {
-          image: ivThermalParas2022,
-          caption:
-            "Second Year BE Electrical Engineering students along with faculty members visited Thermal Power Station, Paras on 28th November 2022",
-          location: "Paras",
-          date: "28 November 2022",
-        },
-        {
-          image: ivAbbNashik2018,
-          caption:
-            "Third Year BE Electrical Engineering students along with faculty members visited M/s. ABB Ltd. Nashik on 27th August 2018",
-          location: "Nashik",
-          date: "27 August 2018",
-        },
-        {
-          image: ivPowerinstNashik2018,
-          caption:
-            "Third Year BE Electrical Engineering students along with faculty members visited M/s. Powerinst Pvt. Ltd. Nashik on 27th August 2018",
-          location: "Nashik",
-          date: "27 August 2018",
-        },
-        {
-          image: ivLegrandNashik2018,
-          caption:
-            "Third Year BE Electrical Engineering students along with faculty members visited M/s Legrand (India) Pvt. Ltd. Nashik on 28th August 2018",
-          location: "Nashik",
-          date: "28 August 2018",
-        },
-        {
-          image: ivParasThermal2018,
-          caption:
-            "Second Year BE Electrical Engineering students visited Thermal Power Station Paras on 12th September 2018",
-          location: "Paras",
-          date: "12 September 2018",
-        },
-        {
-          image: ivVishwajeetNashik,
-          caption:
-            "Discussion with Expert from Industries during visit at Vishwajeet Capacitors Pvt Ltd. Nashik",
-          location: "Nashik",
-          date: "2017-18",
-        },
-        {
-          image: ivAdaniMundra2016,
-          caption:
-            "Industrial visit at Adani Power Plant, Mundra Gujarat on 4-6 March 2016",
-          location: "Mundra, Gujarat",
-          date: "4-6 March 2016",
-        },
-      ];
-
-      const industrialVisitTable = [
-        {
-          sn: 1,
-          industry: "Adani Dahanu Thermal Power Station, Mumbai",
-          class: "Third Year",
-          date: "26/06/2025",
-          students: "-",
-        },
-        {
-          sn: 2,
-          industry: "400 KV Transmission Station, APATAPA Akola",
-          class: "Third Year",
-          date: "27/03/2025",
-          students: "-",
-        },
-        {
-          sn: 3,
-          industry: "Avaada Energy 100 MW Solar Power Plant, Balapur",
-          class: "Third Year",
-          date: "27/03/2025",
-          students: "-",
-        },
-        {
-          sn: 4,
-          industry: "TATA Power Shahad, Mumbai",
-          class: "Second Year",
-          date: "27/11/2024",
-          students: "-",
-        },
-        {
-          sn: 5,
-          industry: "Adani Dahanu Thermal Power Station, Mumbai",
-          class: "Third Year",
-          date: "08/06/2024",
-          students: "-",
-        },
-        {
-          sn: 6,
-          industry: "TATA Power, Mumbai",
-          class: "Third Year",
-          date: "11/12/2023",
-          students: "-",
-        },
-        {
-          sn: 7,
-          industry: "Thermal Power Station, Paras",
-          class: "Second Year",
-          date: "26/10/2023",
-          students: "-",
-        },
-        {
-          sn: 8,
-          industry: "Adani Power Station, Mumbai",
-          class: "Third Year",
-          date: "2022-23",
-          students: "-",
-        },
-        {
-          sn: 9,
-          industry: "Thermal Power Station, Paras",
-          class: "Second Year",
-          date: "28/11/2022",
-          students: "-",
-        },
-        {
-          sn: 10,
-          industry: "M/s. ABB Ltd., Nashik",
-          class: "Third Year",
-          date: "27/08/2018",
-          students: "-",
-        },
-        {
-          sn: 11,
-          industry: "M/s. Powerinst Pvt. Ltd., Nashik",
-          class: "Third Year",
-          date: "27/08/2018",
-          students: "-",
-        },
-        {
-          sn: 12,
-          industry: "M/s Legrand (India) Pvt. Ltd., Nashik",
-          class: "Third Year",
-          date: "28/08/2018",
-          students: "-",
-        },
-        {
-          sn: 13,
-          industry: "Thermal Power Station, Paras",
-          class: "Second Year",
-          date: "12/09/2018",
-          students: "-",
-        },
-        {
-          sn: 14,
-          industry: "Vishwajeet Capacitors Pvt Ltd., Nashik",
-          class: "Third Year",
-          date: "2017-18",
-          students: "-",
-        },
-        {
-          sn: 15,
-          industry: "Adani Power Plant, Mundra, Gujarat",
-          class: "Third Year",
-          date: "04-06/03/2016",
-          students: "-",
-        },
-      ];
+      const industrialVisitPhotos = getElectricalIndustrialVisitGallery();
+      const industrialVisitTable = getElectricalIndustrialVisits();
+      const industrialVisitsMarkdown = getElectricalIndustrialVisitsMarkdown(
+        industrialVisitTable,
+      );
 
       return (
         <div className="space-y-10">
@@ -6499,57 +7906,204 @@ Upon successful completion of this course, students will be able to:
 
           {/* Photo Gallery Section */}
           <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-4">
-              <FaImages className="text-2xl text-ssgmce-blue" />
-              <h4 className="text-xl font-bold text-gray-800">Visit Gallery</h4>
-              <span className="text-sm font-medium text-ssgmce-blue bg-blue-50 px-3 py-1 rounded-full">
-                {industrialVisitPhotos.length} Photos
-              </span>
-            </div>
+            {!isEditing && (
+              <>
+                <div className="flex items-center gap-3 mb-4">
+                  <FaImages className="text-2xl text-ssgmce-blue" />
+                  <h4 className="text-xl font-bold text-gray-800">Visit Gallery</h4>
+                  <span className="text-sm font-medium text-ssgmce-blue bg-blue-50 px-3 py-1 rounded-full">
+                    {industrialVisitPhotos.length} Photos
+                  </span>
+                </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {industrialVisitPhotos.map((photo, idx) => (
-                <motion.div
-                  key={idx}
-                  whileHover={{ y: -4 }}
-                  className="group relative bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => setIvLightbox(idx)}
-                >
-                  <div className="aspect-[4/3] overflow-hidden bg-gray-100">
-                    <img
-                      src={photo.image}
-                      alt={photo.caption}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                    />
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                      <FaSearchPlus className="absolute top-3 right-3 text-white text-lg drop-shadow" />
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <p className="text-sm text-gray-700 leading-relaxed line-clamp-2">
-                      {photo.caption}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {industrialVisitPhotos.map((photo, idx) => (
+                    <motion.div
+                      key={idx}
+                      whileHover={{ y: -4 }}
+                      className="group relative bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                      onClick={() => setIvLightbox(idx)}
+                    >
+                      <div className="aspect-[4/3] overflow-hidden bg-gray-100">
+                        <img
+                          src={photo.image}
+                          alt={photo.caption}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                          <FaSearchPlus className="absolute top-3 right-3 text-white text-lg drop-shadow" />
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <p className="text-sm text-gray-700 leading-relaxed line-clamp-2">
+                          {photo.caption}
+                        </p>
+                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <FaMapMarkerAlt className="text-red-400" />
+                            {photo.location}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <FaCalendarAlt className="text-blue-400" />
+                            {photo.date}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {isEditing && (
+              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <h5 className="text-lg font-bold text-gray-800">
+                      Manage Visit Gallery
+                    </h5>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Add new visit photos and update the caption, location, and date for each gallery item.
                     </p>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <FaMapMarkerAlt className="text-red-400" />
-                        {photo.location}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <FaCalendarAlt className="text-blue-400" />
-                        {photo.date}
-                      </span>
-                    </div>
                   </div>
-                </motion.div>
-              ))}
-            </div>
+                  <button
+                    type="button"
+                    onClick={addElectricalIndustrialVisitPhoto}
+                    className="inline-flex items-center gap-2 rounded-lg bg-ssgmce-blue px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ssgmce-orange"
+                  >
+                    <FaPlus className="text-xs" />
+                    Add Photo
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {industrialVisitPhotos.map((photo, idx) => {
+                    const uploadKey = `electrical-gallery-${idx}`;
+                    return (
+                      <div
+                        key={`gallery-editor-${idx}`}
+                        className="rounded-xl border border-gray-200 bg-gray-50 p-4"
+                      >
+                        <div className="flex flex-col gap-4 lg:flex-row">
+                          <div className="w-full lg:w-56 space-y-3">
+                            <div className="aspect-[4/3] overflow-hidden rounded-lg bg-white border border-gray-200">
+                              {photo.image ? (
+                                <img
+                                  src={photo.image}
+                                  alt={photo.caption || `Visit photo ${idx + 1}`}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-full items-center justify-center text-sm text-gray-400">
+                                  No image selected
+                                </div>
+                              )}
+                            </div>
+                            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-gradient-to-r from-[#003366] to-[#004d99] px-4 py-2.5 text-xs font-semibold text-white transition-all duration-300 hover:from-[#004d99] hover:to-[#0066cc] hover:shadow-lg">
+                              <FaUpload className="text-yellow-300" />
+                              {industrialVisitGalleryUploading[uploadKey]
+                                ? "Uploading..."
+                                : "Upload Photo"}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                disabled={industrialVisitGalleryUploading[uploadKey]}
+                                onChange={(event) => {
+                                  const file = event.target.files?.[0];
+                                  event.target.value = "";
+                                  if (file) {
+                                    uploadElectricalIndustrialVisitPhoto(idx, file);
+                                  }
+                                }}
+                              />
+                            </label>
+                            {industrialVisitGalleryErrors[uploadKey] && (
+                              <p className="text-xs text-red-500">
+                                {industrialVisitGalleryErrors[uploadKey]}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex-1 space-y-3">
+                            <div>
+                              <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+                                Caption
+                              </label>
+                              <textarea
+                                value={photo.caption || ""}
+                                onChange={(event) =>
+                                  updateElectricalIndustrialVisitPhoto(
+                                    idx,
+                                    "caption",
+                                    event.target.value,
+                                  )
+                                }
+                                rows={3}
+                                className="w-full resize-y rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 shadow-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                              />
+                            </div>
+                            <div className="grid gap-3 md:grid-cols-2">
+                              <div>
+                                <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+                                  Location
+                                </label>
+                                <input
+                                  type="text"
+                                  value={photo.location || ""}
+                                  onChange={(event) =>
+                                    updateElectricalIndustrialVisitPhoto(
+                                      idx,
+                                      "location",
+                                      event.target.value,
+                                    )
+                                  }
+                                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 shadow-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                                />
+                              </div>
+                              <div>
+                                <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+                                  Date
+                                </label>
+                                <input
+                                  type="text"
+                                  value={photo.date || ""}
+                                  onChange={(event) =>
+                                    updateElectricalIndustrialVisitPhoto(
+                                      idx,
+                                      "date",
+                                      event.target.value,
+                                    )
+                                  }
+                                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 shadow-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex lg:w-32 lg:justify-end">
+                            <button
+                              type="button"
+                              onClick={() => deleteElectricalIndustrialVisitPhoto(idx)}
+                              className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100"
+                            >
+                              <FaTrash className="text-xs" />
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Lightbox */}
           <AnimatePresence>
-            {ivLightbox !== null && (
+            {!isEditing && ivLightbox !== null && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -6661,10 +8215,35 @@ Upon successful completion of this course, students will be able to:
                         className="hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-6 py-4 font-medium text-gray-900">
-                          {String(visit.sn).padStart(2, "0")}
+                          {String(idx + 1).padStart(2, "0")}
                         </td>
-                        <td className="px-6 py-4 text-gray-700">
-                          {visit.industry}
+                        <td className="px-6 py-4">
+                          <div className="space-y-1">
+                            {(Array.isArray(visit.industries)
+                              ? visit.industries
+                              : [visit.industry]
+                            )
+                              .filter(Boolean)
+                              .map((industry, industryIndex) => (
+                                <div
+                                  key={`${idx}-${industryIndex}`}
+                                  className="text-gray-700"
+                                >
+                                  {industry}
+                                </div>
+                              ))}
+                            {visit.report ? (
+                              <a
+                                href={visit.report}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-ssgmce-blue hover:text-ssgmce-orange font-semibold text-xs mt-2"
+                              >
+                                <FaFileAlt className="text-xs" />
+                                Detailed Report
+                              </a>
+                            ) : null}
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-gray-700">
                           {visit.class}
@@ -6681,152 +8260,224 @@ Upon successful completion of this course, students will be able to:
                 </table>
               </div>
             </div>
+
+            {isEditing && (
+              <div className="space-y-4">
+                <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                  <div className="mb-4">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <h4 className="text-lg font-bold text-gray-800">
+                          Edit Industrial Visits in Markdown
+                        </h4>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Serial numbers are automatic now. Add a new blank row on top, then edit only the actual visit details.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={addElectricalIndustrialVisitRowOnTop}
+                        className="inline-flex items-center gap-2 rounded-lg bg-ssgmce-blue px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ssgmce-orange"
+                      >
+                        <FaPlus className="text-xs" />
+                        Add New Row On Top
+                      </button>
+                    </div>
+                  </div>
+                  <MarkdownEditor
+                    value={industrialVisitsMarkdown}
+                    onSave={handleElectricalIndustrialVisitsMarkdownSave}
+                    placeholder="Industrial visits table without serial-number column (GFM Markdown)..."
+                  />
+                </div>
+
+                <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                  <div className="mb-4">
+                    <h4 className="text-lg font-bold text-gray-800">
+                      Optional Detailed Reports
+                    </h4>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Upload a detailed report only for the visit rows that need one.
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    {industrialVisitTable.map((visit, idx) => {
+                      const uploadKey = `electrical-industrial-visit-${visit.id}`;
+                      return (
+                        <div
+                          key={visit.id || idx}
+                          className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 md:flex-row md:items-center md:justify-between"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-gray-800">
+                              {idx + 1}. {(visit.industries || []).join(", ")}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {visit.class} | {visit.date}
+                            </p>
+                            {visit.report ? (
+                              <a
+                                href={visit.report}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-2 inline-flex items-center gap-2 text-xs font-medium text-ssgmce-blue underline underline-offset-2"
+                              >
+                                <FaFileAlt className="text-xs" />
+                                View uploaded report
+                              </a>
+                            ) : (
+                              <p className="mt-2 text-xs text-gray-400">
+                                No report uploaded
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex flex-col items-start gap-2 md:items-end">
+                            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-gradient-to-r from-[#003366] to-[#004d99] px-4 py-2.5 text-xs font-semibold text-white transition-all duration-300 hover:from-[#004d99] hover:to-[#0066cc] hover:shadow-lg">
+                              <FaUpload className="text-yellow-300" />
+                              {industrialVisitReportUploading[uploadKey]
+                                ? "Uploading..."
+                                : "Upload Report"}
+                              <input
+                                type="file"
+                                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                className="hidden"
+                                disabled={industrialVisitReportUploading[uploadKey]}
+                                onChange={(event) => {
+                                  const file = event.target.files?.[0];
+                                  event.target.value = "";
+                                  if (file) {
+                                    uploadElectricalIndustrialVisitReport(visit.id, file);
+                                  }
+                                }}
+                              />
+                            </label>
+                            {industrialVisitReportErrors[uploadKey] && (
+                              <span className="text-right text-[11px] text-red-500">
+                                {industrialVisitReportErrors[uploadKey]}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       );
     })(),
     mous: (
       <div className="space-y-8">
-        <div className="text-center mb-8">
-          <h3 className="text-3xl font-bold text-gray-800 mb-3">MoUs</h3>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Strategic partnerships with industry leaders to enhance learning
-            outcomes and provide students with real-world exposure.
-          </p>
-        </div>
-
-        {/* Table */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-ssgmce-blue text-white">
-                <tr>
-                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
-                    Sr. No.
-                  </th>
-                  <th className="px-6 py-4 text-left font-bold">
-                    Name of the Organization
-                  </th>
-                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
-                    MOU Signing Date
-                  </th>
-                  <th className="px-6 py-4 text-left font-bold whitespace-nowrap">
-                    MOU Copy / Report
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {[
-                  {
-                    no: "1.",
-                    org: "I Robots Innovative Solutions, Pune",
-                    date: "05-Apr-2025",
-                    report:
-                      "/uploads/documents/electrical_mous/MOU_IRobots_Innovative_2025.pdf",
-                  },
-                  {
-                    no: "2.",
-                    org: "TATA Power Skill Development Institute (TPSDI), Shahad Mumbai",
-                    date: "21-Jun-2024",
-                    report:
-                      "/uploads/documents/electrical_mous/MOU_TPSDI_Mumbai_2024.pdf",
-                  },
-                  {
-                    no: "3.",
-                    org: "Adani Electricity Mumbai Limited, ADTPS, Dahanu",
-                    date: "01-Jun-2024",
-                    report:
-                      "/uploads/documents/electrical_mous/MOU_Adani_ADTPS_Dahanu_2024.pdf",
-                  },
-                  {
-                    no: "4.",
-                    org: "Mew Technology, Bengaluru",
-                    date: "04-Mar-2024",
-                    report:
-                      "/uploads/documents/electrical_mous/MOU_Mew_Technology_Bengaluru_2024.pdf",
-                  },
-                  {
-                    no: "5.",
-                    org: "Samarthan System Private Limited, Pune",
-                    date: "10-Jan-2024",
-                    report:
-                      "/uploads/documents/electrical_mous/MOU_Samarthan_System_Pune_2024.pdf",
-                  },
-                  {
-                    no: "6.",
-                    org: "SCR Elektronics, Mumbai",
-                    date: "08-Feb-2023",
-                    report:
-                      "/uploads/documents/electrical_mous/MOU_SCR_Elektronics_Mumbai_2023.pdf",
-                  },
-                  {
-                    no: "7.",
-                    org: "Mitsubishi Electric India Private Limited",
-                    date: "06-Jan-2023",
-                    report:
-                      "/uploads/documents/electrical_mous/MOU_Mitsubishi_Electric_2023.pdf",
-                  },
-                  {
-                    no: "8.",
-                    org: "Adani Electricity Mumbai Limited, ADTPS, Dahanu",
-                    date: "12-Feb-2022",
-                    report:
-                      "/uploads/documents/electrical_mous/MOU_Adani_ADTPS_Dahanu_2022.pdf",
-                  },
-                  {
-                    no: "9.",
-                    org: "ISIE INDIA, Noida",
-                    date: "18-Jan-2022",
-                    report:
-                      "/uploads/documents/electrical_mous/MOU_ISIE_India_Noida_2022.pdf",
-                  },
-                  {
-                    no: "10.",
-                    org: "VI Solutions, Bangalore",
-                    date: "28-Jan-2021",
-                    report:
-                      "/uploads/documents/electrical_mous/MOU_VI_Solutions_Bangalore_2021.pdf",
-                  },
-                  {
-                    no: "11.",
-                    org: "SCR Elektronics, Mumbai",
-                    date: "08-Feb-2020",
-                    report:
-                      "/uploads/documents/electrical_mous/MOU_SCR_Elektronics_Mumbai_2020.pdf",
-                  },
-                  {
-                    no: "12.",
-                    org: "TPSDI, Shahad Mumbai",
-                    date: "08-Sep-2018",
-                    report:
-                      "/uploads/documents/electrical_mous/MOU_TPSDI_Mumbai_2018.pdf",
-                  },
-                ].map((mou, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      {mou.no}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">{mou.org}</td>
-                    <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
-                      {mou.date}
-                    </td>
-                    <td className="px-6 py-4">
-                      <a
-                        href={mou.report}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-orange font-semibold text-sm transition-colors"
-                      >
-                        <FaFileAlt className="mr-1.5" />
-                        View Document
-                      </a>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        {(() => {
+          const mous = getElectricalMous();
+          const mousMarkdown = getElectricalMousMarkdown(mous);
+          return (
+            <>
+              <div className="text-center mb-8">
+                <h3 className="text-3xl font-bold text-gray-800 mb-3">MoUs</h3>
+                <p className="text-gray-600 max-w-2xl mx-auto">
+                  Strategic partnerships with industry leaders to enhance learning
+                  outcomes and provide students with real-world exposure.
+                </p>
+              </div>
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-ssgmce-blue text-white">
+                      <tr>
+                        <th className="px-6 py-4 text-left font-bold whitespace-nowrap">Sr. No.</th>
+                        <th className="px-6 py-4 text-left font-bold">Name of the Organization</th>
+                        <th className="px-6 py-4 text-left font-bold whitespace-nowrap">MOU Signing Date</th>
+                        <th className="px-6 py-4 text-left font-bold whitespace-nowrap">MOU Copy / Report</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {mous.map((mou, idx) => (
+                        <tr key={mou.id || idx} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 font-medium text-gray-900">{idx + 1}.</td>
+                          <td className="px-6 py-4 text-gray-700">{mou.org}</td>
+                          <td className="px-6 py-4 text-gray-700 whitespace-nowrap">{mou.date}</td>
+                          <td className="px-6 py-4">
+                            {mou.report ? (
+                              <a href={mou.report} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-ssgmce-blue hover:text-ssgmce-orange font-semibold text-sm transition-colors">
+                                <FaFileAlt className="mr-1.5" />
+                                View Document
+                              </a>
+                            ) : (
+                              <span className="text-gray-400 text-xs">--</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              {isEditing && (
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4">
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <h4 className="text-lg font-bold text-gray-800">Edit MoUs in Markdown</h4>
+                          <p className="text-sm text-gray-500 mt-1">Serial numbers are automatic now. Add a new blank row on top, then edit only the actual MoU details.</p>
+                        </div>
+                        <button type="button" onClick={addElectricalMouRowOnTop} className="inline-flex items-center gap-2 rounded-lg bg-ssgmce-blue px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ssgmce-orange">
+                          <FaPlus className="text-xs" />
+                          Add New Row On Top
+                        </button>
+                      </div>
+                    </div>
+                    <MarkdownEditor value={mousMarkdown} onSave={handleElectricalMousMarkdownSave} placeholder="MoUs table without serial-number column (GFM Markdown)..." />
+                  </div>
+                  <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4">
+                      <h4 className="text-lg font-bold text-gray-800">Upload MoU PDF / Report</h4>
+                      <p className="text-sm text-gray-500 mt-1">Upload the PDF only for the row you want to attach a document to.</p>
+                    </div>
+                    <div className="space-y-3">
+                      {mous.map((mou, idx) => {
+                        const uploadKey = `electrical-mou-${mou.id}`;
+                        return (
+                          <div key={mou.id || idx} className="rounded-lg border border-gray-200 p-4">
+                            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                              <div>
+                                <p className="text-sm font-semibold text-gray-800">{idx + 1}. {mou.org || "MoU"}</p>
+                                <p className="text-xs text-gray-500">{mou.date || "Signing date not set"}</p>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                {mou.report ? (
+                                  <a href={mou.report} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-ssgmce-blue hover:text-ssgmce-orange">
+                                    <FaFileAlt className="text-xs" />
+                                    Current Document
+                                  </a>
+                                ) : (
+                                  <span className="text-xs text-gray-400">No document uploaded</span>
+                                )}
+                                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-ssgmce-blue px-3 py-2 text-xs font-semibold text-white hover:bg-ssgmce-dark-blue">
+                                  <FaUpload className="text-xs" />
+                                  {mouReportUploading[uploadKey] ? "Uploading..." : "Upload PDF"}
+                                  <input type="file" accept=".pdf,.doc,.docx" className="hidden" disabled={mouReportUploading[uploadKey]} onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) uploadElectricalMouReport(mou.id, file);
+                                    e.target.value = "";
+                                  }} />
+                                </label>
+                              </div>
+                            </div>
+                            {mouReportErrors[uploadKey] ? <p className="mt-2 text-xs text-red-600">{mouReportErrors[uploadKey]}</p> : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          );
+        })()}
       </div>
     ),
 
@@ -6865,7 +8516,7 @@ Upon successful completion of this course, students will be able to:
                   Patents Granted &amp; Published
                 </h3>
                 <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
-                  {patentsYears.map((year) => (
+                  {dynamicPatentsYears.map((year) => (
                     <button
                       key={year}
                       onClick={() => setPatentsYear(year)}
@@ -6878,9 +8529,23 @@ Upon successful completion of this course, students will be able to:
                       {year}
                     </button>
                   ))}
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewResearchYear("");
+                        setResearchYearError("");
+                        setShowAddResearchYear(true);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full bg-ssgmce-blue px-4 py-1 text-xs font-bold whitespace-nowrap text-white transition-all hover:bg-ssgmce-orange"
+                    >
+                      <FaPlus className="text-[10px]" />
+                      Add Session
+                    </button>
+                  )}
                 </div>
               </div>
-              {(defaultElectricalPatents[patentsYear] || []).length === 0 ? (
+              {selectedResearchItems.length === 0 ? (
                 <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
                   <p className="text-gray-500 text-sm">
                     No patents recorded for {patentsYear}.
@@ -6907,7 +8572,7 @@ Upon successful completion of this course, students will be able to:
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {(defaultElectricalPatents[patentsYear] || []).map(
+                        {selectedResearchItems.map(
                           (pat, i) => (
                             <tr
                               key={i}
@@ -6953,7 +8618,7 @@ Upon successful completion of this course, students will be able to:
                   Research Publications
                 </h3>
                 <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
-                  {patentsYears.map((year) => (
+                  {dynamicPatentsYears.map((year) => (
                     <button
                       key={year}
                       onClick={() => setPatentsYear(year)}
@@ -6966,10 +8631,23 @@ Upon successful completion of this course, students will be able to:
                       {year}
                     </button>
                   ))}
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewResearchYear("");
+                        setResearchYearError("");
+                        setShowAddResearchYear(true);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full bg-ssgmce-blue px-4 py-1 text-xs font-bold whitespace-nowrap text-white transition-all hover:bg-ssgmce-orange"
+                    >
+                      <FaPlus className="text-[10px]" />
+                      Add Session
+                    </button>
+                  )}
                 </div>
               </div>
-              {(defaultElectricalPublications[patentsYear] || []).length ===
-              0 ? (
+              {selectedResearchItems.length === 0 ? (
                 <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
                   <p className="text-gray-500 text-sm">
                     No publications recorded for {patentsYear}.
@@ -6999,7 +8677,7 @@ Upon successful completion of this course, students will be able to:
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {(defaultElectricalPublications[patentsYear] || []).map(
+                        {selectedResearchItems.map(
                           (pub, i) => (
                             <tr
                               key={i}
@@ -7057,7 +8735,7 @@ Upon successful completion of this course, students will be able to:
                   Copyrights
                 </h3>
                 <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
-                  {patentsYears.map((year) => (
+                  {dynamicPatentsYears.map((year) => (
                     <button
                       key={year}
                       onClick={() => setPatentsYear(year)}
@@ -7070,9 +8748,23 @@ Upon successful completion of this course, students will be able to:
                       {year}
                     </button>
                   ))}
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewResearchYear("");
+                        setResearchYearError("");
+                        setShowAddResearchYear(true);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full bg-ssgmce-blue px-4 py-1 text-xs font-bold whitespace-nowrap text-white transition-all hover:bg-ssgmce-orange"
+                    >
+                      <FaPlus className="text-[10px]" />
+                      Add Session
+                    </button>
+                  )}
                 </div>
               </div>
-              {(defaultElectricalCopyrights[patentsYear] || []).length === 0 ? (
+              {selectedResearchItems.length === 0 ? (
                 <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
                   <p className="text-gray-500 text-sm">
                     No copyrights recorded for {patentsYear}.
@@ -7099,7 +8791,7 @@ Upon successful completion of this course, students will be able to:
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {(defaultElectricalCopyrights[patentsYear] || []).map(
+                        {selectedResearchItems.map(
                           (cr, i) => (
                             <tr
                               key={i}
@@ -7142,7 +8834,7 @@ Upon successful completion of this course, students will be able to:
                   Books &amp; Book Chapters Published
                 </h3>
                 <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
-                  {patentsYears.map((year) => (
+                  {dynamicPatentsYears.map((year) => (
                     <button
                       key={year}
                       onClick={() => setPatentsYear(year)}
@@ -7155,9 +8847,23 @@ Upon successful completion of this course, students will be able to:
                       {year}
                     </button>
                   ))}
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewResearchYear("");
+                        setResearchYearError("");
+                        setShowAddResearchYear(true);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full bg-ssgmce-blue px-4 py-1 text-xs font-bold whitespace-nowrap text-white transition-all hover:bg-ssgmce-orange"
+                    >
+                      <FaPlus className="text-[10px]" />
+                      Add Session
+                    </button>
+                  )}
                 </div>
               </div>
-              {(defaultElectricalBooks[patentsYear] || []).length === 0 ? (
+              {selectedResearchItems.length === 0 ? (
                 <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
                   <p className="text-gray-500 text-sm">
                     No books published for {patentsYear}.
@@ -7187,7 +8893,7 @@ Upon successful completion of this course, students will be able to:
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {(defaultElectricalBooks[patentsYear] || []).map(
+                        {selectedResearchItems.map(
                           (book, i) => (
                             <tr
                               key={i}
@@ -7220,6 +8926,127 @@ Upon successful completion of this course, students will be able to:
             </motion.div>
           ) : null}
         </AnimatePresence>
+        {isEditing && (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <div className="mb-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-800">
+                      Edit {patentsYear} {patentsTab} in Markdown
+                    </h4>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Keep the public table layout unchanged while editing this
+                      session through markdown, DOCX import, and the matching
+                      template.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => addElectricalResearchRowOnTop()}
+                    className="inline-flex items-center gap-2 rounded-lg bg-ssgmce-blue px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ssgmce-orange"
+                  >
+                    <FaPlus className="text-xs" />
+                    Add New Row On Top
+                  </button>
+                </div>
+              </div>
+              <MarkdownEditor
+                key={`${patentsTab}-${patentsYear}`}
+                value={selectedResearchMarkdown}
+                onSave={handleElectricalResearchMarkdownSave}
+                showDocImport
+                docTemplateUrl={ELECTRICAL_RESEARCH_TEMPLATE_URLS[patentsTab]}
+                docTemplateLabel="Download Template"
+                placeholder={`${patentsTab} table for ${patentsYear} (GFM Markdown)...`}
+              />
+            </div>
+          </div>
+        )}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <h4 className="text-sm font-bold text-ssgmce-blue mb-2 flex items-center">
+            <FaDownload className="mr-2" /> Year-wise Detailed Reports (PDF)
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {dynamicPatentsYears.map((year) => (
+              <a
+                key={year}
+                href={getElectricalResearchReportUrl(year)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-3 py-1.5 text-xs font-bold bg-white text-ssgmce-blue rounded-lg border border-blue-200 hover:bg-ssgmce-blue hover:text-white transition-all"
+              >
+                <FaFileAlt className="mr-1.5" /> {year}
+              </a>
+            ))}
+          </div>
+        </div>
+        {isEditing && (
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div className="mb-4">
+              <h4 className="text-lg font-bold text-gray-800">
+                Upload Year-wise Detailed Reports
+              </h4>
+              <p className="text-sm text-gray-500 mt-1">
+                Upload one detailed report per academic year. The public
+                download strip above will use the saved file for that year.
+              </p>
+            </div>
+            <div className="space-y-3">
+              {dynamicPatentsYears.map((year) => {
+                const uploadKey = `electrical-research-report-${year}`;
+                const reportUrl = getElectricalResearchReportUrl(year);
+                return (
+                  <div
+                    key={`electrical-research-report-${year}`}
+                    className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 md:flex-row md:items-center md:justify-between"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">{year}</p>
+                      {reportUrl ? (
+                        <a
+                          href={reportUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 inline-flex items-center gap-2 text-xs font-medium text-ssgmce-blue underline underline-offset-2"
+                        >
+                          <FaFileAlt className="text-xs" />
+                          Current Detailed Report
+                        </a>
+                      ) : (
+                        <p className="mt-1 text-xs text-gray-400">
+                          No detailed report uploaded
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-start gap-2 md:items-end">
+                      <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-gradient-to-r from-[#003366] to-[#004d99] px-4 py-2.5 text-xs font-semibold text-white transition-all duration-300 hover:from-[#004d99] hover:to-[#0066cc] hover:shadow-lg">
+                        <FaUpload className="text-yellow-300" />
+                        {researchReportUploading[uploadKey] ? "Uploading..." : "Upload Report"}
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          className="hidden"
+                          disabled={researchReportUploading[uploadKey]}
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            event.target.value = "";
+                            if (file) uploadElectricalResearchReport(year, file);
+                          }}
+                        />
+                      </label>
+                      {researchReportErrors[uploadKey] ? (
+                        <span className="text-right text-[11px] text-red-500">
+                          {researchReportErrors[uploadKey]}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     ),
     internships: (
@@ -7243,131 +9070,250 @@ Upon successful completion of this course, students will be able to:
           </div>
         </div>
 
-        {/* Year Filter */}
         <div className="flex justify-center mb-6">
-          <div className="inline-flex bg-gray-100 rounded-lg p-1 shadow-sm">
-            <button
-              onClick={() => setInternshipYear("2024-25")}
-              className={`px-6 py-2 text-sm font-bold rounded-md transition-all ${
-                internshipYear === "2024-25"
-                  ? "bg-white text-ssgmce-blue shadow-md"
-                  : "text-gray-600 hover:text-gray-800"
-              }`}
-            >
-              Session: 2024-25
-            </button>
-            <button
-              onClick={() => setInternshipYear("2023-24")}
-              className={`px-6 py-2 text-sm font-bold rounded-md transition-all ${
-                internshipYear === "2023-24"
-                  ? "bg-white text-ssgmce-blue shadow-md"
-                  : "text-gray-600 hover:text-gray-800"
-              }`}
-            >
-              Session: 2023-24
-            </button>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <div className="inline-flex bg-gray-100 rounded-lg p-1 shadow-sm">
+              {internshipYears.map((year) => (
+                <button
+                  key={year}
+                  onClick={() => setInternshipYear(year)}
+                  className={`px-6 py-2 text-sm font-bold rounded-md transition-all ${
+                    internshipYear === year
+                      ? "bg-white text-ssgmce-blue shadow-md"
+                      : "text-gray-600 hover:text-gray-800"
+                  }`}
+                >
+                  Session: {year}
+                </button>
+              ))}
+            </div>
+            {isEditing && (
+              <button
+                type="button"
+                onClick={() => {
+                  setNewInternshipYear("");
+                  setInternshipYearError("");
+                  setShowAddInternshipYear(true);
+                }}
+                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-ssgmce-blue to-blue-700 px-4 py-2 text-xs font-semibold text-white transition-all hover:shadow-lg"
+              >
+                <FaPlus className="text-xs" />
+                Add Session
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Detail Report Download */}
-        <div className="flex justify-center mb-4">
-          <a
-            href={
-              internshipYear === "2024-25"
-                ? "/uploads/documents/electrical_internships/Electrical_Internship_2024-25.pdf"
-                : "/uploads/documents/electrical_internships/Electrical_Internship_2023-24.pdf"
-            }
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-ssgmce-blue text-white rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium text-sm"
-          >
-            <FaDownload className="text-sm" />
-            Download Detail Report ({internshipYear})
-          </a>
-        </div>
+        {!isEditing && (
+          <>
+            <div className="flex justify-center mb-4">
+              <a
+                href={
+                  internshipYear === "2024-25"
+                    ? "/uploads/documents/electrical_internships/Electrical_Internship_2024-25.pdf"
+                    : "/uploads/documents/electrical_internships/Electrical_Internship_2023-24.pdf"
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-ssgmce-blue text-white rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium text-sm"
+              >
+                <FaDownload className="text-sm" />
+                Download Detail Report ({internshipYear})
+              </a>
+            </div>
 
-        {/* Internship Table */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-ssgmce-blue text-white">
-                <tr>
-                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
-                    Sr. No.
-                  </th>
-                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
-                    SIS ID
-                  </th>
-                  <th className="px-3 py-4 text-left font-bold">
-                    Name of Student
-                  </th>
-                  <th className="px-3 py-4 text-left font-bold">Class</th>
-                  <th className="px-3 py-4 text-left font-bold">
-                    Training / Internship
-                  </th>
-                  <th className="px-3 py-4 text-left font-bold">
-                    Name of Company
-                  </th>
-                  <th className="px-3 py-4 text-left font-bold">Duration</th>
-                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
-                    Start Date
-                  </th>
-                  <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
-                    End Date
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {(
-                  t(
-                    `internships.${internshipYear}`,
-                    defaultElectricalInternships[internshipYear],
-                  ) || []
-                ).map((intern, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-3 py-3 font-medium text-gray-900">
-                      {intern.no}
-                    </td>
-                    <td className="px-3 py-3 text-gray-700">{intern.sis}</td>
-                    <td className="px-3 py-3 text-gray-700">{intern.name}</td>
-                    <td className="px-3 py-3 text-gray-700 text-center whitespace-nowrap">
-                      {intern.class}
-                    </td>
-                    <td className="px-3 py-3 text-gray-700 text-xs">
-                      {intern.training}
-                    </td>
-                    <td className="px-3 py-3 text-gray-700 text-xs">
-                      {intern.org}
-                    </td>
-                    <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
-                      {intern.duration}
-                    </td>
-                    <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
-                      {intern.startDate}
-                    </td>
-                    <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
-                      {intern.endDate}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-ssgmce-blue text-white">
+                    <tr>
+                      <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                        Sr. No.
+                      </th>
+                      <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                        SIS ID
+                      </th>
+                      <th className="px-3 py-4 text-left font-bold">
+                        Name of Student
+                      </th>
+                      <th className="px-3 py-4 text-left font-bold">Class</th>
+                      <th className="px-3 py-4 text-left font-bold">
+                        Training / Internship
+                      </th>
+                      <th className="px-3 py-4 text-left font-bold">
+                        Name of Company
+                      </th>
+                      <th className="px-3 py-4 text-left font-bold">Duration</th>
+                      <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                        Start Date
+                      </th>
+                      <th className="px-3 py-4 text-left font-bold whitespace-nowrap">
+                        End Date
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {currentInternships.map((intern, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-3 py-3 font-medium text-gray-900">
+                          {idx + 1}
+                        </td>
+                        <td className="px-3 py-3 text-gray-700">{intern.sis}</td>
+                        <td className="px-3 py-3 text-gray-700">{intern.name}</td>
+                        <td className="px-3 py-3 text-gray-700 text-center whitespace-nowrap">
+                          {intern.class}
+                        </td>
+                        <td className="px-3 py-3 text-gray-700 text-xs">
+                          {intern.training}
+                        </td>
+                        <td className="px-3 py-3 text-gray-700 text-xs">
+                          {intern.org}
+                        </td>
+                        <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
+                          {intern.duration}
+                        </td>
+                        <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
+                          {intern.startDate}
+                        </td>
+                        <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
+                          {intern.endDate}
+                        </td>
+                      </tr>
+                    ))}
+                    {currentInternships.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={9}
+                          className="px-6 py-12 text-center text-gray-400"
+                        >
+                          No internship records added for {internshipYear} yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="text-center text-sm text-gray-500 mt-4">
+              Total Records: {currentInternships.length} students
+            </div>
+          </>
+        )}
+
+        {isEditing && (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <div className="mb-4">
+                <h4 className="text-lg font-bold text-gray-800">
+                  Edit {internshipYear} in Markdown
+                </h4>
+                <p className="text-sm text-gray-500 mt-1">
+                  Import a DOCX or edit this session in markdown. Saving here
+                  updates the Internship and Training table without changing the
+                  public layout.
+                </p>
+              </div>
+              <MarkdownEditor
+                key={internshipYear}
+                value={selectedInternshipsMarkdown}
+                onSave={handleInternshipsMarkdownSave}
+                showDocImport
+                docTemplateUrl="/uploads/documents/pride_templates/electrical_internships_template.docx"
+                docTemplateLabel="Download Internship Template"
+                placeholder={`Internship records for ${internshipYear} (GFM Markdown)...`}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Summary */}
-        <div className="text-center text-sm text-gray-500 mt-4">
-          Total Records:{" "}
-          {
-            (
-              t(
-                `internships.${internshipYear}`,
-                defaultElectricalInternships[internshipYear],
-              ) || []
-            ).length
-          }{" "}
-          students
-        </div>
+        <AnimatePresence>
+          {showAddInternshipYear && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+              onClick={() => setShowAddInternshipYear(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <FaPlus className="text-ssgmce-blue" /> Add Internship
+                    Session
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setInternshipYearError("");
+                      setShowAddInternshipYear(false);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <FaTimes className="text-xl" />
+                  </button>
+                </div>
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Academic Year <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., 2025-26"
+                      value={newInternshipYear}
+                      onChange={(e) => {
+                        setNewInternshipYear(e.target.value);
+                        if (internshipYearError) setInternshipYearError("");
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ssgmce-blue focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Enter the academic year in format YYYY-YY.
+                    </p>
+                    {internshipYearError ? (
+                      <p className="text-xs text-red-600 mt-2">
+                        {internshipYearError}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-sm text-blue-800">
+                      <strong>Note:</strong> After adding the session, you will
+                      get an empty markdown editor with the same Internship and
+                      Training table structure, plus DOCX import and template
+                      download support for that session.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setInternshipYearError("");
+                      setShowAddInternshipYear(false);
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddInternshipYear}
+                    disabled={!newInternshipYear.trim()}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <FaPlus /> Add Session
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     ),
   };
@@ -7587,6 +9533,92 @@ Upon successful completion of this course, students will be able to:
                     className="flex-1 px-4 py-2 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <FaPlus /> Add Year
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {showAddResearchYear && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => {
+                setResearchYearError("");
+                setShowAddResearchYear(false);
+              }}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <FaPlus className="text-ssgmce-blue" /> Add Research Session
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setResearchYearError("");
+                      setShowAddResearchYear(false);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <FaTimes className="text-xl" />
+                  </button>
+                </div>
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Academic Year <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., 2025-26"
+                      value={newResearchYear}
+                      onChange={(e) => {
+                        setNewResearchYear(e.target.value);
+                        if (researchYearError) setResearchYearError("");
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ssgmce-blue focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Enter the academic year in format YYYY-YY.
+                    </p>
+                    {researchYearError ? (
+                      <p className="text-xs text-red-600 mt-2">{researchYearError}</p>
+                    ) : null}
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-sm text-blue-800">
+                      <strong>Note:</strong> The new session will be created for
+                      patents, publications, copyrights, and books with an empty
+                      markdown table plus DOCX import and template download support.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setResearchYearError("");
+                      setShowAddResearchYear(false);
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddResearchYear}
+                    disabled={!newResearchYear.trim()}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <FaPlus /> Add Session
                   </button>
                 </div>
               </motion.div>

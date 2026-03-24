@@ -4452,6 +4452,85 @@ export const defaultAchievements = {
 };
 export const defaultPlacements = [];
 
+// ─── Innovative Practices: Markdown converter helpers ─────────────────────────
+
+export function innovativePracticesToMarkdown(practicesData = []) {
+  const rows = practicesData.map(
+    (p) =>
+      `| ${p.sn || ""} | ${p.faculty || ""} | ${p.subject || ""} | ${p.practice || ""} | ${p.link || ""} |`,
+  );
+  return [
+    "## Innovative Practices in Teaching and Learning",
+    "",
+    "| S.N. | Faculty | Subject | Practice | Link |",
+    "|------|---------|---------|----------|------|",
+    ...rows,
+  ].join("\n");
+}
+
+export function markdownToInnovativePractices(markdown = "") {
+  if (!markdown || typeof markdown !== "string") {
+    return [];
+  }
+
+  const lines = markdown.split("\n");
+  const practices = [];
+
+  let inTable = false;
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Skip empty lines
+    if (!trimmed) continue;
+
+    // Skip markdown headers
+    if (trimmed.startsWith("#")) {
+      continue;
+    }
+
+    // Detect the table header row once and start parsing from the next rows.
+    if (
+      !inTable &&
+      trimmed.match(/^\|.*\|$/) &&
+      !trimmed.match(/^\|[\s-|]+\|$/)
+    ) {
+      inTable = true;
+      continue;
+    }
+
+    // Skip separator rows (all dashes and pipes)
+    if (trimmed.match(/^\|[\s-|]+\|$/)) {
+      continue;
+    }
+
+    // Parse data rows (only if we're in table mode)
+    if (inTable && trimmed.startsWith("|") && trimmed.endsWith("|")) {
+      const cells = trimmed
+        .split("|")
+        .map((cell) => cell.trim())
+        .filter((cell) => cell.length > 0);
+
+      // Only add valid rows (must have all 5 fields and sn must not be empty)
+      if (cells.length >= 5 && cells[0] && cells[0].length > 0) {
+        practices.push({
+          sn: cells[0],
+          faculty: cells[1] || "",
+          subject: cells[2] || "",
+          practice: cells[3] || "",
+          link: cells[4] || "",
+          isExternal: (cells[4] || "").includes("http") || (cells[4] || "").includes("youtu"),
+        });
+      }
+    }
+  }
+
+  return practices;
+}
+
+export const defaultInnovativePracticesMarkdown = innovativePracticesToMarkdown(
+  defaultInnovativePractices,
+);
+
 // ─── Pride section: Markdown converter helpers ───────────────────────────────
 
 export function prideGateToMarkdown(gateData = []) {
