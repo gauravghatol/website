@@ -1,71 +1,37 @@
-# SSGMCE College Website
+﻿# SSGMCE College Website
 
-A full-stack web application for **Shri Sant Gajanan Maharaj College of Engineering (SSGMCE), Shegaon** built with the MERN stack. Features a public-facing portal and a CMS-powered admin panel with inline Markdown editing.
+Full-stack college website for Shri Sant Gajanan Maharaj College of Engineering (SSGMCE), Shegaon.
+It includes a public-facing site and an admin CMS with markdown-based content editing.
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18, Vite 7, Tailwind CSS 3, React Router 6 |
-| Backend | Node.js, Express 4, Mongoose 7 |
-| Database | MongoDB (Atlas or local) |
-| Auth | JWT (bcryptjs) |
-| Uploads | Multer |
-| Charts | Chart.js, Recharts |
-| Editor | React Markdown + React Quill (WYSIWYG) |
+- Frontend: React 18, Vite 7, React Router 6, Tailwind CSS 3
+- Backend: Node.js, Express 4, Mongoose 7
+- Database: MongoDB
+- Auth: JWT + bcryptjs
+- Content Editing: Markdown-driven visual editor
+- Uploads: Multer
 
 ## Project Structure
 
-```
+```text
 website/
-├── client/                     # React SPA
-│   ├── src/
-│   │   ├── components/         # Shared UI + admin components
-│   │   ├── pages/              # Route-level pages
-│   │   │   ├── about/          # 8 about pages
-│   │   │   ├── academics/      # 11 academic pages
-│   │   │   ├── activities/     # 17 student club pages
-│   │   │   ├── admin/          # 22 admin panel pages
-│   │   │   ├── admissions/     # 13 admission pages
-│   │   │   ├── departments/    # 8 department pages
-│   │   │   ├── documents/      # 12 document pages
-│   │   │   ├── facilities/     # hostel / library / sports sub-pages
-│   │   │   ├── iqac/           # 14 IQAC pages (CMS-editable)
-│   │   │   ├── placements/     # 12 placement pages (CMS-editable)
-│   │   │   └── research/       # 15 research pages (CMS-editable)
-│   │   ├── contexts/           # EditContext, ThemeContext, PageDataContext
-│   │   ├── hooks/              # useAuth, useFetch, usePageContent, useDepartmentData
-│   │   ├── config/             # Admin access config
-│   │   ├── constants/          # Nav config
-│   │   └── data/               # Client-side seed/default data
-│   ├── package.json
-│   ├── vite.config.js
-│   └── tailwind.config.js
-│
-└── server/                     # Express API
-    ├── server.js               # Entry point
-    ├── config/db.js            # MongoDB connection
-    ├── controllers/            # 14 route controllers
-    ├── models/                 # 18 Mongoose models
-    ├── routes/                 # 14 route files
-    ├── middleware/              # JWT auth middleware
-    ├── data/                   # Seed content (markdown pages)
-    │   ├── allNavPages.js      # Master page definitions
-    │   ├── researchMarkdownContent.js
-    │   └── iqacMarkdownContent.js
-    ├── scripts/                # Re-runnable sync utilities
-    │   ├── syncResearchMarkdownContent.js
-    │   └── syncIqacMarkdownContent.js
-    ├── uploads/                # User-uploaded files (images, docs, NIRF PDFs)
-    └── utils/                  # DB init, department map
+  client/                  # React app
+    src/
+      components/          # Shared + admin components
+      pages/               # Route pages (about, academics, placements, admin, etc.)
+      constants/           # Navigation and route config
+      contexts/            # Auth/edit/page contexts
+  server/                  # Express API
+    controllers/           # API controllers
+    routes/                # API routes
+    models/                # Mongoose models
+    data/                  # Seed/default markdown content
+    scripts/               # Data sync and maintenance scripts
+    utils/                 # DB init and utilities
 ```
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js v16+
-- MongoDB (local or Atlas)
+## Local Setup
 
 ### 1. Clone
 
@@ -74,18 +40,17 @@ git clone https://github.com/gauravghatol/website.git
 cd website
 ```
 
-### 2. Server
+### 2. Start Backend
 
 ```bash
 cd server
 npm install
-cp .env.example .env   # then fill in MONGODB_URI, JWT_SECRET, ADMIN_JWT_SECRET
-npm start              # or: npm run dev (nodemon)
+npm run dev
 ```
 
-Runs on `http://localhost:5000`.
+Backend runs at `http://127.0.0.1:5000` by default.
 
-### 3. Client
+### 3. Start Frontend
 
 ```bash
 cd client
@@ -93,92 +58,57 @@ npm install
 npm run dev
 ```
 
-Runs on `http://localhost:5173` (proxied to server).
-
-### 4. Production Build
-
-```bash
-cd client
-npm run build      # outputs to dist/
-npm run preview    # preview locally
-```
+Frontend runs at `http://localhost:3000` and proxies `/api` and `/uploads` to backend.
 
 ## Environment Variables
 
-Create `server/.env` (see `.env.example`):
+Create `server/.env`:
 
 ```env
 PORT=5000
 NODE_ENV=development
-MONGODB_URI=mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/<db>
-JWT_SECRET=<random-string>
-ADMIN_JWT_SECRET=<random-string>
+MONGODB_URI=<your-mongodb-uri>
+JWT_SECRET=<your-jwt-secret>
+ADMIN_JWT_SECRET=<your-admin-jwt-secret>
 ```
 
-## Admin Panel
+## Core Features
 
-1. Navigate to `/admin/login`
-2. Log in with admin credentials
-3. Dashboard at `/admin`
+- Public website with institution-wide sections
+- CMS-driven pages using reusable markdown content blocks
+- Admin visual editor for page sections (markdown, image, table, stats, etc.)
+- Structured page data seeded from `server/data/allNavPages.js`
+- News, notices, events, documents, department and placement modules
 
-The admin panel provides:
+## API Overview
 
-- **Visual Page Editor** — Inline Markdown editing for all CMS pages (departments, placements, research, IQAC, admissions, etc.)
-- **Department Management** — Faculty, curriculum, department-specific pages
-- **Content Management** — News, events, notices, popup banners
-- **Document Management** — Upload and organize college documents
-- **NIRF / IQAC / Placement** — Dedicated management panels
-- **Analytics & Edit Logs** — Track content changes
+All APIs are under `/api`:
 
-## API Routes
+- `/api/auth` authentication
+- `/api/pages` page content and section updates
+- `/api/departments`, `/api/faculty`
+- `/api/news`, `/api/notices`, `/api/events`
+- `/api/placements`, `/api/research`, `/api/iqac`, `/api/nirf`
+- `/api/documents`, `/api/upload`
 
-All routes are prefixed with `/api`:
-
-| Route | Description |
-|-------|-------------|
-| `/api/auth` | Login, register, verify |
-| `/api/departments` | Department CRUD |
-| `/api/faculty` | Faculty CRUD |
-| `/api/pages` | CMS page content (get/update by pageId) |
-| `/api/news` | News articles |
-| `/api/events` | College events |
-| `/api/notices` | Notices & announcements |
-| `/api/placements` | Placement stats & records |
-| `/api/research` | Research data |
-| `/api/iqac` | IQAC documents, members, news |
-| `/api/nirf` | NIRF rankings & parameters |
-| `/api/documents` | Document management |
-| `/api/upload` | File uploads (images, PDFs) |
-
-## Scripts
-
-Re-runnable sync utilities (safe for fresh deployments or DB resets):
+## Useful Commands
 
 ```bash
-cd server
-node scripts/syncResearchMarkdownContent.js   # Seed/update research pages
-node scripts/syncIqacMarkdownContent.js        # Seed/update IQAC pages
+# client
+npm run dev
+npm run build
+npm run preview
+
+# server
+npm run dev
+npm start
 ```
 
-## Key Patterns
+## Notes
 
-- **GenericContentPage** — Single React component that renders any CMS page given a `pageId`. Used by all placement, research, and IQAC pages.
-- **Sidebar components** — `PlacementSidebar`, `ResearchSidebar`, `IQACSidebar` etc. are auto-generated from DB section data.
-- **MarkdownEditor** — Admin inline editor with live preview, smart rendering (tables, document grids, facility cards).
-- **Auto-seeding** — On first server start, `allNavPages.js` seeds all page definitions into MongoDB via `dbInit.js`.
+- If frontend shows proxy errors like `ECONNREFUSED 127.0.0.1:5000`, backend is not running.
+- Keep `allNavPages.js` aligned with navbar order so admin page ordering remains consistent.
 
-## Contact
+## License
 
-- **GitHub**: [@gauravghatol](https://github.com/gauravghatol)
-
-This project is licensed under the MIT License.
-
-## 🙏 Acknowledgments
-
-- SSGMCE for the original design and content
-- React and Node.js communities for excellent documentation
-- Contributors and developers
-
----
-
-**Made with ❤️ for SSGMCE | © 2026 SSGMCE College Website**
+MIT

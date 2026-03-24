@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaBars, FaTimes, FaChevronDown, FaChevronRight, FaHome } from 'react-icons/fa';
 import logo from '../assets/images/common/logo.png';
 import uppernavbar from '../assets/images/common/uppernavbar.png';
@@ -10,8 +10,18 @@ const Navbar = () => {
   const [activeSubDropdown, setActiveSubDropdown] = useState(null);
   const subDropdownTimeout = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path) => location.pathname === path;
+
+  const getFirstDropdownPath = (item) => {
+    if (item?.topLevelPath) return item.topLevelPath;
+    if (!item?.dropdown?.length) return item?.path || '/';
+    const firstItem = item.dropdown[0];
+    if (firstItem?.path) return firstItem.path;
+    if (firstItem?.subDropdown?.length) return firstItem.subDropdown[0]?.path || '/';
+    return item?.path || '/';
+  };
 
   const menuItems = [
     {
@@ -26,13 +36,14 @@ const Navbar = () => {
         { name: 'Principal Speaks', path: '/about/principal' },
         { name: 'Organizational Structure', path: '/about/structure' },
         { name: 'Governing Body', path: '/about/governing' },
-        // { name: 'Board of Director\'s', path: '/about/governing' }, // Merged
+        { name: 'Board of Directors', path: '/about/directors' },
         { name: 'Various Committees By SGBAU & AICTE', path: '/about/committees' },
         { name: 'Contact us', path: '/contact' },
       ]
     },
     {
       name: 'Academics',
+      topLevelPath: '/academics/planner',
       megaMenuImage: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&h=600&fit=crop',
       megaMenuTitle: 'Academic Excellence',
       dropdown: [
@@ -246,12 +257,12 @@ const Navbar = () => {
                <a href="#" className="bg-ssgmce-orange hover:bg-ssgmce-light-orange px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white">
                  Academic Calendar
                </a>
-               <button className="bg-red-600 hover:bg-red-500 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden lg:inline">
+               <a href="https://alumni.ssgmce.ac.in/" target="_blank" rel="noreferrer" className="bg-red-600 hover:bg-red-500 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden lg:inline">
                  Alumni Registration
-               </button>
-               <button className="bg-blue-700 hover:bg-blue-600 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden lg:inline">
+               </a>
+               <a href="https://erp.ssgmce.ac.in/login.aspx" target="_blank" rel="noreferrer" className="bg-blue-700 hover:bg-blue-600 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden lg:inline">
                  ERP Login
-               </button>
+               </a>
             </div>
           </div>
         </div>
@@ -310,9 +321,16 @@ const Navbar = () => {
                     onMouseEnter={() => item.dropdown ? setActiveDropdown(item.name) : setActiveDropdown(null)}
                   >
                     {item.dropdown ? (
-                      <button className={`px-2.5 lg:px-3 py-2.5 text-gray-700 font-medium hover:text-ssgmce-blue transition-colors duration-300 flex items-center whitespace-nowrap text-sm lg:text-base ${
-                        activeDropdown === item.name ? 'text-ssgmce-blue border-b-2 border-ssgmce-orange' : isActive(item.path) ? 'text-ssgmce-blue border-b-2 border-ssgmce-blue' : ''
-                      }`}>
+                      <button
+                        onClick={() => {
+                          navigate(getFirstDropdownPath(item));
+                          setActiveDropdown(null);
+                          setActiveSubDropdown(null);
+                        }}
+                        className={`px-2.5 lg:px-3 py-2.5 text-gray-700 font-medium hover:text-ssgmce-blue transition-colors duration-300 flex items-center whitespace-nowrap text-sm lg:text-base ${
+                          activeDropdown === item.name ? 'text-ssgmce-blue border-b-2 border-ssgmce-orange' : isActive(item.path) ? 'text-ssgmce-blue border-b-2 border-ssgmce-blue' : ''
+                        }`}
+                      >
                         {item.name}
                       </button>
                     ) : (

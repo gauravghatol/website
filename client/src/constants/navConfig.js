@@ -42,7 +42,7 @@ const SECTIONS = [
       {
         title: "Institution",
         items: [
-          { name: "SSGMCE At Glance", path: "/about/glance" },
+          { name: "SSGMCE At Glance", path: "/about" },
           { name: "Vision-Mission, Core Values & Goals", path: "/about/vision" },
           { name: "Our Inspiration", path: "/about/inspiration" },
           { name: "Organizational Structure", path: "/about/structure" },
@@ -53,6 +53,7 @@ const SECTIONS = [
         items: [
           { name: "Principal Speaks", path: "/about/principal" },
           { name: "Governing Body", path: "/about/governing" },
+          { name: "Board of Directors", path: "/about/directors" },
           { name: "Various Committees By SGBAU & AICTE", path: "/about/committees" },
           { name: "Contact us", path: "/contact" },
         ],
@@ -179,7 +180,7 @@ const SECTIONS = [
     label: "Facilities",
     icon: FaBuilding,
     color: "#059669",
-    navPath: "/gallery",
+    navPath: "/facilities",
     megaDropdown: [
       {
         title: "Campus Facilities",

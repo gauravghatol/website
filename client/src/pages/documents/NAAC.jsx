@@ -1,52 +1,113 @@
-import EnhancedDocumentsLayout from "../../components/EnhancedDocumentsLayout";
-
-const naacDocuments = [
-  {
-    title: "NAAC Self Study Report (SSR) - 3rd Cycle (After DVV)",
-    summary: "The Self Study Report (SSR) for the 3rd cycle of NAAC accreditation of SSGMCE, Shegaon. This comprehensive report covers all seven criteria including Curricular Aspects, Teaching-Learning & Evaluation, Research Innovation & Extension, Infrastructure & Learning Resources, Student Support & Progression, Governance Leadership & Management, and Institutional Values & Best Practices. SSGMCE has been accredited with 'A+' grade (CGPA 3.26) by NAAC, reflecting its commitment to quality education and holistic development of students.",
-    pdfUrl: "https://www.ssgmce.ac.in/uploads/NAAC/SSR_after_DVV_final.pdf",
-    fileSize: "15 MB",
-    year: "2024",
-  },
-  {
-    title: "NAAC Extended Profile",
-    summary: "The Extended Profile document provides quantitative data about the institution including student enrollment figures, faculty details, financial information, infrastructure data, and academic performance statistics required for the NAAC assessment process. This serves as a statistical overview of SSGMCE's key institutional metrics over the assessment period.",
-    pdfUrl: "https://www.ssgmce.ac.in/uploads/NAAC/extended%20profile.pdf",
-    fileSize: "3 MB",
-    year: "2024",
-  },
-  {
-    title: "IIQA Report",
-    summary: "The Institutional Information for Quality Assessment (IIQA) report is the preliminary submission to NAAC containing basic institutional information, accreditation history, and readiness for the assessment visit. This document confirms the institution's eligibility for the accreditation process.",
-    pdfUrl: "https://www.ssgmce.ac.in/uploads/NAAC/SSGMCE_IIQA_final.pdf",
-    fileSize: "2 MB",
-    year: "2024",
-  },
-  {
-    title: "RTI (Right to Information)",
-    summary: "Right to Information document of SSGMCE, Shegaon as required under the statutory compliance for NAAC accreditation. This document provides transparency in institutional governance and administration.",
-    pdfUrl: "https://www.ssgmce.ac.in/uploads/NAAC/RTI.pdf",
-    fileSize: "1 MB",
-    year: "2024",
-  },
-  {
-    title: "Declaration of Compliance - Principal",
-    summary: "Official declaration of compliance signed by the Principal of SSGMCE, Shegaon, certifying that the institution adheres to all statutory and regulatory requirements as mandated by NAAC, AICTE, UGC, and the affiliating university.",
-    pdfUrl: "https://www.ssgmce.ac.in/uploads/NAAC/Statement%20compliance-Principal---final-doc.pdf",
-    fileSize: "500 KB",
-    year: "2024",
-  },
-];
+import PageHeader from "../../components/PageHeader";
+import DocumentsSidebar from "../../components/DocumentsSidebar";
 
 const NAAC = () => {
+  const cycles = [
+    {
+      validity: "20-12-2024 to 19-12-2029",
+      report: {
+        title: "Peer Team Report -2024",
+        url: "/uploads/documents/naac/09_NAAC_Peer_Team_Report_2024_v2.pdf",
+      },
+      certificate: {
+        title: "NAAC CERTIFICATE -2024",
+        url: "/uploads/documents/naac/08_NAAC_Certificate_A_Plus_2024.pdf",
+      },
+    },
+    {
+      validity: "28-03-2010 to 27-03-2015 Second Cycle",
+      report: {
+        title: "Peer Team Report -2010",
+        url: "/uploads/documents/naac/11_NAAC_Peer_Team_Report_2010.pdf",
+      },
+      certificate: {
+        title: "NAAC CERTIFICATE -2010",
+        url: "/uploads/documents/naac/10_NAAC_Certificate_2010.pdf",
+      },
+    },
+    {
+      validity: "21-03-2003 to 20-03-2008 First Cycle",
+      report: {
+        title: "Peer Team Report -2003",
+        url: "/uploads/documents/naac/13_NAAC_Peer_Team_Report_2003.pdf",
+      },
+      certificate: {
+        title: "NAAC CERTIFICATE -2003",
+        url: "/uploads/documents/naac/12_NAAC_Certificate_2003.pdf",
+      },
+    },
+  ];
+
   return (
-    <EnhancedDocumentsLayout
-      pageTitle="NAAC Documents"
-      subtitle="National Assessment and Accreditation Council"
-      category="naac"
-      description="SSGMCE, Shegaon is accredited by NAAC with 'A+' grade (CGPA 3.26) in the 3rd cycle. Below are the official NAAC documents including the Self Study Report (SSR), Extended Profile, IIQA, and other accreditation-related documents."
-      staticDocuments={naacDocuments}
-    />
+    <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        title="NAAC Accreditation"
+        subtitle="National Assessment and Accreditation Council"
+        backgroundImage="https://images.unsplash.com/photo-1568667256549-094345857637?w=1200&q=80"
+      />
+
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-12 gap-8">
+          {/* Sidebar */}
+          <div className="lg:col-span-3">
+            <DocumentsSidebar />
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:col-span-9">
+            {/* Header Info */}
+            <div id="naac-status" className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <h2 className="text-2xl font-bold text-ssgmce-blue mb-3">
+                NAAC ACCREDITATION STATUS
+              </h2>
+              <p className="text-gray-600 leading-relaxed">
+                SSGMCE, Shegaon has been accredited by NAAC with <strong>A+ Grade (CGPA 3.26)</strong> in the 3rd cycle of accreditation.
+              </p>
+            </div>
+
+            {/* Table */}
+            <div id="naac-cycles" className="bg-white rounded-lg shadow-md overflow-hidden">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-100 border-b">
+                    <th className="px-6 py-4 text-left font-bold text-gray-800 border-r">Period of Validity</th>
+                    <th className="px-6 py-4 text-left font-bold text-gray-800 border-r">Report</th>
+                    <th className="px-6 py-4 text-left font-bold text-gray-800">Certificate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cycles.map((cycle, idx) => (
+                    <tr key={idx} className="border-b hover:bg-gray-50">
+                      <td className="px-6 py-4 text-gray-700 border-r">{cycle.validity}</td>
+                      <td className="px-6 py-4 border-r">
+                        <a
+                          href={cycle.report.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                        >
+                          {cycle.report.title}
+                        </a>
+                      </td>
+                      <td className="px-6 py-4">
+                        <a
+                          href={cycle.certificate.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                        >
+                          {cycle.certificate.title}
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

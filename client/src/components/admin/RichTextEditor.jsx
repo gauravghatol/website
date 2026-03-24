@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import ReactQuill, { Quill } from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import ReactQuill, { Quill } from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 import "./RichTextEditor.css";
 import { useEdit } from "../../contexts/EditContext";
 import { FaCheck, FaTimes } from "react-icons/fa";

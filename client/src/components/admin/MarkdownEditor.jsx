@@ -9,7 +9,6 @@ import { useEdit } from "../../contexts/EditContext";
 import {
   FaCheck,
   FaTimes,
-  FaDownload,
   FaEye,
   FaEdit,
   FaBold,
@@ -38,59 +37,7 @@ import {
   FaExclamationTriangle,
   FaExclamationCircle,
   FaLightbulb,
-  FaFileImport,
 } from "react-icons/fa";
-
-/**
- * Convert legacy HTML (from Quill/RichTextEditor) to native Markdown.
- * Only runs when HTML tags are detected in the content.
- */
-const htmlToMarkdown = (html) => {
-  if (!html || typeof html !== "string") return html;
-  // Only attempt conversion if actual HTML tags are present
-  if (!/<[a-z][\s\S]*>/i.test(html)) return html;
-
-  return (
-    html
-      // Block elements first
-      .replace(/<h1[^>]*>(.*?)<\/h1>/gis, "# $1\n")
-      .replace(/<h2[^>]*>(.*?)<\/h2>/gis, "## $1\n")
-      .replace(/<h3[^>]*>(.*?)<\/h3>/gis, "### $1\n")
-      .replace(/<h4[^>]*>(.*?)<\/h4>/gis, "#### $1\n")
-      .replace(/<h5[^>]*>(.*?)<\/h5>/gis, "##### $1\n")
-      .replace(/<h6[^>]*>(.*?)<\/h6>/gis, "###### $1\n")
-      // List items before ul/ol
-      .replace(/<li[^>]*>(.*?)<\/li>/gis, "- $1\n")
-      .replace(/<\/ul>|<\/ol>/gi, "\n")
-      .replace(/<ul[^>]*>|<ol[^>]*>/gi, "\n")
-      // Paragraphs
-      .replace(/<p[^>]*>(.*?)<\/p>/gis, "$1\n\n")
-      // Inline formatting
-      .replace(/<strong[^>]*>(.*?)<\/strong>/gis, "**$1**")
-      .replace(/<b[^>]*>(.*?)<\/b>/gis, "**$1**")
-      .replace(/<em[^>]*>(.*?)<\/em>/gis, "_$1_")
-      .replace(/<i[^>]*>(.*?)<\/i>/gis, "_$1_")
-      .replace(/<s[^>]*>(.*?)<\/s>/gis, "~~$1~~")
-      .replace(/<del[^>]*>(.*?)<\/del>/gis, "~~$1~~")
-      .replace(/<code[^>]*>(.*?)<\/code>/gis, "`$1`")
-      // Links
-      .replace(/<a[^>]*href=["']([^"']*)["'][^>]*>(.*?)<\/a>/gis, "[$2]($1)")
-      // Line breaks
-      .replace(/<br\s*\/?>/gi, "\n")
-      // Strip remaining tags
-      .replace(/<[^>]+>/g, "")
-      // Decode common HTML entities
-      .replace(/&amp;/g, "&")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&nbsp;/g, " ")
-      // Collapse 3+ consecutive newlines to 2
-      .replace(/\n{3,}/g, "\n\n")
-      .trim()
-  );
-};
 
 /** Tailwind-styled renderers for ReactMarkdown — no color overrides, clean & consistent */
 const getChildrenText = (children) =>
@@ -136,7 +83,6 @@ const parseFacilityGridMarkdown = (markdownText = "") => {
   if (typeof markdownText !== "string" || !markdownText.trim()) return null;
 
   const hasFacilitySignals =
-    /\[View Detailed Report\]\(([^)]+)\)/i.test(markdownText) &&
     /\[Reference Image\]\(([^)]+)\)/i.test(markdownText) &&
     /^\s*###\s+/m.test(markdownText);
 
@@ -159,12 +105,7 @@ const parseFacilityGridMarkdown = (markdownText = "") => {
     const reportMatch = body.match(/\[View Detailed Report\]\(([^)]+)\)/i);
     const imageMatch = body.match(/\[Reference Image\]\(([^)]+)\)/i);
 
-    if (
-      !title ||
-      !reportMatch ||
-      !imageMatch ||
-      !isLikelyImageUrl(imageMatch[1])
-    ) {
+    if (!title || !imageMatch || !isLikelyImageUrl(imageMatch[1])) {
       continue;
     }
 
@@ -178,7 +119,7 @@ const parseFacilityGridMarkdown = (markdownText = "") => {
       title,
       department: departmentMatch ? departmentMatch[1].trim() : "",
       description,
-      reportUrl: reportMatch[1].trim(),
+      reportUrl: reportMatch ? reportMatch[1].trim() : null,
       imageUrl: imageMatch[1].trim(),
     });
   }
@@ -289,8 +230,7 @@ const splitByH2Sections = (markdownText = "") => {
   for (let i = 0; i < matches.length; i += 1) {
     const current = matches[i];
     const start = current.index + current[0].length;
-    const end =
-      i + 1 < matches.length ? matches[i + 1].index : markdownText.length;
+    const end = i + 1 < matches.length ? matches[i + 1].index : markdownText.length;
     sections.push({
       title: (current[1] || "").trim(),
       content: markdownText.slice(start, end).trim(),
@@ -304,8 +244,7 @@ const splitByH2Sections = (markdownText = "") => {
 };
 
 const parseNumberedEntries = (markdownText = "") => {
-  const itemRegex =
-    /(?:^|\n)\s*(\d+)\.\s+([^\n]+)\n?([\s\S]*?)(?=(?:\n\s*\d+\.\s+[^\n]+)|$)/g;
+  const itemRegex = /(?:^|\n)\s*(\d+)\.\s+([^\n]+)\n?([\s\S]*?)(?=(?:\n\s*\d+\.\s+[^\n]+)|$)/g;
   const entries = [];
   let match;
 
@@ -425,9 +364,7 @@ const DocumentCards = ({ items }) => (
           {item.title}
         </h4>
         {item.description ? (
-          <p className="mt-1 text-sm text-gray-600 leading-relaxed">
-            {item.description}
-          </p>
+          <p className="mt-1 text-sm text-gray-600 leading-relaxed">{item.description}</p>
         ) : null}
         <a
           href={item.href}
@@ -534,25 +471,22 @@ const preprocessContainers = (md) => {
   if (!md) return md;
 
   // 1. Process ::: containers
-  let result = md.replace(
-    /^:::([\w-]+)\s*\n([\s\S]*?)\n:::\s*$/gm,
-    (_, type, content) => {
-      const t = type.toLowerCase();
-      if (["left", "center", "right", "justify"].includes(t)) {
-        return `<div class="md-align-${t}">\n\n${content.trim()}\n\n</div>`;
-      }
-      if (["info", "warning", "danger", "tip"].includes(t)) {
-        return `<div class="md-callout md-callout-${t}">\n\n${content.trim()}\n\n</div>`;
-      }
-      return `<div class="md-container-${t}">\n\n${content.trim()}\n\n</div>`;
-    },
-  );
+  let result = md.replace(/^:::([\w-]+)\s*\n([\s\S]*?)\n:::\s*$/gm, (_, type, content) => {
+    const t = type.toLowerCase();
+    if (['left', 'center', 'right', 'justify'].includes(t)) {
+      return `<div class="md-align-${t}">\n\n${content.trim()}\n\n</div>`;
+    }
+    if (['info', 'warning', 'danger', 'tip'].includes(t)) {
+      return `<div class="md-callout md-callout-${t}">\n\n${content.trim()}\n\n</div>`;
+    }
+    return `<div class="md-container-${t}">\n\n${content.trim()}\n\n</div>`;
+  });
 
   // 2. Process markdown-it-attrs images: ![alt](url){width=50% .align-center} → rendered HTML
   //    Works standalone AND inside table cells (single-line, no block wrappers)
   result = result.replace(/!\[([^\]]*)\]\(([^)]+)\)\{([^}]+)\}/g, (match) => {
     const rendered = mdIt.render(match).trim();
-    return rendered.replace(/^<p>/, "").replace(/<\/p>$/, "");
+    return rendered.replace(/^<p>/, '').replace(/<\/p>$/, '');
   });
 
   return result;
@@ -592,11 +526,10 @@ const FacilityGridLayout = ({ markdownText }) => {
                 </p>
               ) : null}
 
-              {facility.description
-                ? renderMarkdown(facility.description)
-                : null}
+              {facility.description ? renderMarkdown(facility.description) : null}
 
               <div className="mt-3 flex flex-col items-start gap-2.5">
+                {facility.reportUrl ? (
                 <a
                   href={facility.reportUrl}
                   target="_blank"
@@ -605,6 +538,7 @@ const FacilityGridLayout = ({ markdownText }) => {
                 >
                   Download Detailed Report
                 </a>
+                ) : null}
 
                 <a
                   href={facility.imageUrl}
@@ -656,9 +590,7 @@ const FacilityGridLayout = ({ markdownText }) => {
       if (
         entries &&
         isYearSection &&
-        entries.every(
-          (entry) => entry.fields.length === 0 && !entry.freeText.length,
-        )
+        entries.every((entry) => entry.fields.length === 0 && !entry.freeText.length)
       ) {
         return { ...section, kind: "plain-numbered", entries };
       }
@@ -690,18 +622,14 @@ const FacilityGridLayout = ({ markdownText }) => {
                 ) : null}
               </div>
 
-              {section.kind === "docs" ? (
-                <DocumentCards items={section.docs} />
-              ) : null}
+              {section.kind === "docs" ? <DocumentCards items={section.docs} /> : null}
               {section.kind === "structured" ? (
                 <StructuredRecordCards entries={section.entries} />
               ) : null}
               {section.kind === "plain-numbered" ? (
                 <PlainNumberedGrid entries={section.entries} />
               ) : null}
-              {section.kind === "markdown"
-                ? renderMarkdown(section.content)
-                : null}
+              {section.kind === "markdown" ? renderMarkdown(section.content) : null}
             </section>
           ))}
         </div>
@@ -759,7 +687,9 @@ const MD_COMPONENTS = {
     </h4>
   ),
   p: ({ children }) => (
-    <p className="text-gray-700 mb-3 leading-relaxed last:mb-0">{children}</p>
+    <p className="text-gray-700 mb-3 leading-relaxed last:mb-0">
+      {children}
+    </p>
   ),
   ul: ({ children }) => {
     const rawItems = React.Children.toArray(children).filter((child) =>
@@ -815,10 +745,14 @@ const MD_COMPONENTS = {
     </ol>
   ),
   li: ({ children }) => (
-    <li className="text-gray-700 leading-relaxed">{children}</li>
+    <li className="text-gray-700 leading-relaxed">
+      {children}
+    </li>
   ),
   strong: ({ children }) => (
-    <strong className="font-semibold text-gray-900">{children}</strong>
+    <strong className="font-semibold text-gray-900">
+      {children}
+    </strong>
   ),
   em: ({ children }) => <em className="italic text-gray-600">{children}</em>,
   blockquote: ({ children }) => (
@@ -849,10 +783,7 @@ const MD_COMPONENTS = {
   ),
   table: ({ children }) => (
     <div className="overflow-x-auto my-4">
-      <table
-        className="w-full border divide-y divide-gray-200 rounded overflow-hidden"
-        style={{ tableLayout: "auto" }}
-      >
+      <table className="w-full border divide-y divide-gray-200 rounded overflow-hidden" style={{ tableLayout: 'auto' }}>
         {children}
       </table>
     </div>
@@ -861,23 +792,21 @@ const MD_COMPONENTS = {
     <thead className="bg-ssgmce-blue text-white">{children}</thead>
   ),
   tbody: ({ children }) => (
-    <tbody className="divide-y divide-gray-200 bg-white">{children}</tbody>
+    <tbody className="divide-y divide-gray-200 bg-white">
+      {children}
+    </tbody>
   ),
   th: ({ children, style }) => (
-    <th className="px-3 py-2 text-sm font-semibold" style={style}>
-      {children}
-    </th>
+    <th className="px-3 py-2 text-sm font-semibold" style={style}>{children}</th>
   ),
   td: ({ children, style }) => {
     // Detect if cell contains an image to use compact padding
     const hasImage = React.Children.toArray(children).some(
-      (child) =>
-        React.isValidElement(child) &&
-        (child.type === "img" || child.props?.src),
+      (child) => React.isValidElement(child) && (child.type === 'img' || child.props?.src)
     );
     return (
       <td
-        className={`text-sm text-gray-700 align-middle ${hasImage ? "px-2 py-1" : "px-3 py-2"}`}
+        className={`text-sm text-gray-700 align-middle ${hasImage ? 'px-2 py-1' : 'px-3 py-2'}`}
         style={style}
       >
         {children}
@@ -885,14 +814,7 @@ const MD_COMPONENTS = {
     );
   },
   tr: ({ children }) => <tr className="even:bg-gray-50">{children}</tr>,
-  img: ({
-    src,
-    alt,
-    width,
-    className: imgClassName,
-    style: imgStyle,
-    ...imgRest
-  }) => {
+  img: ({ src, alt, width, className: imgClassName, style: imgStyle, ...imgRest }) => {
     // Determine width from markdown-it-attrs
     const widthVal = width || imgStyle?.width;
     const inlineStyle = {};
@@ -900,24 +822,24 @@ const MD_COMPONENTS = {
       inlineStyle.width = widthVal;
       inlineStyle.maxWidth = widthVal;
     } else {
-      inlineStyle.maxWidth = "100%";
+      inlineStyle.maxWidth = '100%';
     }
-    inlineStyle.height = "auto";
+    inlineStyle.height = 'auto';
 
     // Determine alignment from class: align-left, align-center, align-right
-    const classes = (imgClassName || "").split(/\s+/);
-    if (classes.includes("align-left")) {
-      inlineStyle.float = "left";
-      inlineStyle.marginRight = "1rem";
-      inlineStyle.marginBottom = "0.5rem";
-    } else if (classes.includes("align-right")) {
-      inlineStyle.float = "right";
-      inlineStyle.marginLeft = "1rem";
-      inlineStyle.marginBottom = "0.5rem";
-    } else if (classes.includes("align-center")) {
-      inlineStyle.display = "block";
-      inlineStyle.marginLeft = "auto";
-      inlineStyle.marginRight = "auto";
+    const classes = (imgClassName || '').split(/\s+/);
+    if (classes.includes('align-left')) {
+      inlineStyle.float = 'left';
+      inlineStyle.marginRight = '1rem';
+      inlineStyle.marginBottom = '0.5rem';
+    } else if (classes.includes('align-right')) {
+      inlineStyle.float = 'right';
+      inlineStyle.marginLeft = '1rem';
+      inlineStyle.marginBottom = '0.5rem';
+    } else if (classes.includes('align-center')) {
+      inlineStyle.display = 'block';
+      inlineStyle.marginLeft = 'auto';
+      inlineStyle.marginRight = 'auto';
     }
 
     return (
@@ -933,99 +855,40 @@ const MD_COMPONENTS = {
   // Support raw HTML for alignment and callout containers
   div: ({ className, children, align, style, ...props }) => {
     // Handle legacy HTML align attribute
-    if (align && !className?.includes("md-")) {
-      const alignClasses = {
-        left: "text-left",
-        center: "text-center",
-        right: "text-right",
-      };
-      return (
-        <div className={`${alignClasses[align] || ""} my-2`} {...props}>
-          {children}
-        </div>
-      );
+    if (align && !className?.includes('md-')) {
+      const alignClasses = { left: 'text-left', center: 'text-center', right: 'text-right' };
+      return <div className={`${alignClasses[align] || ''} my-2`} {...props}>{children}</div>;
     }
     // Handle ::: alignment containers
-    if (className?.startsWith("md-align-")) {
-      const a = className.replace("md-align-", "");
-      const cls =
-        {
-          left: "text-left",
-          center: "text-center",
-          right: "text-right",
-          justify: "text-justify",
-        }[a] || "";
-      return (
-        <div className={`${cls} my-2`} {...props}>
-          {children}
-        </div>
-      );
+    if (className?.startsWith('md-align-')) {
+      const a = className.replace('md-align-', '');
+      const cls = { left: 'text-left', center: 'text-center', right: 'text-right', justify: 'text-justify' }[a] || '';
+      return <div className={`${cls} my-2`} {...props}>{children}</div>;
     }
     // Handle ::: callout containers
-    if (className?.includes("md-callout")) {
+    if (className?.includes('md-callout')) {
       const typeMatch = className.match(/md-callout-(info|warning|danger|tip)/);
-      const type = typeMatch?.[1] || "info";
+      const type = typeMatch?.[1] || 'info';
       const styles = {
-        info: {
-          border: "border-blue-400",
-          bg: "bg-blue-50 dark:bg-blue-950/30",
-          title: "text-blue-700 dark:text-blue-300",
-          body: "text-blue-800 dark:text-blue-200",
-          icon: <FaInfoCircle className="text-blue-500" size={16} />,
-          label: "Info",
-        },
-        warning: {
-          border: "border-yellow-400",
-          bg: "bg-yellow-50 dark:bg-yellow-950/30",
-          title: "text-yellow-700 dark:text-yellow-300",
-          body: "text-yellow-800 dark:text-yellow-200",
-          icon: <FaExclamationTriangle className="text-yellow-500" size={16} />,
-          label: "Warning",
-        },
-        danger: {
-          border: "border-red-400",
-          bg: "bg-red-50 dark:bg-red-950/30",
-          title: "text-red-700 dark:text-red-300",
-          body: "text-red-800 dark:text-red-200",
-          icon: <FaExclamationCircle className="text-red-500" size={16} />,
-          label: "Danger",
-        },
-        tip: {
-          border: "border-green-400",
-          bg: "bg-green-50 dark:bg-green-950/30",
-          title: "text-green-700 dark:text-green-300",
-          body: "text-green-800 dark:text-green-200",
-          icon: <FaLightbulb className="text-green-500" size={16} />,
-          label: "Tip",
-        },
+        info: { border: 'border-blue-400', bg: 'bg-blue-50 dark:bg-blue-950/30', title: 'text-blue-700 dark:text-blue-300', body: 'text-blue-800 dark:text-blue-200', icon: <FaInfoCircle className="text-blue-500" size={16} />, label: 'Info' },
+        warning: { border: 'border-yellow-400', bg: 'bg-yellow-50 dark:bg-yellow-950/30', title: 'text-yellow-700 dark:text-yellow-300', body: 'text-yellow-800 dark:text-yellow-200', icon: <FaExclamationTriangle className="text-yellow-500" size={16} />, label: 'Warning' },
+        danger: { border: 'border-red-400', bg: 'bg-red-50 dark:bg-red-950/30', title: 'text-red-700 dark:text-red-300', body: 'text-red-800 dark:text-red-200', icon: <FaExclamationCircle className="text-red-500" size={16} />, label: 'Danger' },
+        tip: { border: 'border-green-400', bg: 'bg-green-50 dark:bg-green-950/30', title: 'text-green-700 dark:text-green-300', body: 'text-green-800 dark:text-green-200', icon: <FaLightbulb className="text-green-500" size={16} />, label: 'Tip' },
       };
       const s = styles[type];
       return (
-        <div
-          className={`border-l-4 ${s.border} ${s.bg} p-4 my-3 rounded-r-lg`}
-          {...props}
-        >
-          <div
-            className={`flex items-center gap-2 font-semibold ${s.title} mb-2`}
-          >
-            {s.icon} {s.label}
-          </div>
+        <div className={`border-l-4 ${s.border} ${s.bg} p-4 my-3 rounded-r-lg`} {...props}>
+          <div className={`flex items-center gap-2 font-semibold ${s.title} mb-2`}>{s.icon} {s.label}</div>
           <div className={s.body}>{children}</div>
         </div>
       );
     }
-    return (
-      <div className={className} style={style} {...props}>
-        {children}
-      </div>
-    );
+    return <div className={className} style={style} {...props}>{children}</div>;
   },
 };
 
 /* ── Toolbar group separator ──────────────────────────────────── */
-const Sep = () => (
-  <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-0.5" />
-);
+const Sep = () => <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-0.5" />;
 
 /* ── Single toolbar button ────────────────────────────────────── */
 const TBtn = ({
@@ -1072,98 +935,47 @@ const HEADING_LEVELS = [
 
 /* ── Image insert dialog constants ─────────────────────────── */
 const IMAGE_SIZES = [
-  { value: "25", label: "Small (25%)" },
-  { value: "50", label: "Medium (50%)" },
-  { value: "75", label: "Large (75%)" },
-  { value: "100", label: "Full Width (100%)" },
+  { value: '25', label: 'Small (25%)' },
+  { value: '50', label: 'Medium (50%)' },
+  { value: '75', label: 'Large (75%)' },
+  { value: '100', label: 'Full Width (100%)' },
 ];
 
 const IMAGE_ALIGNS = [
-  { value: "none", label: "Default", icon: FaAlignLeft, desc: "Normal flow" },
-  {
-    value: "left",
-    label: "Float Left",
-    icon: FaAlignLeft,
-    desc: "Text wraps right",
-  },
-  {
-    value: "center",
-    label: "Center",
-    icon: FaAlignCenter,
-    desc: "Centered block",
-  },
-  {
-    value: "right",
-    label: "Float Right",
-    icon: FaAlignRight,
-    desc: "Text wraps left",
-  },
+  { value: 'none', label: 'Default', icon: FaAlignLeft, desc: 'Normal flow' },
+  { value: 'left', label: 'Float Left', icon: FaAlignLeft, desc: 'Text wraps right' },
+  { value: 'center', label: 'Center', icon: FaAlignCenter, desc: 'Centered block' },
+  { value: 'right', label: 'Float Right', icon: FaAlignRight, desc: 'Text wraps left' },
 ];
 
 const CALLOUT_TYPES = [
-  {
-    type: "info",
-    label: "Info",
-    icon: FaInfoCircle,
-    color: "text-blue-500",
-    desc: "Informational note",
-  },
-  {
-    type: "tip",
-    label: "Tip",
-    icon: FaLightbulb,
-    color: "text-green-500",
-    desc: "Helpful tip",
-  },
-  {
-    type: "warning",
-    label: "Warning",
-    icon: FaExclamationTriangle,
-    color: "text-yellow-500",
-    desc: "Warning notice",
-  },
-  {
-    type: "danger",
-    label: "Danger",
-    icon: FaExclamationCircle,
-    color: "text-red-500",
-    desc: "Danger alert",
-  },
+  { type: 'info', label: 'Info', icon: FaInfoCircle, color: 'text-blue-500', desc: 'Informational note' },
+  { type: 'tip', label: 'Tip', icon: FaLightbulb, color: 'text-green-500', desc: 'Helpful tip' },
+  { type: 'warning', label: 'Warning', icon: FaExclamationTriangle, color: 'text-yellow-500', desc: 'Warning notice' },
+  { type: 'danger', label: 'Danger', icon: FaExclamationCircle, color: 'text-red-500', desc: 'Danger alert' },
 ];
 
 const ImageInsertDialog = ({ open, onClose, onInsert, imageName }) => {
-  const [size, setSize] = useState("100");
-  const [align, setAlign] = useState("none");
+  const [size, setSize] = useState('100');
+  const [align, setAlign] = useState('none');
 
   useEffect(() => {
-    if (open) {
-      setSize("100");
-      setAlign("none");
-    }
+    if (open) { setSize('100'); setAlign('none'); }
   }, [open]);
 
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40"
-      onMouseDown={onClose}
-    >
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40" onMouseDown={onClose}>
       <div
         className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-sm mx-4 p-5"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">
-          Insert Image
-        </h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 truncate">
-          {imageName}
-        </p>
+        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Insert Image</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 truncate">{imageName}</p>
 
         <div className="mb-4">
-          <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2 block">
-            Size
-          </label>
+          <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2 block">Size</label>
           <div className="grid grid-cols-2 gap-2">
             {IMAGE_SIZES.map(({ value, label }) => (
               <button
@@ -1172,8 +984,8 @@ const ImageInsertDialog = ({ open, onClose, onInsert, imageName }) => {
                 onClick={() => setSize(value)}
                 className={`px-3 py-2 text-xs rounded-lg border transition-colors font-medium ${
                   size === value
-                    ? "bg-blue-50 border-blue-400 text-blue-700 dark:bg-blue-900/40 dark:border-blue-500 dark:text-blue-300"
-                    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    ? 'bg-blue-50 border-blue-400 text-blue-700 dark:bg-blue-900/40 dark:border-blue-500 dark:text-blue-300'
+                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 {label}
@@ -1183,9 +995,7 @@ const ImageInsertDialog = ({ open, onClose, onInsert, imageName }) => {
         </div>
 
         <div className="mb-5">
-          <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2 block">
-            Alignment
-          </label>
+          <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2 block">Alignment</label>
           <div className="grid grid-cols-2 gap-2">
             {IMAGE_ALIGNS.map(({ value, label, icon: AIcon, desc }) => (
               <button
@@ -1194,16 +1004,14 @@ const ImageInsertDialog = ({ open, onClose, onInsert, imageName }) => {
                 onClick={() => setAlign(value)}
                 className={`flex items-center gap-2 px-3 py-2 text-xs rounded-lg border transition-colors font-medium ${
                   align === value
-                    ? "bg-blue-50 border-blue-400 text-blue-700 dark:bg-blue-900/40 dark:border-blue-500 dark:text-blue-300"
-                    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    ? 'bg-blue-50 border-blue-400 text-blue-700 dark:bg-blue-900/40 dark:border-blue-500 dark:text-blue-300'
+                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <AIcon size={11} />
                 <div className="text-left">
                   <div>{label}</div>
-                  <div className="text-[10px] opacity-60 font-normal">
-                    {desc}
-                  </div>
+                  <div className="text-[10px] opacity-60 font-normal">{desc}</div>
                 </div>
               </button>
             ))}
@@ -1237,23 +1045,16 @@ const MarkdownEditor = ({
   onSave,
   placeholder = "Click to edit content…",
   className = "",
-  showDocImport = false,
-  showTemplateDownload = true,
-  docTemplateUrl = "",
-  docTemplateLabel = "Download Template",
-  importHelpText = "Download template - fill rows in Word - Import DOCX - Save.",
 }) => {
   const { data, updateData, isEditing } = useEdit();
   const textareaRef = useRef(null);
   const imageInputRef = useRef(null);
   const fileInputRef = useRef(null);
-  const importFileRef = useRef(null);
   const headingDropdownRef = useRef(null);
   const alignDropdownRef = useRef(null);
   const calloutDropdownRef = useRef(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
-  const [uploadingImport, setUploadingImport] = useState(false);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
   const [headingOpen, setHeadingOpen] = useState(false);
@@ -1261,8 +1062,8 @@ const MarkdownEditor = ({
   const [calloutOpen, setCalloutOpen] = useState(false);
   const [splitPreview, setSplitPreview] = useState(false);
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
-  const [pendingImageUrl, setPendingImageUrl] = useState("");
-  const [pendingImageName, setPendingImageName] = useState("");
+  const [pendingImageUrl, setPendingImageUrl] = useState('');
+  const [pendingImageName, setPendingImageName] = useState('');
 
   const getValueFromPath = (obj, p) => {
     if (!p || !obj) return undefined;
@@ -1275,35 +1076,24 @@ const MarkdownEditor = ({
   const displayValue =
     value !== undefined ? value : path ? getValueFromPath(data, path) : "";
 
-  const [currentValue, setCurrentValue] = useState(
-    htmlToMarkdown(displayValue || ""),
-  );
+  const [currentValue, setCurrentValue] = useState(displayValue || "");
   const [localEditing, setLocalEditing] = useState(false);
   const [preview, setPreview] = useState(false);
 
   useEffect(() => {
-    setCurrentValue(htmlToMarkdown(displayValue || ""));
+    setCurrentValue(displayValue || "");
   }, [displayValue]);
 
   // Close dropdowns on outside click
   useEffect(() => {
     const handleOutsideClick = (e) => {
-      if (
-        headingDropdownRef.current &&
-        !headingDropdownRef.current.contains(e.target)
-      ) {
+      if (headingDropdownRef.current && !headingDropdownRef.current.contains(e.target)) {
         setHeadingOpen(false);
       }
-      if (
-        alignDropdownRef.current &&
-        !alignDropdownRef.current.contains(e.target)
-      ) {
+      if (alignDropdownRef.current && !alignDropdownRef.current.contains(e.target)) {
         setAlignOpen(false);
       }
-      if (
-        calloutDropdownRef.current &&
-        !calloutDropdownRef.current.contains(e.target)
-      ) {
+      if (calloutDropdownRef.current && !calloutDropdownRef.current.contains(e.target)) {
         setCalloutOpen(false);
       }
     };
@@ -1454,10 +1244,7 @@ const MarkdownEditor = ({
       setTimeout(() => {
         if (el) {
           el.focus();
-          el.setSelectionRange(
-            lineStart + newLine.length,
-            lineStart + newLine.length,
-          );
+          el.setSelectionRange(lineStart + newLine.length, lineStart + newLine.length);
         }
       }, 0);
     },
@@ -1478,7 +1265,9 @@ const MarkdownEditor = ({
         .map((line, i) => `> ${line}` + (i < lines.length - 1 ? "  " : ""))
         .join("\n");
       const next =
-        currentValue.substring(0, start) + quoted + currentValue.substring(end);
+        currentValue.substring(0, start) +
+        quoted +
+        currentValue.substring(end);
       setCurrentValue(next);
       setTimeout(() => {
         if (el) {
@@ -1487,8 +1276,7 @@ const MarkdownEditor = ({
         }
       }, 0);
     } else {
-      const template =
-        "> Quote line one  \n> Quote line two  \n> Quote line three";
+      const template = "> Quote line one  \n> Quote line two  \n> Quote line three";
       const next =
         currentValue.substring(0, start) +
         template +
@@ -1536,11 +1324,11 @@ const MarkdownEditor = ({
     const start = el ? el.selectionStart : currentValue.length;
     const end = el ? el.selectionEnd : currentValue.length;
     const selected = currentValue.substring(start, end);
-    const block = selected
-      ? "```\n" + selected + "\n```"
-      : "```\ncode here\n```";
+    const block = selected ? "```\n" + selected + "\n```" : "```\ncode here\n```";
     const next =
-      currentValue.substring(0, start) + block + currentValue.substring(end);
+      currentValue.substring(0, start) +
+      block +
+      currentValue.substring(end);
     setCurrentValue(next);
     setTimeout(() => {
       if (el) {
@@ -1559,13 +1347,9 @@ const MarkdownEditor = ({
       const el = textareaRef.current;
       const start = el ? el.selectionStart : currentValue.length;
       const end = el ? el.selectionEnd : currentValue.length;
-      const selected =
-        currentValue.substring(start, end) || "Your content here";
+      const selected = currentValue.substring(start, end) || "Your content here";
       const wrapped = `\n:::${type}\n${selected}\n:::\n`;
-      const next =
-        currentValue.substring(0, start) +
-        wrapped +
-        currentValue.substring(end);
+      const next = currentValue.substring(0, start) + wrapped + currentValue.substring(end);
       setCurrentValue(next);
       setCalloutOpen(false);
       setTimeout(() => {
@@ -1586,21 +1370,18 @@ const MarkdownEditor = ({
       pushUndo();
       // Build attrs: width + optional alignment class
       const attrs = [`width=${size}%`];
-      if (align && align !== "none") {
+      if (align && align !== 'none') {
         attrs.push(`.align-${align}`);
       }
-      const imgMarkdown = `![${pendingImageName || "image"}](${pendingImageUrl}){${attrs.join(" ")}}`;
+      const imgMarkdown = `![${pendingImageName || 'image'}](${pendingImageUrl}){${attrs.join(' ')}}`;
       const el = textareaRef.current;
       const start = el ? el.selectionStart : currentValue.length;
       const end = el ? el.selectionEnd : currentValue.length;
-      const next =
-        currentValue.substring(0, start) +
-        imgMarkdown +
-        currentValue.substring(end);
+      const next = currentValue.substring(0, start) + imgMarkdown + currentValue.substring(end);
       setCurrentValue(next);
       setImageDialogOpen(false);
-      setPendingImageUrl("");
-      setPendingImageName("");
+      setPendingImageUrl('');
+      setPendingImageName('');
       setTimeout(() => {
         if (el) {
           el.focus();
@@ -1667,44 +1448,6 @@ const MarkdownEditor = ({
       setUploadingFile(false);
     }
   };
-
-  const handleDocImport = async (file) => {
-    if (!file) return;
-    setUploadingImport(true);
-    try {
-      const formData = new FormData();
-      formData.append("document", file);
-      const token = localStorage.getItem("adminToken");
-      const res = await axios.post("/api/convert/document", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (res.data.success && res.data.markdown) {
-        setCurrentValue((prev) =>
-          prev ? prev + "\n\n" + res.data.markdown : res.data.markdown,
-        );
-      }
-    } catch (err) {
-      console.error("Doc import failed:", err);
-      alert("Import failed: " + (err.response?.data?.message || err.message));
-    } finally {
-      setUploadingImport(false);
-    }
-  };
-
-  const handleTemplateDownload = useCallback(() => {
-    if (!docTemplateUrl) return;
-    const link = document.createElement("a");
-    link.href = docTemplateUrl;
-    link.download = "";
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }, [docTemplateUrl]);
 
   /* ── Keyboard shortcuts ─────────────────────────────────────── */
   const handleKeyDown = useCallback(
@@ -1784,24 +1527,14 @@ const MarkdownEditor = ({
           e.target.value = "";
         }}
       />
-      <input
-        ref={importFileRef}
-        type="file"
-        accept=".docx,.pdf"
-        className="hidden"
-        onChange={(e) => {
-          if (e.target.files[0]) handleDocImport(e.target.files[0]);
-          e.target.value = "";
-        }}
-      />
 
       {/* Image sizing & alignment dialog */}
       <ImageInsertDialog
         open={imageDialogOpen}
         onClose={() => {
           setImageDialogOpen(false);
-          setPendingImageUrl("");
-          setPendingImageName("");
+          setPendingImageUrl('');
+          setPendingImageName('');
         }}
         onInsert={handleImageInsert}
         imageName={pendingImageName}
@@ -1826,10 +1559,7 @@ const MarkdownEditor = ({
             >
               <FaHeading size={11} />
               <span className="font-medium hidden sm:inline">Heading</span>
-              <FaChevronDown
-                size={8}
-                className={`transition-transform ${headingOpen ? "rotate-180" : ""}`}
-              />
+              <FaChevronDown size={8} className={`transition-transform ${headingOpen ? "rotate-180" : ""}`} />
             </button>
             {headingOpen && (
               <div className="absolute top-full left-0 mt-1 z-50 w-44 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1">
@@ -1843,9 +1573,7 @@ const MarkdownEditor = ({
                     }}
                     className={`flex items-center gap-2 w-full px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${size} text-gray-700 dark:text-gray-300`}
                   >
-                    <span className="text-gray-400 dark:text-gray-500 text-[10px] font-mono w-10 shrink-0">
-                      {"#".repeat(level)}
-                    </span>
+                    <span className="text-gray-400 dark:text-gray-500 text-[10px] font-mono w-10 shrink-0">{"#".repeat(level)}</span>
                     {label}
                   </button>
                 ))}
@@ -1893,20 +1621,13 @@ const MarkdownEditor = ({
               title="Text Alignment"
             >
               <FaAlignCenter size={11} />
-              <FaChevronDown
-                size={8}
-                className={`transition-transform ${alignOpen ? "rotate-180" : ""}`}
-              />
+              <FaChevronDown size={8} className={`transition-transform ${alignOpen ? "rotate-180" : ""}`} />
             </button>
             {alignOpen && (
               <div className="absolute top-full left-0 mt-1 z-50 w-44 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1">
                 {[
                   { align: "left", icon: FaAlignLeft, label: "Align Left" },
-                  {
-                    align: "center",
-                    icon: FaAlignCenter,
-                    label: "Align Center",
-                  },
+                  { align: "center", icon: FaAlignCenter, label: "Align Center" },
                   { align: "right", icon: FaAlignRight, label: "Align Right" },
                   { align: "justify", icon: FaAlignJustify, label: "Justify" },
                 ].map(({ align, icon: AIcon, label: lbl }) => (
@@ -1919,10 +1640,7 @@ const MarkdownEditor = ({
                     }}
                     className="flex items-center gap-2 w-full px-3 py-1.5 text-left text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <AIcon
-                      size={11}
-                      className="text-gray-400 dark:text-gray-500"
-                    />
+                    <AIcon size={11} className="text-gray-400 dark:text-gray-500" />
                     {lbl}
                   </button>
                 ))}
@@ -1947,32 +1665,27 @@ const MarkdownEditor = ({
             >
               <FaInfoCircle size={11} />
               <span className="font-medium hidden sm:inline">Callout</span>
-              <FaChevronDown
-                size={8}
-                className={`transition-transform ${calloutOpen ? "rotate-180" : ""}`}
-              />
+              <FaChevronDown size={8} className={`transition-transform ${calloutOpen ? "rotate-180" : ""}`} />
             </button>
             {calloutOpen && (
               <div className="absolute top-full left-0 mt-1 z-50 w-48 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1">
-                {CALLOUT_TYPES.map(
-                  ({ type, label, icon: CIcon, color, desc }) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        insertCallout(type);
-                      }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-left text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                    >
-                      <CIcon size={12} className={color} />
-                      <div>
-                        <div className="font-medium">{label}</div>
-                        <div className="text-[10px] text-gray-400">{desc}</div>
-                      </div>
-                    </button>
-                  ),
-                )}
+                {CALLOUT_TYPES.map(({ type, label, icon: CIcon, color, desc }) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      insertCallout(type);
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-left text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <CIcon size={12} className={color} />
+                    <div>
+                      <div className="font-medium">{label}</div>
+                      <div className="text-[10px] text-gray-400">{desc}</div>
+                    </div>
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -1988,9 +1701,7 @@ const MarkdownEditor = ({
           <TBtn
             icon={FaListOl}
             title="Numbered list"
-            onClick={() =>
-              insertAtCursor("\n1. Item 1\n2. Item 2\n3. Item 3\n")
-            }
+            onClick={() => insertAtCursor("\n1. Item 1\n2. Item 2\n3. Item 3\n")}
           />
           <TBtn
             icon={FaQuoteRight}
@@ -2010,7 +1721,11 @@ const MarkdownEditor = ({
               )
             }
           />
-          <TBtn icon={FaCode} title="Code block" onClick={insertCodeBlock} />
+          <TBtn
+            icon={FaCode}
+            title="Code block"
+            onClick={insertCodeBlock}
+          />
           <TBtn
             icon={FaMinus}
             title="Horizontal rule"
@@ -2083,9 +1798,7 @@ const MarkdownEditor = ({
 
         {/* ── Insert row ── */}
         <div className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-700/30 border-t border-gray-200 dark:border-gray-600">
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 mr-2">
-            Insert:
-          </span>
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 mr-2">Insert:</span>
           <TBtn
             icon={FaLink}
             title="Insert link (Ctrl+K)"
@@ -2118,15 +1831,10 @@ const MarkdownEditor = ({
         </div>
       ) : splitPreview ? (
         /* Split: editor left + live preview right */
-        <div
-          className="flex border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg overflow-hidden"
-          style={{ minHeight: "320px" }}
-        >
+        <div className="flex border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg overflow-hidden" style={{ minHeight: "320px" }}>
           <div className="w-1/2 flex flex-col border-r border-gray-200 dark:border-gray-700">
             <div className="px-3 py-1 bg-gray-100 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                Markdown
-              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Markdown</span>
             </div>
             <textarea
               ref={textareaRef}
@@ -2141,9 +1849,7 @@ const MarkdownEditor = ({
           </div>
           <div className="w-1/2 flex flex-col">
             <div className="px-3 py-1 bg-gray-100 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                Preview
-              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Preview</span>
             </div>
             <div className="flex-1 p-5 overflow-auto bg-white dark:bg-[#1a1a2e]">
               <FacilityGridLayout
@@ -2186,36 +1892,6 @@ const MarkdownEditor = ({
         >
           <FaTimes /> Cancel
         </button>
-        {showDocImport && showTemplateDownload && (
-          <button
-            type="button"
-            disabled={!docTemplateUrl}
-            onClick={handleTemplateDownload}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold text-sm shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Download DOCX template"
-          >
-            <FaDownload /> {docTemplateLabel}
-          </button>
-        )}
-        {showDocImport && (
-          <button
-            type="button"
-            disabled={uploadingImport}
-            onClick={() => importFileRef.current?.click()}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {uploadingImport ? (
-              <>
-                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Importing…
-              </>
-            ) : (
-              <>
-                <FaFileImport /> Import DOCX
-              </>
-            )}
-          </button>
-        )}
         {(uploadingImage || uploadingFile) && (
           <span className="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1.5 ml-2">
             <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -2223,11 +1899,6 @@ const MarkdownEditor = ({
           </span>
         )}
       </div>
-      {showDocImport && importHelpText ? (
-        <p className="text-xs text-gray-500 mt-1">
-          {importHelpText}
-        </p>
-      ) : null}
     </div>
   );
 };

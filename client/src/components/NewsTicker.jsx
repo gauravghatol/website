@@ -15,14 +15,14 @@ const NewsTicker = ({ items }) => {
   if (!items || items.length === 0) return null;
 
   return (
-    <div className="bg-ssgmce-orange text-white py-3 overflow-hidden">
+    <div className="bg-ssgmce-blue text-white py-2.5 overflow-hidden">
       <div className="container mx-auto px-4 flex items-center">
-        <div className="bg-ssgmce-dark-blue px-4 py-2 rounded font-bold mr-4 flex-shrink-0">
-          LATEST
+        <div className="bg-ssgmce-orange px-3 py-1 rounded text-xs font-semibold mr-4 flex-shrink-0 uppercase tracking-wide">
+          Latest
         </div>
         <div className="flex-1 overflow-hidden">
           <div className="animate-fade-in">
-            <span className="font-semibold">{items[currentIndex]?.title || 'Welcome to SSGMCE'}</span>
+            <span className="text-sm font-medium opacity-90">{items[currentIndex]?.title || 'Welcome to SSGMCE'}</span>
           </div>
         </div>
       </div>

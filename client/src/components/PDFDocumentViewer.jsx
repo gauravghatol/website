@@ -7,23 +7,21 @@ import { FaDownload, FaFilePdf, FaExternalLinkAlt, FaInfoCircle, FaChevronDown, 
  */
 const PDFDocumentViewer = ({ title, summary, pdfUrl, fileSize, year }) => {
   const [showFullSummary, setShowFullSummary] = useState(false);
-  const [iframeError, setIframeError] = useState(false);
 
   const isExternalUrl = pdfUrl && (pdfUrl.startsWith("http://") || pdfUrl.startsWith("https://"));
+  const isLocalPath = pdfUrl && pdfUrl.startsWith("/uploads/");
+
+  const handleViewOnline = () => {
+    window.open(pdfUrl, "_blank");
+  };
 
   const handleDownload = () => {
-    if (isExternalUrl) {
-      // Use proxy endpoint for cross-origin downloads
-      const proxyUrl = `/api/documents/proxy-download?url=${encodeURIComponent(pdfUrl)}&filename=${encodeURIComponent((title || "document") + ".pdf")}`;
-      window.open(proxyUrl, "_blank");
-    } else {
-      const link = document.createElement("a");
-      link.href = pdfUrl;
-      link.download = title ? `${title}.pdf` : "document.pdf";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    const link = document.createElement("a");
+    link.href = pdfUrl;
+    link.download = title ? `${title}.pdf` : "document.pdf";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // Truncate summary for preview
@@ -85,45 +83,22 @@ const PDFDocumentViewer = ({ title, summary, pdfUrl, fileSize, year }) => {
         </div>
       )}
 
-      {/* PDF Embedded Viewer */}
-      <div className="p-6 border-b border-gray-100">
-        <h4 className="font-semibold text-gray-700 mb-3">Document Preview</h4>
-        {!iframeError ? (
-          <div className="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-            <iframe
-              src={`${pdfUrl}#toolbar=1&navpanes=0`}
-              className="w-full h-full"
-              title={title}
-              onError={() => setIframeError(true)}
-            />
-          </div>
-        ) : (
-          <div className="w-full h-64 bg-gray-100 rounded-lg flex flex-col items-center justify-center text-gray-500">
-            <FaFilePdf className="text-5xl text-red-300 mb-4" />
-            <p className="text-lg font-medium">PDF Preview Unavailable</p>
-            <p className="text-sm mt-1">Click the button below to download or view the document</p>
-          </div>
-        )}
-      </div>
-
       {/* Download Section */}
       <div className="p-6 bg-gray-50 flex flex-col sm:flex-row gap-3">
         <button
-          onClick={handleDownload}
+          onClick={handleViewOnline}
           className="flex-1 flex items-center justify-center gap-2 bg-ssgmce-blue hover:bg-ssgmce-dark-blue text-white py-3 px-6 rounded-lg transition-colors font-medium shadow-md hover:shadow-lg"
+        >
+          <FaExternalLinkAlt />
+          View PDF Online
+        </button>
+        <button
+          onClick={handleDownload}
+          className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-gray-700 py-3 px-6 rounded-lg transition-colors font-medium border border-gray-200"
         >
           <FaDownload />
           Download PDF
         </button>
-        <a
-          href={pdfUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-gray-700 py-3 px-6 rounded-lg transition-colors font-medium border border-gray-200"
-        >
-          <FaExternalLinkAlt />
-          Open in New Tab
-        </a>
       </div>
     </div>
   );

@@ -1,30 +1,126 @@
-import { Link } from 'react-router-dom';
-import { FaGraduationCap, FaUsers, FaTrophy, FaBuilding, FaArrowRight, FaClock, FaMapMarkerAlt, FaMicroscope, FaHandshake } from 'react-icons/fa';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { FaGraduationCap, FaUsers, FaTrophy, FaBuilding, FaArrowRight, FaClock, FaMapMarkerAlt, FaMicroscope, FaHandshake, FaCheckCircle, FaPlus, FaMinus, FaQuoteLeft, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import StatCard from '../components/StatCard';
 import NewsCard from '../components/NewsCard';
 import NewsTicker from '../components/NewsTicker';
 import useFetch from '../hooks/useFetch';
+import { HOME_LEADERSHIP } from '../data/homeLeadership';
 import droneVideo from '../assets/images/home/drone shot.mp4';
+import mainGateImg from '../assets/images/home/Main-Gate.avif';
+import coCurricularImg from '../assets/images/about/vidyavibhag.jpeg';
+import extraCurricularImg from '../assets/images/about/Library.jpeg';
+import volunteerImg from '../assets/images/departments/it/industrial-visits/valuemomentum_pune_2025.png';
+import sportsImg from '../assets/images/departments/electrical/industrial-visits/tata_power_shahad_2024.png';
+import alumniWaghImg from '../assets/images/home/Alumni/Abhay_Wagh.jpg';
+import alumniKaulImg from '../assets/images/home/Alumni/Umesh_Kaul.jpg';
+import alumniWankhedeImg from '../assets/images/home/Alumni/Nitin-Wankhede.png';
+import alumniDeuskarImg from '../assets/images/home/Alumni/Ashutosh_Deuskar.jpg';
 
 const Home = () => {
   const { data: newsData } = useFetch('/api/news');
+  const [activeCorner, setActiveCorner] = useState('co-curricular');
+  const [alumniIndex, setAlumniIndex] = useState(0);
 
-  // Fallback data if API is empty
+  // Fallback data from official SSGMCE website
   const staticNews = [
-    { _id: '1', title: 'Admissions Open for Academic Year 2026-27', date: '2026-01-15', description: 'Applications are invited for UG and PG programs. Apply online now.', category: 'Admissions' },
-    { _id: '2', title: 'National Web Conference on Recent Trends', date: '2026-02-10', description: 'Department of Computer Science organizing a national level conference.', category: 'Events' },
-    { _id: '3', title: 'Outstanding Result in University Exams', date: '2026-01-05', description: 'SSGMCE students secure top 5 ranks in SGBAU University Exams.', category: 'Academic' },
+    { _id: '1', title: 'SWAYAM/NPTEL Registration Open for Quantum Computing Courses', date: '2026-01-24', description: 'Registration open for courses on Quantum Computing and Quantum Technology via SWAYAM/NPTEL portal.', category: 'Academic' },
+    { _id: '2', title: 'International Conference ICICGR 2026 by E&TC Dept', date: '2025-11-13', description: 'International Conference on Innovations in Communication, Geoscience and Robotics scheduled for 24-25 April 2026.', category: 'Events' },
+    { _id: '3', title: 'TCS Accredits SSGMCE as Top Priority College', date: '2025-07-09', description: 'Tata Consultancy Services officially accredited SSGMCE as a Top Priority College for campus placements.', category: 'Placements' },
+    { _id: '4', title: 'Gold Medal at Khelo India Games', date: '2025-07-03', description: 'Jayashri Shetye (Electrical Engg) won gold at Khelo India Games held at Diu & Daman.', category: 'Achievement' },
+    { _id: '5', title: 'Drone Club Wins First Prize at SPARK 2025', date: '2025-04-17', description: 'Students secured First Prize at National Level SPARK 2025 competition in drone technology.', category: 'Achievement' },
+    { _id: '6', title: 'NAAC Accreditation Received', date: '2024-12-21', description: 'SSGMCE successfully receives NAAC accreditation in the 3rd cycle. Congratulations to all stakeholders.', category: 'Accreditation' },
   ];
 
   const newsItems = (newsData && newsData.length > 0) ? newsData : staticNews;
 
+  const accreditations = [
+    { label: 'AICTE', desc: 'Approved' },
+    { label: 'NAAC', desc: 'Accredited' },
+    { label: 'NBA', desc: 'Accredited' },
+    { label: 'ISO 9001:2015', desc: 'Certified' },
+    { label: 'NIRF', desc: 'Ranked' },
+    { label: 'AAA', desc: 'Careers360' },
+  ];
+
+  const studentCornerItems = [
+    {
+      id: 'co-curricular',
+      title: 'Co-Curricular Activities',
+      image: coCurricularImg,
+      text: 'Co-curricular activities are designed to improve social skills, intellectual growth, moral values, and personality development among students.',
+    },
+    {
+      id: 'extra-curricular',
+      title: 'Extra-Curricular Activities',
+      image: extraCurricularImg,
+      text: 'Students actively participate in seminars, internships, industrial visits, student publications, and technical projects outside regular classroom sessions.',
+    },
+    {
+      id: 'volunteer',
+      title: 'Volunteer Work',
+      image: volunteerImg,
+      text: 'NSS and outreach activities encourage students to contribute to society through community work, awareness drives, and social responsibility initiatives.',
+    },
+    {
+      id: 'sports',
+      title: 'Sports Club',
+      image: sportsImg,
+      text: 'SSGMCE offers indoor and outdoor sports facilities that help students build discipline, fitness, leadership qualities, and team spirit.',
+    },
+  ];
+
+  const alumniHighlights = [
+    {
+      id: 'wagh',
+      org: 'DTE, Mumbai',
+      name: 'Mr. Abhay Wagh',
+      role: 'Director',
+      image: alumniWaghImg,
+    },
+    {
+      id: 'kaul',
+      org: 'IBM',
+      name: 'Mr. Umesh Kaul',
+      role: 'Executive Architect / Consultant',
+      image: alumniKaulImg,
+    },
+    {
+      id: 'wankhede',
+      org: 'Value Momentum, Hyderabad',
+      name: 'Mr. Nitin Wankhede',
+      role: 'Vice President - Client Services',
+      image: alumniWankhedeImg,
+    },
+    {
+      id: 'deuskar',
+      org: 'VDA Infosolutions',
+      name: 'Mr. Ashutosh Deuskar',
+      role: 'Director',
+      image: alumniDeuskarImg,
+    },
+  ];
+
+  const activeStudentCorner =
+    studentCornerItems.find((item) => item.id === activeCorner) || studentCornerItems[0];
+  const activeAlumni = alumniHighlights[alumniIndex];
+
+  const goToPrevAlumni = () => {
+    setAlumniIndex((prev) =>
+      prev === 0 ? alumniHighlights.length - 1 : prev - 1,
+    );
+  };
+
+  const goToNextAlumni = () => {
+    setAlumniIndex((prev) => (prev + 1) % alumniHighlights.length);
+  };
+
   return (
-    <div className="animation-fade-in font-sans">
-      
-      {/* Hero Video */}
-      <section className="relative h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10"></div>
+    <div className="animation-fade-in font-sans bg-white">
+
+      {/* Hero Section */}
+      <section className="relative h-[420px] md:h-[520px] lg:h-[620px] overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10"></div>
         <video
           src={droneVideo}
           autoPlay
@@ -33,58 +129,77 @@ const Home = () => {
           playsInline
           className="w-full h-full object-cover"
         />
-        <div className="absolute bottom-20 left-0 right-0 z-20 text-center text-white px-4">
-          <h2 className="text-3xl md:text-5xl font-bold mb-3 drop-shadow-lg tracking-wide">सर्वे भवन्तु सुखिनः</h2>
-          <p className="text-lg md:text-2xl font-light drop-shadow-md">Bestowed by the blessings of Shri Sant Gajanan Maharaj.</p>
+        <div className="absolute bottom-28 md:bottom-32 left-0 right-0 z-20 text-center text-white px-4">
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 drop-shadow-lg tracking-wide">सर्वे भवन्तु सुखिनः</h2>
+          <p className="text-base md:text-xl font-light drop-shadow-md max-w-2xl mx-auto opacity-90">Bestowed by the blessings of Shri Sant Gajanan Maharaj</p>
         </div>
       </section>
 
       {/* News Ticker */}
       <NewsTicker items={newsItems} />
 
-      {/* Info Boxes Section */}
-      <section className="py-12 bg-gray-50">
+      {/* Accreditations Bar */}
+      <section className="py-8 md:py-10 bg-gradient-to-r from-ssgmce-blue/[0.03] via-white to-ssgmce-orange/[0.03] border-b border-gray-100">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Box 1 */}
-            <div className="bg-[#003366] text-white p-8 rounded-xl shadow-xl hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <FaMicroscope size={80} />
+          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6">
+            {accreditations.map((item) => (
+              <div key={item.label} className="flex flex-col items-center bg-white border border-gray-100 rounded-xl px-5 py-3 md:px-6 md:py-4 shadow-sm hover:shadow-md transition-shadow min-w-[100px]">
+                <FaCheckCircle className="text-ssgmce-accent text-base mb-1.5" />
+                <span className="text-sm md:text-base font-bold text-gray-800 leading-tight">{item.label}</span>
+                <span className="text-xs text-ssgmce-muted mt-0.5">{item.desc}</span>
               </div>
-              <h3 className="text-2xl font-bold mb-4 relative z-10">Academic Excellence</h3>
-              <p className="mb-6 text-gray-200 leading-relaxed relative z-10">
-                Discover our diverse range of undergraduate and postgraduate programs designed to foster innovation and critical thinking.
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Info Cards Section */}
+      <section className="py-16 md:py-20 bg-ssgmce-surface">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800">What We <span className="text-ssgmce-blue">Offer</span></h2>
+            <p className="text-ssgmce-muted mt-3 max-w-xl mx-auto">AICTE approved, NAAC accredited, and NBA accredited programs since 1983</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+            {/* Academic Excellence */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+              <div className="w-14 h-14 bg-ssgmce-blue/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-ssgmce-blue/15 transition-colors">
+                <FaMicroscope className="text-ssgmce-blue text-xl" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Academic Excellence</h3>
+              <p className="text-ssgmce-muted leading-relaxed mb-6">
+                B.E., M.E., MBA and Ph.D. programs across 7 departments affiliated to SGBAU, Amravati with NAAC and NBA accreditation.
               </p>
-              <Link to="/departments" className="inline-flex items-center text-ssgmce-orange font-bold hover:text-white transition-colors uppercase tracking-wider text-sm">
-                Explore Programs <FaArrowRight className="ml-2" />
+              <Link to="/departments/applied-sciences" className="inline-flex items-center text-ssgmce-blue font-semibold hover:text-ssgmce-orange transition-colors text-sm group-hover:gap-2 gap-1">
+                Explore Programs <FaArrowRight className="text-xs" />
               </Link>
             </div>
 
-            {/* Box 2 */}
-            <div className="bg-[#ff9933] text-white p-8 rounded-xl shadow-xl hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <FaUsers size={80} />
+            {/* Student Life */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+              <div className="w-14 h-14 bg-ssgmce-orange/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-ssgmce-orange/15 transition-colors">
+                <FaUsers className="text-ssgmce-orange text-xl" />
               </div>
-              <h3 className="text-2xl font-bold mb-4 relative z-10">Student Life</h3>
-              <p className="mb-6 text-white/90 leading-relaxed relative z-10">
-                 Experience a vibrant campus life with numerous clubs, sports facilities, and cultural activities that shape your personality.
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Student Life</h3>
+              <p className="text-ssgmce-muted leading-relaxed mb-6">
+                IEEE, ISTE, ACM chapters, GDG club, Drone Club, E-Cell, NSS, NCC and cultural festivals like Pursuit and Parishkriti.
               </p>
-              <Link to="/gallery" className="inline-flex items-center text-[#003366] font-bold hover:text-white transition-colors uppercase tracking-wider text-sm">
-                View Gallery <FaArrowRight className="ml-2" />
+              <Link to="/gallery" className="inline-flex items-center text-ssgmce-blue font-semibold hover:text-ssgmce-orange transition-colors text-sm group-hover:gap-2 gap-1">
+                View Gallery <FaArrowRight className="text-xs" />
               </Link>
             </div>
 
-            {/* Box 3 */}
-            <div className="bg-[#e6f0fa] text-[#003366] p-8 rounded-xl shadow-xl hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden group border-t-4 border-[#003366]">
-              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <FaHandshake size={80} />
+            {/* Placements */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+              <div className="w-14 h-14 bg-ssgmce-accent/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-ssgmce-accent/15 transition-colors">
+                <FaHandshake className="text-ssgmce-accent text-xl" />
               </div>
-              <h3 className="text-2xl font-bold mb-4 relative z-10">Placements</h3>
-              <p className="mb-6 text-gray-600 leading-relaxed relative z-10">
-                Our collaborative efforts with top industries ensure excellent career opportunities for our students every year.
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Placements</h3>
+              <p className="text-ssgmce-muted leading-relaxed mb-6">
+                TCS Top Priority College with 35+ recruiters including Infosys, Wipro, Cognizant, Capgemini and more visiting annually.
               </p>
-              <Link to="/placements" className="inline-flex items-center text-ssgmce-orange font-bold hover:text-[#003366] transition-colors uppercase tracking-wider text-sm">
-                Placement Stats <FaArrowRight className="ml-2" />
+              <Link to="/placements/brochure" className="inline-flex items-center text-ssgmce-blue font-semibold hover:text-ssgmce-orange transition-colors text-sm group-hover:gap-2 gap-1">
+                Placement Stats <FaArrowRight className="text-xs" />
               </Link>
             </div>
           </div>
@@ -92,37 +207,36 @@ const Home = () => {
       </section>
 
       {/* About Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 md:py-20 bg-gradient-to-br from-white via-ssgmce-blue/[0.02] to-ssgmce-orange/[0.03]">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row gap-12 items-center">
+          <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center max-w-6xl mx-auto">
             <div className="lg:w-1/2">
               <div className="relative">
-                <div className="absolute -top-4 -left-4 w-24 h-24 bg-ssgmce-orange/20 rounded-full z-0"></div>
-                <img 
-                  src="https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800&q=80" 
-                  alt="College Campus" 
-                  className="rounded-lg shadow-2xl relative z-10 w-full object-cover h-[400px]"
+                <img
+                  src={mainGateImg}
+                  alt="SSGMCE Main Gate"
+                  className="rounded-2xl shadow-lg w-full object-cover h-[380px]"
                 />
-                <div className="absolute -bottom-6 -right-6 bg-white p-6 shadow-xl rounded-lg z-20 hidden md:block border-l-4 border-ssgmce-blue">
-                    <p className="text-4xl font-bold text-ssgmce-orange mb-1">40+</p>
-                    <p className="text-gray-600 text-sm font-semibold uppercase">Years of Excellence</p>
+                <div className="absolute -bottom-5 -right-5 bg-white py-5 px-6 shadow-lg rounded-xl z-20 hidden md:block border-l-4 border-ssgmce-blue">
+                    <p className="text-3xl font-bold text-ssgmce-orange mb-0.5">41+</p>
+                    <p className="text-ssgmce-muted text-xs font-semibold uppercase tracking-wide">Years of Excellence</p>
                 </div>
               </div>
             </div>
-            <div className="lg:w-1/2 space-y-6">
-              <h4 className="text-ssgmce-orange font-bold uppercase tracking-widest text-sm">Welcome to SSGMCE</h4>
+            <div className="lg:w-1/2 space-y-5">
+              <p className="text-ssgmce-orange font-semibold uppercase tracking-widest text-xs">Est. 1983 &middot; Shegaon</p>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 leading-tight">
                 Empowering Minds, <br/> <span className="text-ssgmce-blue">Enriching Lives.</span>
               </h2>
-              <p className="text-gray-600 leading-relaxed text-lg">
-                Shri Sant Gajanan Maharaj College of Engineering, Shegaon is one of the premier institutes of engineering in the region. Established in 1983, it has always strived for excellence in technical education.
+              <p className="text-ssgmce-muted leading-relaxed">
+                Established in 1983 by Shri Gajanan Shikshan Sanstha under Shri Sant Gajanan Maharaj Temple Trust, SSGMCE is one of the premier engineering institutes in Maharashtra, re-modeled into a smart, green and clean campus.
               </p>
-              <p className="text-gray-600 leading-relaxed">
-                The college is approved by AICTE, New Delhi and affiliated to Sant Gadge Baba Amravati University. We are committed to providing value-based education and creating globally competent technocrats.
+              <p className="text-ssgmce-muted leading-relaxed">
+                Approved by AICTE New Delhi, affiliated to SGBAU Amravati, accredited by NAAC and NBA, and ISO 9001:2015 certified. Rated AAA by Careers360 among the best engineering institutes in India.
               </p>
-              <div className="pt-4">
-                 <Link to="/about" className="bg-ssgmce-blue text-white px-8 py-3 rounded shadow hover:bg-blue-800 transition-colors font-semibold">
-                    Read More About Us
+              <div className="pt-2">
+                 <Link to="/about" className="inline-flex items-center gap-2 bg-ssgmce-blue text-white px-7 py-3 rounded-lg shadow-sm hover:bg-ssgmce-dark-blue transition-colors font-medium text-sm">
+                    Read More About Us <FaArrowRight className="text-xs" />
                  </Link>
               </div>
             </div>
@@ -131,42 +245,98 @@ const Home = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-[#003366] text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-        <div className="container mx-auto px-4 relative z-10">
+      <section className="py-16 md:py-20 bg-gradient-to-r from-ssgmce-blue/[0.04] via-ssgmce-surface to-ssgmce-blue/[0.04] border-y border-gray-100">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">SSGMCE in Numbers</h2>
-            <div className="w-24 h-1 bg-ssgmce-orange mx-auto"></div>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800">SSGMCE in <span className="text-ssgmce-blue">Numbers</span></h2>
+            <p className="text-ssgmce-muted mt-3">41 years of academic excellence and holistic development</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            <StatCard icon={FaBuilding} number="40+" label="Acres Campus" bgColor="bg-white/10" />
-            <StatCard icon={FaUsers} number="3000+" label="Students" bgColor="bg-white/10" />
-            <StatCard icon={FaGraduationCap} number="150+" label="Faculty Members" bgColor="bg-white/10" />
-            <StatCard icon={FaTrophy} number="12000+" label="Alumni Network" bgColor="bg-white/10" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6 max-w-4xl mx-auto">
+            <StatCard icon={FaBuilding} number="7" label="Departments" />
+            <StatCard icon={FaUsers} number="3000+" label="Students" />
+            <StatCard icon={FaGraduationCap} number="150+" label="Faculty Members" />
+            <StatCard icon={FaTrophy} number="12000+" label="Alumni Network" />
           </div>
         </div>
       </section>
 
-      {/* News & Events Split Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 md:py-20 bg-gradient-to-b from-white via-gray-50 to-white border-y border-gray-100">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            
+          <div className="mx-auto max-w-6xl text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gray-500">
+              Leadership Desk
+            </p>
+            <h2 className="mt-3 text-3xl font-bold text-gray-900 md:text-4xl">
+              Faculty <span className="text-ssgmce-blue">Members</span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-3xl text-sm leading-relaxed text-gray-600 md:text-base">
+              Key academic leaders of SSGMCE, including the Principal and all Heads of Department, presented with verified details and direct access to the institute&apos;s official social channels.
+            </p>
+          </div>
+
+          <div className="mx-auto mt-10 grid max-w-6xl gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            {HOME_LEADERSHIP.map((member) => (
+              <article
+                key={member.id}
+                className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+              >
+                <div className="aspect-[4/3.55] overflow-hidden bg-gray-100">
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="h-full w-full object-cover object-top"
+                  />
+                </div>
+
+                <div className="min-h-[170px] bg-white px-4 py-4">
+                  <div className="mb-3 h-1.5 w-10 rounded-full bg-gray-200" />
+                  <h3 className="text-[1.2rem] font-bold leading-tight text-gray-900">{member.name}</h3>
+                  <p className="mt-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ssgmce-blue">
+                    {member.designation}
+                  </p>
+                  <p className="mt-1.5 text-[0.96rem] leading-relaxed text-gray-700">
+                    {member.department}
+                  </p>
+                  {member.email && (
+                    <p className="mt-2.5 text-[12px] text-gray-500 break-all">{member.email}</p>
+                  )}
+                </div>
+
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-10 text-center">
+            <Link
+              to="/faculty"
+              className="inline-flex items-center gap-2 rounded-full border border-ssgmce-blue px-6 py-3 text-sm font-semibold text-ssgmce-blue transition-colors hover:bg-ssgmce-blue hover:text-white"
+            >
+              Explore Faculty Directory <FaArrowRight className="text-[10px]" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* News & Events Section */}
+      <section className="py-16 md:py-20 bg-gradient-to-bl from-white via-ssgmce-orange/[0.02] to-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 max-w-6xl mx-auto">
+
             {/* Latest News */}
             <div>
               <div className="flex justify-between items-end mb-8">
                  <div>
-                    <h2 className="text-3xl font-bold text-gray-800">Latest <span className="text-ssgmce-blue">News</span></h2>
-                    <div className="w-16 h-1 bg-ssgmce-orange mt-2"></div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Latest <span className="text-ssgmce-blue">News</span></h2>
+                    <div className="w-12 h-0.5 bg-ssgmce-orange mt-3 rounded-full"></div>
                  </div>
-                 <Link to="/news" className="text-sm font-bold text-ssgmce-blue hover:text-ssgmce-orange transition-colors">View All News &rarr;</Link>
+                 <Link to="/news" className="text-sm font-medium text-ssgmce-blue hover:text-ssgmce-orange transition-colors">View All &rarr;</Link>
               </div>
-              <div className="space-y-4">
-                {newsItems.slice(0, 3).map((item) => (
-                    <NewsCard 
-                      key={item._id} 
-                      title={item.title} 
-                      date={item.date} 
+              <div className="space-y-3">
+                {newsItems.slice(0, 4).map((item) => (
+                    <NewsCard
+                      key={item._id}
+                      title={item.title}
+                      date={item.date}
                       description={item.description}
                       category={item.category || 'General'}
                     />
@@ -178,52 +348,53 @@ const Home = () => {
             <div>
               <div className="flex justify-between items-end mb-8">
                  <div>
-                    <h2 className="text-3xl font-bold text-gray-800">Upcoming <span className="text-ssgmce-orange">Events</span></h2>
-                    <div className="w-16 h-1 bg-[#003366] mt-2"></div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Upcoming <span className="text-ssgmce-orange">Events</span></h2>
+                    <div className="w-12 h-0.5 bg-ssgmce-blue mt-3 rounded-full"></div>
                  </div>
-                 <Link to="/events" className="text-sm font-bold text-ssgmce-blue hover:text-ssgmce-orange transition-colors">Calendar &rarr;</Link>
+                 <Link to="/events" className="text-sm font-medium text-ssgmce-blue hover:text-ssgmce-orange transition-colors">Calendar &rarr;</Link>
               </div>
-              <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
+              <div className="bg-ssgmce-surface rounded-xl p-6 border border-gray-100">
                   {/* Event Item 1 */}
-                  <div className="flex gap-4 mb-6 pb-6 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
-                      <div className="text-center min-w-[60px]">
-                          <div className="text-2xl font-bold text-ssgmce-blue">25</div>
-                          <div className="text-xs uppercase font-bold text-gray-500">JAN</div>
+                  <div className="flex gap-4 mb-5 pb-5 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
+                      <div className="text-center min-w-[56px] bg-white rounded-lg py-2.5 px-3 shadow-sm border border-gray-100">
+                          <div className="text-xl font-bold text-ssgmce-blue leading-tight">24</div>
+                          <div className="text-[10px] uppercase font-semibold text-ssgmce-muted">APR</div>
                       </div>
                       <div>
-                          <h4 className="font-bold text-gray-800 hover:text-ssgmce-orange transition-colors cursor-pointer mb-1">Republic Day Celebration</h4>
-                          <div className="flex items-center text-xs text-gray-500 mb-2">
-                             <FaClock className="mr-1" size={10} /> 08:00 AM
-                             <FaMapMarkerAlt className="ml-3 mr-1" size={10} /> Main Ground
+                          <h4 className="font-semibold text-gray-800 hover:text-ssgmce-blue transition-colors cursor-pointer mb-1.5 text-sm">ICICGR 2026 — International Conference</h4>
+                          <div className="flex items-center text-xs text-ssgmce-muted">
+                             <FaClock className="mr-1.5" size={10} /> 09:00 AM
+                             <FaMapMarkerAlt className="ml-3 mr-1.5" size={10} /> E&TC Department
                           </div>
+                          <p className="text-[10px] text-ssgmce-muted mt-1">Innovations in Communication, Geoscience and Robotics</p>
                       </div>
                   </div>
                   {/* Event Item 2 */}
-                  <div className="flex gap-4 mb-6 pb-6 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
-                      <div className="text-center min-w-[60px]">
-                          <div className="text-2xl font-bold text-ssgmce-blue">12</div>
-                          <div className="text-xs uppercase font-bold text-gray-500">FEB</div>
+                  <div className="flex gap-4 mb-5 pb-5 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
+                      <div className="text-center min-w-[56px] bg-white rounded-lg py-2.5 px-3 shadow-sm border border-gray-100">
+                          <div className="text-xl font-bold text-ssgmce-blue leading-tight">--</div>
+                          <div className="text-[10px] uppercase font-semibold text-ssgmce-muted">2026</div>
                       </div>
                       <div>
-                          <h4 className="font-bold text-gray-800 hover:text-ssgmce-orange transition-colors cursor-pointer mb-1">Annual Social Gathering 'Sohala'</h4>
-                          <div className="flex items-center text-xs text-gray-500 mb-2">
-                             <FaClock className="mr-1" size={10} /> 10:00 AM
-                             <FaMapMarkerAlt className="ml-3 mr-1" size={10} /> Auditorium
+                          <h4 className="font-semibold text-gray-800 hover:text-ssgmce-blue transition-colors cursor-pointer mb-1.5 text-sm">Pursuit 2026 — Technical Festival</h4>
+                          <div className="flex items-center text-xs text-ssgmce-muted">
+                             <FaMapMarkerAlt className="mr-1.5" size={10} /> SSGMCE Campus
                           </div>
+                          <p className="text-[10px] text-ssgmce-muted mt-1">Annual technical fest with competitions and workshops</p>
                       </div>
                   </div>
-                   {/* Event Item 3 */}
-                   <div className="flex gap-4 mb-6 pb-6 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
-                      <div className="text-center min-w-[60px]">
-                          <div className="text-2xl font-bold text-ssgmce-blue">28</div>
-                          <div className="text-xs uppercase font-bold text-gray-500">FEB</div>
+                  {/* Event Item 3 */}
+                  <div className="flex gap-4 mb-5 pb-5 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
+                      <div className="text-center min-w-[56px] bg-white rounded-lg py-2.5 px-3 shadow-sm border border-gray-100">
+                          <div className="text-xl font-bold text-ssgmce-blue leading-tight">--</div>
+                          <div className="text-[10px] uppercase font-semibold text-ssgmce-muted">2026</div>
                       </div>
                       <div>
-                          <h4 className="font-bold text-gray-800 hover:text-ssgmce-orange transition-colors cursor-pointer mb-1">National Science Day Exhibition</h4>
-                          <div className="flex items-center text-xs text-gray-500 mb-2">
-                             <FaClock className="mr-1" size={10} /> 11:00 AM
-                             <FaMapMarkerAlt className="ml-3 mr-1" size={10} /> Science Block
+                          <h4 className="font-semibold text-gray-800 hover:text-ssgmce-blue transition-colors cursor-pointer mb-1.5 text-sm">Parishkriti 2026 — Cultural Festival</h4>
+                          <div className="flex items-center text-xs text-ssgmce-muted">
+                             <FaMapMarkerAlt className="mr-1.5" size={10} /> SSGMCE Campus
                           </div>
+                          <p className="text-[10px] text-ssgmce-muted mt-1">Annual cultural celebration with performances and events</p>
                       </div>
                   </div>
               </div>
@@ -233,18 +404,146 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Recruiters Section (Placeholder) */}
-      <section className="py-12 bg-white border-t border-gray-100">
-         <div className="container mx-auto px-4 text-center">
-            <h3 className="text-xl font-bold text-gray-400 uppercase tracking-widest mb-8">Our Top Recruiters</h3>
-            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-               {/* Placeholders for logos - mimicking the effect */}
-               <div className="text-2xl font-bold font-serif text-blue-800">TCS</div>
-               <div className="text-2xl font-bold font-sans text-indigo-600">Infosys</div>
-               <div className="text-2xl font-bold font-mono text-green-700">Wipro</div>
-               <div className="text-2xl font-bold text-red-600">Tech Mahindra</div>
-               <div className="text-2xl font-bold font-slab text-orange-600">Cognizant</div>
-               <div className="text-2xl font-bold italic text-blue-500">Capgemini</div>
+      <section className="border-y border-gray-100 bg-gradient-to-b from-[#fbfcfe] via-white to-[#f8f9fc] py-10">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
+            <div className="flex h-full flex-col">
+              <div className="mb-3.5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-slate-400">
+                  Campus Life
+                </p>
+                <h3 className="text-[2rem] font-bold text-slate-900 md:text-[2.05rem]">
+                  Student&apos;s <span className="text-rose-400">Corner</span>
+                </h3>
+                <div className="mt-2 h-1 w-12 rounded-full bg-amber-300" />
+              </div>
+
+              <div className="flex flex-1 flex-col rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.22)] backdrop-blur-sm">
+                <div className="space-y-2.5">
+                  {studentCornerItems.map((item) => {
+                    const isActive = item.id === activeCorner;
+
+                    return (
+                      <div key={item.id} className="overflow-hidden rounded-[1.05rem] border border-slate-200/80 bg-white">
+                        <button
+                          type="button"
+                          onClick={() => setActiveCorner(item.id)}
+                          className={`flex w-full items-center gap-2.5 px-4 py-3 text-left transition-colors ${
+                            isActive ? 'bg-[#2f5f8d] text-white' : 'bg-[#f8fafc] text-[#2f5f8d] hover:bg-[#f1f5f9]'
+                          }`}
+                        >
+                          {isActive ? <FaMinus className="text-[10px]" /> : <FaPlus className="text-[10px]" />}
+                          <span className="text-[0.98rem] font-semibold leading-tight">{item.title}</span>
+                        </button>
+
+                        {isActive && (
+                          <div className="grid grid-cols-[88px,1fr] gap-3 bg-[#fcfdff] p-3 md:grid-cols-[104px,1fr]">
+                            <img
+                              src={activeStudentCorner.image}
+                              alt={activeStudentCorner.title}
+                              className="h-[74px] w-full rounded-md object-cover"
+                            />
+                            <p className="text-[0.89rem] leading-relaxed text-slate-600">
+                              {activeStudentCorner.text}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex h-full flex-col">
+              <div className="mb-3.5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-slate-400">
+                  Notable Alumni
+                </p>
+                <h3 className="text-[2rem] font-bold text-slate-900 md:text-[2.05rem]">
+                  Prestigious <span className="text-rose-400">Alumni</span>
+                </h3>
+                <div className="mt-2 h-1 w-12 rounded-full bg-amber-300" />
+              </div>
+
+              <div className="flex flex-1 flex-col rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.22)] backdrop-blur-sm">
+                <div className="flex h-full flex-col rounded-[20px] border border-slate-100 bg-gradient-to-b from-[#fdfefe] to-[#f7f9fc] px-4 py-5 md:px-5">
+                  <div className="flex items-center justify-between">
+                    <div className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      {String(alumniIndex + 1).padStart(2, '0')} / {String(alumniHighlights.length).padStart(2, '0')}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={goToPrevAlumni}
+                        className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 transition-colors hover:border-slate-300 hover:text-slate-700"
+                        aria-label="Previous alumni"
+                      >
+                        <FaChevronLeft className="text-sm" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={goToNextAlumni}
+                        className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 transition-colors hover:border-slate-300 hover:text-slate-700"
+                        aria-label="Next alumni"
+                      >
+                        <FaChevronRight className="text-sm" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-1 flex-col justify-center text-center">
+                    <FaQuoteLeft className="mx-auto mb-3 text-[2rem] text-slate-300" />
+
+                    <div className="mx-auto flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-white bg-white shadow-[0_10px_24px_-18px_rgba(15,23,42,0.4)] md:h-32 md:w-32">
+                      <img
+                        src={activeAlumni.image}
+                        alt={activeAlumni.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+
+                    <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.22em] text-slate-500 md:text-xs">
+                      {activeAlumni.org}
+                    </p>
+                    <h4 className="mt-2.5 text-[1.45rem] font-bold leading-tight text-slate-900 md:text-[1.65rem]">
+                      {activeAlumni.name}
+                    </h4>
+                    <p className="mt-1.5 text-base font-semibold text-amber-500">{activeAlumni.role}</p>
+
+                    <div className="mt-4 flex justify-center gap-1.5">
+                      {alumniHighlights.map((alumni, index) => (
+                        <button
+                          key={alumni.id}
+                          type="button"
+                          onClick={() => setAlumniIndex(index)}
+                          className={`h-2.5 rounded-full transition-all ${
+                            index === alumniIndex ? 'w-6 bg-[#2f5f8d]' : 'w-2.5 bg-slate-300 hover:bg-slate-400'
+                          }`}
+                          aria-label={`Show alumni ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Recruiters Section */}
+      <section className="py-14 bg-gradient-to-r from-ssgmce-blue/[0.03] via-ssgmce-surface to-ssgmce-orange/[0.03] border-t border-gray-100">
+         <div className="container mx-auto px-4 text-center max-w-5xl">
+            <p className="text-xs font-semibold text-ssgmce-muted uppercase tracking-[0.2em] mb-3">Our Esteemed Recruiters</p>
+            <p className="text-[10px] text-ssgmce-muted mb-8">TCS Top Priority College &middot; 35+ Companies</p>
+            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-14">
+               <div className="text-xl font-bold text-gray-300 hover:text-ssgmce-blue transition-colors duration-300">TCS</div>
+               <div className="text-xl font-bold text-gray-300 hover:text-ssgmce-blue transition-colors duration-300">Infosys</div>
+               <div className="text-xl font-bold text-gray-300 hover:text-ssgmce-blue transition-colors duration-300">Wipro</div>
+               <div className="text-xl font-bold text-gray-300 hover:text-ssgmce-blue transition-colors duration-300">Tech Mahindra</div>
+               <div className="text-xl font-bold text-gray-300 hover:text-ssgmce-blue transition-colors duration-300">Cognizant</div>
+               <div className="text-xl font-bold text-gray-300 hover:text-ssgmce-blue transition-colors duration-300">Capgemini</div>
             </div>
          </div>
       </section>

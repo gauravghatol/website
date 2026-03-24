@@ -1,9 +1,14 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaTrophy, FaChevronRight } from "react-icons/fa";
+import { useEdit } from "../contexts/EditContext";
+
+/** Convert a public path to a pageId slug: /facilities/sports/about → facilities-sports-about */
+const pathToPageId = (path) => path.replace(/^\//, "").replace(/\//g, "-");
 
 const SportsSidebar = () => {
   const location = useLocation();
+  const { isEditing } = useEdit();
 
   const menuItems = [
     { title: "About Sport Department", path: "/facilities/sports/about" },
@@ -27,11 +32,15 @@ const SportsSidebar = () => {
         <nav>
           <ul className="space-y-1.5">
             {menuItems.map((item, index) => {
-              const isActive = location.pathname === item.path;
+              const pageId = pathToPageId(item.path);
+              const to = isEditing ? `/admin/visual/${pageId}` : item.path;
+              const isActive =
+                location.pathname === item.path ||
+                (isEditing && location.pathname === `/admin/visual/${pageId}`);
               return (
                 <li key={index}>
                   <Link
-                    to={item.path}
+                    to={to}
                     className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm leading-snug transition-colors ${
                       isActive
                         ? "border-l-2 border-ssgmce-orange bg-orange-50 font-semibold text-ssgmce-blue"

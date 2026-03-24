@@ -327,7 +327,7 @@ const NIRFRanking = () => {
 
         {/* Year Filter */}
         <div className="mb-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <label className="flex text-sm font-semibold text-gray-700 mb-3 items-center gap-2">
             <FaCalendarAlt className="text-ssgmce-blue" />
             Select Academic Year
           </label>

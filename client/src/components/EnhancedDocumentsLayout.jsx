@@ -17,6 +17,8 @@ const EnhancedDocumentsLayout = ({
   backgroundImage = "https://images.unsplash.com/photo-1568667256549-094345857637?w=1200&q=80",
   staticDocuments = [],
   showGrid = true,
+  introId,
+  documentsId,
 }) => {
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -42,7 +44,7 @@ const EnhancedDocumentsLayout = ({
           <div className="lg:col-span-9 space-y-8">
             {/* Description */}
             {description && (
-              <div className="bg-white rounded-xl shadow-md p-6">
+              <div id={introId} className="bg-white rounded-xl shadow-md p-6">
                 <div className="flex items-center gap-3 mb-3">
                   <FaFileAlt className="text-xl text-ssgmce-orange" />
                   <h2 className="text-xl font-bold text-ssgmce-blue">{pageTitle}</h2>
@@ -53,7 +55,7 @@ const EnhancedDocumentsLayout = ({
 
             {/* Static PDF Documents with Summaries */}
             {staticDocuments.length > 0 && (
-              <div className="space-y-6">
+              <div id={documentsId} className="space-y-6">
                 {staticDocuments.map((doc, index) => (
                   <PDFDocumentViewer
                     key={index}

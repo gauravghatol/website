@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { FaFacebook, FaTwitter, FaLinkedin, FaYoutube, FaInstagram, FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
+import { SOCIAL_LINKS } from '../constants/socialLinks';
 
 const Footer = () => {
   return (
@@ -15,26 +16,22 @@ const Footer = () => {
               in Maharashtra, affiliated to Sant Gadge Baba Amravati University and approved by AICTE.
             </p>
             <div className="flex gap-2">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" 
-                className="w-8 h-8 bg-ssgmce-blue rounded-full flex items-center justify-center hover:bg-ssgmce-orange transition-colors duration-300">
-                <FaFacebook className="text-sm" />
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
-                className="w-8 h-8 bg-ssgmce-blue rounded-full flex items-center justify-center hover:bg-ssgmce-orange transition-colors duration-300">
-                <FaTwitter className="text-sm" />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
-                className="w-8 h-8 bg-ssgmce-blue rounded-full flex items-center justify-center hover:bg-ssgmce-orange transition-colors duration-300">
-                <FaLinkedin className="text-sm" />
-              </a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer"
-                className="w-8 h-8 bg-ssgmce-blue rounded-full flex items-center justify-center hover:bg-ssgmce-orange transition-colors duration-300">
-                <FaYoutube className="text-sm" />
-              </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
-                className="w-8 h-8 bg-ssgmce-blue rounded-full flex items-center justify-center hover:bg-ssgmce-orange transition-colors duration-300">
-                <FaInstagram className="text-sm" />
-              </a>
+              {SOCIAL_LINKS.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <a
+                    key={item.id}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={item.label}
+                    title={item.label}
+                    className="w-8 h-8 bg-ssgmce-blue rounded-full flex items-center justify-center hover:bg-ssgmce-orange transition-colors duration-300"
+                  >
+                    <Icon className="text-sm" />
+                  </a>
+                );
+              })}
             </div>
           </div>
 

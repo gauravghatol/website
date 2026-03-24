@@ -15,8 +15,13 @@ export const useEdit = () => {
       isEditing: false,
       data: {},
       updateData: () => {},
-      removeData: () => {},
-      saveData: () => {},
+      saveData: async () => ({ success: false }),
+      addSection: () => {},
+      removeSection: () => {},
+      moveSection: () => {},
+      hasChanges: false,
+      undo: () => {},
+      canUndo: false,
     };
   }
   return context;
@@ -31,14 +36,24 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
   const [isEditing, setIsEditing] = useState(true);
   const [data, setData] = useState(initialData);
   const [hasChanges, setHasChanges] = useState(false);
+  const [history, setHistory] = useState([]);
 
-  /**
-   * Discard all unsaved changes and revert to the initial data
-   */
-  const discardChanges = () => {
-    setData(initialData);
-    setHasChanges(false);
+  const pushHistory = (snapshot) => {
+    setHistory((prev) => [...prev.slice(-49), snapshot]);
   };
+
+  const undo = () => {
+    setHistory((prev) => {
+      if (prev.length === 0) return prev;
+      const next = [...prev];
+      const snapshot = next.pop();
+      setData(snapshot);
+      setHasChanges(true);
+      return next;
+    });
+  };
+
+  const canUndo = history.length > 0;
 
   /**
    * Update a field in the data object using a path string
@@ -47,6 +62,7 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
    */
   const updateData = (path, value) => {
     setData((prevData) => {
+      pushHistory(prevData);
       const newData = { ...prevData };
       const keys = path.replace(/\[(\d+)\]/g, ".$1").split(".");
       let current = newData;
@@ -64,53 +80,6 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
       }
 
       current[keys[keys.length - 1]] = value;
-      setHasChanges(true);
-      return newData;
-    });
-  };
-
-  /**
-   * Remove a field from the data object using a path string
-   * @param {string} path - Dot notation path (e.g. "templateData.placements.details.2025-26")
-   */
-  const removeData = (path) => {
-    setData((prevData) => {
-      if (!path) return prevData;
-
-      const keys = path.replace(/\[(\d+)\]/g, ".$1").split(".");
-      const newData = Array.isArray(prevData) ? [...prevData] : { ...prevData };
-      let current = newData;
-
-      for (let i = 0; i < keys.length - 1; i++) {
-        const key = keys[i];
-        const next = current?.[key];
-
-        if (next === undefined || next === null || typeof next !== "object") {
-          return prevData;
-        }
-
-        current[key] = Array.isArray(next) ? [...next] : { ...next };
-        current = current[key];
-      }
-
-      const lastKey = keys[keys.length - 1];
-
-      if (Array.isArray(current)) {
-        const index = Number(lastKey);
-        if (!Number.isInteger(index) || index < 0 || index >= current.length) {
-          return prevData;
-        }
-        current.splice(index, 1);
-      } else if (
-        current &&
-        typeof current === "object" &&
-        Object.prototype.hasOwnProperty.call(current, lastKey)
-      ) {
-        delete current[lastKey];
-      } else {
-        return prevData;
-      }
-
       setHasChanges(true);
       return newData;
     });
@@ -166,10 +135,13 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
    * @param {object} section - Section object with sectionId, type, title, order, content
    */
   const addSection = (section) => {
-    setData((prev) => ({
-      ...prev,
-      sections: [...(prev.sections || []), section],
-    }));
+    setData((prev) => {
+      pushHistory(prev);
+      return {
+        ...prev,
+        sections: [...(prev.sections || []), section],
+      };
+    });
     setHasChanges(true);
   };
 
@@ -179,6 +151,7 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
    */
   const removeSection = (index) => {
     setData((prev) => {
+      pushHistory(prev);
       const sections = [...(prev.sections || [])];
       sections.splice(index, 1);
       // Re-sequence order so there are no gaps
@@ -195,6 +168,7 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
    */
   const moveSection = (index, direction) => {
     setData((prev) => {
+      pushHistory(prev);
       const sections = [...(prev.sections || [])];
       const swapIndex = direction === "up" ? index - 1 : index + 1;
       if (swapIndex < 0 || swapIndex >= sections.length) return prev;
@@ -218,13 +192,13 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
     data,
     setData,
     updateData,
-    removeData,
     saveData,
-    discardChanges,
     addSection,
     removeSection,
     moveSection,
     hasChanges,
+    undo,
+    canUndo,
   };
 
   return <EditContext.Provider value={value}>{children}</EditContext.Provider>;

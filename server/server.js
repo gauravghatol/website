@@ -18,7 +18,12 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(
   "/uploads",
   express.static(path.join(__dirname, "uploads"), {
+    maxAge: "7d",
+    etag: true,
+    lastModified: true,
     setHeaders: (res, filePath) => {
+      // Cache static uploads aggressively in browser for faster repeat views.
+      res.setHeader("Cache-Control", "public, max-age=604800, immutable");
       if (path.extname(filePath).toLowerCase() === ".pdf") {
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Disposition", "inline");
@@ -110,21 +115,21 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 // MongoDB Connection
+const mongoConnectStartedAt = Date.now();
 mongoose
   .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/ssgmce", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    family: 4,
+    serverSelectionTimeoutMS: 5000,
+    connectTimeoutMS: 10000,
+    socketTimeoutMS: 45000,
+    maxPoolSize: 20,
+    minPoolSize: 2,
   })
-  .then(async () => {
-    console.log("[OK] MongoDB Connected Successfully");
-    try {
-      await initializeDatabase();
-      console.log("[OK] Database initialized");
-    } catch (error) {
-      console.error("[ERROR] DB init error:", error);
-    }
+  .then(() => {
+    const connectMs = Date.now() - mongoConnectStartedAt;
+    console.log(`[OK] MongoDB Connected Successfully in ${connectMs}ms`);
 
-    // Start server only after DB is ready
+    // Start server as soon as DB socket is ready.
     app.listen(PORT, () => {
       console.log(`\n[SERVER] Running on port ${PORT}`);
       console.log(`[UPLOADS] http://localhost:${PORT}/uploads`);
@@ -132,6 +137,11 @@ mongoose
       console.log(`[PAGES] http://localhost:${PORT}/api/pages`);
       console.log(`\n[READY] Server is ready to accept requests!\n`);
     });
+
+    // Run seeding in background so startup is not blocked.
+    initializeDatabase()
+      .then(() => console.log("[OK] Database initialized"))
+      .catch((error) => console.error("[ERROR] DB init error:", error));
   })
   .catch((err) => {
     console.error("[ERROR] MongoDB Connection Error:", err);

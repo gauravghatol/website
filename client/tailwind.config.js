@@ -8,11 +8,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        'ssgmce-blue': '#003366',
-        'ssgmce-dark-blue': '#002244',
-        'ssgmce-light-blue': '#0066cc',
-        'ssgmce-orange': '#ff6600',
-        'ssgmce-light-orange': '#ff9933',
+        'ssgmce-blue': '#1e3a5f',
+        'ssgmce-dark-blue': '#152d4a',
+        'ssgmce-light-blue': '#4a90d9',
+        'ssgmce-orange': '#e07a3a',
+        'ssgmce-light-orange': '#f0a060',
+        'ssgmce-accent': '#2c7a7b',
+        'ssgmce-surface': '#f8fafc',
+        'ssgmce-muted': '#64748b',
       },
       fontFamily: {
         sans: ['Poppins', 'sans-serif'],

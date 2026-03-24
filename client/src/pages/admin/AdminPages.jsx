@@ -2,7 +2,17 @@ import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import AdminLayout from "../../components/admin/AdminLayout";
-import { FaSearch, FaChevronRight, FaChevronDown } from "react-icons/fa";
+import {
+  FaSearch,
+  FaChevronRight,
+  FaChevronDown,
+  FaBook,
+  FaHome,
+  FaTrophy,
+  FaCogs,
+  FaLaptop,
+  FaIdCard,
+} from "react-icons/fa";
 
 const CATEGORY_ORDER = [
   "about",
@@ -32,6 +42,149 @@ const CATEGORY_COLORS = {
   departments: "#f59e0b",
 };
 
+const NAVBAR_ROUTE_ORDER = {
+  about: [
+    "/about",
+    "/about/vision",
+    "/about/inspiration",
+    "/about/principal",
+    "/about/structure",
+    "/about/governing",
+    "/about/directors",
+    "/about/committees",
+    "/contact",
+  ],
+  academics: [
+    "/academics/planner",
+    "/academics/teaching",
+    "/academics/timetable",
+    "/academics/rules",
+    "/academics/syllabus",
+    "/academics/incentive",
+    "/academics/marks",
+    "/academics/rubrics",
+    "/academics/innovative",
+    "/academics/notices",
+    "/academics/reports",
+  ],
+  admissions: [
+    "/admissions/brochure",
+    "/admissions/ug",
+    "/admissions/pg",
+    "/admissions/dse",
+    "/admissions/mba",
+    "/admissions/phd",
+    "/admissions/fees",
+  ],
+  research: [
+    "/research/rdc",
+    "/research/policy",
+    "/research/coe",
+    "/research/publications",
+    "/research/ipr",
+    "/research/ug-projects",
+    "/research/phd",
+    "/research/collaboration",
+    "/research/iic",
+    "/research/nisp",
+    "/research/sabbatical",
+  ],
+  facilities: [
+    "/facilities/admin",
+    "/facilities/library",
+    "/facilities/hostels",
+    "/facilities/sports",
+    "/facilities/other",
+    "/facilities/computing",
+  ],
+  placements: [
+    "/placements/brochure",
+    "/placements/about",
+    "/placements/objectives",
+    "/placements/goals",
+    "/placements/coordinators",
+    "/placements/activities",
+    "/placements/statistics",
+    "/placements/recruiters",
+    "/placements/career",
+    "/placements/internship",
+    "/contact",
+  ],
+  iqac: [
+    "/iqac/vision",
+    "/iqac/composition",
+    "/iqac/minutes",
+    "/iqac/practices",
+    "/iqac/distinctiveness",
+    "/iqac/aqar",
+    "/iqac/naac",
+    "/iqac/feedback",
+    "/iqac/analysis",
+    "/iqac/survey",
+    "/iqac/gender",
+    "/iqac/equity",
+    "/iqac/econtent",
+    "/iqac/econtent-facility",
+  ],
+  documents: [
+    "/documents/policies",
+    "/documents/disclosure",
+    "/documents/naac",
+    "/documents/nba",
+    "/documents/iso",
+    "/documents/nirf",
+    "/documents/audit",
+    "/documents/aicte",
+    "/documents/financial",
+    "/documents/newsletter",
+    "/documents/tattwadarshi",
+  ],
+  activities: [
+    "/activities/innovo",
+    "/activities/drone",
+    "/activities/gdg",
+    "/activities/pursuit",
+    "/activities/parishkriti",
+    "/activities/social",
+    "/activities/cultural",
+    "/activities/ieee",
+    "/activities/iste",
+    "/activities/ecell",
+    "/activities/sae",
+    "/activities/xtreme",
+    "/activities/iei-mech",
+    "/activities/iei-elpo",
+    "/activities/acm",
+    "/activities/mesa",
+    "/activities/essa",
+    "/activities/csesa",
+    "/activities/mozilla",
+    "/activities/itsa",
+    "/activities/nss",
+    "/activities/uba",
+  ],
+  departments: [
+    "/departments/applied-sciences",
+    "/departments/cse",
+    "/departments/electrical",
+    "/departments/entc",
+    "/departments/it",
+    "/departments/mechanical",
+    "/departments/mba",
+  ],
+};
+
+const normalizeRoute = (route = "") =>
+  String(route || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\/+$/, "");
+
+const ADMIN_OFFICE_PAGE_PREFIX = "facilities-admin-office-";
+const ADMIN_OFFICE_ROUTE_PREFIX = "/facilities/admin-office/";
+const isAdminOfficePageId = (pageId = "") =>
+  String(pageId || "").startsWith(ADMIN_OFFICE_PAGE_PREFIX);
+
 // Valid top-level department pageIds — orphan sub-pages should be excluded
 const VALID_DEPT_PAGEIDS = new Set([
   "departments-cse",
@@ -43,6 +196,153 @@ const VALID_DEPT_PAGEIDS = new Set([
   "departments-applied-sciences",
 ]);
 
+// Valid academics pageIds — only these 11 pages should appear in academics
+const VALID_ACADEMICS_PAGEIDS = new Set([
+  "academics-planner",
+  "academics-teaching",
+  "academics-timetable",
+  "academics-rules",
+  "academics-syllabus",
+  "academics-incentive",
+  "academics-marks",
+  "academics-rubrics",
+  "academics-innovative",
+  "academics-notices",
+  "academics-reports",
+]);
+
+// Valid admissions pageIds — only these 13 pages should appear in admissions
+const VALID_ADMISSIONS_PAGEIDS = new Set([
+  "admissions-brochure",
+  "admissions-ug",
+  "admissions-pg",
+  "admissions-dse",
+  "admissions-mba",
+  "admissions-phd",
+  "admissions-fees",
+  "admissions-process",
+  "admissions-seat-matrix",
+  "admissions-documents",
+  "admissions-scholarships",
+  "admissions-faqs",
+  "admissions-contact",
+]);
+
+// Valid facilities pageIds — only these should appear in the admin panel
+const VALID_FACILITIES_PAGEIDS = new Set([
+  "facilities-administrative-office",
+  "facilities-computing",
+  "facilities-hostel-accommodation",
+  "facilities-hostel-admission",
+  "facilities-hostel-aicte",
+  "facilities-hostel-anti-ragging",
+  "facilities-hostel-brochure",
+  "facilities-hostel-committee",
+  "facilities-hostel-feedback",
+  "facilities-hostel-fees",
+  "facilities-hostel-minutes",
+  "facilities-hostel-notices",
+  "facilities-hostel-policy",
+  "facilities-hostel-posters",
+  "facilities-hostel-reports",
+  "facilities-hostels",
+  "facilities-library",
+  "facilities-library-about",
+  "facilities-library-books",
+  "facilities-library-coursera",
+  "facilities-library-facilities",
+  "facilities-library-hours",
+  "facilities-library-nptel",
+  "facilities-library-nptel-faculty",
+  "facilities-library-nptel-students",
+  "facilities-library-rules",
+  "facilities-library-services",
+  "facilities-library-staff",
+  "facilities-other",
+  "facilities-sports",
+  "facilities-sports-about",
+  "facilities-sports-achievements",
+  "facilities-sports-council",
+  "facilities-sports-indoor",
+  "facilities-sports-outdoor",
+  "facilities-sports-staff",
+  "facilities-sports-statistics",
+]);
+
+// Facilities hierarchy for admin page list (same order as frontend sidebar)
+const FACILITIES_NESTED = [
+  {
+    label: "Central Library",
+    icon: FaBook,
+    parentId: "facilities-library",
+    children: [
+      "facilities-library-about",
+      "facilities-library-rules",
+      "facilities-library-hours",
+      "facilities-library-services",
+      "facilities-library-facilities",
+      "facilities-library-nptel",
+      "facilities-library-nptel-faculty",
+      "facilities-library-nptel-students",
+      "facilities-library-coursera",
+      "facilities-library-books",
+      "facilities-library-staff",
+    ],
+  },
+  {
+    label: "Hostel",
+    icon: FaHome,
+    parentId: "facilities-hostels",
+    children: [
+      "facilities-hostel-policy",
+      "facilities-hostel-committee",
+      "facilities-hostel-brochure",
+      "facilities-hostel-anti-ragging",
+      "facilities-hostel-minutes",
+      "facilities-hostel-reports",
+      "facilities-hostel-posters",
+      "facilities-hostel-aicte",
+      "facilities-hostel-notices",
+      "facilities-hostel-fees",
+      "facilities-hostel-accommodation",
+      "facilities-hostel-admission",
+      "facilities-hostel-feedback",
+    ],
+  },
+  {
+    label: "Sports",
+    icon: FaTrophy,
+    parentId: "facilities-sports",
+    children: [
+      "facilities-sports-about",
+      "facilities-sports-council",
+      "facilities-sports-indoor",
+      "facilities-sports-outdoor",
+      "facilities-sports-achievements",
+      "facilities-sports-statistics",
+      "facilities-sports-staff",
+    ],
+  },
+  {
+    label: "Other Facilities",
+    icon: FaCogs,
+    parentId: "facilities-other",
+    children: [],
+  },
+  {
+    label: "Central Computing Facility",
+    icon: FaLaptop,
+    parentId: "facilities-computing",
+    children: [],
+  },
+  {
+    label: "Administrative Office",
+    icon: FaIdCard,
+    parentId: "facilities-administrative-office",
+    children: [],
+  },
+];
+
 const AdminPages = () => {
   const [searchParams] = useSearchParams();
   const [pages, setPages] = useState([]);
@@ -51,10 +351,13 @@ const AdminPages = () => {
   const [categoryFilter, setCategoryFilter] = useState(
     searchParams.get("category") || "all",
   );
-  const [collapsed, setCollapsed] = useState({});
+  const [expanded, setExpanded] = useState({});
+  const [expandedGroups, setExpandedGroups] = useState({});
 
   const toggleCategory = (cat) =>
-    setCollapsed((prev) => ({ ...prev, [cat]: !prev[cat] }));
+    setExpanded((prev) => ({ ...prev, [cat]: !prev[cat] }));
+  const toggleGroup = (key) =>
+    setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
 
   useEffect(() => {
     fetchPages();
@@ -76,13 +379,47 @@ const AdminPages = () => {
   const categories = [
     "all",
     ...new Set(pages.map((p) => p.category || "Uncategorized")),
-  ];
+  ].sort((a, b) => {
+    const normalize = (value) => String(value || "").toLowerCase();
+    const aKey = normalize(a);
+    const bKey = normalize(b);
+    if (aKey === "all") return -1;
+    if (bKey === "all") return 1;
+    const ai = CATEGORY_ORDER.indexOf(aKey);
+    const bi = CATEGORY_ORDER.indexOf(bKey);
+    if (ai !== -1 || bi !== -1) {
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+    }
+    return aKey.localeCompare(bKey);
+  });
 
   const filteredPages = pages.filter((page) => {
     // Exclude orphan department sub-pages (only show the 7 main departments)
     if (
       page.category === "departments" &&
       !VALID_DEPT_PAGEIDS.has(page.pageId)
+    ) {
+      return false;
+    }
+    // Exclude non-standard academics pages (only show the 11 defined pages)
+    if (
+      page.category === "academics" &&
+      !VALID_ACADEMICS_PAGEIDS.has(page.pageId)
+    ) {
+      return false;
+    }
+    // Exclude orphan admissions pages (only show the 13 defined pages)
+    if (
+      page.category === "admissions" &&
+      !VALID_ADMISSIONS_PAGEIDS.has(page.pageId)
+    ) {
+      return false;
+    }
+    // Exclude stale/orphan facilities pages not in the valid set
+    if (
+      page.category === "facilities" &&
+      !VALID_FACILITIES_PAGEIDS.has(page.pageId) &&
+      !isAdminOfficePageId(page.pageId)
     ) {
       return false;
     }
@@ -100,6 +437,54 @@ const AdminPages = () => {
     acc[cat].push(page);
     return acc;
   }, {});
+
+  const sortPagesByNavbarOrder = (category, categoryPages) => {
+    const routeOrder = NAVBAR_ROUTE_ORDER[String(category || "").toLowerCase()] || [];
+    const routeIndex = new Map(
+      routeOrder.map((route, index) => [normalizeRoute(route), index]),
+    );
+
+    const sorted = [...categoryPages].sort((a, b) => {
+      const aRouteIndex = routeIndex.has(normalizeRoute(a?.route))
+        ? routeIndex.get(normalizeRoute(a?.route))
+        : Number.MAX_SAFE_INTEGER;
+      const bRouteIndex = routeIndex.has(normalizeRoute(b?.route))
+        ? routeIndex.get(normalizeRoute(b?.route))
+        : Number.MAX_SAFE_INTEGER;
+      if (aRouteIndex !== bRouteIndex) return aRouteIndex - bRouteIndex;
+
+      const aNavOrder = Number.isFinite(a?.navOrder)
+        ? a.navOrder
+        : Number.MAX_SAFE_INTEGER;
+      const bNavOrder = Number.isFinite(b?.navOrder)
+        ? b.navOrder
+        : Number.MAX_SAFE_INTEGER;
+      if (aNavOrder !== bNavOrder) return aNavOrder - bNavOrder;
+
+      const aMenuOrder = Number.isFinite(Number(a?.menuOrder))
+        ? Number(a.menuOrder)
+        : Number.MAX_SAFE_INTEGER;
+      const bMenuOrder = Number.isFinite(Number(b?.menuOrder))
+        ? Number(b.menuOrder)
+        : Number.MAX_SAFE_INTEGER;
+      if (aMenuOrder !== bMenuOrder) return aMenuOrder - bMenuOrder;
+
+      return String(a?.pageTitle || "").localeCompare(
+        String(b?.pageTitle || ""),
+      );
+    });
+
+    const deduped = [];
+    const seenRoutes = new Set();
+    sorted.forEach((page) => {
+      const routeKey = normalizeRoute(page?.route);
+      if (routeKey && seenRoutes.has(routeKey)) return;
+      if (routeKey) seenRoutes.add(routeKey);
+      deduped.push(page);
+    });
+
+    return deduped;
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return "—";
@@ -172,7 +557,11 @@ const AdminPages = () => {
             .map(([category, categoryPages], idx) => {
               const color =
                 CATEGORY_COLORS[category.toLowerCase()] || "#6b7280";
-              const isCollapsed = collapsed[category];
+              const isOpen = expanded[category];
+              const orderedPages = sortPagesByNavbarOrder(category, categoryPages);
+              const midpoint = Math.ceil(orderedPages.length / 2);
+              const leftColumnPages = orderedPages.slice(0, midpoint);
+              const rightColumnPages = orderedPages.slice(midpoint);
               return (
                 <div key={category}>
                   {/* Category Row */}
@@ -180,10 +569,10 @@ const AdminPages = () => {
                     onClick={() => toggleCategory(category)}
                     className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors ${idx > 0 ? "border-t border-gray-100 dark:border-gray-800" : ""}`}
                   >
-                    {isCollapsed ? (
-                      <FaChevronRight className="text-xs text-gray-400 dark:text-gray-500" />
-                    ) : (
+                    {isOpen ? (
                       <FaChevronDown className="text-xs text-gray-400 dark:text-gray-500" />
+                    ) : (
+                      <FaChevronRight className="text-xs text-gray-400 dark:text-gray-500" />
                     )}
                     <span
                       className="w-2.5 h-2.5 rounded-full flex-shrink-0"
@@ -193,25 +582,154 @@ const AdminPages = () => {
                       {category}
                     </span>
                     <span className="text-sm text-gray-400 dark:text-gray-500 ml-1">
-                      {categoryPages.length}
+                      {orderedPages.length}
                     </span>
                   </button>
 
                   {/* Pages */}
-                  {!isCollapsed && (
-                    <div className="grid grid-cols-2 gap-x-0 border-t border-gray-100 dark:border-gray-800/60">
-                      {categoryPages.map((page) => (
-                        <Link
-                          key={page.pageId}
-                          to={`/admin/visual/${page.pageId}`}
-                          className="flex items-center px-4 py-2 pl-11 border-b border-gray-50 dark:border-gray-800/40 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
-                        >
-                          <span className="flex-1 text-base text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                            {page.pageTitle}
-                          </span>
-                          <FaChevronRight className="text-[10px] text-gray-200 dark:text-gray-700 group-hover:text-blue-400 ml-2 flex-shrink-0 transition-colors" />
-                        </Link>
-                      ))}
+                  {isOpen && category === "facilities" && (
+                    <div className="border-t border-gray-100 dark:border-gray-800/60">
+                      {(() => {
+                        const pageMap = new Map(orderedPages.map((p) => [p.pageId, p]));
+                        const term = searchTerm.toLowerCase();
+
+                        return FACILITIES_NESTED.map((group) => {
+                          const Icon = group.icon;
+                          const parentPage = pageMap.get(group.parentId);
+                          const childPages =
+                            group.parentId === "facilities-administrative-office"
+                              ? orderedPages
+                                  .filter(
+                                    (page) =>
+                                      isAdminOfficePageId(page.pageId) &&
+                                      normalizeRoute(page.route).startsWith(
+                                        ADMIN_OFFICE_ROUTE_PREFIX,
+                                      ),
+                                  )
+                                  .sort((a, b) => {
+                                    const routeA = normalizeRoute(a.route);
+                                    const routeB = normalizeRoute(b.route);
+                                    return routeA.localeCompare(routeB);
+                                  })
+                              : group.children
+                                  .map((id) => pageMap.get(id))
+                                  .filter(Boolean);
+
+                          if (term) {
+                            const groupMatches =
+                              group.label.toLowerCase().includes(term) ||
+                              parentPage?.pageTitle?.toLowerCase().includes(term);
+                            const matchingChildren = childPages.filter((p) =>
+                              p.pageTitle.toLowerCase().includes(term),
+                            );
+                            if (!groupMatches && matchingChildren.length === 0) {
+                              return null;
+                            }
+                          }
+
+                          const groupOpen = expandedGroups[group.parentId];
+                          const hasChildren = childPages.length > 0;
+
+                          return (
+                            <div key={group.parentId}>
+                              <div className="flex items-center border-b border-gray-100 dark:border-gray-800/40">
+                                {hasChildren ? (
+                                  <button
+                                    onClick={() => toggleGroup(group.parentId)}
+                                    className="flex items-center gap-2 pl-8 pr-2 py-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors flex-shrink-0"
+                                  >
+                                    {groupOpen ? (
+                                      <FaChevronDown className="text-[10px]" />
+                                    ) : (
+                                      <FaChevronRight className="text-[10px]" />
+                                    )}
+                                    <Icon className="text-sm text-emerald-600 dark:text-emerald-400" />
+                                  </button>
+                                ) : (
+                                  <span className="flex items-center gap-2 pl-8 pr-2 py-2 flex-shrink-0">
+                                    <span className="w-[10px]" />
+                                    <Icon className="text-sm text-emerald-600 dark:text-emerald-400" />
+                                  </span>
+                                )}
+                                <Link
+                                  to={`/admin/visual/${group.parentId}`}
+                                  className="flex-1 flex items-center py-2 pr-4 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
+                                >
+                                  <span className="flex-1 text-base font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                                    {group.label}
+                                  </span>
+                                  {hasChildren && (
+                                    <span className="text-xs text-gray-400 dark:text-gray-500 mr-2">
+                                      {childPages.length}
+                                    </span>
+                                  )}
+                                  <FaChevronRight className="text-[10px] text-gray-200 dark:text-gray-700 group-hover:text-blue-400 flex-shrink-0 transition-colors" />
+                                </Link>
+                              </div>
+
+                              {hasChildren && groupOpen && (
+                                <div className="bg-gray-50/50 dark:bg-gray-900/20 grid grid-cols-2 gap-x-0">
+                                  {childPages.map((page) => {
+                                    if (
+                                      term &&
+                                      !page.pageTitle.toLowerCase().includes(term) &&
+                                      !group.label.toLowerCase().includes(term)
+                                    ) {
+                                      return null;
+                                    }
+
+                                    return (
+                                      <Link
+                                        key={page.pageId}
+                                        to={`/admin/visual/${page.pageId}`}
+                                        className="flex items-center px-4 py-1.5 pl-[4.5rem] border-b border-gray-100/70 dark:border-gray-800/30 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
+                                      >
+                                        <span className="flex-1 text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                                          {page.pageTitle}
+                                        </span>
+                                        <FaChevronRight className="text-[9px] text-gray-200 dark:text-gray-700 group-hover:text-blue-400 ml-2 flex-shrink-0 transition-colors" />
+                                      </Link>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  )}
+
+                  {isOpen && category !== "facilities" && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 border-t border-gray-100 dark:border-gray-800/60">
+                      <div>
+                        {leftColumnPages.map((page) => (
+                          <Link
+                            key={page.pageId}
+                            to={`/admin/visual/${page.pageId}`}
+                            className="flex items-center px-4 py-2 pl-11 border-b border-gray-50 dark:border-gray-800/40 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
+                          >
+                            <span className="flex-1 text-base text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                              {page.pageTitle}
+                            </span>
+                            <FaChevronRight className="text-[10px] text-gray-200 dark:text-gray-700 group-hover:text-blue-400 ml-2 flex-shrink-0 transition-colors" />
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="md:border-l md:border-gray-100 dark:md:border-gray-800/60">
+                        {rightColumnPages.map((page) => (
+                          <Link
+                            key={page.pageId}
+                            to={`/admin/visual/${page.pageId}`}
+                            className="flex items-center px-4 py-2 pl-11 border-b border-gray-50 dark:border-gray-800/40 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
+                          >
+                            <span className="flex-1 text-base text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                              {page.pageTitle}
+                            </span>
+                            <FaChevronRight className="text-[10px] text-gray-200 dark:text-gray-700 group-hover:text-blue-400 ml-2 flex-shrink-0 transition-colors" />
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>

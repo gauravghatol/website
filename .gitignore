@@ -31,11 +31,24 @@ Thumbs.db
 desktop.ini
 
 # IDE
-.vscode/
+# .vscode/ — allow .vscode/settings.json for shared editor config
 .idea/
 *.swp
 *.swo
 *~
+
+# Uploaded files (runtime, not source)
+server/uploads/
+
+# Server log output files
+server-err.txt
+server-out.txt
+
+# Git merge conflict backup files
+*_BACKUP_*.js
+*_BASE_*.js
+*_LOCAL_*.js
+*_REMOTE_*.js
 
 # Testing
 coverage/
