@@ -148,21 +148,43 @@ const AdminAcademics = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
-            Academics Content
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Select a page to edit its content
-          </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
+              Academics Content
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              Manage all academic pages in one unified location
+            </p>
+          </div>
         </div>
+
+        {/* Quick Page Selector */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-3">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Quick Page Selector
+          </label>
+          <select
+            onChange={(e) => e.target.value && openPageEditor(e.target.value)}
+            defaultValue=""
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-[#1a1a2e] dark:text-gray-200 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
+          >
+            <option value="">Choose a page to edit...</option>
+            {ACADEMICS_EDITABLE_PAGES.map((pg) => (
+              <option key={pg.pageId} value={pg.pageId}>
+                {pg.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">
-              Academics Pages
+              All Academics Pages
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              All pages are editable via the markdown editor.
+              Click any page below to edit its content. All changes are saved in the database.
             </p>
           </div>
           <div className="divide-y divide-gray-100 dark:divide-gray-800">

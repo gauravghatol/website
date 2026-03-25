@@ -27,14 +27,6 @@ const AdminSidebar = ({ collapsed, setCollapsed }) => {
     : null;
   const superAdminOnly = (item) => ({ ...item, superAdminOnly: true });
 
-  const academicsPageItems = ACADEMICS_PAGE_LINKS.map((page) =>
-    superAdminOnly({
-      name: page.label,
-      path: `/admin/academics?pageId=${academicsPathToPageId(page.path)}`,
-      icon: FaFileAlt,
-    }),
-  );
-
   const allMenuItems = [
     { title: "Overview", items: [
       { name: "Dashboard", path: "/admin", icon: FaHome },
@@ -48,7 +40,6 @@ const AdminSidebar = ({ collapsed, setCollapsed }) => {
       { name: "Popup Banner", path: "/admin/popup-banner", icon: FaEye },
       { name: "Menu Manager", path: "/admin/menu-manager", icon: FaBars },
     ]},
-    { title: "Academics Pages", superAdminOnly: true, items: academicsPageItems },
     { title: "Academic Management", items: [
       superAdminOnly({ name: "Departments", path: "/admin/departments", icon: FaUniversity }),
       ...(isCoordinator && coordDeptPagePath
