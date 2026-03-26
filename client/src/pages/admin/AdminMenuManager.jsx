@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { isAcademicsWebsiteRoute } from "../../constants/academicsPages";
 import {
   FaBars,
   FaSave,
@@ -10,6 +11,17 @@ import {
   FaArrowDown,
   FaEdit,
 } from "react-icons/fa";
+
+const isLegacyAcademicsPage = (page) =>
+  (page.category || "").toLowerCase() === "academics" &&
+  !isAcademicsWebsiteRoute(page.route);
+
+const sanitizeMenuStructure = (structure = {}) => ({
+  ...structure,
+  academics: (structure.academics || []).filter((page) =>
+    isAcademicsWebsiteRoute(page.route),
+  ),
+});
 
 const AdminMenuManager = () => {
   const [pages, setPages] = useState([]);
@@ -48,10 +60,14 @@ const AdminMenuManager = () => {
       ]);
 
       if (pagesRes.data.success) {
-        setPages(pagesRes.data.data);
+        setPages(
+          (pagesRes.data.data || []).filter(
+            (page) => !isLegacyAcademicsPage(page),
+          ),
+        );
       }
       if (menuRes.data.success) {
-        setMenuStructure(menuRes.data.data);
+        setMenuStructure(sanitizeMenuStructure(menuRes.data.data));
       }
     } catch (error) {
       console.error("Error fetching data:", error);

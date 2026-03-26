@@ -1,35 +1,15 @@
 import React from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { FaGraduationCap, FaChevronRight } from "react-icons/fa";
+import {
+  ACADEMICS_PAGE_LINKS,
+  academicsPathToPageId,
+} from "../constants/academicsPages";
 import { useEdit } from "../contexts/EditContext";
-
-const pathToPageId = (path) => path.replace(/^\//, "").replace(/\//g, "-");
 
 const AcademicsSidebar = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { isEditing } = useEdit();
-
-  const links = [
-    { path: "/academics/planner", label: "Academic Planner & Calendar" },
-    { path: "/academics/teaching", label: "Teaching Learning Process" },
-    { path: "/academics/timetable", label: "Central Time Table" },
-    { path: "/academics/rules", label: "Rules & Regulations" },
-    { path: "/academics/syllabus", label: "Schemes & Syllabus" },
-    { path: "/academics/incentive", label: "Incentive Marks Scheme" },
-    { path: "/academics/marks", label: "Sessional Marks Evaluation" },
-    { path: "/academics/rubrics", label: "Rubrics" },
-    { path: "/academics/innovative", label: "Innovative Practices" },
-    { path: "/academics/notices", label: "Notice for Students" },
-    { path: "/academics/reports", label: "Annual Reports" },
-  ];
-
-  const handleLinkClick = (e, path) => {
-    if (isEditing) {
-      e.preventDefault();
-      navigate(`/admin/visual/${pathToPageId(path)}`);
-    }
-  };
 
   return (
     <div className="sticky top-24 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -42,21 +22,20 @@ const AcademicsSidebar = () => {
       <div className="p-3">
         <nav>
           <ul className="space-y-1.5">
-            {links.map((link) => {
+            {ACADEMICS_PAGE_LINKS.map((link) => {
+              const pageId = academicsPathToPageId(link.path);
+              const to = isEditing
+                ? `/admin/academics?pageId=${pageId}`
+                : link.path;
               const isActive =
                 location.pathname === link.path ||
                 (isEditing &&
-                  location.pathname ===
-                    `/admin/visual/${pathToPageId(link.path)}`);
+                  location.pathname === "/admin/academics" &&
+                  new URLSearchParams(location.search).get("pageId") === pageId);
               return (
                 <li key={link.path}>
                   <Link
-                    to={
-                      isEditing
-                        ? `/admin/visual/${pathToPageId(link.path)}`
-                        : link.path
-                    }
-                    onClick={(e) => handleLinkClick(e, link.path)}
+                    to={to}
                     className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm leading-snug transition-colors ${
                       isActive
                         ? "border-l-2 border-ssgmce-saffron bg-ssgmce-saffron/10 font-semibold text-ssgmce-blue"

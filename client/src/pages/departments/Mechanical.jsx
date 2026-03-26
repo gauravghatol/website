@@ -211,6 +211,76 @@ import AADhage from "../../assets/images/departments/mechanical/Staff/AADhage.jp
 import RNPachade from "../../assets/images/departments/mechanical/Staff/RNPachade.jpg";
 
 const MECH_DEFAULT_FACULTY = resolvedMechFaculty;
+const MECH_DEFAULT_DEPARTMENT_STAFF = [
+  { name: "Mr. G. R. Jodh", role: "Office Assistant", photo: GRJodh },
+  { name: "Mr. S. D. Deshmukh", role: "Lab Assistant", photo: SDDeshmukh },
+  { name: "Mr. G. A. Wayzode", role: "Lab Assistant", photo: GAWayzode },
+  { name: "Mr. R. O. Bedre", role: "Lab Assistant", photo: ROBedre },
+  { name: "Mr. P. M. Deshmukh", role: "Lab Assistant", photo: PMDeshmukh },
+  { name: "Mr. N. D. Kamavisdar", role: "Lab Assistant", photo: NDKamavisdar },
+  { name: "Mr. G. D. Ingle", role: "Lab Attendant", photo: GDIngle },
+  { name: "Mr. V. H. Akhare", role: "Lab Attendant", photo: VHAkhare },
+  { name: "Mr. V. S. Bharate", role: "Lab Attendant", photo: VSBharate },
+  { name: "Mr. O. S. Bhalerao", role: "Peon", photo: OSBhalerao },
+  { name: "Mr. D. B. Wadode", role: "Peon", photo: DBWadode },
+];
+const MECH_DEFAULT_WORKSHOP_STAFF = [
+  {
+    name: "Mr. Purushottam M. Dandwate",
+    role: "Lab Assistant (SGTR)",
+    photo: PMDandwate,
+  },
+  {
+    name: "Mr. Mahesh R. Dhoke",
+    role: "Attendant (Foundry & Smithy Shop)",
+    photo: MRDhoke,
+  },
+  {
+    name: "Mr. Vijaykumar S. Bharsakle",
+    role: "Lab Assistant (Machine Shop SGTR)",
+    photo: VSBharsakale,
+  },
+  {
+    name: "Mr. Murlidhar P. Rajurkar",
+    role: "Carpenter (Carpentry)",
+    photo: MPRajurkar,
+  },
+  {
+    name: "Mr. Vasudev S. Dhage",
+    role: "Attendant (Carpentry)",
+    photo: VSDhage,
+  },
+  {
+    name: "Mr. Rajesh J. Oimbe",
+    role: "Lab Assistant (Machine Shop)",
+    photo: RJOimbe,
+  },
+  {
+    name: "Mr. Vitthal R. Rahate",
+    role: "Attendant (Welding Shop)",
+    photo: VRRahate,
+  },
+  {
+    name: "Mr. Balkrishna S. Sonone",
+    role: "Attendant (Machine Shop)",
+    photo: BSSonone,
+  },
+  {
+    name: "Mr. Ganesh R. Payghan",
+    role: "Lab Assistant (Fitting Shop)",
+    photo: GRPayghan,
+  },
+  {
+    name: "Mr. Amol A. Dhage",
+    role: "Attendant (SGTR)",
+    photo: AADhage,
+  },
+  {
+    name: "Mr. Ramdas N. Pachade",
+    role: "Attendant (SGTR)",
+    photo: RNPachade,
+  },
+];
 
 // ---- Mechanical Pride Markdown helpers ----
 function mechParsePrideSections(markdown = "") {
@@ -1700,6 +1770,15 @@ const Mechanical = () => {
     );
     faculty[index] = { ...faculty[index], [field]: value };
     updateField("templateData.faculty", faculty);
+  };
+
+  const getStaffGroup = (path, fallback) =>
+    JSON.parse(JSON.stringify(t(path, fallback)));
+
+  const updateStaffGroup = (path, fallback, updater) => {
+    const current = getStaffGroup(path, fallback);
+    const updated = typeof updater === "function" ? updater(current) : updater;
+    updateField(path, updated);
   };
 
   const splitFacultyMultiline = (value = "") =>
@@ -6642,202 +6721,160 @@ After successfully completing the course, students will be able to:
       </div>
     ),
 
-    staff: (
+    staff: (() => {
+      const departmentStaff = getStaffGroup(
+        "templateData.staff.department",
+        MECH_DEFAULT_DEPARTMENT_STAFF,
+      );
+      const workshopStaff = getStaffGroup(
+        "templateData.staff.workshop",
+        MECH_DEFAULT_WORKSHOP_STAFF,
+      );
+
+      const renderStaffGroup = (
+        items,
+        path,
+        fallback,
+        headingDefault,
+        emptyRoleDefault,
+      ) => (
+        <div>
+          <h4 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+            <span className="w-8 h-1 bg-gray-800 rounded-full mr-3"></span>
+            <EditableText
+              value={t(`${path}Title`, headingDefault)}
+              onSave={(val) => updateField(`${path}Title`, val)}
+            />
+          </h4>
+          <div className="grid gap-6 lg:grid-cols-2">
+            {items.map((staff, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex relative"
+              >
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateStaffGroup(path, fallback, (list) =>
+                        list.filter((_, idx) => idx !== i),
+                      )
+                    }
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md transition-colors z-10"
+                    title="Remove staff member"
+                  >
+                    Remove
+                  </button>
+                )}
+
+                <div className="w-32 sm:w-40 bg-gray-50 flex-shrink-0 relative flex items-center justify-center border-r border-gray-100">
+                  {staff.photo ? (
+                    <EditableImage
+                      src={staff.photo}
+                      onSave={(val) =>
+                        updateStaffGroup(path, fallback, (list) => {
+                          list[i] = { ...list[i], photo: val };
+                          return list;
+                        })
+                      }
+                      alt={staff.name || "Staff"}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <FaUserTie className="text-5xl text-gray-300 transition-transform group-hover:scale-110 duration-500" />
+                  )}
+                </div>
+
+                <div className="p-5 flex-1 flex flex-col justify-center">
+                  <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
+                    <EditableText
+                      value={staff.name}
+                      onSave={(val) =>
+                        updateStaffGroup(path, fallback, (list) => {
+                          list[i] = { ...list[i], name: val };
+                          return list;
+                        })
+                      }
+                    />
+                  </h4>
+                  <p className="text-ssgmce-blue font-medium text-sm mb-3 uppercase tracking-wide text-[11px]">
+                    <EditableText
+                      value={staff.role}
+                      onSave={(val) =>
+                        updateStaffGroup(path, fallback, (list) => {
+                          list[i] = { ...list[i], role: val };
+                          return list;
+                        })
+                      }
+                    />
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+            {isEditing && (
+              <button
+                type="button"
+                onClick={() =>
+                  updateStaffGroup(path, fallback, (list) => [
+                    ...list,
+                    {
+                      name: "New Staff Member",
+                      role: emptyRoleDefault,
+                      photo: "",
+                    },
+                  ])
+                }
+                className="flex items-center justify-center gap-2 p-6 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 cursor-pointer"
+              >
+                <FaPlus className="text-xs" />
+                Add Staff
+              </button>
+            )}
+          </div>
+        </div>
+      );
+
+      return (
       <div className="space-y-10">
         <div className="text-center border-b border-gray-200 pb-6 mb-8">
           <h3 className="text-3xl font-bold text-gray-900">
-            Staff @ Department
+            <EditableText
+              value={t("templateData.staff.title", "Staff @ Department")}
+              onSave={(val) => updateField("templateData.staff.title", val)}
+            />
           </h3>
           <p className="text-gray-500 mt-2">
-            Department of Mechanical Engineering
+            <EditableText
+              value={t(
+                "templateData.staff.subtitle",
+                "Department of Mechanical Engineering",
+              )}
+              onSave={(val) => updateField("templateData.staff.subtitle", val)}
+            />
           </p>
         </div>
 
-        {/* Department Staff */}
-        <div>
-          <h4 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-            <span className="w-8 h-1 bg-gray-800 rounded-full mr-3"></span>
-            Department Staff
-          </h4>
-          <div className="grid gap-6 lg:grid-cols-2">
-            {[
-              {
-                name: "Mr. G. R. Jodh",
-                role: "Office Assistant",
-                photo: GRJodh,
-              },
-              {
-                name: "Mr. S. D. Deshmukh",
-                role: "Lab Assistant",
-                photo: SDDeshmukh,
-              },
-              {
-                name: "Mr. G. A. Wayzode",
-                role: "Lab Assistant",
-                photo: GAWayzode,
-              },
-              {
-                name: "Mr. R. O. Bedre",
-                role: "Lab Assistant",
-                photo: ROBedre,
-              },
-              {
-                name: "Mr. P. M. Deshmukh",
-                role: "Lab Assistant",
-                photo: PMDeshmukh,
-              },
-              {
-                name: "Mr. N. D. Kamavisdar",
-                role: "Lab Assistant",
-                photo: NDKamavisdar,
-              },
-              {
-                name: "Mr. G. D. Ingle",
-                role: "Lab Attendant",
-                photo: GDIngle,
-              },
-              {
-                name: "Mr. V. H. Akhare",
-                role: "Lab Attendant",
-                photo: VHAkhare,
-              },
-              {
-                name: "Mr. V. S. Bharate",
-                role: "Lab Attendant",
-                photo: VSBharate,
-              },
-              { name: "Mr. O. S. Bhalerao", role: "Peon", photo: OSBhalerao },
-              { name: "Mr. D. B. Wadode", role: "Peon", photo: DBWadode },
-            ].map((staff, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex"
-              >
-                <div className="w-32 sm:w-40 bg-gray-50 flex-shrink-0 relative flex items-center justify-center border-r border-gray-100">
-                  {staff.photo ? (
-                    <img
-                      src={staff.photo}
-                      alt={staff.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <FaUserTie className="text-5xl text-gray-300 transition-transform group-hover:scale-110 duration-500" />
-                  )}
-                </div>
+        {renderStaffGroup(
+          departmentStaff,
+          "templateData.staff.department",
+          MECH_DEFAULT_DEPARTMENT_STAFF,
+          "Department Staff",
+          "Lab Assistant",
+        )}
 
-                <div className="p-5 flex-1 flex flex-col justify-center">
-                  <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
-                    {staff.name}
-                  </h4>
-                  <p className="text-ssgmce-blue font-medium text-sm mb-3 uppercase tracking-wide text-[11px]">
-                    {staff.role}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* Workshop Staff */}
-        <div>
-          <h4 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-            <span className="w-8 h-1 bg-gray-800 rounded-full mr-3"></span>
-            Workshop Staff
-          </h4>
-          <div className="grid gap-6 lg:grid-cols-2">
-            {[
-              {
-                name: "Mr. Purushottam M. Dandwate",
-                role: "Lab Assistant (SGTR)",
-                photo: PMDandwate,
-              },
-              {
-                name: "Mr. Mahesh R. Dhoke",
-                role: "Attendant (Foundry & Smithy Shop)",
-                photo: MRDhoke,
-              },
-              {
-                name: "Mr. Vijaykumar S. Bharsakle",
-                role: "Lab Assistant (Machine Shop SGTR)",
-                photo: VSBharsakale,
-              },
-              {
-                name: "Mr. Murlidhar P. Rajurkar",
-                role: "Carpenter (Carpentry)",
-                photo: MPRajurkar,
-              },
-              {
-                name: "Mr. Vasudev S. Dhage",
-                role: "Attendant (Carpentry)",
-                photo: VSDhage,
-              },
-              {
-                name: "Mr. Rajesh J. Oimbe",
-                role: "Lab Assistant (Machine Shop)",
-                photo: RJOimbe,
-              },
-              {
-                name: "Mr. Vitthal R. Rahate",
-                role: "Attendant (Welding Shop)",
-                photo: VRRahate,
-              },
-              {
-                name: "Mr. Balkrishna S. Sonone",
-                role: "Attendant (Machine Shop)",
-                photo: BSSonone,
-              },
-              {
-                name: "Mr. Ganesh R. Payghan",
-                role: "Lab Assistant (Fitting Shop)",
-                photo: GRPayghan,
-              },
-              {
-                name: "Mr. Amol A. Dhage",
-                role: "Attendant (SGTR)",
-                photo: AADhage,
-              },
-              {
-                name: "Mr. Ramdas N. Pachade",
-                role: "Attendant (SGTR)",
-                photo: RNPachade,
-              },
-            ].map((staff, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex"
-              >
-                <div className="w-32 sm:w-40 bg-gray-50 flex-shrink-0 relative flex items-center justify-center border-r border-gray-100">
-                  {staff.photo ? (
-                    <img
-                      src={staff.photo}
-                      alt={staff.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <FaUserTie className="text-5xl text-gray-300 transition-transform group-hover:scale-110 duration-500" />
-                  )}
-                </div>
-
-                <div className="p-5 flex-1 flex flex-col justify-center">
-                  <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
-                    {staff.name}
-                  </h4>
-                  <p className="text-ssgmce-blue font-medium text-sm mb-3 uppercase tracking-wide text-[11px]">
-                    {staff.role}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        {renderStaffGroup(
+          workshopStaff,
+          "templateData.staff.workshop",
+          MECH_DEFAULT_WORKSHOP_STAFF,
+          "Workshop Staff",
+          "Lab Assistant",
+        )}
       </div>
-    ),
+    );
+    })(),
 
     "student-projects": (() => {
       const md = t(
@@ -7022,20 +7059,57 @@ After successfully completing the course, students will be able to:
               transition={{ duration: 0.3 }}
             >
               {isEditing ? (
-                <MarkdownEditor
-                  value={md}
-                  onSave={(v) => {
-                    const parsed = mechMarkdownToInnovativePractices(v);
-                    updateData("templateData.innovativePractices.markdown", v);
-                    updateData("templateData.innovativePractices.items", parsed);
-                    updateData("innovativePractices.markdown", v);
-                    updateData("innovativePractices", parsed);
-                  }}
-                  showDocImport
-                  docTemplateUrl="/uploads/documents/innovative_practice_templates/mechanical_template.docx"
-                  docTemplateLabel="Download Template"
-                  placeholder="Innovative Practices table (GFM Markdown)..."
-                />
+                <>
+                  <div className="mb-4 flex justify-end">
+                    <button
+                      onClick={() => {
+                        const nextPractices = [
+                          {
+                            sn: "01",
+                            faculty: "Add faculty name",
+                            subject: "Add subject",
+                            practice: "Add innovative practice",
+                            link: "",
+                          },
+                          ...practices,
+                        ].map((item, index) => ({
+                          ...item,
+                          sn: String(index + 1).padStart(2, "0"),
+                        }));
+                        const nextMarkdown =
+                          mechInnovativePracticesToMarkdown(nextPractices);
+                        updateData(
+                          "templateData.innovativePractices.markdown",
+                          nextMarkdown,
+                        );
+                        updateData(
+                          "templateData.innovativePractices.items",
+                          nextPractices,
+                        );
+                        updateData("innovativePractices.markdown", nextMarkdown);
+                        updateData("innovativePractices", nextPractices);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                    >
+                      <FaPlus className="text-xs" />
+                      Add to Top
+                    </button>
+                  </div>
+                  <MarkdownEditor
+                    value={md}
+                    onSave={(v) => {
+                      const parsed = mechMarkdownToInnovativePractices(v);
+                      updateData("templateData.innovativePractices.markdown", v);
+                      updateData("templateData.innovativePractices.items", parsed);
+                      updateData("innovativePractices.markdown", v);
+                      updateData("innovativePractices", parsed);
+                    }}
+                    showDocImport
+                    docTemplateUrl="/uploads/documents/innovative_practice_templates/mechanical_template.docx"
+                    docTemplateLabel="Download Template"
+                    placeholder="Innovative Practices table (GFM Markdown)..."
+                  />
+                </>
               ) : (
                 <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
                   <div className="overflow-x-auto">

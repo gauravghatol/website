@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 import GenericPage from "../components/GenericPage";
 import { motion } from "framer-motion";
 import {
@@ -9,6 +10,7 @@ import {
   FaArrowLeft,
   FaExternalLinkAlt,
 } from "react-icons/fa";
+import { goBackOrFallback } from "../utils/navigation";
 
 // Import faculty data from all departments
 import { APPLIED_DEFAULT_FACULTY } from "./departments/AppliedSciences";
@@ -235,49 +237,101 @@ const itPhotoMap = {
   KP: itKpPhoto,
 };
 
+const createFacultySlug = (value = "") =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const normalizeArea = (value) => {
+  if (Array.isArray(value)) return value;
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
+const normalizeFacultyCollection = (items = [], department, photoMap = {}) =>
+  (Array.isArray(items) ? items : []).map((facultyMember) => {
+    const normalized = {
+      ...facultyMember,
+      department: facultyMember.department || department,
+      id:
+        facultyMember.id ||
+        createFacultySlug(facultyMember.name || facultyMember.email || ""),
+      photo: photoMap[facultyMember.photo] || facultyMember.photo,
+    };
+
+    normalized.role =
+      facultyMember.role || facultyMember.designation || normalized.role || "";
+    normalized.designation =
+      facultyMember.designation || facultyMember.role || normalized.role || "";
+    normalized.area = normalizeArea(
+      facultyMember.area || facultyMember.specialization || "",
+    );
+    normalized.specialization =
+      facultyMember.specialization || normalized.area.join(", ");
+
+    return normalized;
+  });
+
 // Resolve CSE faculty photos from string references to actual imports
-const resolvedCseFaculty = CSE_DEFAULT_FACULTY.map((f) => ({
-  ...f,
-  photo: csePhotoMap[f.photo] || f.photo,
-}));
+const resolvedCseFaculty = normalizeFacultyCollection(
+  CSE_DEFAULT_FACULTY,
+  "cse",
+  csePhotoMap,
+);
 
 // Resolve ENTC faculty photos from string references to actual imports
-const resolvedEntcFaculty = ENTC_DEFAULT_FACULTY.map((f) => ({
-  ...f,
-  photo: entcPhotoMap[f.photo] || f.photo,
-}));
+const resolvedEntcFaculty = normalizeFacultyCollection(
+  ENTC_DEFAULT_FACULTY,
+  "entc",
+  entcPhotoMap,
+);
 
 // Resolve Electrical faculty photos from string references to actual imports
-const resolvedElectricalFaculty = ELECTRICAL_DEFAULT_FACULTY.map((f) => ({
-  ...f,
-  photo: electricalPhotoMap[f.photo] || f.photo,
-}));
+const resolvedElectricalFaculty = normalizeFacultyCollection(
+  ELECTRICAL_DEFAULT_FACULTY,
+  "electrical",
+  electricalPhotoMap,
+);
 
 // Resolve MBA faculty photos from string references to actual imports
-const resolvedMbaFaculty = MBA_DEFAULT_FACULTY.map((f) => ({
-  ...f,
-  photo: mbaPhotoMap[f.photo] || f.photo,
-}));
+const resolvedMbaFaculty = normalizeFacultyCollection(
+  MBA_DEFAULT_FACULTY,
+  "mba",
+  mbaPhotoMap,
+);
 
 // Resolve Mechanical faculty photos from string references to actual imports
-const resolvedMechFaculty = MECH_DEFAULT_FACULTY.map((f) => ({
-  ...f,
-  photo: mechPhotoMap[f.photo] || f.photo,
-}));
+const resolvedMechFaculty = normalizeFacultyCollection(
+  MECH_DEFAULT_FACULTY,
+  "mechanical",
+  mechPhotoMap,
+);
 
 // Resolve IT faculty photos from string references to actual imports
-const resolvedItFaculty = IT_DEFAULT_FACULTY.map((f) => ({
-  ...f,
-  photo: itPhotoMap[f.photo] || f.photo,
-}));
+const resolvedItFaculty = normalizeFacultyCollection(
+  IT_DEFAULT_FACULTY,
+  "it",
+  itPhotoMap,
+);
 
 const resolveCseFacultyItems = (items = []) =>
-  (Array.isArray(items) ? items : []).map((facultyMember) => ({
-    ...facultyMember,
-    photo: csePhotoMap[facultyMember.photo] || facultyMember.photo,
-  }));
+  normalizeFacultyCollection(items, "cse", csePhotoMap);
 
-const getVidwanUrl = (facultyMember) => {
+const PHOTO_MAP_BY_DEPT = {
+  cse: csePhotoMap,
+  entc: entcPhotoMap,
+  electrical: electricalPhotoMap,
+  mba: mbaPhotoMap,
+  mechanical: mechPhotoMap,
+  it: itPhotoMap,
+};
+
+export const getVidwanUrl = (facultyMember) => {
   if (!facultyMember || typeof facultyMember !== "object") return "";
 
   const directLink =
@@ -295,39 +349,8 @@ const getVidwanUrl = (facultyMember) => {
   return "";
 };
 
-const normalizeArea = (value) => {
-  if (Array.isArray(value)) return value;
-  return String(value || "")
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-};
-
-const normalizeLiveFaculty = (items = [], department) =>
-  (Array.isArray(items) ? items : []).map((facultyMember) => {
-    const normalized = { ...facultyMember, department };
-
-    if (department === "mba") {
-      normalized.role = facultyMember.role || facultyMember.designation || "";
-      normalized.designation =
-        facultyMember.designation || facultyMember.role || "";
-      normalized.area = normalizeArea(
-        facultyMember.area || facultyMember.specialization || "",
-      );
-      normalized.specialization =
-        facultyMember.specialization ||
-        normalized.area.join(", ");
-    }
-
-    if (!Array.isArray(normalized.area)) {
-      normalized.area = normalizeArea(normalized.area || "");
-    }
-
-    return normalized;
-  });
-
 // Department name mapping
-const DEPARTMENT_MAP = {
+export const DEPARTMENT_MAP = {
   cse: "Dept. of Computer Science & Engineering",
   applied: "Dept. of Applied Sciences & Humanities",
   entc: "Dept. of Electronics & Telecommunication Engg.",
@@ -337,28 +360,36 @@ const DEPARTMENT_MAP = {
   it: "Dept. of Information Technology",
 };
 
-// Table row component for clean, consistent display
-const InfoRow = ({ label, children, borderColor = "border-blue-600" }) => {
-  if (!children) return null;
-  return (
-    <tr className="border-b border-gray-200 hover:bg-gray-50/50 transition-colors">
-      <td
-        className={`py-4 px-5 font-semibold text-gray-800 text-sm uppercase tracking-wide align-top w-[260px] bg-gray-50/80 border-l-4 ${borderColor}`}
-      >
-        {label}
-      </td>
-      <td className="py-4 px-6 text-gray-700 text-sm leading-relaxed align-top">
-        {children}
-      </td>
-    </tr>
-  );
-};
+export const FACULTY_DIRECTORY_DEPARTMENTS = [
+  { id: "all", label: "All Departments" },
+  { id: "applied", label: "Applied Sciences & Humanities" },
+  { id: "cse", label: "Computer Science & Engineering" },
+  { id: "it", label: "Information Technology" },
+  { id: "entc", label: "Electronics & Telecommunication" },
+  { id: "electrical", label: "Electrical Engineering" },
+  { id: "mechanical", label: "Mechanical Engineering" },
+  { id: "mba", label: "Business Administration" },
+];
 
-const FacultyDetail = () => {
-  const { facultyId } = useParams();
-  const navigate = useNavigate();
-  const [faculty, setFaculty] = useState(null);
+const buildFacultyDirectory = (liveFacultyByDept = {}) => [
+  ...(liveFacultyByDept.applied?.length
+    ? liveFacultyByDept.applied
+    : normalizeFacultyCollection(APPLIED_DEFAULT_FACULTY, "applied")),
+  ...(liveFacultyByDept.cse?.length ? liveFacultyByDept.cse : resolvedCseFaculty),
+  ...(liveFacultyByDept.entc?.length ? liveFacultyByDept.entc : resolvedEntcFaculty),
+  ...(liveFacultyByDept.electrical?.length
+    ? liveFacultyByDept.electrical
+    : resolvedElectricalFaculty),
+  ...(liveFacultyByDept.mba?.length ? liveFacultyByDept.mba : resolvedMbaFaculty),
+  ...(liveFacultyByDept.mechanical?.length
+    ? liveFacultyByDept.mechanical
+    : resolvedMechFaculty),
+  ...(liveFacultyByDept.it?.length ? liveFacultyByDept.it : resolvedItFaculty),
+];
+
+export const useFacultyDirectoryData = () => {
   const [liveFacultyByDept, setLiveFacultyByDept] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -388,7 +419,6 @@ const FacultyDetail = () => {
 
           const [dept] = pageRequests[index];
           const data = result.value?.data?.data || {};
-
           const storedFaculty =
             dept === "cse"
               ? data.faculty
@@ -402,41 +432,20 @@ const FacultyDetail = () => {
             return;
           }
 
-          const normalized = normalizeLiveFaculty(storedFaculty, dept);
-          nextLiveFaculty[dept] =
-            dept === "cse"
-              ? resolveCseFacultyItems(normalized)
-              : dept === "entc"
-                ? normalized.map((f) => ({
-                    ...f,
-                    photo: entcPhotoMap[f.photo] || f.photo,
-                  }))
-                : dept === "electrical"
-                  ? normalized.map((f) => ({
-                      ...f,
-                      photo: electricalPhotoMap[f.photo] || f.photo,
-                    }))
-                  : dept === "mba"
-                    ? normalized.map((f) => ({
-                        ...f,
-                        photo: mbaPhotoMap[f.photo] || f.photo,
-                      }))
-                    : dept === "mechanical"
-                      ? normalized.map((f) => ({
-                          ...f,
-                          photo: mechPhotoMap[f.photo] || f.photo,
-                        }))
-                      : dept === "it"
-                        ? normalized.map((f) => ({
-                            ...f,
-                            photo: itPhotoMap[f.photo] || f.photo,
-                          }))
-                        : normalized;
+          nextLiveFaculty[dept] = normalizeFacultyCollection(
+            storedFaculty,
+            dept,
+            PHOTO_MAP_BY_DEPT[dept] || {},
+          );
         });
 
         setLiveFacultyByDept(nextLiveFaculty);
       } catch (error) {
         console.error("Error loading live faculty data:", error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -447,36 +456,56 @@ const FacultyDetail = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const combinedFaculty = [
-      ...(liveFacultyByDept.applied?.length
-        ? liveFacultyByDept.applied
-        : APPLIED_DEFAULT_FACULTY),
-      ...(liveFacultyByDept.cse?.length
-        ? liveFacultyByDept.cse
-        : resolvedCseFaculty),
-      ...(liveFacultyByDept.entc?.length
-        ? liveFacultyByDept.entc
-        : resolvedEntcFaculty),
-      ...(liveFacultyByDept.electrical?.length
-        ? liveFacultyByDept.electrical
-        : resolvedElectricalFaculty),
-      ...(liveFacultyByDept.mba?.length
-        ? liveFacultyByDept.mba
-        : resolvedMbaFaculty),
-      ...(liveFacultyByDept.mechanical?.length
-        ? liveFacultyByDept.mechanical
-        : resolvedMechFaculty),
-      ...(liveFacultyByDept.it?.length
-        ? liveFacultyByDept.it
-        : resolvedItFaculty),
-    ];
+  return {
+    facultyDirectory: buildFacultyDirectory(liveFacultyByDept),
+    liveFacultyByDept,
+    loading,
+  };
+};
 
-    const foundFaculty = combinedFaculty.find((f) => f.id === facultyId);
+// Table row component for clean, consistent display
+const InfoRow = ({ label, children, borderColor = "border-blue-600" }) => {
+  if (!children) return null;
+  return (
+    <tr className="border-b border-gray-200 hover:bg-gray-50/50 transition-colors">
+      <td
+        className={`py-4 px-5 font-semibold text-gray-800 text-sm uppercase tracking-wide align-top w-[260px] bg-gray-50/80 border-l-4 ${borderColor}`}
+      >
+        {label}
+      </td>
+      <td className="py-4 px-6 text-gray-700 text-sm leading-relaxed align-top">
+        {children}
+      </td>
+    </tr>
+  );
+};
+
+const FacultyDetail = () => {
+  const { facultyId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [faculty, setFaculty] = useState(null);
+  const { facultyDirectory, loading } = useFacultyDirectoryData();
+
+  useEffect(() => {
+    const foundFaculty = facultyDirectory.find((f) => f.id === facultyId);
     if (foundFaculty) {
       setFaculty(foundFaculty);
+    } else {
+      setFaculty(null);
     }
-  }, [facultyId, liveFacultyByDept]);
+  }, [facultyId, facultyDirectory]);
+
+  if (loading && !faculty) {
+    return (
+      <GenericPage title="Faculty Directory">
+        <div className="container mx-auto px-4 py-16 text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-ssgmce-blue"></div>
+          <p className="mt-4 text-gray-600">Loading faculty profile...</p>
+        </div>
+      </GenericPage>
+    );
+  }
 
   if (!faculty) {
     return (
@@ -489,13 +518,14 @@ const FacultyDetail = () => {
             The faculty member you're looking for doesn't exist or has been
             removed.
           </p>
-          <Link
-            to="/faculty"
+          <button
+            type="button"
+            onClick={() => goBackOrFallback(navigate, location, "/faculty")}
             className="inline-flex items-center px-6 py-3 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors"
           >
             <FaArrowLeft className="mr-2" />
             Back to Faculty
-          </Link>
+          </button>
         </div>
       </GenericPage>
     );
@@ -517,7 +547,7 @@ const FacultyDetail = () => {
         <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900">
           <div className="container mx-auto max-w-7xl px-4 py-4">
             <button
-              onClick={() => navigate("/faculty")}
+              onClick={() => goBackOrFallback(navigate, location, "/faculty")}
               className="inline-flex items-center text-blue-200 hover:text-white text-sm transition-colors"
             >
               <FaArrowLeft className="mr-2 text-xs" />
@@ -797,5 +827,5 @@ const FacultyDetail = () => {
 };
 
 // Export the faculty data for use in other components
-export { APPLIED_DEFAULT_FACULTY };
+export { APPLIED_DEFAULT_FACULTY, resolveCseFacultyItems };
 export default FacultyDetail;

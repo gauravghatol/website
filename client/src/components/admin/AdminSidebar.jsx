@@ -36,11 +36,12 @@ const AdminSidebar = ({ collapsed, setCollapsed }) => {
       { name: "Popup Banner", path: "/admin/popup-banner", icon: FaEye },
       { name: "Menu Manager", path: "/admin/menu-manager", icon: FaBars },
     ]},
-    { title: "Academic", items: [
+    { title: "Academic Management", items: [
       superAdminOnly({ name: "Departments", path: "/admin/departments", icon: FaUniversity }),
       ...(isCoordinator && coordDeptPagePath
         ? [{ name: "My Department", path: coordDeptPagePath, icon: FaUniversity }]
         : []),
+      superAdminOnly({ name: "Academics Content", path: "/admin/academics", icon: FaFileAlt }),
       superAdminOnly({ name: "Faculty", path: "/admin/faculty", icon: FaUserGraduate }),
       superAdminOnly({ name: "Research", path: "/admin/research", icon: FaFlask }),
       superAdminOnly({ name: "IQAC", path: "/admin/iqac", icon: FaClipboardList }),

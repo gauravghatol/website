@@ -6674,20 +6674,57 @@ const CSE = () => {
               transition={{ duration: 0.3 }}
             >
               {isEditing ? (
-                <MarkdownEditor
-                  value={md}
-                  onSave={(v) => {
-                    const parsed = markdownToInnovativePractices(v);
-                    updateData("templateData.innovativePractices.markdown", v);
-                    updateData("templateData.innovativePractices.items", parsed);
-                    updateData("innovativePractices.markdown", v);
-                    updateData("innovativePractices", parsed);
-                  }}
-                  showDocImport
-                  docTemplateUrl="/uploads/documents/innovative_practice_templates/cse_template.docx"
-                  docTemplateLabel="Download Template"
-                  placeholder="Innovative Practices table (GFM Markdown)..."
-                />
+                <>
+                  <div className="mb-4 flex justify-end">
+                    <button
+                      onClick={() => {
+                        const nextPractices = [
+                          {
+                            sn: "01",
+                            faculty: "Add faculty name",
+                            subject: "Add subject",
+                            practice: "Add innovative practice",
+                            link: "",
+                          },
+                          ...practices,
+                        ].map((item, index) => ({
+                          ...item,
+                          sn: String(index + 1).padStart(2, "0"),
+                        }));
+                        const nextMarkdown =
+                          innovativePracticesToMarkdown(nextPractices);
+                        updateData(
+                          "templateData.innovativePractices.markdown",
+                          nextMarkdown,
+                        );
+                        updateData(
+                          "templateData.innovativePractices.items",
+                          nextPractices,
+                        );
+                        updateData("innovativePractices.markdown", nextMarkdown);
+                        updateData("innovativePractices", nextPractices);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                    >
+                      <FaPlus className="text-xs" />
+                      Add to Top
+                    </button>
+                  </div>
+                  <MarkdownEditor
+                    value={md}
+                    onSave={(v) => {
+                      const parsed = markdownToInnovativePractices(v);
+                      updateData("templateData.innovativePractices.markdown", v);
+                      updateData("templateData.innovativePractices.items", parsed);
+                      updateData("innovativePractices.markdown", v);
+                      updateData("innovativePractices", parsed);
+                    }}
+                    showDocImport
+                    docTemplateUrl="/uploads/documents/innovative_practice_templates/cse_template.docx"
+                    docTemplateLabel="Download Template"
+                    placeholder="Innovative Practices table (GFM Markdown)..."
+                  />
+                </>
               ) : (
                 <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
                   <div className="overflow-x-auto">

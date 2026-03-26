@@ -3,6 +3,11 @@ import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import AdminLayout from "../../components/admin/AdminLayout";
 import {
+  ACADEMICS_PAGE_LABEL_BY_ROUTE,
+  ACADEMICS_PAGE_ORDER_BY_ROUTE,
+  isAcademicsWebsiteRoute,
+} from "../../constants/academicsPages";
+import {
   FaSearch,
   FaChevronRight,
   FaChevronDown,
@@ -196,20 +201,9 @@ const VALID_DEPT_PAGEIDS = new Set([
   "departments-applied-sciences",
 ]);
 
-// Valid academics pageIds — only these 11 pages should appear in academics
-const VALID_ACADEMICS_PAGEIDS = new Set([
-  "academics-planner",
-  "academics-teaching",
-  "academics-timetable",
-  "academics-rules",
-  "academics-syllabus",
-  "academics-incentive",
-  "academics-marks",
-  "academics-rubrics",
-  "academics-innovative",
-  "academics-notices",
-  "academics-reports",
-]);
+const isLegacyAcademicsPage = (page) =>
+  (page.category || "").toLowerCase() === "academics" &&
+  !isAcademicsWebsiteRoute(page.route);
 
 // Valid admissions pageIds — only these 13 pages should appear in admissions
 const VALID_ADMISSIONS_PAGEIDS = new Set([
@@ -344,10 +338,10 @@ const FACILITIES_NESTED = [
 ];
 
 const AdminPages = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
   const [categoryFilter, setCategoryFilter] = useState(
     searchParams.get("category") || "all",
   );
@@ -363,11 +357,33 @@ const AdminPages = () => {
     fetchPages();
   }, []);
 
+  useEffect(() => {
+    setSearchTerm(searchParams.get("q") || "");
+    setCategoryFilter(searchParams.get("category") || "all");
+  }, [searchParams]);
+
+  useEffect(() => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (searchTerm) {
+      nextParams.set("q", searchTerm);
+    } else {
+      nextParams.delete("q");
+    }
+
+    if (categoryFilter && categoryFilter !== "all") {
+      nextParams.set("category", categoryFilter);
+    } else {
+      nextParams.delete("category");
+    }
+
+    setSearchParams(nextParams, { replace: true });
+  }, [searchTerm, categoryFilter]);
+
   const fetchPages = async () => {
     try {
       const res = await axios.get("/api/pages");
       if (res.data.success) {
-        setPages(res.data.data);
+        setPages(res.data.data || []);
       }
     } catch (err) {
       console.error(err);
@@ -376,9 +392,35 @@ const AdminPages = () => {
     }
   };
 
+  const visiblePages = pages.filter((page) => {
+    if (isLegacyAcademicsPage(page)) {
+      return false;
+    }
+    if (
+      page.category === "departments" &&
+      !VALID_DEPT_PAGEIDS.has(page.pageId)
+    ) {
+      return false;
+    }
+    if (
+      page.category === "admissions" &&
+      !VALID_ADMISSIONS_PAGEIDS.has(page.pageId)
+    ) {
+      return false;
+    }
+    if (
+      page.category === "facilities" &&
+      !VALID_FACILITIES_PAGEIDS.has(page.pageId) &&
+      !isAdminOfficePageId(page.pageId)
+    ) {
+      return false;
+    }
+    return true;
+  });
+
   const categories = [
     "all",
-    ...new Set(pages.map((p) => p.category || "Uncategorized")),
+    ...new Set(visiblePages.map((p) => p.category || "Uncategorized")),
   ].sort((a, b) => {
     const normalize = (value) => String(value || "").toLowerCase();
     const aKey = normalize(a);
@@ -393,39 +435,15 @@ const AdminPages = () => {
     return aKey.localeCompare(bKey);
   });
 
-  const filteredPages = pages.filter((page) => {
-    // Exclude orphan department sub-pages (only show the 7 main departments)
-    if (
-      page.category === "departments" &&
-      !VALID_DEPT_PAGEIDS.has(page.pageId)
-    ) {
-      return false;
-    }
-    // Exclude non-standard academics pages (only show the 11 defined pages)
-    if (
-      page.category === "academics" &&
-      !VALID_ACADEMICS_PAGEIDS.has(page.pageId)
-    ) {
-      return false;
-    }
-    // Exclude orphan admissions pages (only show the 13 defined pages)
-    if (
-      page.category === "admissions" &&
-      !VALID_ADMISSIONS_PAGEIDS.has(page.pageId)
-    ) {
-      return false;
-    }
-    // Exclude stale/orphan facilities pages not in the valid set
-    if (
-      page.category === "facilities" &&
-      !VALID_FACILITIES_PAGEIDS.has(page.pageId) &&
-      !isAdminOfficePageId(page.pageId)
-    ) {
-      return false;
-    }
+  const filteredPages = visiblePages.filter((page) => {
+    const normalizedCategory = (page.category || "").toLowerCase();
+    const effectiveTitle =
+      normalizedCategory === "academics"
+        ? ACADEMICS_PAGE_LABEL_BY_ROUTE[page.route] || page.pageTitle
+        : page.pageTitle;
     const matchesSearch =
-      page.pageTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      page.category.toLowerCase().includes(searchTerm.toLowerCase());
+      effectiveTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      normalizedCategory.includes(searchTerm.toLowerCase());
     const matchesCategory =
       categoryFilter === "all" || page.category === categoryFilter;
     return matchesSearch && matchesCategory;
@@ -439,6 +457,14 @@ const AdminPages = () => {
   }, {});
 
   const sortPagesByNavbarOrder = (category, categoryPages) => {
+    if (String(category || "").toLowerCase() === "academics") {
+      return [...categoryPages].sort(
+        (a, b) =>
+          (ACADEMICS_PAGE_ORDER_BY_ROUTE[a.route] ?? Number.MAX_SAFE_INTEGER) -
+          (ACADEMICS_PAGE_ORDER_BY_ROUTE[b.route] ?? Number.MAX_SAFE_INTEGER),
+      );
+    }
+
     const routeOrder = NAVBAR_ROUTE_ORDER[String(category || "").toLowerCase()] || [];
     const routeIndex = new Map(
       routeOrder.map((route, index) => [normalizeRoute(route), index]),
@@ -516,7 +542,7 @@ const AdminPages = () => {
               Pages
             </h1>
             <p className="text-base text-gray-400 dark:text-gray-500 mt-0.5">
-              {filteredPages.length} of {pages.length} pages
+              {filteredPages.length} of {visiblePages.length} pages
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -710,7 +736,9 @@ const AdminPages = () => {
                             className="flex items-center px-4 py-2 pl-11 border-b border-gray-50 dark:border-gray-800/40 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
                           >
                             <span className="flex-1 text-base text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                              {page.pageTitle}
+                              {category.toLowerCase() === "academics"
+                                ? ACADEMICS_PAGE_LABEL_BY_ROUTE[page.route] || page.pageTitle
+                                : page.pageTitle}
                             </span>
                             <FaChevronRight className="text-[10px] text-gray-200 dark:text-gray-700 group-hover:text-blue-400 ml-2 flex-shrink-0 transition-colors" />
                           </Link>
@@ -724,7 +752,9 @@ const AdminPages = () => {
                             className="flex items-center px-4 py-2 pl-11 border-b border-gray-50 dark:border-gray-800/40 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
                           >
                             <span className="flex-1 text-base text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                              {page.pageTitle}
+                              {category.toLowerCase() === "academics"
+                                ? ACADEMICS_PAGE_LABEL_BY_ROUTE[page.route] || page.pageTitle
+                                : page.pageTitle}
                             </span>
                             <FaChevronRight className="text-[10px] text-gray-200 dark:text-gray-700 group-hover:text-blue-400 ml-2 flex-shrink-0 transition-colors" />
                           </Link>

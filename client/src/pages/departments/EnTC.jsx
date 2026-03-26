@@ -2646,6 +2646,7 @@ const EnTC = () => {
   };
 
   const getFacultyList = () => t("templateData.faculty.list", defaultFaculty);
+  const getStaffList = () => t("templateData.staff.list", defaultStaff);
 
   // Pride section helper functions
   const updatePrideGate = (yearIdx, studentIdx, cellIdx, val) => {
@@ -2678,6 +2679,12 @@ const EnTC = () => {
     const current = JSON.parse(JSON.stringify(getFacultyList()));
     const updated = typeof updater === "function" ? updater(current) : updater;
     updateData("templateData.faculty.list", updated);
+  };
+
+  const updateStaffList = (updater) => {
+    const current = JSON.parse(JSON.stringify(getStaffList()));
+    const updated = typeof updater === "function" ? updater(current) : updater;
+    updateData("templateData.staff.list", updated);
   };
 
   const splitFacultyMultiline = (value = "") =>
@@ -6155,7 +6162,7 @@ On completion of the course, the students will be able to:
     ),
 
     staff: (() => {
-      const staffData = defaultStaff || [];
+      const staffData = getStaffList();
       const staffImages = {
         VGP,
         MYK,
@@ -6177,11 +6184,21 @@ On completion of the course, the students will be able to:
         <div className="space-y-8">
           <div>
             <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
-              Staff @ Department
+              <EditableText
+                value={t("templateData.staff.title", "Staff @ Department")}
+                onSave={(val) => updateData("templateData.staff.title", val)}
+              />
             </h3>
             <p className="text-gray-500 text-sm mt-2 pl-5">
-              Non-teaching staff members of the Electronics & Telecommunication
-              Engineering Department.
+              <EditableText
+                value={t(
+                  "templateData.staff.subtitle",
+                  "Non-teaching staff members of the Electronics & Telecommunication Engineering Department.",
+                )}
+                onSave={(val) =>
+                  updateData("templateData.staff.subtitle", val)
+                }
+              />
             </p>
           </div>
 
@@ -6196,11 +6213,30 @@ On completion of the course, the students will be able to:
                   transition={{ delay: i * 0.05 }}
                   className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex relative"
                 >
+                  {isEditing && (
+                    <button
+                      onClick={() => {
+                        updateStaffList((list) =>
+                          list.filter((_, idx) => idx !== i),
+                        );
+                      }}
+                      className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md transition-colors z-10"
+                      title="Remove staff member"
+                    >
+                      Remove
+                    </button>
+                  )}
                   {/* Image Area */}
                   <div className="w-32 sm:w-40 bg-gray-50 flex-shrink-0 relative overflow-hidden border-r border-gray-100">
                     {resolvedPhoto ? (
-                      <img
+                      <EditableImage
                         src={resolvedPhoto}
+                        onSave={(val) =>
+                          updateStaffList((list) => {
+                            list[i] = { ...list[i], photo: val };
+                            return list;
+                          })
+                        }
                         alt={staff.name}
                         className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
                       />
@@ -6214,15 +6250,49 @@ On completion of the course, the students will be able to:
                   {/* Content Area */}
                   <div className="p-5 flex-1 flex flex-col justify-center">
                     <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
-                      {staff.name}
+                      <EditableText
+                        value={staff.name}
+                        onSave={(val) =>
+                          updateStaffList((list) => {
+                            list[i] = { ...list[i], name: val };
+                            return list;
+                          })
+                        }
+                      />
                     </h4>
                     <p className="text-ssgmce-blue font-medium text-sm uppercase tracking-wide text-[11px] mt-1">
-                      {staff.role}
+                      <EditableText
+                        value={staff.role}
+                        onSave={(val) =>
+                          updateStaffList((list) => {
+                            list[i] = { ...list[i], role: val };
+                            return list;
+                          })
+                        }
+                      />
                     </p>
                   </div>
                 </motion.div>
               );
             })}
+            {isEditing && (
+              <button
+                onClick={() => {
+                  updateStaffList((list) => [
+                    ...list,
+                    {
+                      name: "New Staff Member",
+                      role: "Lab Assistant",
+                      photo: "",
+                    },
+                  ]);
+                }}
+                className="flex items-center justify-center gap-2 p-6 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 cursor-pointer"
+              >
+                <FaPlus className="text-xs" />
+                Add Staff
+              </button>
+            )}
           </div>
         </div>
       );
@@ -6685,20 +6755,57 @@ On completion of the course, the students will be able to:
               transition={{ duration: 0.3 }}
             >
               {isEditing ? (
-                <MarkdownEditor
-                  value={md}
-                  onSave={(v) => {
-                    const parsed = entcMarkdownToInnovativePractices(v);
-                    updateData("templateData.innovativePractices.markdown", v);
-                    updateData("templateData.innovativePractices.items", parsed);
-                    updateData("innovativePractices.markdown", v);
-                    updateData("innovativePractices", parsed);
-                  }}
-                  showDocImport
-                  docTemplateUrl="/uploads/documents/innovative_practice_templates/entc_template.docx"
-                  docTemplateLabel="Download Template"
-                  placeholder="Innovative Practices table (GFM Markdown)..."
-                />
+                <>
+                  <div className="mb-4 flex justify-end">
+                    <button
+                      onClick={() => {
+                        const nextPractices = [
+                          {
+                            sn: "01",
+                            faculty: "Add faculty name",
+                            subject: "Add subject",
+                            practice: "Add innovative practice",
+                            link: "",
+                          },
+                          ...practices,
+                        ].map((item, index) => ({
+                          ...item,
+                          sn: String(index + 1).padStart(2, "0"),
+                        }));
+                        const nextMarkdown =
+                          entcInnovativePracticesToMarkdown(nextPractices);
+                        updateData(
+                          "templateData.innovativePractices.markdown",
+                          nextMarkdown,
+                        );
+                        updateData(
+                          "templateData.innovativePractices.items",
+                          nextPractices,
+                        );
+                        updateData("innovativePractices.markdown", nextMarkdown);
+                        updateData("innovativePractices", nextPractices);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                    >
+                      <FaPlus className="text-xs" />
+                      Add to Top
+                    </button>
+                  </div>
+                  <MarkdownEditor
+                    value={md}
+                    onSave={(v) => {
+                      const parsed = entcMarkdownToInnovativePractices(v);
+                      updateData("templateData.innovativePractices.markdown", v);
+                      updateData("templateData.innovativePractices.items", parsed);
+                      updateData("innovativePractices.markdown", v);
+                      updateData("innovativePractices", parsed);
+                    }}
+                    showDocImport
+                    docTemplateUrl="/uploads/documents/innovative_practice_templates/entc_template.docx"
+                    docTemplateLabel="Download Template"
+                    placeholder="Innovative Practices table (GFM Markdown)..."
+                  />
+                </>
               ) : (
                 <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
                   <div className="overflow-x-auto">

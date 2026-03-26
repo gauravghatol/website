@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useRef, useState } from "react";
 import axios from "axios";
 
 const EditContext = createContext();
@@ -22,6 +22,7 @@ export const useEdit = () => {
       hasChanges: false,
       undo: () => {},
       canUndo: false,
+      discardChanges: () => {},
     };
   }
   return context;
@@ -37,6 +38,7 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
   const [data, setData] = useState(initialData);
   const [hasChanges, setHasChanges] = useState(false);
   const [history, setHistory] = useState([]);
+  const savedDataRef = useRef(initialData);
 
   const pushHistory = (snapshot) => {
     setHistory((prev) => [...prev.slice(-49), snapshot]);
@@ -54,6 +56,12 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
   };
 
   const canUndo = history.length > 0;
+
+  const discardChanges = () => {
+    setData(savedDataRef.current);
+    setHistory([]);
+    setHasChanges(false);
+  };
 
   /**
    * Update a field in the data object using a path string
@@ -116,7 +124,9 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
       );
 
       if (response.data.success) {
+        savedDataRef.current = data;
         setHasChanges(false);
+        setHistory([]);
         return { success: true };
       } else {
         return { success: false, error: response.data.message };
@@ -199,6 +209,7 @@ export const EditProvider = ({ children, pageId, initialData = {} }) => {
     hasChanges,
     undo,
     canUndo,
+    discardChanges,
   };
 
   return <EditContext.Provider value={value}>{children}</EditContext.Provider>;
