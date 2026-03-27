@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { FaSpinner } from 'react-icons/fa';
+import { buildReturnState } from '../../utils/navigation';
 
 /**
  * ProtectedRoute - Wrapper for admin routes that require authentication
@@ -24,7 +25,7 @@ const ProtectedRoute = ({ children }) => {
 
   // Redirect to login if not authenticated, save attempted location
   if (!isAuthenticated) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    return <Navigate to="/admin/login" state={buildReturnState(location)} replace />;
   }
 
   // User is authenticated, render the protected component

@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaBuilding, FaChevronRight, FaArrowLeft } from "react-icons/fa";
+import { buildReturnState } from "../utils/navigation";
 
 const AdminOfficeSidebar = () => {
   const location = useLocation();
@@ -46,6 +47,7 @@ const AdminOfficeSidebar = () => {
     <li key={index}>
       <Link
         to={item.path}
+        state={buildReturnState(location)}
         className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm leading-snug transition-colors ${
           isActive(item.path)
             ? "border-l-2 border-ssgmce-orange bg-orange-50 font-semibold text-ssgmce-blue"
@@ -59,10 +61,11 @@ const AdminOfficeSidebar = () => {
   );
 
   return (
-    <div className="sticky top-24 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:sticky lg:top-24">
       <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">
         <Link
           to="/facilities"
+          state={buildReturnState(location)}
           className="mb-2 inline-flex items-center gap-1.5 rounded-md bg-white/20 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-white/30"
         >
           <FaArrowLeft className="text-[10px]" />
@@ -75,7 +78,7 @@ const AdminOfficeSidebar = () => {
 
       <div className="p-3">
         <nav>
-          <ul className="max-h-[500px] space-y-1.5 overflow-y-auto">
+          <ul className="max-h-[50vh] space-y-1.5 overflow-y-auto lg:max-h-[500px]">
             {menuItems.map(renderMenuItem)}
           </ul>
         </nav>

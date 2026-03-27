@@ -41,16 +41,16 @@ const Audit = () => {
         backgroundImage="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80"
       />
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid lg:grid-cols-12 gap-8">
+      <div className="mx-auto w-full max-w-[120rem] px-4 py-10 sm:px-5 sm:py-12 lg:px-6">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-12">
           <div className="lg:col-span-3">
             <DocumentsSidebar />
           </div>
 
-          <div className="lg:col-span-9 space-y-8">
+          <div className="space-y-6 sm:space-y-8 lg:col-span-9">
             {/* About */}
-            <div id="audit-about" className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-3">About Sustainable Audit</h2>
+            <div id="audit-about" className="rounded-xl bg-white p-5 shadow-md sm:p-6">
+              <h2 className="mb-3 text-[clamp(1.05rem,2.2vw,1.25rem)] font-bold text-gray-800">About Sustainable Audit</h2>
               <p className="text-gray-600 leading-relaxed">
                 SSGMCE conducts regular sustainability audits covering energy consumption, environmental impact, and green campus initiatives.
                 These audits assess the institute's commitment to sustainable development and provide actionable recommendations.
@@ -58,10 +58,10 @@ const Audit = () => {
             </div>
 
             {/* Audit Categories */}
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid gap-5 sm:gap-6 md:grid-cols-3">
               {auditCategories.map((category) => (
                 <div key={category.title} id={category.id} className="bg-white rounded-xl shadow-md overflow-hidden">
-                  <div className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white px-5 py-4">
+                  <div className="bg-gradient-to-r from-ssgmce-blue to-blue-700 px-4 py-4 text-white sm:px-5">
                     <h3 className="text-lg font-bold">{category.title}</h3>
                   </div>
                   <div className="p-5 space-y-3">

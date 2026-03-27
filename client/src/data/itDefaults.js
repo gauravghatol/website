@@ -1,6 +1,94 @@
 // Default data for Information Technology Department
 // These are fallback values when database data is not available
 
+export const defaultVision = [
+  "To establish the department as a centre of academic excellence by integrating current IT trends and aligning with industry needs.",
+];
+
+export const defaultMission = [
+  "To develop essential technical and interpersonal skills in students for their personal and professional growth in the IT industry.",
+  "To enable students to apply their IT knowledge and skills to achieve organizational goals.",
+  "To cultivate leadership qualities and promote continuous learning in students to meet the evolving needs of society.",
+];
+
+export const defaultPeoDescription =
+  "Graduates, within five years after graduation, should demonstrate";
+
+export const defaultPeo = [
+  "Technical competence: To develop proficiency in analyzing, designing, and implementing IT solutions using contemporary tools and technologies.",
+  "Professional skills: To demonstrate effective communication, teamwork, and leadership abilities in professional settings.",
+  "Continuous learning: To engage in lifelong learning and adapt to emerging technologies and industry trends.",
+  "Ethical responsibility: To practice professional ethics and contribute responsibly to society and the environment.",
+];
+
+export const defaultPso = [
+  "Demonstrate proficiency in software development, database management, and web technologies to design and implement scalable IT solutions.",
+  "Apply knowledge of networking, cybersecurity, and cloud computing to develop secure and efficient information systems.",
+];
+
+export const defaultPo = [
+  {
+    t: "Engineering knowledge",
+    d: "Apply the knowledge of mathematics, science, engineering fundamentals, and an engineering specialization to the solution of complex engineering problems.",
+  },
+  {
+    t: "Problem analysis",
+    d: "Identify, formulate, review research literature, and analyze complex engineering problems reaching substantiated conclusions using first principles of mathematics, natural sciences, and engineering sciences.",
+  },
+  {
+    t: "Design/development of solutions",
+    d: "Design solutions for complex engineering problems and design system components or processes that meet the specified needs with appropriate consideration for the public health and safety, and the cultural, societal, and environmental considerations.",
+  },
+  {
+    t: "Conduct investigations of complex problems",
+    d: "Use research-based knowledge and research methods including design of experiments, analysis and interpretation of data, and synthesis of the information to provide valid conclusions.",
+  },
+  {
+    t: "Modern tool usage",
+    d: "Create, select, and apply appropriate techniques, resources, and modern engineering and IT tools including prediction and modeling to complex engineering activities with an understanding of the limitations.",
+  },
+  {
+    t: "The engineer and society",
+    d: "Apply reasoning informed by the contextual knowledge to assess societal, health, safety, legal and cultural issues and the consequent responsibilities relevant to the professional engineering practice.",
+  },
+  {
+    t: "Environment and sustainability",
+    d: "Understand the impact of the professional engineering solutions in societal and environmental contexts, and demonstrate the knowledge of, and need for sustainable development.",
+  },
+  {
+    t: "Ethics",
+    d: "Apply ethical principles and commit to professional ethics and responsibilities and norms of the engineering practice.",
+  },
+  {
+    t: "Individual and team work",
+    d: "Function effectively as an individual, and as a member or leader in diverse teams, and in multidisciplinary settings.",
+  },
+  {
+    t: "Communication",
+    d: "Communicate effectively on complex engineering activities with the engineering community and with society at large, such as, being able to comprehend and write effective reports and design documentation, make effective presentations, and give and receive clear instructions.",
+  },
+  {
+    t: "Project management and finance",
+    d: "Demonstrate knowledge and understanding of the engineering and management principles and apply these to one's own work, as a member and leader in a team, to manage projects and in multidisciplinary environments.",
+  },
+  {
+    t: "Life-long learning",
+    d: "Recognize the need for, and have the preparation and ability to engage in independent and life-long learning in the broadest context of technological change.",
+  },
+];
+
+export const defaultOverviewTableBE = [
+  ["Degree", "Bachelor of Engineering in Information Technology"],
+  ["Duration", "4 Years (8 Semesters) Full Time"],
+  ["Intake", "60 Students per year"],
+  ["Establishment", "Year: 2001"],
+  ["Affiliation", "Sant Gadge Baba Amravati University"],
+];
+
+export const defaultOverviewTableME = [];
+
+export const defaultOverviewTablePhD = [];
+
 export const defaultActivities = [
   {
     title: "BRAINIAC 2K25",
@@ -910,6 +998,56 @@ export const defaultPrideAlumni = [
   ["Rupal Jain", "Software Engg.", "HSBC, Pune"],
 ];
 
+// ---------- Pride section Markdown converters ----------
+
+export function itPrideGateToMarkdown(gateData = []) {
+  if (!Array.isArray(gateData) || gateData.length === 0) return "";
+  return gateData
+    .map((yearGroup) => {
+      const title =
+        yearGroup.title || `GATE Qualified Students ${yearGroup.year}`;
+      const header = `## ${title}\n\n| Sr. No. | Name of Student | Class | Valid Score | Category |\n|---------|-----------------|-------|-------------|----------|`;
+      if (!yearGroup.students || yearGroup.students.length === 0) {
+        return `${header}\n| — | No records | — | — | — |`;
+      }
+      const rows = yearGroup.students
+        .map((s) => `| ${s[0]} | ${s[1]} | ${s[2]} | ${s[3]} | ${s[4]} |`)
+        .join("\n");
+      return `${header}\n${rows}`;
+    })
+    .join("\n\n");
+}
+
+export function itPrideToppersToMarkdown({ be = [] } = {}) {
+  const header = `## B.E. UNIVERSITY RANK HOLDERS\n\n| Year | Name of the Student | University Rank | CGPA/Percentage |\n|------|---------------------|-----------------|-----------------|`;
+  if (!be || be.length === 0) {
+    return `${header}\n| — | No records | — | — |`;
+  }
+  const rows = be
+    .flatMap((yearGroup) =>
+      yearGroup.records.map(
+        (r, i) =>
+          `| ${i === 0 ? yearGroup.year : ""} | ${r.name} | ${r.rank} | ${r.score} |`,
+      ),
+    )
+    .join("\n");
+  return `${header}\n${rows}`;
+}
+
+export function itPrideAlumniToMarkdown(
+  alumniData = [],
+  title = "Top Alumnis of Department",
+) {
+  const header = `## ${title}\n\n| S. N. | Names of Alumni | Position | Names of Organisation |\n|-------|-----------------|----------|----------------------|`;
+  if (!alumniData || alumniData.length === 0) {
+    return `${header}\n| — | No records | — | — |`;
+  }
+  const rows = alumniData
+    .map((a, i) => `| ${i + 1}. | ${a[0]} | ${a[1]} | ${a[2]} |`)
+    .join("\n");
+  return `${header}\n${rows}`;
+}
+
 export const defaultNewsletters = {
   latest: {
     title: "Newsletter 2024-25",
@@ -1281,6 +1419,85 @@ export const defaultInnovativePractices = [
     rowSpanParent: false,
   },
 ];
+
+// ─── Innovative Practices: Markdown converter helpers ─────────────────────────
+
+export function itInnovativePracticesToMarkdown(practicesData = []) {
+  const rows = practicesData.map(
+    (p) =>
+      `| ${p.sn || ""} | ${p.faculty || ""} | ${p.subject || ""} | ${p.practice || ""} | ${p.link || ""} |`,
+  );
+  return [
+    "## Innovative Practices in Teaching and Learning",
+    "",
+    "| S.N. | Faculty | Subject | Practice | Link |",
+    "|------|---------|---------|----------|------|",
+    ...rows,
+  ].join("\n");
+}
+
+export function itMarkdownToInnovativePractices(markdown = "") {
+  if (!markdown || typeof markdown !== "string") {
+    return [];
+  }
+
+  const lines = markdown.split("\n");
+  const practices = [];
+
+  let inTable = false;
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Skip empty lines
+    if (!trimmed) continue;
+
+    // Skip markdown headers
+    if (trimmed.startsWith("#")) {
+      continue;
+    }
+
+    // Detect the table header row once and start parsing from the next rows.
+    if (
+      !inTable &&
+      trimmed.match(/^\|.*\|$/) &&
+      !trimmed.match(/^\|[\s-|]+\|$/)
+    ) {
+      inTable = true;
+      continue;
+    }
+
+    // Skip separator rows (all dashes and pipes)
+    if (trimmed.match(/^\|[\s-|]+\|$/)) {
+      continue;
+    }
+
+    // Parse data rows (only if we're in table mode)
+    if (inTable && trimmed.startsWith("|") && trimmed.endsWith("|")) {
+      const cells = trimmed
+        .split("|")
+        .map((cell) => cell.trim())
+        .filter((cell) => cell.length > 0);
+
+      // Only add valid rows (must have sn) and skip header rows
+      if (cells.length >= 5 && cells[0] && cells[0].length > 0 && cells[0] !== "S.N") {
+        practices.push({
+          sn: cells[0],
+          faculty: cells[1] || "",
+          subject: cells[2] || "",
+          practice: cells[3] || "",
+          link: cells[4] || "",
+          isExternal: (cells[4] || "").includes("http") || (cells[4] || "").includes("youtu"),
+        });
+      }
+    }
+  }
+
+  return practices;
+}
+
+export const defaultItInnovativePracticesMarkdown = itInnovativePracticesToMarkdown(
+  defaultInnovativePractices,
+);
 
 // ===================== PATENTS & PUBLICATIONS DATA =====================
 
@@ -2727,3 +2944,139 @@ export const defaultItUgProjects = {
     },
   ],
 };
+
+export const defaultItStudentProjects = {
+  "2024-25": [
+    {
+      no: 1,
+      title:
+        "AI Powered Assistive Technology for Visually Impaired People By Using Smart Glasses",
+      guide: "Prof. A G Sharma",
+      award: "1st Rank",
+    },
+    {
+      no: 2,
+      title:
+        "Glamify: AI And ML-Based Personalized Fashion Recommendation System",
+      guide: "Prof. S S Muddalkar",
+      award: "2nd Rank",
+    },
+  ],
+  "2023-24": [
+    {
+      no: 1,
+      title:
+        "Reviving History: Exploring forts and monuments through Augmented Reality",
+      guide: "Prof. P G Angaitkar",
+      award: "1st Rank",
+    },
+    {
+      no: 2,
+      title: "Echoes to Image",
+      guide: "Prof. A G Sharma",
+      award: "2nd Rank",
+    },
+  ],
+  "2022-23": [
+    {
+      no: 1,
+      title:
+        "Real-Time Crop Prediction and Fertilizer Recommendation System using Machine Learning and IoT",
+      guide: "Prof. S. D. Padiya",
+      award: "1st Rank",
+    },
+    {
+      no: 2,
+      title: "Student Timeline for Student Information System",
+      guide: "Prof. Ms. P. P. Bute",
+      award: "2nd Rank",
+    },
+  ],
+  "2021-22": [
+    {
+      no: 1,
+      title: "A Social Media App with Text Summarizer and Voice Assistance",
+      guide: "Prof. Ms. P. V. Kale",
+      award: "1st Rank",
+    },
+    {
+      no: 2,
+      title: "Machine Learning Based Motion Tracking for 3D Model Animation",
+      guide: "Prof. A. S. Manekar",
+      award: "2nd Rank",
+    },
+  ],
+  "2020-21": [
+    {
+      no: 1,
+      title: "Book your Book",
+      guide: "Prof. Ms. P. V. Kale",
+      award: "1st Rank",
+    },
+    {
+      no: 2,
+      title: "ECG Classification using Deep Neural Networks",
+      guide: "Prof. A. G. Sharma",
+      award: "2nd Rank",
+    },
+  ],
+  "2019-20": [
+    {
+      no: 1,
+      title: "Splay- A light weighted Video Streaming App",
+      guide: "Prof. Ms. P. P. Bute",
+      award: "1st Rank",
+    },
+    {
+      no: 2,
+      title: "AI Vision",
+      guide: "Prof. S. D. Padiya",
+      award: "2nd Rank",
+    },
+  ],
+  "2018-19": [
+    {
+      no: 1,
+      title: "Smart Mirror and Smart Security Camera",
+      guide: "Prof. Ms. P. V. Kale",
+      award: "1st Rank",
+    },
+    {
+      no: 2,
+      title: "Real Time Opinion Mining on Sarcastic Stream Data",
+      guide: "Prof. A. K. Shahade",
+      award: "2nd Rank",
+    },
+  ],
+  "2017-18": [
+    {
+      no: 1,
+      title: "Real Time Twitter Analysis using Azure Stream Analysis",
+      guide: "Prof. A G Sharma",
+      award: "1st Rank",
+    },
+    {
+      no: 2,
+      title: "SKOILE-Smart School Information System",
+      guide: "Prof. S S Muddalkar",
+      award: "2nd Rank",
+    },
+  ],
+};
+
+export function itStudentProjectsToMarkdown(projectsData = {}) {
+  return Object.keys(projectsData)
+    .sort()
+    .reverse()
+    .map((year) => {
+      const header = `## ${year}\n\n| Sr. No | Title of Project | Guided By | Award/Reward |\n|--------|-----------------|-----------|--------------|`;
+      const projects = projectsData[year] || [];
+      if (!projects.length)
+        return `${header}\n| \u2014 | No records | \u2014 | \u2014 |`;
+      const rows = projects
+        .map((p) => `| ${p.no} | ${p.title} | ${p.guide} | ${p.award} |`)
+        .join("\n");
+      return `${header}\n${rows}`;
+    })
+    .join("\n\n");
+}

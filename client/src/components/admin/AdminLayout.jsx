@@ -30,7 +30,7 @@ const AdminLayout = ({ children }) => {
 
   const handleLogout = () => {
     logout();
-    navigate("/admin/login");
+    navigate("/admin/login", { replace: true });
   };
 
   const toggleTheme = () => {

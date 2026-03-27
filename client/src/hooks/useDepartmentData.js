@@ -12,7 +12,7 @@ import { useEdit } from "../contexts/EditContext";
 export const useDepartmentData = (pageId) => {
   const [pageData, setPageData] = useState(null);
   const [dataLoading, setDataLoading] = useState(true);
-  const { data: editData, updateData, isEditing } = useEdit();
+  const { data: editData, updateData, removeData, isEditing } = useEdit();
 
   // Fetch page data on mount if not in edit mode
   useEffect(() => {
@@ -67,6 +67,7 @@ export const useDepartmentData = (pageId) => {
     loading: dataLoading,
     isEditing,
     updateData,
+    removeData,
     t,
   };
 };

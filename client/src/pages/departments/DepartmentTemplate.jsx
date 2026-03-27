@@ -52,7 +52,7 @@ const DepartmentTemplate = () => {
       <div className="space-y-10">
         <div className="space-y-6">
             <div className="flex flex-col gap-6">
-              <h3 className="text-3xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2 w-fit">
+              <h3 className="inline-block w-fit border-b-2 border-orange-500 pb-2 text-[clamp(1.45rem,3.8vw,1.875rem)] font-bold text-gray-800">
                   Department Overview
               </h3>
               
@@ -68,7 +68,7 @@ const DepartmentTemplate = () => {
                   ></iframe>
               </div>
 
-              <div className="prose max-w-none text-gray-600 leading-relaxed text-justify text-lg space-y-4">
+              <div className="prose max-w-none space-y-4 text-justify text-[clamp(0.95rem,1.8vw,1.125rem)] leading-relaxed text-gray-600">
                   <p>
                       [Department Overview Paragraph 1]
                   </p>
@@ -173,14 +173,14 @@ const DepartmentTemplate = () => {
                      </button>
                  ))}
              </div>
-             <div className="p-8 min-h-[160px] flex items-center">
+             <div className="flex min-h-[140px] items-center p-5 sm:p-8">
                  {vmTab === 'vision' && (
                      <motion.div 
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                         className="flex items-start gap-4"
                      >
                         <div className="mt-1 text-ssgmce-orange text-2xl">➤</div>
-                        <p className="text-lg text-gray-700 leading-relaxed font-medium">
+                        <p className="text-[clamp(0.98rem,2vw,1.125rem)] font-medium leading-relaxed text-gray-700">
                             [Vision Statement]
                         </p>
                      </motion.div>
@@ -227,7 +227,7 @@ const DepartmentTemplate = () => {
                  ))}
              </div>
              
-             <div className="p-8">
+             <div className="p-5 sm:p-8">
                  {poTab === 'peo' && (
                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                         {[
@@ -314,15 +314,15 @@ const DepartmentTemplate = () => {
              
              {/* Right: Message Section */}
              <div className="md:w-2/3 p-8 md:p-12 relative bg-white">
-                 <FaQuoteLeft className="absolute top-8 left-8 text-6xl text-gray-100 -z-0" />
+                 <FaQuoteLeft className="absolute left-6 top-6 -z-0 text-5xl text-gray-100 sm:left-8 sm:top-8 sm:text-6xl" />
                  
                  <div className="relative z-10">
                     <div className="mb-6">
-                        <h3 className="text-2xl font-bold text-gray-800">Message from the HOD</h3>
+                        <h3 className="text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-800">Message from the HOD</h3>
                         <div className="h-1 w-20 bg-orange-500 mt-2 rounded-full"></div>
                     </div>
                     
-                    <div className="space-y-4 text-gray-600 text-lg leading-relaxed text-justify">
+                    <div className="space-y-4 text-justify text-[clamp(0.95rem,1.8vw,1.125rem)] leading-relaxed text-gray-600">
                         <p>
                             [HOD Message Paragraph 1]
                         </p>
@@ -347,7 +347,7 @@ const DepartmentTemplate = () => {
     laboratories: (
       <div className="space-y-8">
         <div className="text-center max-w-3xl mx-auto mb-10">
-            <h3 className="text-3xl font-bold text-gray-800 mb-4">State-of-the-Art Infrastructure</h3>
+            <h3 className="mb-4 text-[clamp(1.45rem,3.8vw,1.875rem)] font-bold text-gray-800">State-of-the-Art Infrastructure</h3>
             <p className="text-gray-600">Our well-equipped laboratories feature high-end configurations to support advanced curriculum requirements and research initiatives.</p>
         </div>
         
@@ -382,7 +382,7 @@ const DepartmentTemplate = () => {
     faculty: (
       <div className="space-y-10">
          <div className="text-center border-b border-gray-200 pb-6 mb-8">
-            <h3 className="text-3xl font-bold text-gray-900">Our Faculty</h3>
+            <h3 className="text-[clamp(1.45rem,3.8vw,1.875rem)] font-bold text-gray-900">Our Faculty</h3>
             <p className="text-gray-500 mt-2">Department of [Department Name]</p>
          </div>
 
@@ -440,7 +440,7 @@ const DepartmentTemplate = () => {
     ),
     curriculum: (
       <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+        <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
             Scheme and Syllabus
         </h3>
         
@@ -499,7 +499,7 @@ const DepartmentTemplate = () => {
     'student-activities': (
       <div className="space-y-8">
         <div className="text-center mb-8">
-          <h3 className="text-3xl font-bold text-gray-800 mb-3">Student Activities & Chapters</h3>
+            <h3 className="mb-3 text-[clamp(1.45rem,3.8vw,1.875rem)] font-bold text-gray-800">Student Activities & Chapters</h3>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Our department actively promotes student participation in various technical and professional chapters, fostering leadership, innovation, and collaborative learning.
           </p>
@@ -511,7 +511,7 @@ const DepartmentTemplate = () => {
             whileHover={{ y: -5 }}
             className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all group"
           >
-            <div className="w-14 h-14 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center text-2xl mb-4">
+            <div className="w-12 h-12 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center text-2xl mb-4">
               <FaAward />
             </div>
             <h4 className="text-lg font-bold text-gray-800 mb-2">[Activity/Chapter Name]</h4>
@@ -588,7 +588,7 @@ const DepartmentTemplate = () => {
     achievements: (
       <div className="space-y-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
-            <h3 className="text-3xl font-bold text-gray-800 flex items-center">
+            <h3 className="flex items-center text-[clamp(1.45rem,3.8vw,1.875rem)] font-bold text-gray-800">
                 <FaTrophy className="text-yellow-500 mr-3" /> Achievements & Recognition
             </h3>
         </div>
@@ -653,7 +653,7 @@ const DepartmentTemplate = () => {
            >
               <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-800">Placement Statistics</h3>
+                    <h3 className="text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-800">Placement Statistics</h3>
                     <p className="text-sm text-gray-500 mt-1">Year-wise breakdown of student placements</p>
                   </div>
                   <FaChartLine className="text-4xl text-blue-100" />
@@ -752,7 +752,7 @@ const DepartmentTemplate = () => {
     practices: (
       <div className="space-y-8">
          <div className="max-w-3xl">
-             <h3 className="text-3xl font-bold text-gray-800 mb-4">Innovative Best Practices</h3>
+             <h3 className="mb-4 text-[clamp(1.45rem,3.8vw,1.875rem)] font-bold text-gray-800">Innovative Best Practices</h3>
              <p className="text-gray-600 text-lg">
                 We believe in going beyond the syllabus to ensure holistic development. Our best practices are designed to bridge the gap between academia and industry.
              </p>
@@ -760,7 +760,7 @@ const DepartmentTemplate = () => {
 
          <div className="grid gap-6">
             <motion.div whileHover={{ scale: 1.01 }} className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row gap-6">
-                <div className="w-16 h-16 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
+                <div className="w-12 h-12 text-2xl xs:w-12 xs:h-12 xs:text-2xl sm:w-16 sm:h-16 sm:text-3xl bg-green-50 text-green-600 rounded-2xl flex items-center justify-center flex-shrink-0">
                     <FaLaptopCode />
                 </div>
                 <div>
@@ -772,7 +772,7 @@ const DepartmentTemplate = () => {
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.01 }} className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row gap-6">
-                <div className="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
+                <div className="w-12 h-12 text-2xl xs:w-12 xs:h-12 xs:text-2xl sm:w-16 sm:h-16 sm:text-3xl bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0">
                     <FaIndustry />
                 </div>
                 <div>
@@ -788,7 +788,7 @@ const DepartmentTemplate = () => {
     visits: (
       <div className="space-y-8">
          <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
-            <h3 className="text-2xl font-bold text-gray-800">Industrial Visits</h3>
+            <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800">Industrial Visits</h3>
             <span className="text-sm font-medium text-ssgmce-blue bg-blue-50 px-3 py-1 rounded-full">Experiential Learning</span>
          </div>
          
@@ -815,7 +815,7 @@ const DepartmentTemplate = () => {
     mous: (
       <div className="space-y-10">
         <div className="text-center">
-            <h3 className="text-2xl font-bold text-gray-800">Memorandum of Understanding</h3>
+            <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800">Memorandum of Understanding</h3>
             <p className="text-gray-500 mt-2 max-w-2xl mx-auto">Collaboration with industry leaders to bridge the gap between academic curriculum and industrial requirements.</p>
         </div>
 
@@ -828,7 +828,7 @@ const DepartmentTemplate = () => {
                     whileHover={{ y: -5 }}
                     className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center hover:border-blue-100 transition-colors"
                  >
-                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-2xl text-gray-400 mb-4 border border-gray-100">
+                    <div className="w-12 h-12 xs:w-12 xs:h-12 sm:w-16 sm:h-16 bg-gray-50 rounded-full flex items-center justify-center text-2xl text-gray-400 mb-4 border border-gray-100">
                         <FaIndustry />
                     </div>
                     <h4 className="font-bold text-gray-800 text-lg mb-1">{mou.name}</h4>
@@ -975,7 +975,7 @@ const DepartmentTemplate = () => {
       <div className="space-y-10">
          <div className="bg-gradient-to-r from-blue-700 to-indigo-800 rounded-2xl p-8 text-white shadow-xl flex flex-col md:flex-row items-center justify-between">
             <div className="mb-6 md:mb-0">
-                <h3 className="text-2xl font-bold mb-2">Internship Statistics 2023-24</h3>
+                <h3 className="mb-2 text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold">Internship Statistics 2023-24</h3>
                 <p className="text-blue-100 opacity-90 max-w-lg">Mandatory internships provide industry exposure. Our students work with leading companies.</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20 text-center min-w-[150px]">
@@ -988,10 +988,10 @@ const DepartmentTemplate = () => {
     newsletter: (
       <div className="space-y-12">
           <div className="text-center">
-             <div className="w-16 h-16 bg-blue-50 text-ssgmce-blue rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
+             <div className="w-12 h-12 text-2xl xs:w-12 xs:h-12 xs:text-2xl sm:w-16 sm:h-16 sm:text-2xl bg-blue-50 text-ssgmce-blue rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
                 <FaBullseye />
              </div>
-             <h3 className="text-3xl font-bold text-gray-800 mb-4">Department Newsletters</h3>
+             <h3 className="mb-4 text-[clamp(1.45rem,3.8vw,1.875rem)] font-bold text-gray-800">Department Newsletters</h3>
              <p className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
                 Stay updated with the latest happenings, student achievements, faculty contributions, and department events through our periodic newsletters.
              </p>
@@ -1010,7 +1010,7 @@ const DepartmentTemplate = () => {
                       <span className="inline-block px-3 py-1 bg-blue-100 text-ssgmce-blue font-bold text-xs uppercase tracking-wider rounded-full mb-4">
                           Latest Release
                       </span>
-                      <h4 className="text-2xl font-bold text-gray-800 mb-2">
+                      <h4 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 mb-2">
                           Volume I: 2025-26 (Term I)
                       </h4>
                       <p className="text-gray-500 mb-6">
@@ -1046,7 +1046,7 @@ const DepartmentTemplate = () => {
                 Coming Soon
             </span>
             
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+            <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 mb-2">
                 {activeLabel}
             </h3>
             
@@ -1080,13 +1080,13 @@ const DepartmentTemplate = () => {
     </button>
   );
 
-  return (
-    <GenericPage title="[Department Full Name]" backgroundImage={""}>
-      <div className="flex flex-col lg:flex-row gap-12 max-w-7xl mx-auto">
+    return (
+        <GenericPage title="[Department Full Name]" backgroundImage={""}>
+            <div className="mx-auto flex w-full max-w-[120rem] flex-col gap-6 sm:gap-8 lg:flex-row lg:gap-12">
         
         {/* Sidebar Navigation (Left Side) */}
-        <div className="lg:w-1/4 order-1 lg:order-1">
-             <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 space-y-6 pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+           <div className="order-1 lg:order-1 lg:w-1/4">
+               <div className="space-y-4 pb-3 sm:space-y-6 sm:pb-4 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                  {/* Academics Section */}
                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
                     <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center border-b border-gray-100 pb-3">
@@ -1114,7 +1114,7 @@ const DepartmentTemplate = () => {
         </div>
 
         {/* Main Content Area (Right Side) */}
-        <div className="lg:w-3/4 order-2 lg:order-2 min-h-[600px]">
+        <div className="order-2 min-h-[420px] lg:order-2 lg:min-h-[600px] lg:w-3/4">
              <AnimatePresence mode="wait">
                 <motion.div
                     key={activeTab}

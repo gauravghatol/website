@@ -48,8 +48,8 @@ const Financial = () => {
         backgroundImage="https://images.unsplash.com/photo-1568667256549-094345857637?w=1200&q=80"
       />
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid lg:grid-cols-12 gap-8">
+      <div className="mx-auto w-full max-w-[120rem] px-4 py-10 sm:px-5 sm:py-12 lg:px-6">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-12">
           {/* Sidebar */}
           <div className="lg:col-span-3">
             <DocumentsSidebar />
@@ -58,8 +58,8 @@ const Financial = () => {
           {/* Main Content */}
           <div className="lg:col-span-9">
             {/* Header Info */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-              <h2 className="text-2xl font-bold text-ssgmce-blue mb-3">
+            <div className="mb-6 rounded-lg bg-white p-5 shadow-md sm:mb-8 sm:p-6">
+              <h2 className="mb-3 text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-ssgmce-blue">
                 Audited Reports
               </h2>
               <p className="text-gray-600 leading-relaxed">
@@ -68,26 +68,26 @@ const Financial = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="overflow-hidden rounded-lg bg-white shadow-md">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-100 border-b">
-                    <th className="px-6 py-4 text-left font-bold text-gray-800 border-r w-16">Serial No.</th>
-                    <th className="px-6 py-4 text-left font-bold text-gray-800 border-r">Academic Year/ Session</th>
-                    <th className="px-6 py-4 text-left font-bold text-gray-800">Link</th>
+                    <th className="w-14 border-r px-3 py-3 text-left text-xs font-bold text-gray-800 sm:w-16 sm:px-6 sm:py-4 sm:text-base">Serial No.</th>
+                    <th className="border-r px-3 py-3 text-left text-xs font-bold text-gray-800 sm:px-6 sm:py-4 sm:text-base">Academic Year/ Session</th>
+                    <th className="px-3 py-3 text-left text-xs font-bold text-gray-800 sm:px-6 sm:py-4 sm:text-base">Link</th>
                   </tr>
                 </thead>
                 <tbody>
                   {auditedReports.map((report) => (
                     <tr key={report.serial} className="border-b hover:bg-gray-50">
-                      <td className="px-6 py-4 text-gray-700 border-r font-medium text-center">{report.serial}</td>
-                      <td className="px-6 py-4 text-gray-700 border-r">{report.year}</td>
-                      <td className="px-6 py-4">
+                      <td className="border-r px-3 py-3 text-center text-sm font-medium text-gray-700 sm:px-6 sm:py-4">{report.serial}</td>
+                      <td className="border-r px-3 py-3 text-sm text-gray-700 sm:px-6 sm:py-4">{report.year}</td>
+                      <td className="px-3 py-3 sm:px-6 sm:py-4">
                         <a
                           href={report.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                          className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline sm:text-base"
                         >
                           Click here
                         </a>

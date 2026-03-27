@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams, Navigate } from "react-router-dom";
+import { useParams, Navigate, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { EditProvider } from "../../contexts/EditContext";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -16,6 +16,7 @@ import IT from "../../pages/departments/IT";
 import MBA from "../../pages/departments/MBA";
 import AppliedSciences from "../../pages/departments/AppliedSciences";
 import NIRFRankingPage from "../../pages/NIRFRanking";
+import { goBackOrFallback } from "../../utils/navigation";
 
 // Map User-model department codes → the pageId the coordinator owns
 const DEPT_TO_PAGEID = {
@@ -58,6 +59,8 @@ const derivePageMeta = (pageId) => {
 
 const VisualPageEditor = () => {
   const { pageId } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { isCoordinator, userDepartment } = useAuth();
   const { theme, setTheme } = useTheme();
   const prevThemeRef = useRef(theme);
@@ -82,6 +85,16 @@ const VisualPageEditor = () => {
     if (!allowed || pageId !== allowed) {
       return <Navigate to={ADMIN_ROUTE_PREFIX} replace />;
     }
+  }
+
+  if (pageId?.startsWith("academics-")) {
+    return (
+      <Navigate
+        to={`/admin/academics?pageId=${pageId}`}
+        state={location.state}
+        replace
+      />
+    );
   }
 
   useEffect(() => {
@@ -184,9 +197,13 @@ const VisualPageEditor = () => {
             </button>
           )}
           <div>
-            <a href="/admin" className="text-blue-600 hover:underline text-sm">
-              ← Back to Dashboard
-            </a>
+            <button
+              type="button"
+              onClick={() => goBackOrFallback(navigate, location, "/admin")}
+              className="text-blue-600 hover:underline text-sm"
+            >
+               Back to Dashboard
+            </button>
           </div>
         </div>
       </div>

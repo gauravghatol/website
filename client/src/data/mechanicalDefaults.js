@@ -1,6 +1,111 @@
 // Mechanical Engineering Department - Faculty Defaults Data
 // Rich faculty data with Vidwan IDs and detailed profiles
 
+export const defaultVision = [
+  "To develop quality mechanical engineers, researchers and entrepreneurs with commitment for excellence, learning enthusiasm, ethical behavior and serving the society.",
+];
+
+export const defaultMission = [
+  "To impart fundamental knowledge of Mechanical Engineering to the students through excellent/best Teaching learning experience and provide a platform for Higher Education.",
+  "To offer Industry Institute interface, interdisciplinary knowledge, and value-based education for the overall development of students.",
+  "To enhance research, next-gen skills, and entrepreneurship abilities of the students to solve social problems.",
+];
+
+export const defaultPeo = [
+  "Engage in creating, designing, manufacturing, analyzing, testing, and maintaining the systems of Mechanical Engineering and allied branches of engineering.",
+  "Solve the problems of societal importance by applying fundamentals of Mechanical engineering & pursue higher education, research in the domain of Mechanical.",
+  "Imbibe ethical values & skills for lifelong learning to work effectively as a part of a team member, leading a team in a multidisciplinary setup.",
+];
+
+export const defaultPso = [
+  {
+    t: "PSO1: Manufacturing Engineering",
+    d: "An ability to apply the principles of manufacturing engineering and technology to develop techno commercial skills.",
+  },
+  {
+    t: "PSO2: Thermal Engineering",
+    d: "An ability to apply fundamentals to design and analyze the thermo-hydraulic systems.",
+  },
+  {
+    t: "PSO3: Design Engineering",
+    d: "An ability to design and analyze mechanical components and processes to predict the behavior of engineering systems.",
+  },
+];
+
+export const defaultPo = [
+  {
+    t: "Engineering knowledge",
+    d: "Apply the knowledge of mathematics, science, engineering fundamentals, and an engineering specialization to the solution of complex engineering problems.",
+  },
+  {
+    t: "Problem analysis",
+    d: "Identify, formulate, review research literature, and analyze complex engineering problems reaching substantiated conclusions using first principles of mathematics, natural sciences, and engineering sciences.",
+  },
+  {
+    t: "Design/development of solutions",
+    d: "Design solutions for complex engineering problems and design system components or processes that meet the specified needs with appropriate consideration for the public health and safety, and the cultural, societal, and environmental considerations.",
+  },
+  {
+    t: "Conduct investigations of complex problems",
+    d: "Use research-based knowledge and research methods including design of experiments, analysis and interpretation of data, and synthesis of the information to provide valid conclusions.",
+  },
+  {
+    t: "Modern tool usage",
+    d: "Create, select, and apply appropriate techniques, resources, and modern engineering and IT tools including prediction and modeling to complex engineering activities with an understanding of the limitations.",
+  },
+  {
+    t: "The engineer and society",
+    d: "Apply reasoning informed by the contextual knowledge to assess societal, health, safety, legal and cultural issues and the consequent responsibilities relevant to the professional engineering practice.",
+  },
+  {
+    t: "Environment and sustainability",
+    d: "Understand the impact of the professional engineering solutions in societal and environmental contexts, and demonstrate the knowledge of, and need for sustainable development.",
+  },
+  {
+    t: "Ethics",
+    d: "Apply ethical principles and commit to professional ethics and responsibilities and norms of the engineering practice.",
+  },
+  {
+    t: "Individual and team work",
+    d: "Function effectively as an individual, and as a member or leader in diverse teams, and in multidisciplinary settings.",
+  },
+  {
+    t: "Communication",
+    d: "Communicate effectively on complex engineering activities with the engineering community and with society at large, such as, being able to comprehend and write effective reports and design documentation, make effective presentations, and give and receive clear instructions.",
+  },
+  {
+    t: "Project management and finance",
+    d: "Demonstrate knowledge and understanding of the engineering and management principles and apply these to one's own work, as a member and leader in a team, to manage projects and in multidisciplinary environments.",
+  },
+  {
+    t: "Life-long learning",
+    d: "Recognize the need for, and have the preparation and ability to engage in independent and life-long learning in the broadest context of technological change.",
+  },
+];
+
+export const defaultOverviewTableBE = [
+  ["Degree", "Bachelor of Engineering (Mechanical Engineering)"],
+  ["Duration", "4 Year(8 Semesters) (Full time)"],
+  ["Intake", "60 Students per year"],
+  ["Establishment", "Year: 1993"],
+  ["NBA Status", "Five Time Accredited & Valid upto 2025."],
+];
+
+export const defaultOverviewTableME = [
+  [
+    "Specialization",
+    "M. E. Advanced Manufacturing & Mechanical Systems Design",
+  ],
+  ["Duration", "2 Year(4 Semesters) (Full time)"],
+  ["Intake", "24 Students per year"],
+  ["Establishment", "Year: 2012"],
+];
+
+export const defaultOverviewTablePhD = [
+  ["Duration", "3 Years"],
+  ["Intake", "05 Students"],
+];
+
 export const defaultFaculty = [
   {
     id: "spt",
@@ -707,6 +812,56 @@ export const defaultPrideAlumni = [
     "Bosch Limited",
   ],
 ];
+
+// ---------- Pride section Markdown converters ----------
+
+export function mechPrideGateToMarkdown(gateData = []) {
+  if (!Array.isArray(gateData) || gateData.length === 0) return "";
+  return gateData
+    .map((yearGroup) => {
+      const title =
+        yearGroup.title || `GATE Qualified Students ${yearGroup.year}`;
+      const header = `## ${title}\n\n| Sr. No. | Name of Student | Class | Valid Score | Category |\n|---------|-----------------|-------|-------------|----------|`;
+      if (!yearGroup.students || yearGroup.students.length === 0) {
+        return `${header}\n| — | No records | — | — | — |`;
+      }
+      const rows = yearGroup.students
+        .map((s) => `| ${s[0]} | ${s[1]} | ${s[2]} | ${s[3]} | ${s[4]} |`)
+        .join("\n");
+      return `${header}\n${rows}`;
+    })
+    .join("\n\n");
+}
+
+export function mechPrideToppersToMarkdown({ be = [] } = {}) {
+  const header = `## B.E. UNIVERSITY RANK HOLDERS\n\n| Year | Name of the Student | University Rank | CGPA/Percentage |\n|------|---------------------|-----------------|-----------------|`;
+  if (!be || be.length === 0) {
+    return `${header}\n| — | No records | — | — |`;
+  }
+  const rows = be
+    .flatMap((yearGroup) =>
+      yearGroup.records.map(
+        (r, i) =>
+          `| ${i === 0 ? yearGroup.year : ""} | ${r.name} | ${r.rank} | ${r.score} |`,
+      ),
+    )
+    .join("\n");
+  return `${header}\n${rows}`;
+}
+
+export function mechPrideAlumniToMarkdown(
+  alumniData = [],
+  title = "Top Alumnis of Department",
+) {
+  const header = `## ${title}\n\n| S. N. | Names of Alumni | Position | Names of Organisation |\n|-------|-----------------|----------|----------------------|`;
+  if (!alumniData || alumniData.length === 0) {
+    return `${header}\n| — | No records | — | — |`;
+  }
+  const rows = alumniData
+    .map((a, i) => `| ${i + 1}. | ${a[0]} | ${a[1]} | ${a[2]} |`)
+    .join("\n");
+  return `${header}\n${rows}`;
+}
 
 // Curricular Activities (scraped from ssgmce.ac.in/page_details.php?page_id=105&department_id=6)
 export const defaultActivities = [
@@ -1469,6 +1624,85 @@ export const defaultInnovativePractices = [
   },
 ];
 
+// ─── Innovative Practices: Markdown converter helpers ─────────────────────────
+
+export function mechInnovativePracticesToMarkdown(practicesData = []) {
+  const rows = practicesData.map(
+    (p) =>
+      `| ${p.sn || ""} | ${p.faculty || ""} | ${p.subject || ""} | ${p.practice || ""} | ${p.link || ""} |`,
+  );
+  return [
+    "## Innovative Practices in Teaching and Learning",
+    "",
+    "| S.N. | Faculty | Subject | Practice | Link |",
+    "|------|---------|---------|----------|------|",
+    ...rows,
+  ].join("\n");
+}
+
+export function mechMarkdownToInnovativePractices(markdown = "") {
+  if (!markdown || typeof markdown !== "string") {
+    return [];
+  }
+
+  const lines = markdown.split("\n");
+  const practices = [];
+
+  let inTable = false;
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Skip empty lines
+    if (!trimmed) continue;
+
+    // Skip markdown headers
+    if (trimmed.startsWith("#")) {
+      continue;
+    }
+
+    // Detect the table header row once and start parsing from the next rows.
+    if (
+      !inTable &&
+      trimmed.match(/^\|.*\|$/) &&
+      !trimmed.match(/^\|[\s-|]+\|$/)
+    ) {
+      inTable = true;
+      continue;
+    }
+
+    // Skip separator rows (all dashes and pipes)
+    if (trimmed.match(/^\|[\s-|]+\|$/)) {
+      continue;
+    }
+
+    // Parse data rows (only if we're in table mode)
+    if (inTable && trimmed.startsWith("|") && trimmed.endsWith("|")) {
+      const cells = trimmed
+        .split("|")
+        .map((cell) => cell.trim())
+        .filter((cell) => cell.length > 0);
+
+      // Only add valid rows (must have sn) and skip header rows
+      if (cells.length >= 5 && cells[0] && cells[0].length > 0 && cells[0] !== "S.N") {
+        practices.push({
+          sn: cells[0],
+          faculty: cells[1] || "",
+          subject: cells[2] || "",
+          practice: cells[3] || "",
+          link: cells[4] || "",
+          isExternal: (cells[4] || "").includes("http") || (cells[4] || "").includes("youtu"),
+        });
+      }
+    }
+  }
+
+  return practices;
+}
+
+export const defaultMechInnovativePracticesMarkdown = mechInnovativePracticesToMarkdown(
+  defaultInnovativePractices,
+);
+
 // ===================== PATENTS =====================
 export const defaultMechPatents = {
   "2024-25": [
@@ -2226,3 +2460,96 @@ export const defaultNBAResources = {
     },
   ],
 };
+
+export const defaultMechStudentProjects = {
+  "2024-25": [
+    {
+      id: 1,
+      title: "Design and Development of Solar Powered Water Pumping System",
+    },
+    { id: 2, title: "Automated Seed Sowing Machine with IoT Integration" },
+    { id: 3, title: "Design of Hybrid Electric Vehicle Charging Station" },
+    {
+      id: 4,
+      title: "Development of Low-Cost CNC Machine for Educational Purpose",
+    },
+    { id: 5, title: "Smart Energy Meter Using IoT" },
+    {
+      id: 6,
+      title: "Design and Fabrication of Automatic Wall Painting Machine",
+    },
+    { id: 7, title: "Development of Portable Water Purification System" },
+    { id: 8, title: "Design of Multi-Purpose Agricultural Equipment" },
+    { id: 9, title: "Automatic Gear Shifting System for Two-Wheeler" },
+    { id: 10, title: "Design and Development of Wind Turbine for Rural Areas" },
+    { id: 11, title: "Smart Waste Segregation System Using Machine Learning" },
+    { id: 12, title: "Design of Eco-Friendly Refrigeration System" },
+    {
+      id: 13,
+      title: "Development of Automatic Braking System for Heavy Vehicles",
+    },
+    { id: 14, title: "Design and Fabrication of Hydraulic Jack" },
+    { id: 15, title: "Solar Powered Irrigation System with Moisture Sensor" },
+  ],
+  "2023-24": [
+    {
+      id: 1,
+      title: "Design and Development of Automatic Floor Cleaning Robot",
+    },
+    { id: 2, title: "Fabrication of Pedal Operated Washing Machine" },
+    { id: 3, title: "Design of Low-Cost Ventilator for Emergency Use" },
+    { id: 4, title: "Development of Automatic Coconut Dehusking Machine" },
+    { id: 5, title: "Design and Fabrication of Paper Recycling Machine" },
+    { id: 6, title: "Automatic Material Handling System Using PLC" },
+    { id: 7, title: "Design of Electric Bicycle with Pedal Assistance" },
+    { id: 8, title: "Development of Multi-Crop Harvester" },
+    { id: 9, title: "Design and Fabrication of Hydraulic Scissor Lift" },
+    { id: 10, title: "Smart Parking System Using IoT" },
+    { id: 11, title: "Design of Portable Concrete Mixer" },
+    {
+      id: 12,
+      title: "Development of Automatic Fire Detection and Extinguishing System",
+    },
+    {
+      id: 13,
+      title:
+        "Design and Fabrication of Air Conditioning System Using Exhaust Heat",
+    },
+    { id: 14, title: "Automatic Irrigation System Based on Soil Moisture" },
+    { id: 15, title: "Design of Friction Stir Welding Setup" },
+  ],
+  "2022-23": [
+    {
+      id: 1,
+      title: "Design and Development of Pneumatic Sheet Metal Bending Machine",
+    },
+    { id: 2, title: "Fabrication of Multipurpose Workshop Machine" },
+    { id: 3, title: "Design of Solar Water Heater with Phase Change Material" },
+    { id: 4, title: "Development of Automatic Glass Cutting Machine" },
+    { id: 5, title: "Design and Fabrication of Pneumatic Punching Machine" },
+    { id: 6, title: "Automatic Street Light Control System Using LDR" },
+    { id: 7, title: "Design of Portable Grass Cutting Machine" },
+    { id: 8, title: "Development of Hydraulic Pipe Bending Machine" },
+    { id: 9, title: "Design and Fabrication of Pedal Powered Flour Mill" },
+    { id: 10, title: "Smart Home Automation System" },
+    { id: 11, title: "Design of Low-Cost Lathe Machine" },
+    { id: 12, title: "Development of Automatic Bottle Filling Machine" },
+    { id: 13, title: "Design and Fabrication of Pneumatic Bumper Jack" },
+    { id: 14, title: "Automatic Railway Gate Control System" },
+    { id: 15, title: "Design of Vehicle Tracking System Using GPS" },
+  ],
+};
+
+export function mechStudentProjectsToMarkdown(projectsData = {}) {
+  return Object.keys(projectsData)
+    .sort()
+    .reverse()
+    .map((year) => {
+      const header = `## ${year}\n\n| Group No. | Project Title |\n|-----------|--------------|`;
+      const projects = projectsData[year] || [];
+      if (!projects.length) return `${header}\n| \u2014 | No records |`;
+      const rows = projects.map((p) => `| ${p.id} | ${p.title} |`).join("\n");
+      return `${header}\n${rows}`;
+    })
+    .join("\n\n");
+}

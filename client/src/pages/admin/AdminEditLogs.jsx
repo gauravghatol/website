@@ -90,6 +90,13 @@ const AdminEditLogs = () => {
   // Unique page IDs for filter dropdown
   const uniquePages = [...new Set(logs.map((l) => l.pageId))].sort();
 
+  const actionLabel = (action) => {
+    if (action === "reset") return "RESET";
+    if (action === "login") return "LOGIN";
+    if (action === "logout") return "LOGOUT";
+    return "EDIT";
+  };
+
   const formatTime = (dateStr) => {
     const d = new Date(dateStr);
     return d.toLocaleString("en-IN", {
@@ -168,12 +175,12 @@ const AdminEditLogs = () => {
 
         {/* Log Entries */}
         {loading ? (
-          <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 sm:p-10 md:p-12 text-center">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4" />
             <p className="text-gray-500 dark:text-gray-400">Loading activity logs...</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 sm:p-10 md:p-12 text-center">
             <FaHistory className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
               No Activity Yet
@@ -254,10 +261,12 @@ const AdminEditLogs = () => {
                             ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300"
                             : log.action === "login"
                             ? "bg-emerald-100 text-emerald-700"
+                            : log.action === "logout"
+                            ? "bg-slate-100 text-slate-700"
                             : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
                         }`}
                       >
-                        {log.action === "reset" ? "RESET" : log.action === "login" ? "LOGIN" : "EDIT"}
+                        {actionLabel(log.action)}
                       </span>
                     </div>
 
@@ -273,6 +282,10 @@ const AdminEditLogs = () => {
                       ) : log.action === "login" ? (
                         <>
                           Logged in to the admin panel
+                        </>
+                      ) : log.action === "logout" ? (
+                        <>
+                          Logged out of the admin panel
                         </>
                       ) : (
                         <>
@@ -295,12 +308,20 @@ const AdminEditLogs = () => {
                       onClick={() =>
                         handleReset(log._id, log.pageId, log.createdAt)
                       }
-                      disabled={resettingId === log._id}
+                      disabled={resettingId === log._id || !log.canReset}
                       className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors disabled:opacity-50 flex-shrink-0"
-                      title="Revert page to the state before this edit"
+                      title={
+                        log.canReset
+                          ? "Revert page to the state before this edit"
+                          : "Cannot reset this entry because snapshot data is unavailable or the page no longer exists"
+                      }
                     >
                       <FaUndo className="text-xs" />
-                      {resettingId === log._id ? "Resetting..." : "Reset"}
+                      {resettingId === log._id
+                        ? "Resetting..."
+                        : log.canReset
+                        ? "Reset"
+                        : "No Snapshot"}
                     </button>
                   )}
                 </div>

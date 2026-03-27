@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useMemo } from "react";
+﻿import React, { useEffect, useState, useMemo, useRef } from "react";
 import axios from "axios";
 import GenericPage from "./GenericPage";
 import PlacementSidebar from "./PlacementSidebar";
@@ -6,6 +6,11 @@ import AcademicsSidebar from "./AcademicsSidebar";
 import IQACSidebar from "./IQACSidebar";
 import AdmissionsSidebar from "./AdmissionsSidebar";
 import FacilitiesSidebar from "./FacilitiesSidebar";
+import LibrarySidebar from "./LibrarySidebar";
+import HostelSidebar from "./HostelSidebar";
+import SportsSidebar from "./SportsSidebar";
+import OtherFacilitiesSidebar from "./OtherFacilitiesSidebar";
+import ComputingSidebar from "./ComputingSidebar";
 import ResearchSidebar from "./ResearchSidebar";
 import DocumentsSidebar from "./DocumentsSidebar";
 import AboutSidebar from "./AboutSidebar";
@@ -32,6 +37,12 @@ const SIDEBAR_MAP = {
   "academics-": AcademicsSidebar,
   "iqac-": IQACSidebar,
   "admissions-": AdmissionsSidebar,
+  "facilities-library": LibrarySidebar,
+  "facilities-hostels": HostelSidebar,
+  "facilities-hostel-": HostelSidebar,
+  "facilities-sports": SportsSidebar,
+  "facilities-other": OtherFacilitiesSidebar,
+  "facilities-computing": ComputingSidebar,
   "facilities-": FacilitiesSidebar,
   "research-": ResearchSidebar,
   "documents-": DocumentsSidebar,
@@ -399,6 +410,7 @@ const GenericContentPage = ({ pageId }) => {
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const lastAutoScrolledPageRef = useRef(null);
   const [isPrincipalMessageExpanded, setIsPrincipalMessageExpanded] =
     useState(false);
   const [isGlanceIntroExpanded, setIsGlanceIntroExpanded] = useState(false);
@@ -426,6 +438,10 @@ const GenericContentPage = ({ pageId }) => {
   const isAdmissionsThemePage = admissionsThemePages.has(pageId);
   // About pages use the same visual treatment as generic pages (e.g. Placements).
   const isAboutThemePage = false;
+  const isFacilitiesChildPage =
+    pageId?.startsWith("facilities-") &&
+    !pageId?.startsWith("facilities-admin-office-") &&
+    pageId !== "facilities-administrative-office";
 
   useEffect(() => {
     // When rendered inside VisualPageEditor the data is already loaded into
@@ -537,6 +553,24 @@ const GenericContentPage = ({ pageId }) => {
     setIsPrincipalMessageExpanded(false);
     setIsGlanceIntroExpanded(false);
   }, [pageId]);
+
+  useEffect(() => {
+    if (!isFacilitiesChildPage || loading || error || !displayPage) return;
+    if (typeof window === "undefined") return;
+    if (window.location.hash) return;
+    if (lastAutoScrolledPageRef.current === pageId) return;
+
+    const firstSection = document.querySelector(".page-section");
+    if (!firstSection) return;
+
+    // Keep section heading visible below sticky navbar.
+    const headerOffset = 100;
+    const targetTop =
+      firstSection.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+
+    window.scrollTo({ top: Math.max(targetTop, 0), behavior: "smooth" });
+    lastAutoScrolledPageRef.current = pageId;
+  }, [displayPage, error, isFacilitiesChildPage, loading, pageId]);
 
   // Auto-select sidebar based on pageId prefix (longer prefixes checked first)
   const sidebar = useMemo(() => {
@@ -2089,14 +2123,14 @@ Constituted By **All India Council for Technical Education, New Delhi**
       variant={isAboutThemePage ? "about" : "default"}
     >
       <div
-        className={`flex flex-col lg:flex-row ${isAboutThemePage ? "gap-6 lg:gap-10" : "gap-8"} ${sidebar ? "" : "justify-center"}`}
+        className={`flex flex-col lg:flex-row ${isAboutThemePage ? "gap-5 sm:gap-6 lg:gap-10" : "gap-6 sm:gap-8"} ${sidebar ? "" : "justify-center"}`}
       >
         {/* Sidebar */}
         {sidebar && (
           <div
             className={isAboutThemePage ? "lg:w-[300px] flex-shrink-0" : "lg:w-1/4 flex-shrink-0"}
           >
-            <div className="sticky top-24">{sidebar}</div>
+            <div className="lg:sticky lg:top-24">{sidebar}</div>
           </div>
         )}
 
@@ -2111,8 +2145,8 @@ Constituted By **All India Council for Technical Education, New Delhi**
                 element="h1"
                 className={
                   isAboutThemePage
-                    ? "text-3xl font-semibold text-slate-900 border-b border-slate-200 pb-2 mb-4"
-                    : "text-3xl font-bold text-gray-900 border-b pb-2 mb-4"
+                    ? "text-[clamp(1.4rem,3.6vw,1.875rem)] font-semibold text-slate-900 border-b border-slate-200 pb-2 mb-4"
+                    : "text-[clamp(1.4rem,3.6vw,1.875rem)] font-bold text-gray-900 border-b pb-2 mb-4"
                 }
               />
             </div>

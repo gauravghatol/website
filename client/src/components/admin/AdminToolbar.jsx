@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEdit } from "../../contexts/EditContext";
 import {
   FaSave,
@@ -8,17 +8,23 @@ import {
   FaExclamationTriangle,
   FaFileImport,
   FaUndo,
+  FaTimes,
 } from "react-icons/fa";
 import { ADMIN_ROUTE_PREFIX } from "../../config/adminAccess";
 import DocImportModal from "./DocImportModal";
+import { goBackOrFallback } from "../../utils/navigation";
 
 /**
  * AdminToolbar - Floating toolbar for visual page editor
  * Provides save, back navigation, and change status indicators
  */
-const AdminToolbar = ({ title = "Page Editor" }) => {
+const AdminToolbar = ({
+  title = "Page Editor",
+  fallbackPath = "/admin/pages",
+}) => {
   const navigate = useNavigate();
-  const { hasChanges, saveData, undo, canUndo } = useEdit();
+  const location = useLocation();
+  const { hasChanges, saveData, undo, canUndo, discardChanges } = useEdit();
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'error' | null
   const [showImportModal, setShowImportModal] = useState(false);
@@ -47,12 +53,22 @@ const AdminToolbar = ({ title = "Page Editor" }) => {
       );
       if (!confirmed) return;
     }
-    navigate("/admin/pages");
+    goBackOrFallback(navigate, location, fallbackPath);
+  };
+
+  const handleDiscard = () => {
+    if (!hasChanges) return;
+    const confirmed = window.confirm(
+      "Discard all unsaved changes and restore the last saved version?",
+    );
+    if (!confirmed) return;
+    discardChanges();
+    setSaveStatus(null);
   };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-blue-500 shadow-lg z-50">
-      <div className="max-w-7xl mx-auto px-4 py-3">
+      <div className="mx-auto w-full max-w-[120rem] px-4 py-3 sm:px-5 lg:px-6">
         <div className="flex items-center justify-between">
           {/* Left: Title and Status */}
           <div className="flex items-center gap-4">
@@ -106,6 +122,19 @@ const AdminToolbar = ({ title = "Page Editor" }) => {
             >
               <FaUndo />
               <span className="hidden sm:inline">Undo</span>
+            </button>
+            <button
+              onClick={handleDiscard}
+              disabled={!hasChanges}
+              title="Discard all unsaved changes"
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all border ${
+                hasChanges
+                  ? "border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                  : "border-gray-200 text-gray-300 cursor-not-allowed"
+              }`}
+            >
+              <FaTimes />
+              <span className="hidden sm:inline">Discard</span>
             </button>
             <button
               onClick={() => setShowImportModal(true)}

@@ -1,6 +1,61 @@
 // MBA Department - Faculty Defaults Data
 // Rich faculty data with Vidwan IDs and detailed profiles
 
+export const defaultVision = [
+  "To be a learning centre for developing competent managerial manpower with spiritual blend to serve industry and humanity.",
+];
+
+export const defaultMission = [
+  "To develop competent and entrepreneurial manpower through research, innovation and quality education.",
+  "To develop human resources with spiritual values to serve global society.",
+];
+
+export const defaultPeo = [
+  "Students would accomplish distinguished positions in the corporate world and act as change agents in the society.",
+  "Students would demonstrate and apply analytical thinking, creativity & innovation and adaptability in problem solving.",
+  "Students would be perennially reinventing themselves in management thoughts, philosophy, action, tools and techniques.",
+  "Students would be high on ethical, moral and spiritual values to strive for sustainable growth and inclusive management (Sarve Bhavantu Sukhinah).",
+  "Students would develop multidisciplinary and professional approach coupled with communication skills and teamwork skills to excel in the global environment.",
+];
+
+export const defaultPo = [
+  {
+    t: "Management Knowledge",
+    d: "Apply knowledge and management theories and practices to solve business problems.",
+  },
+  {
+    t: "Critical Thinking",
+    d: "Foster analytical and critical thinking abilities for data-based decision making.",
+  },
+  {
+    t: "Leadership",
+    d: "Ability to develop value-based leadership quality.",
+  },
+  {
+    t: "Global Perspective",
+    d: "Ability to understand analyze and communicate global, economic, legal and ethical aspect of Business.",
+  },
+  {
+    t: "Teamwork",
+    d: "Ability to lead themselves and others in the achievement of organization goals, contributing effectively to a team environment.",
+  },
+];
+
+export const defaultOverviewTableBE = [
+  ["Degree", "M.B.A. (Choice based - Dual specialization)"],
+  ["Duration", "2 Year (4 Semesters) (Full time)"],
+  ["Intake", "60 Students per year"],
+  ["Establishment", "Year: 1994"],
+  ["NBA Status", "Three Times Accredited by NBA"],
+];
+
+export const defaultOverviewTableME = [];
+
+export const defaultOverviewTablePhD = [
+  ["Duration", "3 Years"],
+  ["Intake", "04 Students"],
+];
+
 export const defaultFaculty = [
   {
     id: "pmk",
@@ -488,6 +543,35 @@ export const defaultPrideAlumni = [
   ["Akshay Vairale", "Co-owner and Head-Marketing", "Agrosure, Akola"],
   ["Surbhi Kedia", "Project Engineer", "Whirlpool, Pune"],
 ];
+
+// ---- MBA Pride Markdown converters ----
+
+export function mbaPrideToppersToMarkdown(toppersData = []) {
+  if (!toppersData || toppersData.length === 0) return "";
+  let md = "## UNIVERSITY RANK HOLDERS\n\n";
+  md += "| Year | Name of the Student | University Rank | CGPA/Percentage |\n";
+  md += "| --- | --- | --- | --- |\n";
+  for (const yearGroup of toppersData) {
+    for (const record of yearGroup.records) {
+      md += `| ${yearGroup.year} | ${record.name} | ${record.rank} | ${record.score} |\n`;
+    }
+  }
+  return md;
+}
+
+export function mbaPrideAlumniToMarkdown(
+  alumniData = [],
+  title = "Top Alumnis of Department",
+) {
+  if (!alumniData || alumniData.length === 0) return "";
+  let md = `## ${title}\n\n`;
+  md += "| S. N. | Names of Alumni | Position | Names of Organisation |\n";
+  md += "| --- | --- | --- | --- |\n";
+  alumniData.forEach((row, i) => {
+    md += `| ${i + 1} | ${row[0] || ""} | ${row[1] || ""} | ${row[2] || ""} |\n`;
+  });
+  return md;
+}
 
 // Curricular Activities (scraped from ssgmce.ac.in/page_details.php?page_id=174&department_id=7)
 export const defaultActivities = [

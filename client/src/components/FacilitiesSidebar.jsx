@@ -12,6 +12,7 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import { useEdit } from "../contexts/EditContext";
+import { buildReturnState } from "../utils/navigation";
 
 /** Convert a public path to a pageId slug: /facilities/library → facilities-library */
 const pathToPageId = (path) => path.replace(/^\//, "").replace(/\//g, "-");
@@ -172,7 +173,7 @@ const FacilitiesSidebar = ({ sections }) => {
   };
 
   return (
-    <div className="sticky top-24 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:sticky lg:top-24">
       {/* Header */}
       <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">
         <h3 className="flex items-center text-lg font-bold text-white">
@@ -183,7 +184,7 @@ const FacilitiesSidebar = ({ sections }) => {
       {/* Navigation */}
       <div className="p-3">
         <nav>
-          <ul className="max-h-[65vh] space-y-1 overflow-y-auto pr-1">
+          <ul className="max-h-[52vh] space-y-1 overflow-y-auto pr-1 lg:max-h-[65vh]">
             {menuItems.map((item) => {
               const hasChildren = item.children && item.children.length > 0;
               const isExpanded = expandedGroup === item.path;
@@ -202,6 +203,7 @@ const FacilitiesSidebar = ({ sections }) => {
                   <div className="flex items-center">
                     <Link
                       to={resolveLink(item.path)}
+                      state={isEditing ? buildReturnState(location) : undefined}
                       className={`flex flex-1 items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium leading-snug transition-colors ${
                         isGroupActive
                           ? "bg-ssgmce-blue/10 font-semibold text-ssgmce-blue"
@@ -252,6 +254,7 @@ const FacilitiesSidebar = ({ sections }) => {
                           <li key={child.path}>
                             <Link
                               to={resolveLink(child.path)}
+                              state={isEditing ? buildReturnState(location) : undefined}
                               className={`block rounded-md px-3 py-1.5 text-xs leading-snug transition-all duration-200 ${
                                 isChildActive
                                   ? "bg-ssgmce-blue text-white font-semibold shadow-sm"

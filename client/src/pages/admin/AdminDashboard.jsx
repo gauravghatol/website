@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { useAuth } from "../../hooks/useAuth";
 import { DASHBOARD_SECTIONS } from "../../constants/navConfig";
+import { isAcademicsWebsiteRoute } from "../../constants/academicsPages";
 import {
   FaPlus, FaEdit, FaClock, FaFileAlt, FaChartLine, FaArrowRight,
   FaChartPie, FaDatabase, FaUniversity, FaArrowUp, FaNewspaper,
@@ -12,12 +13,17 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
+import { buildReturnState } from "../../utils/navigation";
 
 const DEPT_TO_PAGEID = {
   CSE: "departments-cse", IT: "departments-it", MECH: "departments-mechanical",
   ELECTRICAL: "departments-electrical", ENTC: "departments-entc",
   MBA: "departments-mba", ASH: "departments-applied-sciences",
 };
+
+const isLegacyAcademicsPage = (page) =>
+  (page.category || "").toLowerCase() === "academics" &&
+  !isAcademicsWebsiteRoute(page.route);
 
 const StatCard = ({ label, value, sub, icon: Icon, accent = "gray" }) => {
   const colors = {
@@ -42,6 +48,7 @@ const StatCard = ({ label, value, sub, icon: Icon, accent = "gray" }) => {
 };
 
 const AdminDashboard = () => {
+  const location = useLocation();
   const { isSuperAdmin, isCoordinator, userDepartment, user } = useAuth();
   const [categoryCounts, setCategoryCounts] = useState({});
   const [totalPages, setTotalPages] = useState(0);
@@ -59,7 +66,9 @@ const AdminDashboard = () => {
     try {
       const res = await axios.get("/api/pages");
       if (res.data.success) {
-        const pages = res.data.data;
+        const pages = (res.data.data || []).filter(
+          (page) => !isLegacyAcademicsPage(page),
+        );
         setTotalPages(pages.length);
         const counts = {};
         DASHBOARD_SECTIONS.forEach((c) => { counts[c.id] = 0; });
@@ -155,6 +164,7 @@ const AdminDashboard = () => {
         {isCoordinator && DEPT_TO_PAGEID[userDepartment] && (
           <Link
             to={`/admin/visual/${DEPT_TO_PAGEID[userDepartment]}`}
+            state={buildReturnState(location)}
             className="flex items-center justify-between bg-white dark:bg-[#1a1a2e] border border-gray-200/80 dark:border-gray-800 rounded-xl p-5 hover:shadow-md transition-all group"
           >
             <div className="flex items-center gap-4">
@@ -298,6 +308,7 @@ const AdminDashboard = () => {
                       <Link
                         key={idx}
                         to={`/admin/visual/${page.pageId}`}
+                        state={buildReturnState(location)}
                         className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       >
                         <div className="w-7 h-7 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">

@@ -33,6 +33,7 @@ router.post(
 );
 router.get("/files", protect, adminOrCoordinator, getUploadedFiles);
 router.delete("/files/:filename", protect, adminOrCoordinator, deleteFile);
+router.delete("/file", protect, adminOrCoordinator, deleteFile);
 router.post(
   "/nirf-pdf",
   protect,

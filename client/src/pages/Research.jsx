@@ -39,10 +39,10 @@ const Research = () => {
       />
 
       {/* Introduction */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-12">
-            <p className="text-lg text-gray-700 leading-relaxed">
+      <section className="py-12 sm:py-14 md:py-16">
+        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
+          <div className="mx-auto mb-10 max-w-4xl text-center sm:mb-12">
+            <p className="text-[clamp(0.95rem,1.9vw,1.125rem)] leading-relaxed text-gray-700">
               SSGMCE is committed to promoting research and innovation among faculty and students. 
               Our research activities span various domains of engineering and technology, contributing 
               to academic knowledge and practical solutions for industry and society.
@@ -50,17 +50,17 @@ const Research = () => {
           </div>
 
           {/* Research Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4">
             {[
               { icon: FaBook, number: '500+', label: 'Publications', color: 'bg-ssgmce-blue' },
               { icon: FaAward, number: '25+', label: 'Patents Filed', color: 'bg-ssgmce-orange' },
               { icon: FaFlask, number: '15+', label: 'Research Projects', color: 'bg-green-600' },
               { icon: FaLightbulb, number: '10+', label: 'Collaborations', color: 'bg-purple-600' },
             ].map((stat, index) => (
-              <div key={index} className={`${stat.color} text-white p-6 rounded-lg shadow-lg hover:scale-105 transition-transform duration-300`}>
-                <stat.icon className="text-4xl mb-3 mx-auto block" />
-                <div className="text-3xl font-bold mb-1">{stat.number}</div>
-                <div className="text-sm opacity-90">{stat.label}</div>
+              <div key={index} className={`${stat.color} rounded-lg p-4 text-white shadow-lg transition-transform duration-300 hover:scale-105 sm:p-5 md:p-6`}>
+                <stat.icon className="mx-auto mb-3 block text-2xl sm:text-3xl md:text-4xl" />
+                <div className="mb-1 text-[clamp(1.4rem,3vw,1.875rem)] font-bold">{stat.number}</div>
+                <div className="text-[0.78rem] opacity-90 sm:text-sm">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -68,18 +68,18 @@ const Research = () => {
       </section>
 
       {/* Research Areas */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center text-ssgmce-blue mb-12">Research Focus Areas</h2>
+      <section className="bg-gray-50 py-12 sm:py-14 md:py-16">
+        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
+          <h2 className="mb-10 text-center text-[clamp(1.6rem,4vw,2.25rem)] font-bold text-ssgmce-blue sm:mb-12">Research Focus Areas</h2>
           <div className="space-y-6">
             {researchAreas.map((item, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-ssgmce-orange hover:shadow-xl transition-shadow duration-300">
-                <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">{item.dept}</h3>
+              <div key={index} className="rounded-lg border-l-4 border-ssgmce-orange bg-white p-5 shadow-lg transition-shadow duration-300 hover:shadow-xl sm:p-6">
+                <h3 className="mb-4 text-[clamp(1.15rem,2.8vw,1.5rem)] font-bold text-ssgmce-blue">{item.dept}</h3>
                 <div className="flex flex-wrap gap-3">
                   {item.areas.map((area, idx) => (
                     <span 
                       key={idx}
-                      className="bg-ssgmce-light-blue/20 text-ssgmce-dark-blue px-4 py-2 rounded-full text-sm font-semibold hover:bg-ssgmce-light-blue hover:text-white transition-colors duration-200"
+                      className="rounded-full bg-ssgmce-light-blue/20 px-3 py-1.5 text-xs font-semibold text-ssgmce-dark-blue transition-colors duration-200 hover:bg-ssgmce-light-blue hover:text-white sm:px-4 sm:py-2 sm:text-sm"
                     >
                       {area}
                     </span>
@@ -92,26 +92,26 @@ const Research = () => {
       </section>
 
       {/* Publications */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center text-ssgmce-blue mb-12">Research Publications</h2>
+      <section className="py-12 sm:py-14 md:py-16">
+        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
+          <h2 className="mb-10 text-center text-[clamp(1.6rem,4vw,2.25rem)] font-bold text-ssgmce-blue sm:mb-12">Research Publications</h2>
           <div className="overflow-x-auto">
             <table className="w-full bg-white shadow-lg rounded-lg overflow-hidden">
               <thead className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white">
                 <tr>
-                  <th className="px-6 py-4 text-left">Academic Year</th>
-                  <th className="px-6 py-4 text-center">Journal Papers</th>
-                  <th className="px-6 py-4 text-center">Conference Papers</th>
-                  <th className="px-6 py-4 text-center">Patents Filed</th>
+                  <th className="px-3 py-3 text-left text-xs sm:px-6 sm:py-4 sm:text-base">Academic Year</th>
+                  <th className="px-3 py-3 text-center text-xs sm:px-6 sm:py-4 sm:text-base">Journal Papers</th>
+                  <th className="px-3 py-3 text-center text-xs sm:px-6 sm:py-4 sm:text-base">Conference Papers</th>
+                  <th className="px-3 py-3 text-center text-xs sm:px-6 sm:py-4 sm:text-base">Patents Filed</th>
                 </tr>
               </thead>
               <tbody>
                 {publications.map((pub, index) => (
                   <tr key={index} className="border-b hover:bg-gray-50 transition-colors duration-200">
-                    <td className="px-6 py-4 font-semibold text-ssgmce-blue">{pub.year}</td>
-                    <td className="px-6 py-4 text-center font-bold text-green-600">{pub.journals}</td>
-                    <td className="px-6 py-4 text-center font-bold text-blue-600">{pub.conferences}</td>
-                    <td className="px-6 py-4 text-center font-bold text-ssgmce-orange">{pub.patents}</td>
+                    <td className="px-3 py-3 text-sm font-semibold text-ssgmce-blue sm:px-6 sm:py-4">{pub.year}</td>
+                    <td className="px-3 py-3 text-center text-sm font-bold text-green-600 sm:px-6 sm:py-4">{pub.journals}</td>
+                    <td className="px-3 py-3 text-center text-sm font-bold text-blue-600 sm:px-6 sm:py-4">{pub.conferences}</td>
+                    <td className="px-3 py-3 text-center text-sm font-bold text-ssgmce-orange sm:px-6 sm:py-4">{pub.patents}</td>
                   </tr>
                 ))}
               </tbody>
@@ -121,10 +121,10 @@ const Research = () => {
       </section>
 
       {/* Research Facilities */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center text-ssgmce-blue mb-12">Research Facilities</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <section className="bg-gray-50 py-12 sm:py-14 md:py-16">
+        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
+          <h2 className="mb-10 text-center text-[clamp(1.6rem,4vw,2.25rem)] font-bold text-ssgmce-blue sm:mb-12">Research Facilities</h2>
+          <div className="grid gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[
               { 
                 title: 'Central Library',
@@ -157,10 +157,10 @@ const Research = () => {
                 icon: '⚙️'
               },
             ].map((facility, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg shadow-lg hover:scale-105 transition-transform duration-300">
-                <div className="text-5xl mb-4">{facility.icon}</div>
-                <h3 className="text-xl font-bold text-ssgmce-blue mb-3">{facility.title}</h3>
-                <p className="text-gray-600">{facility.desc}</p>
+              <div key={index} className="rounded-lg bg-white p-4 shadow-lg transition-transform duration-300 hover:scale-105 sm:p-6">
+                <div className="mb-4 text-3xl sm:text-4xl md:text-5xl">{facility.icon}</div>
+                <h3 className="mb-3 text-lg font-bold text-ssgmce-blue sm:text-xl">{facility.title}</h3>
+                <p className="text-sm text-gray-600 sm:text-base">{facility.desc}</p>
               </div>
             ))}
           </div>
@@ -168,12 +168,12 @@ const Research = () => {
       </section>
 
       {/* Funding & Grants */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center text-ssgmce-blue mb-12">Funding & Collaborations</h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            <div className="bg-white p-8 rounded-lg shadow-lg border-t-4 border-ssgmce-blue">
-              <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">Funding Agencies</h3>
+      <section className="py-12 sm:py-14 md:py-16">
+        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
+          <h2 className="mb-10 text-center text-[clamp(1.6rem,4vw,2.25rem)] font-bold text-ssgmce-blue sm:mb-12">Funding & Collaborations</h2>
+          <div className="mx-auto grid max-w-5xl gap-6 sm:gap-8 md:grid-cols-2">
+            <div className="rounded-lg border-t-4 border-ssgmce-blue bg-white p-6 shadow-lg sm:p-8">
+              <h3 className="mb-4 text-[clamp(1.15rem,2.8vw,1.5rem)] font-bold text-ssgmce-blue">Funding Agencies</h3>
               <ul className="space-y-3">
                 {[
                   'AICTE - Research Promotion Scheme',
@@ -182,14 +182,14 @@ const Research = () => {
                   'MHRD - Technical Education Quality Improvement',
                 ].map((agency, idx) => (
                   <li key={idx} className="flex items-start">
-                    <span className="text-ssgmce-orange mr-3">✓</span>
-                    <span className="text-gray-700">{agency}</span>
+                    <span className="mr-3 text-ssgmce-orange">✓</span>
+                    <span className="text-sm text-gray-700 sm:text-base">{agency}</span>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="bg-white p-8 rounded-lg shadow-lg border-t-4 border-ssgmce-orange">
-              <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">Industry Partners</h3>
+            <div className="rounded-lg border-t-4 border-ssgmce-orange bg-white p-6 shadow-lg sm:p-8">
+              <h3 className="mb-4 text-[clamp(1.15rem,2.8vw,1.5rem)] font-bold text-ssgmce-blue">Industry Partners</h3>
               <ul className="space-y-3">
                 {[
                   'TCS - Technology Research',
@@ -198,8 +198,8 @@ const Research = () => {
                   'BHEL - Industrial Projects',
                 ].map((partner, idx) => (
                   <li key={idx} className="flex items-start">
-                    <span className="text-ssgmce-orange mr-3">✓</span>
-                    <span className="text-gray-700">{partner}</span>
+                    <span className="mr-3 text-ssgmce-orange">✓</span>
+                    <span className="text-sm text-gray-700 sm:text-base">{partner}</span>
                   </li>
                 ))}
               </ul>
@@ -209,23 +209,23 @@ const Research = () => {
       </section>
 
       {/* Student Research */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center text-ssgmce-blue mb-8">Student Research Opportunities</h2>
-          <div className="max-w-4xl mx-auto text-center mb-10">
-            <p className="text-lg text-gray-700 leading-relaxed">
+      <section className="bg-gray-50 py-12 sm:py-14 md:py-16">
+        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
+          <h2 className="mb-8 text-center text-[clamp(1.6rem,4vw,2.25rem)] font-bold text-ssgmce-blue">Student Research Opportunities</h2>
+          <div className="mx-auto mb-8 max-w-4xl text-center sm:mb-10">
+            <p className="text-[clamp(0.95rem,1.9vw,1.125rem)] leading-relaxed text-gray-700">
               We encourage students to actively participate in research through various programs and initiatives.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid gap-5 sm:gap-6 md:grid-cols-3">
             {[
               { title: 'Final Year Projects', desc: 'Industry-relevant and research-oriented projects under faculty guidance' },
               { title: 'Research Internships', desc: 'Summer internships in research labs and industry R&D centers' },
               { title: 'Paper Publications', desc: 'Support for publishing research papers in conferences and journals' },
             ].map((item, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg shadow-lg border-t-4 border-ssgmce-orange text-center hover:-translate-y-2 transition-transform duration-300">
-                <h4 className="text-xl font-bold text-ssgmce-blue mb-3">{item.title}</h4>
-                <p className="text-gray-600">{item.desc}</p>
+              <div key={index} className="rounded-lg border-t-4 border-ssgmce-orange bg-white p-4 text-center shadow-lg transition-transform duration-300 hover:-translate-y-2 sm:p-6">
+                <h4 className="mb-3 text-lg font-bold text-ssgmce-blue sm:text-xl">{item.title}</h4>
+                <p className="text-sm text-gray-600 sm:text-base">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -233,15 +233,15 @@ const Research = () => {
       </section>
 
       {/* Contact */}
-      <section className="py-16 bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-6">Research & Development Cell</h2>
-          <p className="text-xl mb-8 text-ssgmce-light-blue">
+      <section className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue py-12 text-white sm:py-14 md:py-16">
+        <div className="mx-auto w-full max-w-[120rem] px-4 text-center sm:px-5 lg:px-6">
+          <h2 className="mb-6 text-[clamp(1.6rem,4vw,2.25rem)] font-bold">Research & Development Cell</h2>
+          <p className="mb-8 text-[clamp(1rem,2.1vw,1.25rem)] text-ssgmce-light-blue">
             For research collaborations and project proposals, contact our R&D Cell
           </p>
-          <div className="bg-white/10 backdrop-blur-sm inline-block px-8 py-4 rounded-lg">
-            <p className="font-bold text-lg mb-1">Email</p>
-            <p className="text-ssgmce-light-blue">research@ssgmce.ac.in</p>
+          <div className="inline-block rounded-lg bg-white/10 px-5 py-3 backdrop-blur-sm sm:px-8 sm:py-4">
+            <p className="mb-1 text-base font-bold sm:text-lg">Email</p>
+            <p className="text-sm text-ssgmce-light-blue sm:text-base">research@ssgmce.ac.in</p>
           </div>
         </div>
       </section>

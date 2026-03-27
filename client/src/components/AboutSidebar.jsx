@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEdit } from '../contexts/EditContext';
+import { buildReturnState } from '../utils/navigation';
 
 const links = [
   { name: 'SSGMCE At Glance', path: '/about' },
@@ -48,7 +49,9 @@ const AboutSidebar = ({ sections }) => {
   const handleLinkClick = (e, path) => {
     if (isEditing) {
       e.preventDefault();
-      navigate(`/admin/visual/${pathToPageId(path)}`);
+      navigate(`/admin/visual/${pathToPageId(path)}`, {
+        state: buildReturnState(location),
+      });
     }
   };
 
@@ -70,6 +73,7 @@ const AboutSidebar = ({ sections }) => {
             <li key={link.path}>
               <Link
                 to={isEditing ? `/admin/visual/${pathToPageId(link.path)}` : link.path}
+                state={isEditing ? buildReturnState(location) : undefined}
                 onClick={(e) => handleLinkClick(e, link.path)}
                 className={`block px-4 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${
                   isActive

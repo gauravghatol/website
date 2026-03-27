@@ -1,6 +1,7 @@
 ﻿import { Link, useLocation } from "react-router-dom";
 import { FaGraduationCap, FaChevronRight } from "react-icons/fa";
 import { useEdit } from "../contexts/EditContext";
+import { buildReturnState } from "../utils/navigation";
 
 /** Convert a public path to a pageId slug: /admissions/ug -> admissions-ug */
 const pathToPageId = (path) => path.replace(/^\//, "").replace(/\//g, "-");
@@ -49,6 +50,7 @@ const AdmissionsSidebar = () => {
                 <li key={index}>
                   <Link
                     to={to}
+                    state={isEditing ? buildReturnState(location) : undefined}
                     className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm leading-snug transition-colors ${
                       isActive
                         ? "border-l-2 border-ssgmce-orange bg-orange-50 font-semibold text-ssgmce-blue"

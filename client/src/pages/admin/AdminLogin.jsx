@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { FaLock, FaEnvelope, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
+import { getReturnTarget } from '../../utils/navigation';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
@@ -17,7 +18,7 @@ const AdminLogin = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      const from = location.state?.from?.pathname || '/admin';
+      const from = getReturnTarget(location, '/admin');
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, location]);
@@ -32,7 +33,7 @@ const AdminLogin = () => {
       
       if (result.success) {
         // Redirect to the page they tried to visit, or admin dashboard
-        const from = location.state?.from?.pathname || '/admin';
+        const from = getReturnTarget(location, '/admin');
         navigate(from, { replace: true });
       } else {
         setError(result.message || 'Invalid credentials. Please try again.');

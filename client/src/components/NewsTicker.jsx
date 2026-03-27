@@ -15,14 +15,14 @@ const NewsTicker = ({ items }) => {
   if (!items || items.length === 0) return null;
 
   return (
-    <div className="bg-ssgmce-blue text-white py-2.5 overflow-hidden">
-      <div className="container mx-auto px-4 flex items-center">
-        <div className="bg-ssgmce-orange px-3 py-1 rounded text-xs font-semibold mr-4 flex-shrink-0 uppercase tracking-wide">
+    <div className="overflow-hidden bg-ssgmce-blue py-2.5 text-white">
+      <div className="mx-auto flex w-full max-w-[120rem] items-center px-4 sm:px-5 lg:px-6">
+        <div className="mr-3 flex-shrink-0 rounded bg-ssgmce-orange px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-wide sm:mr-4 sm:px-3 sm:text-xs">
           Latest
         </div>
         <div className="flex-1 overflow-hidden">
           <div className="animate-fade-in">
-            <span className="text-sm font-medium opacity-90">{items[currentIndex]?.title || 'Welcome to SSGMCE'}</span>
+            <span className="text-[clamp(0.82rem,1.5vw,0.95rem)] font-medium opacity-90">{items[currentIndex]?.title || 'Welcome to SSGMCE'}</span>
           </div>
         </div>
       </div>

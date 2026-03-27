@@ -12,11 +12,9 @@ const {
   getAllDocumentsAdmin,
   seedDocuments,
   getCategoryStats,
-  proxyDownloadPDF,
 } = require("../controllers/documentController");
 
 // Public routes
-router.get("/proxy-download", proxyDownloadPDF);
 router.get("/", getAllDocuments);
 router.get("/stats", getCategoryStats);
 router.get("/category/:category", getDocumentsByCategory);

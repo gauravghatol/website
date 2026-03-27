@@ -28,8 +28,8 @@ const ISO = () => {
         backgroundImage="https://images.unsplash.com/photo-1568667256549-094345857637?w=1200&q=80"
       />
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid lg:grid-cols-12 gap-8">
+      <div className="mx-auto w-full max-w-[120rem] px-4 py-10 sm:px-5 sm:py-12 lg:px-6">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-12">
           {/* Sidebar */}
           <div className="lg:col-span-3">
             <DocumentsSidebar />
@@ -38,8 +38,8 @@ const ISO = () => {
           {/* Main Content */}
           <div className="lg:col-span-9">
             {/* Header Info */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-              <h2 className="text-2xl font-bold text-ssgmce-blue mb-3">
+            <div className="mb-6 rounded-lg bg-white p-5 shadow-md sm:mb-8 sm:p-6">
+              <h2 className="mb-3 text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-ssgmce-blue">
                 ISO 9001-2015 Quality Management System
               </h2>
               <p className="text-gray-600 leading-relaxed">
@@ -53,11 +53,11 @@ const ISO = () => {
                 {documents.map((doc, idx) => (
                   <div
                     key={idx}
-                    className="p-6 border-b last:border-b-0 hover:bg-gray-50 transition-colors"
+                    className="border-b p-5 transition-colors hover:bg-gray-50 last:border-b-0 sm:p-6"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                        <h3 className="mb-2 text-[clamp(1rem,2.1vw,1.125rem)] font-semibold text-gray-800">
                           {doc.title}
                         </h3>
                         <p className="text-gray-600 text-sm mb-4">

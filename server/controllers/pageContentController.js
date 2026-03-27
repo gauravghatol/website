@@ -394,129 +394,233 @@ const basePages = [
   // At Glance Page
   {
     pageId: "about-at-glance",
-    pageTitle: "SSGMCE At A Glance",
-    pageDescription: "Shri Sant Gajanan Maharaj College of Engineering, Shegaon",
-    route: "/about",
+    pageTitle: "At A Glance",
+    pageDescription: "Quick Facts & Milestones",
+    route: "/about/glance",
     category: "about",
     sections: [
       {
-        sectionId: "about-intro",
+        sectionId: "hero-content",
         title: "About SSGMCE",
-        type: "markdown",
+        type: "richtext",
         order: 1,
         content: {
-          text: `**Shri Sant Gajanan Maharaj College of Engineering (SSGMCE), Shegaon**, established in 1983 by Shri Gajanan Shikshan Sanstha, is one of the premier institutions dedicated to excellence in engineering and management education in Maharashtra.
-
-The institute is affiliated to **Sant Gadge Baba Amravati University (SGBAU)**, Amravati, recognized by **AICTE**, New Delhi, and approved by the **Directorate of Technical Education (DTE)**, Maharashtra State. SSGMCE is accredited by **NAAC with an 'A+' grade** (CGPA 3.26), reflecting its unwavering dedication to quality education.
-
-Spread over **40 acres** of lush green campus, the college provides a serene and conducive environment for learning. Over four decades, SSGMCE has produced thousands of engineers who have made significant contributions to industry, research, and society — combining technical knowledge with moral values inspired by the teachings of **Sant Gajanan Maharaj**.`,
+          text: `<p><strong>Shri Sant Gajanan Maharaj College of Engineering (SSGMCE), Shegaon</strong>, established in 1983 by Shri Gajanan Shikshan Sanstha, Shegaon, is one of the premier institutions dedicated to excellence in engineering and management education. The institute is affiliated to Sant Gadge Baba Amravati University (SGBAU), Amravati, recognized by AICTE, New Delhi, and approved by the DTE, Maharashtra State.</p>
+<p>SSGMCE is accredited by <strong>NAAC with an 'A+' grade</strong>, is an ISO 9001:2015 certified institution, and has been accorded the prestigious status of <strong>'TCS Priority College'</strong>. The institute serves as a mentor under the 'Parisparsh Scheme' to guide other institutions and has been identified as a Lead College by SGBAU. It has been ranked 'AAA' by Careers360 and recognized as a 'Management College of the Year' by Higher Education Review.</p>`,
         },
       },
       {
-        sectionId: "campus-image",
+        sectionId: "hero-image",
         title: "Campus Image",
         type: "image",
         order: 2,
         content: {
-          url: "",
-          alt: "SSGMCE Campus View",
-          caption: "Campus View",
+          url: "https://www.ssgmce.ac.in/images/library-main.jpg",
+          alt: "SSGMCE Central Library",
         },
       },
       {
-        sectionId: "quick-facts",
-        title: "Quick Facts",
-        type: "markdown",
+        sectionId: "quick-stats",
+        title: "Quick Statistics",
+        type: "stats",
         order: 3,
         content: {
-          text: `| Parameter | Details |
-|---|---|
-| **Year of Establishment** | 1983 |
-| **Founded By** | Shri Gajanan Shikshan Sanstha, Shegaon |
-| **Affiliated To** | Sant Gadge Baba Amravati University (SGBAU) |
-| **Approved By** | AICTE, New Delhi & DTE, Maharashtra |
-| **NAAC Accreditation** | A+ Grade (CGPA 3.26) |
-| **Campus Area** | 40 Acres |
-| **UG Programs** | 7 |
-| **PG Programs** | 9 |
-| **Total Students** | 2500+ |
-| **Faculty Members** | 150+ |
-| **Research Labs** | 45+ |
-| **Central Library** | 50,000+ Books |
-| **Hostel Capacity** | 500+ |`,
+          stats: [
+            {
+              label: "Years of Excellence",
+              value: "42+",
+              icon: "FaCalendar",
+              color: "blue",
+            },
+            {
+              label: "UG Programs",
+              value: "7",
+              icon: "FaGraduationCap",
+              color: "orange",
+            },
+            {
+              label: "PG Programs",
+              value: "9",
+              icon: "FaBook",
+              color: "blue",
+            },
+            {
+              label: "Total Students",
+              value: "2500+",
+              icon: "FaUsers",
+              color: "orange",
+            },
+            {
+              label: "Faculty Members",
+              value: "150+",
+              icon: "FaChalkboardTeacher",
+              color: "blue",
+            },
+            {
+              label: "NAAC Grade",
+              value: "A+",
+              icon: "FaAward",
+              color: "orange",
+            },
+            {
+              label: "Research Labs",
+              value: "45+",
+              icon: "FaFlask",
+              color: "blue",
+            },
+            {
+              label: "Placement Rate",
+              value: "85%",
+              icon: "FaTrophy",
+              color: "orange",
+            },
+          ],
         },
       },
       {
-        sectionId: "history-milestones",
-        title: "History & Milestones",
-        type: "markdown",
+        sectionId: "infrastructure",
+        title: "Infrastructure Highlights",
+        type: "stats",
         order: 4,
         content: {
-          text: `| Year | Milestone |
-|---|---|
-| **1983** | College established by Shri Gajanan Shikshan Sanstha, Shegaon |
-| **1984** | First batch admitted — Mechanical, Electrical & Civil Engineering |
-| **1995** | Electronics & Telecommunication Department started |
-| **2000** | Computer Science & Engineering Department established |
-| **2002** | Information Technology Department started |
-| **2008** | ISO 9001:2008 Certification achieved |
-| **2010** | MBA Program launched |
-| **2015** | NAAC Accredited with 'A' Grade (CGPA 3.14) |
-| **2016** | NBA Accreditation for multiple programs |
-| **2018** | Designated as TCS Priority College |
-| **2020** | NAAC Re-accredited with 'A+' Grade (CGPA 3.26) |
-| **2021** | Identified as Lead College by SGBAU |
-| **2023** | Ranked AAA by Careers360 Magazine |
-| **2025** | 40+ Years of Academic Excellence |`,
+          stats: [
+            {
+              label: "Campus Area",
+              value: "40 Acres",
+              icon: "FaUniversity",
+            },
+            {
+              label: "Central Library Books",
+              value: "50,000+",
+              icon: "FaBook",
+            },
+            { label: "Computer Labs", value: "12", icon: "FaLaptop" },
+            { label: "Hostel Capacity", value: "500+", icon: "FaBed" },
+            {
+              label: "Seminar Halls",
+              value: "8",
+              icon: "FaChalkboardTeacher",
+            },
+            {
+              label: "Sports Facilities",
+              value: "Multiple",
+              icon: "FaTrophy",
+            },
+          ],
+        },
+      },
+      {
+        sectionId: "milestones",
+        title: "Our Journey",
+        type: "timeline",
+        order: 5,
+        content: {
+          events: [
+            {
+              year: "1983",
+              title: "College Established",
+              description: "Founded by Shri Gajanan Shikshan Sanstha, Shegaon",
+            },
+            {
+              year: "1984",
+              title: "First Batch",
+              description: "Mechanical, Electrical & Civil Engineering",
+            },
+            {
+              year: "1995",
+              title: "E&TC Started",
+              description: "Electronics & Telecommunication Department",
+            },
+            {
+              year: "2000",
+              title: "CSE Established",
+              description: "Computer Science & Engineering Department",
+            },
+            {
+              year: "2002",
+              title: "IT Started",
+              description: "Information Technology Department",
+            },
+            {
+              year: "2008",
+              title: "ISO Certified",
+              description: "ISO 9001:2008 Certification",
+            },
+            {
+              year: "2010",
+              title: "MBA Launched",
+              description: "MBA Program Started",
+            },
+            {
+              year: "2015",
+              title: "NAAC A Grade",
+              description: "Accredited with CGPA 3.14",
+            },
+            {
+              year: "2016",
+              title: "NBA Accreditation",
+              description: "Multiple Programs Accredited",
+            },
+            {
+              year: "2018",
+              title: "TCS Priority",
+              description: "Designated TCS Priority College",
+            },
+            {
+              year: "2020",
+              title: "NAAC A+ Grade",
+              description: "Re-accredited with CGPA 3.26",
+            },
+            {
+              year: "2021",
+              title: "Lead College",
+              description: "Identified by SGBAU",
+            },
+            {
+              year: "2023",
+              title: "AAA Ranking",
+              description: "Careers360 Magazine",
+            },
+            {
+              year: "2025",
+              title: "40+ Years",
+              description: "Academic Excellence Celebrated",
+            },
+          ],
         },
       },
       {
         sectionId: "recognitions",
         title: "Recognitions & Accreditations",
-        type: "markdown",
-        order: 5,
-        content: {
-          text: `- **NAAC A+ Grade** — National Assessment and Accreditation Council (CGPA 3.26)
-- **NBA Accreditation** — National Board of Accreditation for multiple programs
-- **ISO 9001:2015** — Quality Management System Certified
-- **TCS Priority College** — Recognized by Tata Consultancy Services
-- **AAA Ranking** — Careers360 Excellence Rating
-- **Lead College** — Identified by SGBAU as Lead Institution
-- **Mentor Institute** — Under AICTE Margdarshan / Parisparsh Scheme`,
-        },
-      },
-      {
-        sectionId: "infrastructure",
-        title: "Infrastructure",
-        type: "markdown",
+        type: "cards",
         order: 6,
         content: {
-          text: `The college is equipped with world-class infrastructure to support academic and extracurricular activities:
-
-- **Campus** — 40 acres of green, well-maintained campus with Wi-Fi connectivity
-- **Central Library** — 50,000+ books, digital resources, NPTEL video courses, and e-journals
-- **Laboratories** — 45+ well-equipped research and teaching labs across all departments
-- **Computer Center** — 12 computer labs with high-speed internet access
-- **Seminar Halls** — 8 seminar halls with modern audio-visual facilities
-- **Hostels** — Separate boys and girls hostels with 500+ capacity
-- **Sports Complex** — Cricket ground, basketball court, volleyball court, indoor games, gymnasium
-- **Workshops** — Fully equipped central workshop for hands-on training`,
-        },
-      },
-      {
-        sectionId: "placements-overview",
-        title: "Placement Highlights",
-        type: "markdown",
-        order: 7,
-        content: {
-          text: `| Parameter | Details |
-|---|---|
-| **Placement Rate** | 85%+ |
-| **Students Placed Annually** | 200+ |
-| **Recruiting Companies** | 50+ |
-| **Top Recruiters** | TCS, Infosys, Wipro, Cognizant, Capgemini, L&T, and more |
-
-The Training & Placement Cell actively bridges the gap between academia and industry, organizing campus drives, workshops, mock interviews, and career guidance sessions throughout the year.`,
+          cards: [
+            {
+              title: "NAAC A+ Grade",
+              description: "National Assessment and Accreditation Council",
+            },
+            {
+              title: "TCS Priority College",
+              description: "Recognized by Tata Consultancy Services",
+            },
+            {
+              title: "ISO 9001:2015",
+              description: "Quality Management System Certified",
+            },
+            {
+              title: "AAA Ranking",
+              description: "Careers360 Excellence Rating",
+            },
+            {
+              title: "Lead College",
+              description: "Identified by SGBAU as Lead Institution",
+            },
+            {
+              title: "Mentor Institute",
+              description: "Under AICTE Parisparsh Scheme",
+            },
+          ],
         },
       },
     ],
@@ -1844,48 +1948,7 @@ const {
 } = require("../data/researchMarkdownContent");
 const { IQAC_MARKDOWN_PAGE_IDS } = require("../data/iqacMarkdownContent");
 
-const ACADEMICS_MARKDOWN_PAGE_IDS = [
-  "academics-planner",
-  "academics-teaching",
-  "academics-timetable",
-  "academics-rules",
-  "academics-syllabus",
-  "academics-incentive",
-  "academics-marks",
-  "academics-rubrics",
-  "academics-innovative",
-  "academics-reports",
-];
-
 const getDefaultPages = () => defaultPages;
-const PAGE_BY_ID_CACHE_TTL_MS = 60 * 1000;
-const pageByIdCache = new Map();
-
-const getCachedPageById = (pageId) => {
-  const cached = pageByIdCache.get(pageId);
-  if (!cached) return null;
-
-  if (Date.now() - cached.timestamp > PAGE_BY_ID_CACHE_TTL_MS) {
-    pageByIdCache.delete(pageId);
-    return null;
-  }
-
-  return cached.data;
-};
-
-const setCachedPageById = (pageId, data) => {
-  if (!pageId || !data) return;
-  pageByIdCache.set(pageId, { data, timestamp: Date.now() });
-};
-
-const invalidatePageByIdCache = (pageId) => {
-  if (!pageId) return;
-  pageByIdCache.delete(String(pageId).toLowerCase());
-};
-
-const clearPageByIdCache = () => {
-  pageByIdCache.clear();
-};
 
 const hasMarkdownSections = (page) =>
   Array.isArray(page?.sections) &&
@@ -1906,11 +1969,9 @@ const isResearchMarkdownPlaceholderPage = (page) => {
 };
 
 const shouldSeedNavPage = (existing, pageData, forceUpdate = false) => {
+  if (!pageData.sections || pageData.sections.length === 0) return false;
   if (!existing) return true;
   if (forceUpdate) return true;
-  if (pageData.route && existing.route !== pageData.route) return true;
-  if (pageData.category && existing.category !== pageData.category) return true;
-  if (!pageData.sections || pageData.sections.length === 0) return false;
   if (!existing.sections || existing.sections.length === 0) return true;
 
   // Research pages used to ship with legacy non-Markdown section types.
@@ -1930,186 +1991,9 @@ const shouldSeedNavPage = (existing, pageData, forceUpdate = false) => {
     return true;
   }
 
-  // Academics pages migrated from hardcoded JSX to Markdown editing flow.
-  if (
-    ACADEMICS_MARKDOWN_PAGE_IDS.includes(pageData.pageId) &&
-    !hasMarkdownSections(existing)
-  ) {
-    return true;
-  }
-
-  // Facilities pages migrated from static JSX to CMS Markdown editing flow.
-  // Refresh once so legacy non-Markdown content is replaced with Markdown seeds.
-  if (
-    pageData.pageId.startsWith("facilities-") &&
-    !hasMarkdownSections(existing)
-  ) {
-    return true;
-  }
-
   // Refresh legacy placeholder research markdown content.
   if (isResearchMarkdownPlaceholderPage(existing)) {
     return true;
-  }
-
-  // Refresh about-at-glance from legacy richtext/stats/cards/timeline to markdown-first schema.
-  if (pageData.pageId === "about-at-glance") {
-    const existingSections = existing.sections || [];
-    const existingSectionIds = new Set(
-      existingSections.map((section) => section.sectionId),
-    );
-
-    const hasLegacyShape =
-      existingSectionIds.has("hero-content") ||
-      existingSectionIds.has("hero-image") ||
-      existingSectionIds.has("quick-stats") ||
-      existingSectionIds.has("milestones");
-
-    const hasExpectedMarkdownSections =
-      existingSectionIds.has("about-intro") &&
-      existingSectionIds.has("quick-facts") &&
-      existingSectionIds.has("history-milestones") &&
-      existingSectionIds.has("recognitions") &&
-      existingSectionIds.has("infrastructure") &&
-      existingSectionIds.has("placements-overview");
-
-    const hasCampusImageSection = existingSections.some(
-      (section) =>
-        section.sectionId === "campus-image" && section.type === "image",
-    );
-
-    if (hasLegacyShape || !hasExpectedMarkdownSections || !hasCampusImageSection) {
-      return true;
-    }
-  }
-
-  // Refresh legacy inspiration page data to the founder-focused markdown layout.
-  if (pageData.pageId === "about-inspiration") {
-    const existingSectionIds = new Set(
-      (existing.sections || []).map((section) => section.sectionId),
-    );
-    const hasLegacyInspirationShape =
-      existingSectionIds.has("intro") ||
-      existingSectionIds.has("image") ||
-      existingSectionIds.has("teachings");
-    const hasLegacyTitle =
-      String(existing.pageTitle || "").trim().toLowerCase() === "inspiration";
-
-    if (hasLegacyInspirationShape || hasLegacyTitle) {
-      return true;
-    }
-  }
-
-  // Refresh legacy principal page data to the Principal Speaks schema.
-  if (pageData.pageId === "about-structure") {
-    const existingSections = existing.sections || [];
-    const byId = new Map(
-      existingSections.map((section) => [section.sectionId, section]),
-    );
-
-    const hasExpectedMarkdownSections =
-      byId.has("org-intro") &&
-      byId.has("departments") &&
-      byId.has("admin-offices") &&
-      ["org-intro", "departments", "admin-offices"].every(
-        (sectionId) =>
-          String(byId.get(sectionId)?.type || "").toLowerCase() === "markdown",
-      );
-
-    if (!hasExpectedMarkdownSections) {
-      return true;
-    }
-  }
-
-  // Refresh legacy principal page data to markdown-first schema.
-  if (pageData.pageId === "about-principal") {
-    const existingSections = existing.sections || [];
-    const existingSectionIds = new Set(
-      existingSections.map((section) => section.sectionId),
-    );
-    const byId = new Map(
-      existingSections.map((section) => [section.sectionId, section]),
-    );
-
-    const hasLegacyPrincipalShape =
-      existingSectionIds.has("principal-info") ||
-      existingSectionIds.has("principal-image") ||
-      existingSectionIds.has("contact-info") ||
-      existingSectionIds.has("quote") ||
-      existingSectionIds.has("message") ||
-      existingSectionIds.has("focus-areas");
-    const hasLegacyTitle = /principal'?s?\s*message/i.test(
-      String(existing.pageTitle || ""),
-    );
-    const hasExpectedMarkdownSections =
-      String(byId.get("principal-photo")?.type || "").toLowerCase() ===
-        "image" &&
-      String(byId.get("principal-message")?.type || "").toLowerCase() ===
-        "markdown" &&
-      String(byId.get("leadership-focus")?.type || "").toLowerCase() ===
-        "markdown";
-
-    if (hasLegacyPrincipalShape || hasLegacyTitle || !hasExpectedMarkdownSections) {
-      return true;
-    }
-  }
-
-  // Refresh legacy vision page data to markdown-first schema.
-  if (pageData.pageId === "about-vision") {
-    const existingSections = existing.sections || [];
-    const existingSectionIds = new Set(
-      existingSections.map((section) => section.sectionId),
-    );
-
-    const hasExpectedMarkdownSections =
-      existingSectionIds.has("vision") &&
-      existingSectionIds.has("mission") &&
-      existingSectionIds.has("core-values") &&
-      existingSectionIds.has("goals") &&
-      existingSections
-        .filter((section) =>
-          ["vision", "mission", "core-values", "goals"].includes(
-            section.sectionId,
-          ),
-        )
-        .every((section) => section.type === "markdown");
-
-    const hasLegacyVisionShape = existingSections.some(
-      (section) =>
-        ["vision", "mission", "core-values", "goals"].includes(
-          section.sectionId,
-        ) &&
-        ["richtext", "text", "list", "cards"].includes(
-          String(section.type || "").toLowerCase(),
-        ),
-    );
-
-    if (hasLegacyVisionShape || !hasExpectedMarkdownSections) {
-      return true;
-    }
-  }
-
-  // Refresh legacy governing page data to the markdown table format.
-  if (pageData.pageId === "about-governing") {
-    const existingSectionIds = new Set(
-      (existing.sections || []).map((section) => section.sectionId),
-    );
-    const hasLegacyGoverningShape =
-      existingSectionIds.has("intro") ||
-      existingSectionIds.has("members") ||
-      existingSectionIds.has("functions");
-    const hasExpectedTableSection =
-      existingSectionIds.has("governing-intro") &&
-      (existing.sections || []).some(
-        (section) =>
-          section.sectionId === "governing-intro" &&
-          section.type === "markdown" &&
-          String(section?.content?.text || "").includes("| Sr.No."),
-      );
-
-    if (hasLegacyGoverningShape || !hasExpectedTableSection) {
-      return true;
-    }
   }
 
   // Refresh NIRF ranking page when sections count changed OR category differs.
@@ -2159,32 +2043,16 @@ const getAllPages = async (req, res) => {
     const { category } = req.query;
     const filter = category ? { category } : {};
 
-    const navOrderByPageId = new Map(
-      allNavPages.map((page, index) => [String(page.pageId || ""), index]),
-    );
-
     const pages = await PageContent.find(filter)
       .select(
-        "pageId pageTitle pageDescription route category isPublished updatedAt menuOrder parentMenu",
+        "pageId pageTitle pageDescription route category isPublished updatedAt",
       )
-      .lean();
-
-    const pagesWithOrder = pages.map((page) => {
-      const pageId = String(page.pageId || "");
-      const navOrder = navOrderByPageId.has(pageId)
-        ? navOrderByPageId.get(pageId)
-        : Number.MAX_SAFE_INTEGER;
-
-      return {
-        ...page,
-        navOrder,
-      };
-    });
+      .sort("pageTitle");
 
     res.json({
       success: true,
-      count: pagesWithOrder.length,
-      data: pagesWithOrder,
+      count: pages.length,
+      data: pages,
     });
   } catch (error) {
     res.status(500).json({
@@ -2199,48 +2067,7 @@ const getAllPages = async (req, res) => {
 // @access  Public
 const getPageById = async (req, res) => {
   try {
-    const requestedPageId = String(req.params.pageId || "").toLowerCase();
-    const cachedPage = getCachedPageById(requestedPageId);
-    if (cachedPage) {
-      return res.json({
-        success: true,
-        data: cachedPage,
-      });
-    }
-
-    let page = await PageContent.findOne({ pageId: requestedPageId }).lean();
-
-    // Ensure missing nav-backed pages stay resolvable without requiring
-    // an explicit manual seed run first.
-    if (!page) {
-      const navPageTemplate = allNavPages.find(
-        (item) => item.pageId === requestedPageId,
-      );
-
-      if (navPageTemplate) {
-        // Return template immediately for faster first load, then upsert in background.
-        page = { ...navPageTemplate };
-        setCachedPageById(requestedPageId, page);
-
-        res.json({
-          success: true,
-          data: page,
-        });
-
-        PageContent.updateOne(
-          { pageId: requestedPageId },
-          { $setOnInsert: navPageTemplate },
-          { upsert: true, setDefaultsOnInsert: true },
-        ).catch((error) => {
-          console.error(
-            `[Page Seed] Failed to upsert ${requestedPageId}:`,
-            error.message,
-          );
-        });
-
-        return;
-      }
-    }
+    const page = await PageContent.findOne({ pageId: req.params.pageId });
 
     if (!page) {
       return res.status(404).json({
@@ -2248,8 +2075,6 @@ const getPageById = async (req, res) => {
         message: "Page not found",
       });
     }
-
-    setCachedPageById(requestedPageId, page);
 
     res.json({
       success: true,
@@ -2299,8 +2124,6 @@ const createPage = async (req, res) => {
       lastEditedBy: req.user._id,
     });
 
-    setCachedPageById(String(page.pageId || "").toLowerCase(), page.toObject());
-
     res.status(201).json({
       success: true,
       data: page,
@@ -2325,6 +2148,58 @@ const DEPT_TO_PAGEID = {
   ENTC: "departments-entc",
   MBA: "departments-mba",
   ASH: "departments-applied-sciences",
+};
+
+const VALID_SECTION_TYPES = new Set([
+  "text",
+  "richtext",
+  "markdown",
+  "list",
+  "image",
+  "stats",
+  "timeline",
+  "cards",
+  "table",
+  "quote",
+  "tabs",
+  "accordion",
+  "faculty",
+  "gallery",
+  "video",
+  "pdf",
+  "sidebar",
+  "hod",
+  "link",
+  "iqac-stats",
+  "meeting-records",
+  "year-reports",
+  "naac-criteria",
+  "video-gallery",
+  "document-grid",
+  "process-steps",
+  "info-cards",
+]);
+
+const sanitizeSections = (sections) => {
+  if (!Array.isArray(sections)) return [];
+
+  return sections
+    .filter((section) => section && VALID_SECTION_TYPES.has(section.type))
+    .map((section, index) => ({
+      ...section,
+      sectionId:
+        typeof section.sectionId === "string" && section.sectionId.trim()
+          ? section.sectionId
+          : `restored-${section.type || "section"}-${index + 1}`,
+      title: typeof section.title === "string" ? section.title : "",
+      order: Number.isFinite(section.order) ? section.order : index,
+      isVisible:
+        typeof section.isVisible === "boolean" ? section.isVisible : true,
+      content:
+        section.content && typeof section.content === "object"
+          ? section.content
+          : {},
+    }));
 };
 
 const updatePage = async (req, res) => {
@@ -2362,46 +2237,11 @@ const updatePage = async (req, res) => {
       "pageId",
     ]);
 
-    // Allowed section types from the schema enum — used to strip any
-    // unknown types that the client might send (e.g. after a schema
-    // migration) so that page.save() never fails with a validation error.
-    const VALID_SECTION_TYPES = new Set([
-      "text",
-      "richtext",
-      "markdown",
-      "list",
-      "image",
-      "stats",
-      "timeline",
-      "cards",
-      "table",
-      "quote",
-      "tabs",
-      "accordion",
-      "faculty",
-      "gallery",
-      "video",
-      "pdf",
-      "sidebar",
-      "hod",
-      "link",
-      "iqac-stats",
-      "meeting-records",
-      "year-reports",
-      "naac-criteria",
-      "video-gallery",
-      "document-grid",
-      "process-steps",
-      "info-cards",
-    ]);
-
     const body = { ...(req.body || {}) };
 
     // Sanitize sections: drop any entry whose type is not in the enum
-    if (Array.isArray(body.sections)) {
-      body.sections = body.sections.filter((s) =>
-        VALID_SECTION_TYPES.has(s.type),
-      );
+    if (body.sections !== undefined) {
+      body.sections = sanitizeSections(body.sections);
     }
 
     Object.entries(body).forEach(([key, value]) => {
@@ -2410,10 +2250,18 @@ const updatePage = async (req, res) => {
       }
     });
 
+    // Mongoose does not reliably detect changes on Mixed-type fields.
+    // Explicitly mark them so page.save() writes the update to the DB.
+    if (body.templateData !== undefined) {
+      page.markModified("templateData");
+    }
+    if (body.sections !== undefined) {
+      page.markModified("sections");
+    }
+
     page.lastEditedBy = req.user._id;
 
     await page.save();
-    setCachedPageById(String(page.pageId || "").toLowerCase(), page.toObject());
 
     // ── Write edit log entry ─────────────────────────────────
     try {
@@ -2460,8 +2308,6 @@ const deletePage = async (req, res) => {
       });
     }
 
-    invalidatePageByIdCache(req.params.pageId);
-
     res.json({
       success: true,
       message: "Page deleted successfully",
@@ -2489,7 +2335,6 @@ const seedAboutPages = async (req, res) => {
         { upsert: true, new: true },
       );
     }
-    clearPageByIdCache();
 
     res.json({
       success: true,
@@ -2528,8 +2373,6 @@ const seedAllNavPages = async (req, res) => {
                 sections: pageData.sections,
                 pageTitle: pageData.pageTitle,
                 pageDescription: pageData.pageDescription,
-                route: pageData.route,
-                category: pageData.category,
               },
             },
           );
@@ -2542,8 +2385,6 @@ const seedAllNavPages = async (req, res) => {
         created++;
       }
     }
-
-    clearPageByIdCache();
 
     res.json({
       success: true,
@@ -2565,92 +2406,34 @@ const seedAllNavPages = async (req, res) => {
  */
 const autoSeedMissingPages = async () => {
   try {
-    // Deduplicate page seeds by pageId.
-    // allNavPages is the source of truth and should override legacy defaults.
-    const seedMap = new Map();
-    for (const page of defaultPages) seedMap.set(page.pageId, page);
-    for (const page of allNavPages) seedMap.set(page.pageId, page);
-
-    const validFacilitiesIds = new Set(
-      allNavPages
-        .filter((page) => page.category === "facilities")
-        .map((page) => page.pageId),
-    );
-
-    // Avoid re-seeding stale legacy facilities pageIds on each startup.
-    const allSeedData = [...seedMap.values()].filter((page) => {
-      const pageId = String(page?.pageId || "");
-      return !pageId.startsWith("facilities-") || validFacilitiesIds.has(pageId);
-    });
-
-    if (!allSeedData.length) return;
-
-    const pageIds = allSeedData.map((page) => page.pageId);
-    const existingPages = await PageContent.find({
-      pageId: { $in: pageIds },
-    }).lean();
-    const existingByPageId = new Map(
-      existingPages.map((page) => [String(page.pageId || ""), page]),
-    );
-
-    const operations = [];
+    const allSeedData = [...defaultPages, ...allNavPages];
     let created = 0;
     let updated = 0;
 
     for (const pageData of allSeedData) {
-      const existing = existingByPageId.get(pageData.pageId);
-
+      const existing = await PageContent.findOne({ pageId: pageData.pageId });
       if (!existing) {
-        operations.push({
-          insertOne: {
-            document: pageData,
-          },
-        });
+        await PageContent.create(pageData);
         created++;
-        continue;
-      }
-
-      if (shouldSeedNavPage(existing, pageData)) {
-        operations.push({
-          updateOne: {
-            filter: { pageId: pageData.pageId },
-            update: {
-              $set: {
-                sections: pageData.sections,
-                pageTitle: pageData.pageTitle,
-                pageDescription: pageData.pageDescription,
-                route: pageData.route,
-                category: pageData.category,
-              },
+      } else if (shouldSeedNavPage(existing, pageData)) {
+        await PageContent.updateOne(
+          { pageId: pageData.pageId },
+          {
+            $set: {
+              sections: pageData.sections,
+              pageTitle: pageData.pageTitle,
+              pageDescription: pageData.pageDescription,
+              ...(pageData.category ? { category: pageData.category } : {}),
             },
           },
-        });
+        );
         updated++;
       }
     }
 
-    if (operations.length) {
-      await PageContent.bulkWrite(operations, { ordered: false });
-    }
-
-    // Remove stale/orphan facilities pages that are no longer in allNavPages.
-    const staleCleanupResult = await PageContent.deleteMany({
-      $and: [
-        {
-          $or: [
-            { category: "facilities" },
-            { pageId: { $regex: /^facilities-/ } },
-          ],
-        },
-        { pageId: { $nin: [...validFacilitiesIds] } },
-      ],
-    });
-    const removed = staleCleanupResult?.deletedCount || 0;
-
-    if (created > 0 || updated > 0 || removed > 0) {
-      clearPageByIdCache();
+    if (created > 0 || updated > 0) {
       console.log(
-        `[Auto-Seed] Created ${created} missing page(s), updated ${updated} empty page(s), removed ${removed} stale facilities page(s).`,
+        `[Auto-Seed] Created ${created} missing page(s), updated ${updated} empty page(s).`,
       );
     }
   } catch (error) {
@@ -2671,9 +2454,36 @@ const getEditLogs = async (req, res) => {
     const logs = await EditLog.find(filter)
       .sort({ createdAt: -1 })
       .limit(parseInt(req.query.limit) || 100)
-      .select("-previousData"); // Don't send bulky snapshots in listing
+      .lean();
 
-    res.json({ success: true, data: logs });
+    const editPageIds = [
+      ...new Set(
+        logs
+          .filter((log) => log.action === "edit" && typeof log.pageId === "string")
+          .map((log) => log.pageId),
+      ),
+    ];
+
+    const existingPages = new Set(
+      (
+        await PageContent.find(
+          { pageId: { $in: editPageIds } },
+          { _id: 0, pageId: 1 },
+        ).lean()
+      ).map((page) => page.pageId),
+    );
+
+    const serializedLogs = logs.map((log) => {
+      const canReset =
+        log.action === "edit" &&
+        !!log.previousData &&
+        typeof log.previousData === "object" &&
+        existingPages.has(log.pageId);
+      delete log.previousData;
+      return { ...log, canReset };
+    });
+
+    res.json({ success: true, data: serializedLogs });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -2696,6 +2506,12 @@ const resetPageToVersion = async (req, res) => {
         message: "No previous data snapshot available for this log entry",
       });
     }
+    if (log.action !== "edit") {
+      return res.status(400).json({
+        success: false,
+        message: "Only edit entries can be reset",
+      });
+    }
 
     const page = await PageContent.findOne({ pageId: log.pageId });
     if (!page) {
@@ -2716,17 +2532,27 @@ const resetPageToVersion = async (req, res) => {
       "lastEditedBy",
       "pageId",
     ]);
-    const restoreData = log.previousData;
+    const restoreData = { ...(log.previousData || {}) };
+
+    if (restoreData.sections !== undefined) {
+      restoreData.sections = sanitizeSections(restoreData.sections);
+    }
 
     Object.keys(restoreData).forEach((key) => {
-      if (!immutableFields.has(key)) {
+      if (!immutableFields.has(key) && restoreData[key] !== undefined) {
         page.set(key, restoreData[key]);
       }
     });
 
+    if (restoreData.templateData !== undefined) {
+      page.markModified("templateData");
+    }
+    if (restoreData.sections !== undefined) {
+      page.markModified("sections");
+    }
+
     page.lastEditedBy = req.user._id;
     await page.save();
-    setCachedPageById(String(page.pageId || "").toLowerCase(), page.toObject());
 
     // Log the reset action
     await EditLog.create({

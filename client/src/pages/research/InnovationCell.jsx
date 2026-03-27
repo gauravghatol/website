@@ -102,21 +102,21 @@ const InnovationCell = () => {
         ]}
       />
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid lg:grid-cols-12 gap-8">
+      <div className="mx-auto w-full max-w-[120rem] px-4 py-10 sm:px-5 sm:py-12 lg:px-6">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-12">
           <div className="lg:col-span-3">
             <ResearchSidebar />
           </div>
 
-          <div className="lg:col-span-9 space-y-10">
+          <div className="space-y-8 sm:space-y-10 lg:col-span-9">
             {/* About Innovation Cell */}
-            <section className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-lg sm:p-8">
               <div className="flex items-start gap-4 mb-6">
                 <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0">
                   <FaRocket className="text-2xl text-white" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-1">
+                  <h2 className="mb-1 text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-800">
                     SSGMCE Innovation Cell
                   </h2>
                   <p className="text-gray-500">
@@ -124,7 +124,7 @@ const InnovationCell = () => {
                   </p>
                 </div>
               </div>
-              <p className="text-gray-700 leading-relaxed text-lg mb-6">
+              <p className="mb-6 text-[clamp(0.95rem,1.8vw,1.125rem)] leading-relaxed text-gray-700">
                 The SSGMCE Innovation Cell is dedicated to fostering a culture
                 of innovation and entrepreneurship among students. We provide
                 mentorship, resources, and incubation support to help students
@@ -132,7 +132,7 @@ const InnovationCell = () => {
               </p>
 
               {/* Highlights */}
-              <div className="grid md:grid-cols-4 gap-4">
+              <div className="grid gap-3.5 sm:gap-4 md:grid-cols-4">
                 {highlights.map((item, idx) => {
                   const Icon = item.icon;
                   return (
@@ -169,7 +169,7 @@ const InnovationCell = () => {
             <section>
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-1.5 h-8 bg-gradient-to-b from-blue-600 to-orange-500 rounded-full"></div>
-                <h3 className="text-2xl font-bold text-gray-800">
+                <h3 className="text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-800">
                   Our Programs
                 </h3>
               </div>
@@ -236,7 +236,7 @@ const InnovationCell = () => {
             <section>
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-1.5 h-8 bg-gradient-to-b from-blue-600 to-orange-500 rounded-full"></div>
-                <h3 className="text-2xl font-bold text-gray-800">
+                <h3 className="text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-800">
                   Student Innovations
                 </h3>
               </div>

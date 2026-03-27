@@ -17,17 +17,10 @@ async function initializeDatabase() {
   try {
     // Add any database initialization logic here
     console.log("[DB Init] Database initialization started...");
-
-    const autoSeedEnabled =
-      String(process.env.ADMIN_AUTO_SEED || "true").toLowerCase() !== "false";
-
-    if (autoSeedEnabled) {
-      // Keep PageContent aligned with seed data while preserving admin edits.
-      await autoSeedMissingPages();
-    } else {
-      console.log("[DB Init] Auto-seed disabled by ADMIN_AUTO_SEED=false");
-    }
-
+    
+    // Keep PageContent aligned with seed data while preserving admin edits.
+    await autoSeedMissingPages();
+    
     console.log("[DB Init] Database initialization completed");
     return true;
   } catch (error) {

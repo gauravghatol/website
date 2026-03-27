@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaFlask } from "react-icons/fa";
 import { useEdit } from "../contexts/EditContext";
+import { buildReturnState } from "../utils/navigation";
 
 const links = [
   { name: "RD Cell", path: "/research/rdc" },
@@ -40,7 +41,9 @@ const ResearchSidebar = ({ sections }) => {
   const handleLinkClick = (event, path) => {
     if (!isEditing) return;
     event.preventDefault();
-    navigate(`/admin/visual/${pathToPageId(path)}`);
+    navigate(`/admin/visual/${pathToPageId(path)}`, {
+      state: buildReturnState(location),
+    });
   };
 
   return (
@@ -61,6 +64,7 @@ const ResearchSidebar = ({ sections }) => {
             <li key={link.path}>
               <Link
                 to={isEditing ? editorPath : link.path}
+                state={isEditing ? buildReturnState(location) : undefined}
                 onClick={(event) => handleLinkClick(event, link.path)}
                 className={`block px-4 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${
                   isActive

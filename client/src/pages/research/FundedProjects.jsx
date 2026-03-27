@@ -98,15 +98,15 @@ const FundedProjects = () => {
         ]}
       />
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid lg:grid-cols-12 gap-8">
+      <div className="mx-auto w-full max-w-[120rem] px-4 py-10 sm:px-5 sm:py-12 lg:px-6">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-12">
           <div className="lg:col-span-3">
             <ResearchSidebar />
           </div>
 
-          <div className="lg:col-span-9 space-y-8">
+          <div className="space-y-6 sm:space-y-8 lg:col-span-9">
             {/* Stats */}
-            <section className="grid md:grid-cols-3 gap-4">
+            <section className="grid gap-3.5 sm:gap-4 md:grid-cols-3">
               <div className="bg-gradient-to-br from-ssgmce-dark-blue to-ssgmce-blue text-white p-6 rounded-2xl shadow-xl text-center">
                 <FaProjectDiagram className="text-4xl mx-auto mb-3 text-blue-300" />
                 <p className="text-4xl font-bold">{stats.total}</p>
@@ -127,7 +127,7 @@ const FundedProjects = () => {
             </section>
 
             {/* Filters */}
-            <section className="bg-white p-4 rounded-xl shadow-md border border-gray-100">
+            <section className="rounded-xl border border-gray-100 bg-white p-4 shadow-md sm:p-5">
               <div className="flex flex-wrap gap-4 items-center">
                 <span className="text-sm font-medium text-gray-600">
                   Filter by:

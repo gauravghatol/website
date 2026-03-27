@@ -7,7 +7,7 @@ const AdministrativeOffice = () => {
       <div className="space-y-8">
         {/* Introduction */}
         <section>
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">
+          <h2 className="mb-4 text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-900">
             About Administrative Office
           </h2>
           <p className="text-gray-700 leading-relaxed">
@@ -19,11 +19,11 @@ const AdministrativeOffice = () => {
 
         {/* Administrative Departments */}
         <section>
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">
+          <h2 className="mb-4 text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-900">
             Administrative Departments & Services
           </h2>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="rounded-lg bg-blue-50 p-6">
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+            <div className="rounded-lg bg-blue-50 p-4 xs:p-5 sm:p-6">
               <h3 className="mb-3 text-lg font-semibold text-blue-900">
                 Academic Administration
               </h3>
@@ -35,7 +35,7 @@ const AdministrativeOffice = () => {
               </ul>
             </div>
 
-            <div className="rounded-lg bg-green-50 p-6">
+            <div className="rounded-lg bg-green-50 p-4 xs:p-5 sm:p-6">
               <h3 className="mb-3 text-lg font-semibold text-green-900">
                 Student Services
               </h3>
@@ -47,7 +47,7 @@ const AdministrativeOffice = () => {
               </ul>
             </div>
 
-            <div className="rounded-lg bg-orange-50 p-6">
+            <div className="rounded-lg bg-orange-50 p-4 xs:p-5 sm:p-6">
               <h3 className="mb-3 text-lg font-semibold text-orange-900">
                 General Administration
               </h3>
@@ -59,7 +59,7 @@ const AdministrativeOffice = () => {
               </ul>
             </div>
 
-            <div className="rounded-lg bg-purple-50 p-6">
+            <div className="rounded-lg bg-purple-50 p-4 xs:p-5 sm:p-6">
               <h3 className="mb-3 text-lg font-semibold text-purple-900">
                 External Affairs
               </h3>
@@ -75,10 +75,10 @@ const AdministrativeOffice = () => {
 
         {/* Key Services */}
         <section>
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">
+          <h2 className="mb-4 text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-900">
             Key Services for Students
           </h2>
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-6">
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 sm:p-6">
             <div className="grid gap-4 md:grid-cols-3">
               <div className="text-center">
                 <div className="mb-2 text-2xl font-bold text-ssgmce-blue">📋</div>

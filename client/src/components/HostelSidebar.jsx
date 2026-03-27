@@ -1,7 +1,8 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaHome, FaChevronRight } from "react-icons/fa";
+import { FaHome, FaChevronRight, FaArrowLeft } from "react-icons/fa";
 import { useEdit } from "../contexts/EditContext";
+import { buildReturnState } from "../utils/navigation";
 
 /** Convert a public path to a pageId slug: /facilities/hostel/policy → facilities-hostel-policy */
 const pathToPageId = (path) => path.replace(/^\//, "").replace(/\//g, "-");
@@ -9,6 +10,11 @@ const pathToPageId = (path) => path.replace(/^\//, "").replace(/\//g, "-");
 const HostelSidebar = () => {
   const location = useLocation();
   const { isEditing } = useEdit();
+  const facilitiesRootPath = "/facilities";
+  const facilitiesRootPageId = pathToPageId(facilitiesRootPath);
+  const backToFacilities = isEditing
+    ? `/admin/visual/${facilitiesRootPageId}`
+    : facilitiesRootPath;
 
   const menuItems = [
     {
@@ -57,8 +63,16 @@ const HostelSidebar = () => {
   ];
 
   return (
-    <div className="sticky top-24 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:sticky lg:top-24">
       <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">
+        <Link
+          to={backToFacilities}
+          state={isEditing ? buildReturnState(location) : undefined}
+          className="mb-2 inline-flex items-center gap-1.5 rounded-md bg-white/20 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-white/30"
+        >
+          <FaArrowLeft className="text-[10px]" />
+          Back to Facilities
+        </Link>
         <h3 className="flex items-center text-lg font-bold text-white">
           <FaHome className="mr-2" /> Hostel
         </h3>
@@ -66,7 +80,7 @@ const HostelSidebar = () => {
 
       <div className="p-3">
         <nav>
-          <ul className="max-h-[560px] space-y-1.5 overflow-y-auto">
+          <ul className="max-h-[52vh] space-y-1.5 overflow-y-auto lg:max-h-[560px]">
             {menuItems.map((item, index) => {
               const pageId = pathToPageId(item.path);
               const to = isEditing ? `/admin/visual/${pageId}` : item.path;
@@ -77,6 +91,7 @@ const HostelSidebar = () => {
                 <li key={index}>
                   <Link
                     to={to}
+                    state={isEditing ? buildReturnState(location) : undefined}
                     className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm leading-snug transition-colors ${
                       isActive
                         ? "border-l-2 border-ssgmce-orange bg-orange-50 font-semibold text-ssgmce-blue"

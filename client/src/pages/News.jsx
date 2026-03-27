@@ -74,18 +74,18 @@ const News = () => {
         subtitle="All official notices and announcements from SSGMCE"
       />
 
-      <section className="py-12 md:py-16 bg-gradient-to-b from-white to-ssgmce-surface">
-        <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto">
+      <section className="bg-gradient-to-b from-white to-ssgmce-surface py-8 sm:py-10 md:py-14 lg:py-16">
+        <div className="container mx-auto max-w-[120rem] px-4 sm:px-5 md:px-6">
+          <div className="mx-auto w-full max-w-5xl">
             {loading ? (
-              <div className="text-center py-12">
+              <div className="py-10 text-center sm:py-12">
                 <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-ssgmce-blue"></div>
-                <p className="mt-4 text-gray-600">Loading notices...</p>
+                <p className="mt-4 text-sm text-gray-600 sm:text-base">Loading notices...</p>
               </div>
             ) : (
               <>
                 {error && (
-                  <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 sm:mb-6 sm:text-sm">
                     Live notices could not be fetched, showing latest available
                     updates.
                   </div>
@@ -109,8 +109,8 @@ const News = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
-                    <p className="text-gray-600">No notices available right now.</p>
+                  <div className="rounded-xl border border-gray-100 bg-white py-10 text-center sm:py-12">
+                    <p className="text-sm text-gray-600 sm:text-base">No notices available right now.</p>
                   </div>
                 )}
               </>

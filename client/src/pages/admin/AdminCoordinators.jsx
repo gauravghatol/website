@@ -295,7 +295,7 @@ const AdminCoordinators = () => {
 
         {/* Loading */}
         {loading ? (
-          <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 sm:p-10 md:p-12 text-center">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-500 dark:text-gray-400">Loading users...</p>
           </div>
@@ -362,7 +362,7 @@ const AdminCoordinators = () => {
                 Department Coordinators ({coordinators.length})
               </h2>
               {coordinators.length === 0 ? (
-                <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+                <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 sm:p-10 md:p-12 text-center">
                   <FaUserShield className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
                   <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
                     No Coordinators Yet

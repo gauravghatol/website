@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 import GenericPage from "../components/GenericPage";
 import { motion } from "framer-motion";
 import {
@@ -9,6 +10,7 @@ import {
   FaArrowLeft,
   FaExternalLinkAlt,
 } from "react-icons/fa";
+import { goBackOrFallback } from "../utils/navigation";
 
 // Import faculty data from all departments
 import { APPLIED_DEFAULT_FACULTY } from "./departments/AppliedSciences";
@@ -235,44 +237,120 @@ const itPhotoMap = {
   KP: itKpPhoto,
 };
 
+const createFacultySlug = (value = "") =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const normalizeArea = (value) => {
+  if (Array.isArray(value)) return value;
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
+const normalizeFacultyCollection = (items = [], department, photoMap = {}) =>
+  (Array.isArray(items) ? items : []).map((facultyMember) => {
+    const normalized = {
+      ...facultyMember,
+      department: facultyMember.department || department,
+      id:
+        facultyMember.id ||
+        createFacultySlug(facultyMember.name || facultyMember.email || ""),
+      photo: photoMap[facultyMember.photo] || facultyMember.photo,
+    };
+
+    normalized.role =
+      facultyMember.role || facultyMember.designation || normalized.role || "";
+    normalized.designation =
+      facultyMember.designation || facultyMember.role || normalized.role || "";
+    normalized.area = normalizeArea(
+      facultyMember.area || facultyMember.specialization || "",
+    );
+    normalized.specialization =
+      facultyMember.specialization || normalized.area.join(", ");
+
+    return normalized;
+  });
+
 // Resolve CSE faculty photos from string references to actual imports
-const resolvedCseFaculty = CSE_DEFAULT_FACULTY.map((f) => ({
-  ...f,
-  photo: csePhotoMap[f.photo] || f.photo,
-}));
+const resolvedCseFaculty = normalizeFacultyCollection(
+  CSE_DEFAULT_FACULTY,
+  "cse",
+  csePhotoMap,
+);
 
 // Resolve ENTC faculty photos from string references to actual imports
-const resolvedEntcFaculty = ENTC_DEFAULT_FACULTY.map((f) => ({
-  ...f,
-  photo: entcPhotoMap[f.photo] || f.photo,
-}));
+const resolvedEntcFaculty = normalizeFacultyCollection(
+  ENTC_DEFAULT_FACULTY,
+  "entc",
+  entcPhotoMap,
+);
 
 // Resolve Electrical faculty photos from string references to actual imports
-const resolvedElectricalFaculty = ELECTRICAL_DEFAULT_FACULTY.map((f) => ({
-  ...f,
-  photo: electricalPhotoMap[f.photo] || f.photo,
-}));
+const resolvedElectricalFaculty = normalizeFacultyCollection(
+  ELECTRICAL_DEFAULT_FACULTY,
+  "electrical",
+  electricalPhotoMap,
+);
 
 // Resolve MBA faculty photos from string references to actual imports
-const resolvedMbaFaculty = MBA_DEFAULT_FACULTY.map((f) => ({
-  ...f,
-  photo: mbaPhotoMap[f.photo] || f.photo,
-}));
+const resolvedMbaFaculty = normalizeFacultyCollection(
+  MBA_DEFAULT_FACULTY,
+  "mba",
+  mbaPhotoMap,
+);
 
 // Resolve Mechanical faculty photos from string references to actual imports
-const resolvedMechFaculty = MECH_DEFAULT_FACULTY.map((f) => ({
-  ...f,
-  photo: mechPhotoMap[f.photo] || f.photo,
-}));
+const resolvedMechFaculty = normalizeFacultyCollection(
+  MECH_DEFAULT_FACULTY,
+  "mechanical",
+  mechPhotoMap,
+);
 
 // Resolve IT faculty photos from string references to actual imports
-const resolvedItFaculty = IT_DEFAULT_FACULTY.map((f) => ({
-  ...f,
-  photo: itPhotoMap[f.photo] || f.photo,
-}));
+const resolvedItFaculty = normalizeFacultyCollection(
+  IT_DEFAULT_FACULTY,
+  "it",
+  itPhotoMap,
+);
+
+const resolveCseFacultyItems = (items = []) =>
+  normalizeFacultyCollection(items, "cse", csePhotoMap);
+
+const PHOTO_MAP_BY_DEPT = {
+  cse: csePhotoMap,
+  entc: entcPhotoMap,
+  electrical: electricalPhotoMap,
+  mba: mbaPhotoMap,
+  mechanical: mechPhotoMap,
+  it: itPhotoMap,
+};
+
+export const getVidwanUrl = (facultyMember) => {
+  if (!facultyMember || typeof facultyMember !== "object") return "";
+
+  const directLink =
+    typeof facultyMember.vidwanLink === "string"
+      ? facultyMember.vidwanLink.trim()
+      : "";
+  if (directLink) return directLink;
+
+  const vidwanId =
+    typeof facultyMember.vidwanId === "string"
+      ? facultyMember.vidwanId.trim()
+      : "";
+  if (vidwanId) return `https://vidwan.inflibnet.ac.in/profile/${vidwanId}`;
+
+  return "";
+};
 
 // Department name mapping
-const DEPARTMENT_MAP = {
+export const DEPARTMENT_MAP = {
   cse: "Dept. of Computer Science & Engineering",
   applied: "Dept. of Applied Sciences & Humanities",
   entc: "Dept. of Electronics & Telecommunication Engg.",
@@ -282,16 +360,108 @@ const DEPARTMENT_MAP = {
   it: "Dept. of Information Technology",
 };
 
-// Combine all faculty data
-const ALL_FACULTY = [
-  ...APPLIED_DEFAULT_FACULTY,
-  ...resolvedCseFaculty,
-  ...resolvedEntcFaculty,
-  ...resolvedElectricalFaculty,
-  ...resolvedMbaFaculty,
-  ...resolvedMechFaculty,
-  ...resolvedItFaculty,
+export const FACULTY_DIRECTORY_DEPARTMENTS = [
+  { id: "all", label: "All Departments" },
+  { id: "applied", label: "Applied Sciences & Humanities" },
+  { id: "cse", label: "Computer Science & Engineering" },
+  { id: "it", label: "Information Technology" },
+  { id: "entc", label: "Electronics & Telecommunication" },
+  { id: "electrical", label: "Electrical Engineering" },
+  { id: "mechanical", label: "Mechanical Engineering" },
+  { id: "mba", label: "Business Administration" },
 ];
+
+const buildFacultyDirectory = (liveFacultyByDept = {}) => [
+  ...(liveFacultyByDept.applied?.length
+    ? liveFacultyByDept.applied
+    : normalizeFacultyCollection(APPLIED_DEFAULT_FACULTY, "applied")),
+  ...(liveFacultyByDept.cse?.length ? liveFacultyByDept.cse : resolvedCseFaculty),
+  ...(liveFacultyByDept.entc?.length ? liveFacultyByDept.entc : resolvedEntcFaculty),
+  ...(liveFacultyByDept.electrical?.length
+    ? liveFacultyByDept.electrical
+    : resolvedElectricalFaculty),
+  ...(liveFacultyByDept.mba?.length ? liveFacultyByDept.mba : resolvedMbaFaculty),
+  ...(liveFacultyByDept.mechanical?.length
+    ? liveFacultyByDept.mechanical
+    : resolvedMechFaculty),
+  ...(liveFacultyByDept.it?.length ? liveFacultyByDept.it : resolvedItFaculty),
+];
+
+export const useFacultyDirectoryData = () => {
+  const [liveFacultyByDept, setLiveFacultyByDept] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadLiveFaculty = async () => {
+      try {
+        const pageRequests = [
+          ["cse", "/api/pages/departments-cse"],
+          ["entc", "/api/pages/departments-entc"],
+          ["it", "/api/pages/departments-it"],
+          ["electrical", "/api/pages/departments-electrical"],
+          ["mechanical", "/api/pages/departments-mechanical"],
+          ["mba", "/api/pages/departments-mba"],
+          ["applied", "/api/pages/departments-applied-sciences"],
+        ];
+
+        const responses = await Promise.allSettled(
+          pageRequests.map(([, url]) => axios.get(url)),
+        );
+
+        if (!isMounted) return;
+
+        const nextLiveFaculty = {};
+
+        responses.forEach((result, index) => {
+          if (result.status !== "fulfilled") return;
+
+          const [dept] = pageRequests[index];
+          const data = result.value?.data?.data || {};
+          const storedFaculty =
+            dept === "cse"
+              ? data.faculty
+              : dept === "entc"
+                ? data.templateData?.faculty?.list
+                : dept === "electrical"
+                  ? data.templateData?.facultyData
+                  : data.templateData?.faculty;
+
+          if (!Array.isArray(storedFaculty) || storedFaculty.length === 0) {
+            return;
+          }
+
+          nextLiveFaculty[dept] = normalizeFacultyCollection(
+            storedFaculty,
+            dept,
+            PHOTO_MAP_BY_DEPT[dept] || {},
+          );
+        });
+
+        setLiveFacultyByDept(nextLiveFaculty);
+      } catch (error) {
+        console.error("Error loading live faculty data:", error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadLiveFaculty();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return {
+    facultyDirectory: buildFacultyDirectory(liveFacultyByDept),
+    liveFacultyByDept,
+    loading,
+  };
+};
 
 // Table row component for clean, consistent display
 const InfoRow = ({ label, children, borderColor = "border-blue-600" }) => {
@@ -299,11 +469,11 @@ const InfoRow = ({ label, children, borderColor = "border-blue-600" }) => {
   return (
     <tr className="border-b border-gray-200 hover:bg-gray-50/50 transition-colors">
       <td
-        className={`py-4 px-5 font-semibold text-gray-800 text-sm uppercase tracking-wide align-top w-[260px] bg-gray-50/80 border-l-4 ${borderColor}`}
+        className={`w-[170px] bg-gray-50/80 px-3 py-3 align-top text-xs font-semibold uppercase tracking-wide text-gray-800 border-l-4 sm:w-[210px] sm:px-4 sm:py-4 sm:text-sm lg:w-[260px] lg:px-5 ${borderColor}`}
       >
         {label}
       </td>
-      <td className="py-4 px-6 text-gray-700 text-sm leading-relaxed align-top">
+      <td className="px-3 py-3 align-top text-xs leading-relaxed text-gray-700 sm:px-4 sm:py-4 sm:text-sm lg:px-6">
         {children}
       </td>
     </tr>
@@ -313,19 +483,34 @@ const InfoRow = ({ label, children, borderColor = "border-blue-600" }) => {
 const FacultyDetail = () => {
   const { facultyId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [faculty, setFaculty] = useState(null);
+  const { facultyDirectory, loading } = useFacultyDirectoryData();
 
   useEffect(() => {
-    const foundFaculty = ALL_FACULTY.find((f) => f.id === facultyId);
+    const foundFaculty = facultyDirectory.find((f) => f.id === facultyId);
     if (foundFaculty) {
       setFaculty(foundFaculty);
+    } else {
+      setFaculty(null);
     }
-  }, [facultyId]);
+  }, [facultyId, facultyDirectory]);
+
+  if (loading && !faculty) {
+    return (
+      <GenericPage title="Faculty Directory">
+        <div className="mx-auto w-full max-w-[120rem] px-4 py-12 text-center sm:px-5 sm:py-16 lg:px-6">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-ssgmce-blue"></div>
+          <p className="mt-4 text-gray-600">Loading faculty profile...</p>
+        </div>
+      </GenericPage>
+    );
+  }
 
   if (!faculty) {
     return (
       <GenericPage title="Faculty Not Found">
-        <div className="container mx-auto px-4 py-16 text-center">
+        <div className="mx-auto w-full max-w-[120rem] px-4 py-12 text-center sm:px-5 sm:py-16 lg:px-6">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
             Faculty Member Not Found
           </h2>
@@ -333,13 +518,14 @@ const FacultyDetail = () => {
             The faculty member you're looking for doesn't exist or has been
             removed.
           </p>
-          <Link
-            to="/faculty"
+          <button
+            type="button"
+            onClick={() => goBackOrFallback(navigate, location, "/faculty")}
             className="inline-flex items-center px-6 py-3 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors"
           >
             <FaArrowLeft className="mr-2" />
             Back to Faculty
-          </Link>
+          </button>
         </div>
       </GenericPage>
     );
@@ -359,9 +545,9 @@ const FacultyDetail = () => {
       <div className="bg-gray-100 min-h-screen">
         {/* Top Header Bar */}
         <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900">
-          <div className="container mx-auto max-w-7xl px-4 py-4">
+          <div className="mx-auto w-full max-w-[120rem] px-4 py-4 sm:px-5 lg:px-6">
             <button
-              onClick={() => navigate("/faculty")}
+              onClick={() => goBackOrFallback(navigate, location, "/faculty")}
               className="inline-flex items-center text-blue-200 hover:text-white text-sm transition-colors"
             >
               <FaArrowLeft className="mr-2 text-xs" />
@@ -370,19 +556,19 @@ const FacultyDetail = () => {
           </div>
         </div>
 
-        <div className="container mx-auto max-w-7xl px-4 py-8">
+        <div className="mx-auto w-full max-w-[120rem] px-4 py-6 sm:px-5 sm:py-8 lg:px-6">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="flex flex-col lg:flex-row gap-6"
+            className="flex flex-col gap-5 sm:gap-6 lg:flex-row"
           >
             {/* ─── Left Sidebar: Photo & Contact ─── */}
-            <div className="lg:w-[300px] flex-shrink-0">
-              <div className="bg-white rounded-lg shadow-md overflow-hidden sticky top-24">
+            <div className="lg:w-[280px] xl:w-[300px] flex-shrink-0">
+              <div className="sticky top-20 overflow-hidden rounded-lg bg-white shadow-md lg:top-24">
                 {/* Photo */}
-                <div className="bg-gradient-to-b from-blue-900 to-blue-800 p-6 flex flex-col items-center">
-                  <div className="w-44 h-56 rounded-lg overflow-hidden border-4 border-white/30 shadow-xl mb-4 bg-white">
+                <div className="flex flex-col items-center bg-gradient-to-b from-blue-900 to-blue-800 p-5 sm:p-6">
+                  <div className="mb-4 h-48 w-36 overflow-hidden rounded-lg border-4 border-white/30 bg-white shadow-xl sm:h-56 sm:w-44">
                     {faculty.photo ? (
                       <img
                         src={faculty.photo}
@@ -391,11 +577,11 @@ const FacultyDetail = () => {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-blue-700">
-                        <FaUserTie className="text-5xl text-blue-300" />
+                        <FaUserTie className="text-4xl text-blue-300 sm:text-5xl" />
                       </div>
                     )}
                   </div>
-                  <h2 className="text-xl font-bold text-white text-center leading-tight">
+                  <h2 className="text-center text-[clamp(1rem,2.6vw,1.25rem)] font-bold leading-tight text-white">
                     {faculty.name}
                   </h2>
                   <p className="text-blue-200 text-sm text-center mt-1">
@@ -408,7 +594,7 @@ const FacultyDetail = () => {
                 </div>
 
                 {/* Contact Details */}
-                <div className="p-5 space-y-3 border-t border-gray-100">
+                <div className="space-y-3 border-t border-gray-100 p-4 sm:p-5">
                   <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
                     Contact Information
                   </h3>
@@ -433,10 +619,10 @@ const FacultyDetail = () => {
                 </div>
 
                 {/* Vidwan Profile Link */}
-                {faculty.vidwanId && (
-                  <div className="px-5 pb-5">
+                {getVidwanUrl(faculty) && (
+                  <div className="px-4 pb-4 sm:px-5 sm:pb-5">
                     <a
-                      href={`https://vidwan.inflibnet.ac.in/profile/${faculty.vidwanId}`}
+                      href={getVidwanUrl(faculty)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 w-full py-2.5 bg-blue-50 text-blue-700 text-sm font-semibold rounded-lg border border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition-colors"
@@ -453,8 +639,8 @@ const FacultyDetail = () => {
             <div className="flex-1 min-w-0">
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 {/* Title Bar */}
-                <div className="bg-blue-900 px-6 py-4">
-                  <h1 className="text-xl font-bold text-white">
+                <div className="bg-blue-900 px-4 py-4 sm:px-6">
+                  <h1 className="text-[clamp(1rem,2.6vw,1.25rem)] font-bold text-white">
                     {faculty.name}
                   </h1>
                   <p className="text-blue-200 text-sm mt-0.5">{faculty.role}</p>
@@ -499,11 +685,11 @@ const FacultyDetail = () => {
                         }
                         borderColor="border-indigo-600"
                       >
-                        {faculty.vidwanId ? (
+                        {getVidwanUrl(faculty) ? (
                           <div className="space-y-1">
                             <span>
                               <a
-                                href={`https://vidwan.inflibnet.ac.in/profile/${faculty.vidwanId}`}
+                                href={getVidwanUrl(faculty)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-700 hover:underline font-medium inline-flex items-center gap-1"
@@ -563,7 +749,7 @@ const FacultyDetail = () => {
                           <ul className="space-y-2">
                             {faculty.publications.map((pub, i) => (
                               <li key={i} className="flex items-start gap-2">
-                                <span className="mt-0.5 min-w-[22px] h-[22px] bg-orange-100 text-orange-700 rounded text-xs font-bold flex items-center justify-center flex-shrink-0">
+                                <span className="mt-0.5 flex h-5 min-w-[20px] flex-shrink-0 items-center justify-center rounded bg-orange-100 text-[11px] font-bold text-orange-700 sm:h-[22px] sm:min-w-[22px] sm:text-xs">
                                   {i + 1}
                                 </span>
                                 <span>{pub}</span>
@@ -641,5 +827,5 @@ const FacultyDetail = () => {
 };
 
 // Export the faculty data for use in other components
-export { APPLIED_DEFAULT_FACULTY };
+export { APPLIED_DEFAULT_FACULTY, resolveCseFacultyItems };
 export default FacultyDetail;

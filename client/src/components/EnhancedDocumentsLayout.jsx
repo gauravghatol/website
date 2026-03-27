@@ -33,23 +33,23 @@ const EnhancedDocumentsLayout = ({
         backgroundImage={backgroundImage}
       />
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid lg:grid-cols-12 gap-8">
+      <div className="mx-auto w-full max-w-[120rem] px-4 py-8 sm:px-5 sm:py-10 lg:px-6 lg:py-12">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
           {/* Sidebar */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 lg:self-start">
             <DocumentsSidebar />
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-9 space-y-8">
+          <div className="min-w-0 space-y-6 lg:col-span-9 lg:space-y-8">
             {/* Description */}
             {description && (
-              <div id={introId} className="bg-white rounded-xl shadow-md p-6">
+              <div id={introId} className="rounded-xl bg-white p-4 shadow-md sm:p-6">
                 <div className="flex items-center gap-3 mb-3">
                   <FaFileAlt className="text-xl text-ssgmce-orange" />
-                  <h2 className="text-xl font-bold text-ssgmce-blue">{pageTitle}</h2>
+                  <h2 className="text-[clamp(1.1rem,2.4vw,1.35rem)] font-bold text-ssgmce-blue">{pageTitle}</h2>
                 </div>
-                <p className="text-gray-600 leading-relaxed">{description}</p>
+                <p className="text-[clamp(0.88rem,1.6vw,1rem)] leading-relaxed text-gray-600">{description}</p>
               </div>
             )}
 
