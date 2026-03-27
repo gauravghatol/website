@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useRef } from "react";
 import axios from "axios";
 import GenericPage from "../../components/GenericPage";
@@ -40,6 +40,7 @@ import {
   defaultPso,
   defaultPo,
 } from "../../data/mechanicalDefaults";
+import { getPathWithTab, getRequestedTab } from "../../utils/navigation";
 import { defaultPlacements } from "../../data/mechPlacements";
 import { defaultMechInternships } from "../../data/mechInternships";
 import mechanicalBanner from "../../assets/images/departments/mechanical/Mechnical banner.png";
@@ -878,7 +879,10 @@ const MECH_RESEARCH_TEMPLATE_URLS = {
 };
 
 const Mechanical = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(() =>
+    getRequestedTab(location, "overview")
+  );
   const [vmTab, setVmTab] = useState("vision");
   const [poTab, setPoTab] = useState("peo");
   const [expandedSemester, setExpandedSemester] = useState(null);
@@ -926,6 +930,14 @@ const Mechanical = () => {
     useState(false);
   const [expandedFacultyEditorIndex, setExpandedFacultyEditorIndex] =
     useState(null);
+
+  useEffect(() => {
+    const requestedTab = getRequestedTab(location, "overview");
+
+    setActiveTab((currentTab) =>
+      currentTab === requestedTab ? currentTab : requestedTab
+    );
+  }, [location.search]);
   const latestLearningResourceRef = useRef(null);
   const [nbaDriveLinkDraft, setNbaDriveLinkDraft] = useState("");
   const [nbaVideoLinkDrafts, setNbaVideoLinkDrafts] = useState({});
@@ -6511,7 +6523,11 @@ After successfully completing the course, students will be able to:
 
               <div className="p-5 flex-1 flex flex-col justify-center">
                 <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
-                  <Link to={`/faculty/${fac.id}`} className="hover:underline">
+                  <Link
+                    to={`/faculty/${fac.id}`}
+                    state={{ from: getPathWithTab(location, "faculty") }}
+                    className="hover:underline"
+                  >
                     <EditableText
                       value={fac.name}
                       onSave={(val) => updateFacultyMember(i, "name", val)}
@@ -6582,6 +6598,7 @@ After successfully completing the course, students will be able to:
                   )}
                   <Link
                     to={`/faculty/${fac.id}`}
+                    state={{ from: getPathWithTab(location, "faculty") }}
                     className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
                   >
                     View Profile <FaAngleRight className="ml-1" />
@@ -7694,7 +7711,7 @@ After successfully completing the course, students will be able to:
                   />
                 </h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                     {researchYears.map((year) => (
                       <button
                         key={year}
@@ -7934,7 +7951,7 @@ After successfully completing the course, students will be able to:
                   />
                 </h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar mr-4">
+                  <div className="mr-4 flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                     {researchYears.map((year) => (
                       <button
                         key={year}
@@ -8094,7 +8111,7 @@ After successfully completing the course, students will be able to:
                   Copyrights
                 </h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                     {researchYears.map((year) => (
                       <button
                         key={year}
@@ -8639,9 +8656,9 @@ After successfully completing the course, students will be able to:
       title="Mechanical Engineering"
       backgroundImage={mechanicalBanner}
     >
-      <div className="flex flex-col lg:flex-row gap-12 max-w-7xl mx-auto">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:gap-12">
         <div className="lg:w-1/4 order-1 lg:order-1">
-          <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 space-y-6 pb-4 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
+          <div className="space-y-4 pb-2 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:space-y-6 lg:pb-4 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
               <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">
                 <h3 className="text-lg font-bold text-white flex items-center">

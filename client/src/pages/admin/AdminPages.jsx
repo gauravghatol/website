@@ -7,6 +7,7 @@ import {
   ACADEMICS_PAGE_ORDER_BY_ROUTE,
   isAcademicsWebsiteRoute,
 } from "../../constants/academicsPages";
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 import {
   FaSearch,
   FaChevronRight,
@@ -341,6 +342,7 @@ const AdminPages = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
   const [categoryFilter, setCategoryFilter] = useState(
     searchParams.get("category") || "all",
@@ -384,9 +386,11 @@ const AdminPages = () => {
       const res = await axios.get("/api/pages");
       if (res.data.success) {
         setPages(res.data.data || []);
+        setError("");
       }
     } catch (err) {
-      console.error(err);
+      logUnexpectedError("Error fetching pages:", err);
+      setError(getErrorMessage(err, "Failed to load pages"));
     } finally {
       setLoading(false);
     }
@@ -535,6 +539,11 @@ const AdminPages = () => {
   return (
     <AdminLayout>
       <div className="space-y-4">
+        {error ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+            {error}
+          </div>
+        ) : null}
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end gap-3">
           <div className="flex-1">

@@ -12,6 +12,7 @@ import {
   FaHandshake,
 } from "react-icons/fa";
 import axios from "axios";
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 
 // Skeleton
 const InnovationSkeleton = () => (
@@ -26,6 +27,7 @@ const InnovationCell = () => {
   const [innovations, setInnovations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ type: "", status: "" });
+  const [error, setError] = useState("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -43,8 +45,10 @@ const InnovationCell = () => {
 
       const res = await axios.get(`/api/research/innovations?${params}`);
       setInnovations(res.data.innovations);
+      setError("");
     } catch (error) {
-      console.error("Error fetching innovations:", error);
+      logUnexpectedError("Error fetching innovations:", error);
+      setError(getErrorMessage(error, "Failed to load innovations"));
     } finally {
       setLoading(false);
     }
@@ -109,6 +113,11 @@ const InnovationCell = () => {
           </div>
 
           <div className="lg:col-span-9 space-y-10">
+            {error ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            ) : null}
             {/* About Innovation Cell */}
             <section className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
               <div className="flex items-start gap-4 mb-6">

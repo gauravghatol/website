@@ -15,6 +15,11 @@ import EditableSection from "./admin/EditableSection";
 import MarkdownEditor from "./admin/MarkdownEditor";
 import { useEdit } from "../contexts/EditContext";
 import {
+  getErrorMessage,
+  isNotFoundError,
+  logUnexpectedError,
+} from "../utils/apiErrors";
+import {
   FaGraduationCap,
   FaHandshake,
   FaChartLine,
@@ -484,9 +489,9 @@ const GenericContentPage = ({ pageId }) => {
         setError(null);
       } catch (err) {
         if (!isActive) return;
-        console.error("[GenericContentPage] Error:", err);
+        logUnexpectedError("[GenericContentPage] Error:", err);
         if (!cachedPage) {
-          setError(err.message);
+          setError(isNotFoundError(err) ? "Page not found" : getErrorMessage(err));
         }
       } finally {
         if (!backgroundRefresh && isActive) {

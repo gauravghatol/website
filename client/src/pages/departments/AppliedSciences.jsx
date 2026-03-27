@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import GenericPage from "../../components/GenericPage";
 import { useDepartmentData } from "../../hooks/useDepartmentData";
 import EditableText from "../../components/admin/EditableText";
@@ -10,6 +10,7 @@ import remarkGfm from "remark-gfm";
 import appliedSciencesBanner from "../../assets/images/departments/applied-sciences/banner.png";
 import { AnimatePresence, motion } from "framer-motion";
 import axios from "axios";
+import { getPathWithTab, getRequestedTab } from "../../utils/navigation";
 import {
   FaLaptopCode,
   FaBullseye,
@@ -641,7 +642,10 @@ function AshPrideMdView({ markdown = "" }) {
 // ---- End ASH Pride helpers ----
 
 const AppliedSciences = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(() =>
+    getRequestedTab(location, "overview")
+  );
   const [vmTab, setVmTab] = useState("vision");
   const [poTab, setPoTab] = useState("peo");
   const [showAllPos, setShowAllPos] = useState(false);
@@ -650,6 +654,14 @@ const AppliedSciences = () => {
   const [achievementTab, setAchievementTab] = useState("faculty");
   const [expandedFacultyEditorIndex, setExpandedFacultyEditorIndex] =
     useState(null);
+
+  useEffect(() => {
+    const requestedTab = getRequestedTab(location, "overview");
+
+    setActiveTab((currentTab) =>
+      currentTab === requestedTab ? currentTab : requestedTab
+    );
+  }, [location.search]);
 
   // Load department data (works in both edit and public view modes)
   const {
@@ -1744,6 +1756,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
                   ) : (
                     <Link
                       to={`/faculty/${fac.id}`}
+                      state={{ from: getPathWithTab(location, "faculty") }}
                       className="hover:text-ssgmce-blue hover:underline transition-colors cursor-pointer"
                     >
                       {fac.name}
@@ -1862,6 +1875,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
                   )}
                   <Link
                     to={`/faculty/${fac.id}`}
+                    state={{ from: getPathWithTab(location, "faculty") }}
                     className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
                   >
                     View Profile <FaAngleRight className="ml-1" />
@@ -3068,15 +3082,15 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
                     )}
 
                     <div className="space-y-2 pt-2">
-                      <div className="flex items-start">
-                        <span className="font-bold text-gray-700 min-w-[140px]">
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-3">
+                        <span className="font-bold text-gray-700 sm:min-w-[140px]">
                           Date:
                         </span>
                         <span className="text-gray-600">{activity.date}</span>
                       </div>
 
-                      <div className="flex items-start">
-                        <span className="font-bold text-gray-700 min-w-[140px]">
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-3">
+                        <span className="font-bold text-gray-700 sm:min-w-[140px]">
                           Beneficiary/Participant:
                         </span>
                         <span className="text-gray-600">
@@ -3085,8 +3099,8 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
                       </div>
 
                       {activity.venue && (
-                        <div className="flex items-start">
-                          <span className="font-bold text-gray-700 min-w-[140px]">
+                        <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-3">
+                          <span className="font-bold text-gray-700 sm:min-w-[140px]">
                             Venue:
                           </span>
                           <span className="text-gray-600">
@@ -3096,8 +3110,8 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
                       )}
 
                       {activity.organizer && (
-                        <div className="flex items-start">
-                          <span className="font-bold text-gray-700 min-w-[140px]">
+                        <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-3">
+                          <span className="font-bold text-gray-700 sm:min-w-[140px]">
                             Organized by:
                           </span>
                           <span className="text-gray-600">
@@ -3159,10 +3173,10 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
       title="Applied Sciences and Humanities"
       backgroundImage={appliedSciencesBanner}
     >
-      <div className="flex flex-col lg:flex-row gap-12 max-w-7xl mx-auto">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:gap-12">
         {/* Sidebar Navigation (Left Side) */}
         <div className="lg:w-1/4 order-1 lg:order-1">
-          <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 space-y-6 pb-4 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
+          <div className="space-y-4 pb-2 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:space-y-6 lg:pb-4 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
             {/* Academics Section */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
               <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">

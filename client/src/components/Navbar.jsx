@@ -230,11 +230,11 @@ const Navbar = () => {
   return (
     <>
       {/* Top Buttons and Contact Bar - Above Image */}
-      <div className="bg-[#003366] text-white py-1 md:py-1.5">
+      <div className="bg-[#003366] text-white py-2 md:py-1.5">
         <div className="container mx-auto px-3 md:px-4">
-          <div className="flex flex-wrap justify-between items-center text-xs">
+          <div className="flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between">
             {/* Left side - Quick Links */}
-            <div className="flex items-center space-x-1 md:space-x-2 ml-6 md:ml-12 lg:ml-20">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:justify-start">
               <button className="bg-ssgmce-orange hover:bg-ssgmce-light-orange px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white">
                 FRA Fee Structure
               </button>
@@ -250,7 +250,7 @@ const Navbar = () => {
             </div>
             
             {/* Right side - Contact Info moved/removed */}
-            <div className="flex items-center space-x-2 md:space-x-4 text-white mr-6 md:mr-12 lg:mr-20">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:justify-end text-white">
                <a href="#" className="bg-red-600 hover:bg-red-500 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white">
                  Institute Brochure
                </a>
@@ -300,7 +300,8 @@ const Navbar = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden text-ssgmce-blue text-xl py-3"
+              className="rounded-md border border-gray-200 p-2 text-xl text-ssgmce-blue transition-colors hover:bg-gray-50 md:hidden"
+              aria-label={isOpen ? "Close menu" : "Open menu"}
             >
               {isOpen ? <FaTimes /> : <FaBars />}
             </button>
@@ -483,7 +484,7 @@ const Navbar = () => {
 
           {/* Mobile Menu */}
           {isOpen && (
-            <div className="md:hidden py-3 max-h-[70vh] overflow-y-auto">
+            <div className="md:hidden border-t border-gray-200 bg-white px-1 py-3 max-h-[70vh] overflow-y-auto shadow-lg">
               <ul className="space-y-1">
                 {menuItems.map((item, index) => (
                   <li key={index}>

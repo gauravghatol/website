@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import {
+  getErrorMessage,
+  isNotFoundError,
+  logUnexpectedError,
+} from "../utils/apiErrors";
 
 const PageDataContext = createContext();
 
@@ -45,12 +50,11 @@ export const PageDataProvider = ({ children, pageId }) => {
         if (response.data.success) {
           setData(response.data.data || {});
         } else {
-          console.warn(`Page ${pageId} not found, using defaults`);
           setData({});
         }
       } catch (err) {
-        console.error("Error loading page data:", err);
-        setError(err.message);
+        logUnexpectedError("Error loading page data:", err);
+        setError(isNotFoundError(err) ? null : getErrorMessage(err));
         // Don't fail completely - let defaults show
         setData({});
       } finally {

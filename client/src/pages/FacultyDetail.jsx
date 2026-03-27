@@ -11,6 +11,7 @@ import {
   FaExternalLinkAlt,
 } from "react-icons/fa";
 import { goBackOrFallback } from "../utils/navigation";
+import { logUnexpectedError } from "../utils/apiErrors";
 
 // Import faculty data from all departments
 import { APPLIED_DEFAULT_FACULTY } from "./departments/AppliedSciences";
@@ -441,7 +442,7 @@ export const useFacultyDirectoryData = () => {
 
         setLiveFacultyByDept(nextLiveFaculty);
       } catch (error) {
-        console.error("Error loading live faculty data:", error);
+        logUnexpectedError("Error loading live faculty data:", error);
       } finally {
         if (isMounted) {
           setLoading(false);

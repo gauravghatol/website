@@ -119,7 +119,7 @@ const Home = () => {
     <div className="animation-fade-in font-sans bg-white">
 
       {/* Hero Section */}
-      <section className="relative h-[420px] md:h-[520px] lg:h-[620px] overflow-hidden">
+      <section className="relative h-[320px] sm:h-[420px] md:h-[520px] lg:h-[620px] overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10"></div>
         <video
           src={droneVideo}
@@ -129,9 +129,9 @@ const Home = () => {
           playsInline
           className="w-full h-full object-cover"
         />
-        <div className="absolute bottom-28 md:bottom-32 left-0 right-0 z-20 text-center text-white px-4">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4 drop-shadow-lg tracking-wide">सर्वे भवन्तु सुखिनः</h2>
-          <p className="text-base md:text-xl font-light drop-shadow-md max-w-2xl mx-auto opacity-90">Bestowed by the blessings of Shri Sant Gajanan Maharaj</p>
+        <div className="absolute bottom-14 left-0 right-0 z-20 px-4 text-center text-white sm:bottom-24 md:bottom-32">
+          <h2 className="mb-3 text-2xl font-bold tracking-wide drop-shadow-lg sm:text-3xl md:mb-4 md:text-5xl">सर्वे भवन्तु सुखिनः</h2>
+          <p className="mx-auto max-w-2xl text-sm font-light drop-shadow-md opacity-90 sm:text-base md:text-xl">Bestowed by the blessings of Shri Sant Gajanan Maharaj</p>
         </div>
       </section>
 
@@ -141,9 +141,9 @@ const Home = () => {
       {/* Accreditations Bar */}
       <section className="py-8 md:py-10 bg-gradient-to-r from-ssgmce-blue/[0.03] via-white to-ssgmce-orange/[0.03] border-b border-gray-100">
         <div className="container mx-auto px-4">
-          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 md:gap-4">
             {accreditations.map((item) => (
-              <div key={item.label} className="flex flex-col items-center bg-white border border-gray-100 rounded-xl px-5 py-3 md:px-6 md:py-4 shadow-sm hover:shadow-md transition-shadow min-w-[100px]">
+              <div key={item.label} className="flex min-h-[104px] flex-col items-center justify-center rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-sm transition-shadow hover:shadow-md md:px-5 md:py-4">
                 <FaCheckCircle className="text-ssgmce-accent text-base mb-1.5" />
                 <span className="text-sm md:text-base font-bold text-gray-800 leading-tight">{item.label}</span>
                 <span className="text-xs text-ssgmce-muted mt-0.5">{item.desc}</span>
@@ -162,7 +162,7 @@ const Home = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
             {/* Academic Excellence */}
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+            <div className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg md:p-8">
               <div className="w-14 h-14 bg-ssgmce-blue/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-ssgmce-blue/15 transition-colors">
                 <FaMicroscope className="text-ssgmce-blue text-xl" />
               </div>
@@ -176,7 +176,7 @@ const Home = () => {
             </div>
 
             {/* Student Life */}
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+            <div className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg md:p-8">
               <div className="w-14 h-14 bg-ssgmce-orange/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-ssgmce-orange/15 transition-colors">
                 <FaUsers className="text-ssgmce-orange text-xl" />
               </div>
@@ -190,7 +190,7 @@ const Home = () => {
             </div>
 
             {/* Placements */}
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+            <div className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg md:p-8">
               <div className="w-14 h-14 bg-ssgmce-accent/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-ssgmce-accent/15 transition-colors">
                 <FaHandshake className="text-ssgmce-accent text-xl" />
               </div>
@@ -215,9 +215,9 @@ const Home = () => {
                 <img
                   src={mainGateImg}
                   alt="SSGMCE Main Gate"
-                  className="rounded-2xl shadow-lg w-full object-cover h-[380px]"
+                  className="h-[280px] w-full rounded-2xl object-cover shadow-lg sm:h-[340px] lg:h-[380px]"
                 />
-                <div className="absolute -bottom-5 -right-5 bg-white py-5 px-6 shadow-lg rounded-xl z-20 hidden md:block border-l-4 border-ssgmce-blue">
+                <div className="absolute -bottom-4 right-4 z-20 hidden rounded-xl border-l-4 border-ssgmce-blue bg-white px-5 py-4 shadow-lg sm:block">
                     <p className="text-3xl font-bold text-ssgmce-orange mb-0.5">41+</p>
                     <p className="text-ssgmce-muted text-xs font-semibold uppercase tracking-wide">Years of Excellence</p>
                 </div>

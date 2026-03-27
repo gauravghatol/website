@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import GenericPage from "../../components/GenericPage";
 import { useDepartmentData } from "../../hooks/useDepartmentData";
@@ -41,6 +41,7 @@ import {
   FaUpload,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+import { getPathWithTab, getRequestedTab } from "../../utils/navigation";
 
 import {
   defaultLabs,
@@ -1105,8 +1106,11 @@ const splitFacultyMultiline = (value = "") =>
     .filter(Boolean);
 
 const CSE = () => {
+  const location = useLocation();
   // Department of Computer Science & Engineering Page
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(() =>
+    getRequestedTab(location, "overview")
+  );
 
   // State for Vision/Mission/PEO section tabs
   const [vmTab, setVmTab] = useState("vision");
@@ -1130,6 +1134,14 @@ const CSE = () => {
   const [researchYearError, setResearchYearError] = useState("");
   const [expandedFacultyEditorIndex, setExpandedFacultyEditorIndex] =
     useState(null);
+
+  useEffect(() => {
+    const requestedTab = getRequestedTab(location, "overview");
+
+    setActiveTab((currentTab) =>
+      currentTab === requestedTab ? currentTab : requestedTab
+    );
+  }, [location.search]);
 
   // Placement data (default) — used for summary + markdown generation
   const defaultPlacementYearOrder = [
@@ -5309,7 +5321,7 @@ const CSE = () => {
             />
           </h3>
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+            <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
               {ugProjectYears.map((year) => (
                 <button
                   key={year}
@@ -5580,6 +5592,7 @@ const CSE = () => {
                   {!fac.isIndustry && (
                     <Link
                       to={`/faculty/${fac.id || createFacultySlug(fac.name)}`}
+                      state={{ from: getPathWithTab(location, "faculty") }}
                       className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
                     >
                       View Profile <FaAngleRight className="ml-1" />
@@ -7203,7 +7216,7 @@ const CSE = () => {
                   />
                 </h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                     {researchYears.map((year) => (
                       <button
                         key={year}
@@ -7352,7 +7365,7 @@ const CSE = () => {
                   />
                 </h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar mr-4">
+                  <div className="mr-4 flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                     {researchYears.map((year) => (
                       <button
                         key={year}
@@ -7509,7 +7522,7 @@ const CSE = () => {
                   Copyrights
                 </h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                     {researchYears.map((year) => (
                       <button
                         key={year}
@@ -7650,7 +7663,7 @@ const CSE = () => {
                   Books Published
                 </h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                     {researchYears.map((year) => (
                       <button
                         key={year}
@@ -8640,10 +8653,10 @@ const CSE = () => {
       title="Computer Science and Engineering"
       backgroundImage={cseBanner}
     >
-      <div className="flex flex-col lg:flex-row gap-12 max-w-7xl mx-auto">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:gap-12">
         {/* Sidebar Navigation (Left Side) */}
         <div className="lg:w-1/4 order-1 lg:order-1">
-          <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 space-y-6 pb-4 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
+          <div className="space-y-4 pb-2 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:space-y-6 lg:pb-4 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
             {/* Academics Section */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
               <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">

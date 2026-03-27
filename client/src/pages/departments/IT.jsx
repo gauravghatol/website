@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useRef } from "react";
 import axios from "axios";
 import GenericPage from "../../components/GenericPage";
@@ -41,6 +41,7 @@ import {
   defaultPso,
   defaultPo,
 } from "../../data/itDefaults";
+import { getPathWithTab, getRequestedTab } from "../../utils/navigation";
 import { defaultPlacements } from "../../data/itPlacements";
 import { defaultItInternships } from "../../data/itInternships";
 import itBanner from "../../assets/images/departments/it/IT banner.png";
@@ -895,7 +896,10 @@ const defaultCourseMaterials = [
 ];
 
 const IT = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(() =>
+    getRequestedTab(location, "overview")
+  );
   const [vmTab, setVmTab] = useState("vision");
   const [poTab, setPoTab] = useState("peo");
   const [showAllPos, setShowAllPos] = useState(false);
@@ -945,6 +949,14 @@ const IT = () => {
     useState(false);
   const [expandedFacultyEditorIndex, setExpandedFacultyEditorIndex] =
     useState(null);
+
+  useEffect(() => {
+    const requestedTab = getRequestedTab(location, "overview");
+
+    setActiveTab((currentTab) =>
+      currentTab === requestedTab ? currentTab : requestedTab
+    );
+  }, [location.search]);
   const latestCourseMaterialRef = useRef(null);
 
   const defaultResearchYears = [
@@ -5294,7 +5306,11 @@ After successful completion of the course, students will be able to:
               <div className="p-5 flex-1 flex flex-col justify-center">
                 <h4 className="text-lg font-bold text-gray-900 group-hover:text-ssgmce-blue transition-colors">
                   {fac.id && !fac.isIndustry ? (
-                    <Link to={`/faculty/${fac.id}`} className="hover:underline">
+                    <Link
+                      to={`/faculty/${fac.id}`}
+                      state={{ from: getPathWithTab(location, "faculty") }}
+                      className="hover:underline"
+                    >
                       <EditableText
                         value={fac.name}
                         onSave={(val) => updateFacultyMember(i, "name", val)}
@@ -5372,6 +5388,7 @@ After successful completion of the course, students will be able to:
                   {fac.id && !fac.isIndustry && (
                     <Link
                       to={`/faculty/${fac.id}`}
+                      state={{ from: getPathWithTab(location, "faculty") }}
                       className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
                     >
                       View Profile <FaAngleRight className="ml-1" />
@@ -7139,7 +7156,7 @@ After successful completion of the course, students will be able to:
                   <FaLightbulb className="text-yellow-500 mr-2" />
                   Patents Granted & Published
                 </h3>
-                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                   {researchYears.map((year) => (
                     <button
                       key={year}
@@ -7252,7 +7269,7 @@ After successful completion of the course, students will be able to:
                   <FaChartLine className="text-ssgmce-orange mr-2" />
                   Research Publications (Journals)
                 </h3>
-                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                   {researchYears.map((year) => (
                     <button
                       key={year}
@@ -7369,7 +7386,7 @@ After successful completion of the course, students will be able to:
                   <FaChalkboardTeacher className="text-indigo-500 mr-2" />
                   Conference Publications
                 </h3>
-                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                   {researchYears.map((year) => (
                     <button
                       key={year}
@@ -7486,7 +7503,7 @@ After successful completion of the course, students will be able to:
                   <FaAward className="text-purple-500 mr-2" />
                   Copyrights
                 </h3>
-                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                   {researchYears.map((year) => (
                     <button
                       key={year}
@@ -7596,7 +7613,7 @@ After successful completion of the course, students will be able to:
                   <FaBook className="text-teal-500 mr-2" />
                   Books / Book Chapters Published
                 </h3>
-                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                   {researchYears.map((year) => (
                     <button
                       key={year}
@@ -8427,10 +8444,10 @@ After successful completion of the course, students will be able to:
 
   return (
     <GenericPage title="Information Technology" backgroundImage={itBanner}>
-      <div className="flex flex-col lg:flex-row gap-12 max-w-7xl mx-auto">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:gap-12">
         {/* Sidebar Navigation (Left Side) */}
         <div className="lg:w-1/4 order-1 lg:order-1">
-          <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 space-y-6 pb-4 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
+          <div className="space-y-4 pb-2 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:space-y-6 lg:pb-4 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
             {/* Academics Section */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
               <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">

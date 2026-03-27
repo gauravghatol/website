@@ -11,6 +11,7 @@ import {
   FaBuilding,
 } from "react-icons/fa";
 import axios from "axios";
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 
 // Skeleton Loader
 const ProjectSkeleton = () => (
@@ -30,6 +31,7 @@ const FundedProjects = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ status: "", agency: "" });
   const [stats, setStats] = useState({ total: 0, ongoing: 0, totalFunding: 0 });
+  const [error, setError] = useState("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -47,6 +49,7 @@ const FundedProjects = () => {
 
       const res = await axios.get(`/api/research/projects?${params}`);
       setProjects(res.data.projects);
+      setError("");
 
       // Calculate stats
       const all = res.data.projects;
@@ -56,7 +59,8 @@ const FundedProjects = () => {
         totalFunding: all.reduce((sum, p) => sum + (p.amount || 0), 0),
       });
     } catch (error) {
-      console.error("Error fetching projects:", error);
+      logUnexpectedError("Error fetching projects:", error);
+      setError(getErrorMessage(error, "Failed to load funded projects"));
     } finally {
       setLoading(false);
     }
@@ -105,6 +109,11 @@ const FundedProjects = () => {
           </div>
 
           <div className="lg:col-span-9 space-y-8">
+            {error ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            ) : null}
             {/* Stats */}
             <section className="grid md:grid-cols-3 gap-4">
               <div className="bg-gradient-to-br from-ssgmce-dark-blue to-ssgmce-blue text-white p-6 rounded-2xl shadow-xl text-center">

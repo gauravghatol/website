@@ -17,7 +17,7 @@ const GenericPage = ({
     <>
       <PageHeader title={title} path={title} backgroundImage={backgroundImage} />
       <div
-        className={`container mx-auto px-4 ${isAboutVariant ? 'py-10 md:py-12' : 'py-12'}`}
+        className={`container mx-auto px-4 ${isAboutVariant ? 'py-8 md:py-12' : 'py-8 md:py-12'}`}
       >
         <div className={sidebar ? 'flex flex-col lg:flex-row gap-8' : ''}>
           {sidebar && (
@@ -31,8 +31,8 @@ const GenericPage = ({
              transition={{ duration: 0.5 }}
              className={`flex-1 min-h-[400px] ${
                isAboutVariant
-                 ? 'rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-[0_10px_28px_rgba(15,23,42,0.08)]'
-                 : 'bg-white rounded-lg shadow-sm p-8 border border-gray-100'
+                 ? 'rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 md:p-8 shadow-[0_10px_28px_rgba(15,23,42,0.08)]'
+                 : 'bg-white rounded-lg shadow-sm p-4 sm:p-6 md:p-8 border border-gray-100'
              }`}
           >
               {showInnerTitle && (

@@ -10,6 +10,7 @@ import {
   FaClock,
   FaNewspaper,
 } from "react-icons/fa";
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 
 const AdminNews = () => {
   const [news, setNews] = useState([]);
@@ -22,6 +23,7 @@ const AdminNews = () => {
     isActive: true,
   });
   const [editingId, setEditingId] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchNews();
@@ -32,9 +34,11 @@ const AdminNews = () => {
       const res = await axios.get("/api/news");
       if (res.data.success) {
         setNews(res.data.data);
+        setError("");
       }
     } catch (err) {
-      console.error(err);
+      logUnexpectedError("Error fetching news:", err);
+      setError(getErrorMessage(err, "Failed to load news"));
     } finally {
       setLoading(false);
     }
@@ -114,6 +118,11 @@ const AdminNews = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {error ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+            {error}
+          </div>
+        ) : null}
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

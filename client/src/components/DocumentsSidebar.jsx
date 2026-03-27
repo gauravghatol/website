@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import MobileSidebarToggle from "./MobileSidebarToggle";
 
 const links = [
   {
@@ -65,50 +66,59 @@ const DocumentsSidebar = () => {
     }
   };
 
+  const navContent = (
+    <ul className="space-y-1">
+      {links.map((link) => {
+        const isActive = location.pathname === link.path;
+        return (
+          <li key={link.path}>
+            <Link
+              to={link.path}
+              className={`block px-4 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${
+                isActive
+                  ? "bg-ssgmce-blue text-white shadow-md transform translate-x-1"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-ssgmce-blue"
+              }`}
+            >
+              {link.label}
+            </Link>
+
+            {isActive && link.subsections && link.subsections.length > 0 && (
+              <ul className="mt-1 mb-2 ml-4 pl-3 border-l-2 border-blue-200 space-y-1">
+                {link.subsections.map((sub) => (
+                  <li key={sub.id}>
+                    <a
+                      href={`#${sub.id}`}
+                      onClick={(e) => handleScroll(e, sub.id)}
+                      className="block px-3 py-1.5 text-xs text-gray-500 hover:text-ssgmce-blue hover:bg-blue-50 rounded transition-colors"
+                    >
+                      {sub.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+
   return (
-    <aside className="hidden lg:block lg:sticky lg:top-36 lg:self-start lg:w-72 h-fit">
+    <>
+      <MobileSidebarToggle title="Documents">
+        {navContent}
+      </MobileSidebarToggle>
+      <aside className="hidden h-fit lg:block lg:sticky lg:top-36 lg:self-start lg:w-72">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
         <h3 className="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100 flex items-center">
           <span className="w-1.5 h-6 bg-ssgmce-orange rounded-full mr-2"></span>
           Quick Links
         </h3>
-        <ul className="space-y-1">
-          {links.map((link) => {
-            const isActive = location.pathname === link.path;
-            return (
-              <li key={link.path}>
-                <Link
-                  to={link.path}
-                  className={`block px-4 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${
-                    isActive
-                      ? "bg-ssgmce-blue text-white shadow-md transform translate-x-1"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-ssgmce-blue"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-
-                {isActive && link.subsections && link.subsections.length > 0 && (
-                  <ul className="mt-1 mb-2 ml-4 pl-3 border-l-2 border-blue-200 space-y-1">
-                    {link.subsections.map((sub) => (
-                      <li key={sub.id}>
-                        <a
-                          href={`#${sub.id}`}
-                          onClick={(e) => handleScroll(e, sub.id)}
-                          className="block px-3 py-1.5 text-xs text-gray-500 hover:text-ssgmce-blue hover:bg-blue-50 rounded transition-colors"
-                        >
-                          {sub.title}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        {navContent}
       </div>
-    </aside>
+      </aside>
+    </>
   );
 };
 

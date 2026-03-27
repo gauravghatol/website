@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useEdit } from "../contexts/EditContext";
+import { logUnexpectedError } from "../utils/apiErrors";
 
 /**
  * Custom hook to load department page data
@@ -29,7 +30,7 @@ export const useDepartmentData = (pageId) => {
           setPageData(response.data.data);
         }
       } catch (error) {
-        console.error(`Error loading ${pageId} page data:`, error);
+        logUnexpectedError(`Error loading ${pageId} page data:`, error);
         // Continue with defaults
       } finally {
         setDataLoading(false);

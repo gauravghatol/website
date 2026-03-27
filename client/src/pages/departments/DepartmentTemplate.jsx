@@ -531,7 +531,7 @@ const DepartmentTemplate = () => {
                 <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
                     <FaProjectDiagram className="text-orange-500 mr-2" /> Student Projects (UG)
                 </h3>
-                    <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                    <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                         {['2024-25', '2023-24', '2022-23'].map((year) => (
                             <button
                                 key={year}
@@ -863,7 +863,7 @@ const DepartmentTemplate = () => {
                     <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
                         <FaLightbulb className="text-yellow-500 mr-2" /> Patents Granted & Published
                     </h3>
-                    <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                    <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                           {['2024-25', '2023-24'].map((year) => (
                               <button
                                   key={year}
@@ -918,7 +918,7 @@ const DepartmentTemplate = () => {
                         <FaChartLine className="text-ssgmce-orange mr-2" /> Research Publications
                     </h3>
                     <div className="flex flex-wrap items-center gap-2">
-                        <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar mr-4">
+                        <div className="mr-4 flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                               {['2024-25', '2023-24'].map((year) => (
                                   <button
                                       key={year}
@@ -1086,7 +1086,7 @@ const DepartmentTemplate = () => {
         
         {/* Sidebar Navigation (Left Side) */}
         <div className="lg:w-1/4 order-1 lg:order-1">
-             <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 space-y-6 pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+             <div className="space-y-4 pb-2 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:space-y-6 lg:pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                  {/* Academics Section */}
                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
                     <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center border-b border-gray-100 pb-3">

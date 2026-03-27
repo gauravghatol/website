@@ -19,6 +19,7 @@ import {
   FaUsers
 } from 'react-icons/fa';
 import axios from 'axios';
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 
 // Skeleton Loader Component
 const SkeletonCard = () => (
@@ -34,6 +35,7 @@ const ResearchOverview = () => {
   const [stats, setStats] = useState(null);
   const [areas, setAreas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -49,8 +51,10 @@ const ResearchOverview = () => {
       ]);
       setStats(statsRes.data);
       setAreas(areasRes.data);
+      setError("");
     } catch (error) {
-      console.error('Error fetching research data:', error);
+      logUnexpectedError('Error fetching research data:', error);
+      setError(getErrorMessage(error, "Failed to load research overview"));
     } finally {
       setLoading(false);
     }
@@ -88,6 +92,11 @@ const ResearchOverview = () => {
           </div>
 
           <div className="lg:col-span-9 space-y-10">
+            {error ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            ) : null}
             {/* Hero Stats */}
             <section className="grid md:grid-cols-4 gap-4">
               {loading ? (

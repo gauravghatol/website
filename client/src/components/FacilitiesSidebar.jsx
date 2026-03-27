@@ -12,11 +12,10 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import { useEdit } from "../contexts/EditContext";
+import MobileSidebarToggle from "./MobileSidebarToggle";
 
-/** Convert a public path to a pageId slug: /facilities/library → facilities-library */
 const pathToPageId = (path) => path.replace(/^\//, "").replace(/\//g, "-");
 
-/* ─── Full nested menu structure ─── */
 const menuItems = [
   {
     title: "Central Library",
@@ -114,11 +113,9 @@ const FacilitiesSidebar = ({ sections }) => {
   const { isEditing } = useEdit();
   const pathname = location.pathname;
 
-  // Determine which top-level group is currently active based on pathname
   const getActiveGroup = () => {
     for (const item of menuItems) {
       if (!item.children) continue;
-      // Check if current path matches any child
       const childMatch = item.children.some((child) => {
         const childPageId = pathToPageId(child.path);
         return (
@@ -126,8 +123,9 @@ const FacilitiesSidebar = ({ sections }) => {
           (isEditing && pathname === `/admin/visual/${childPageId}`)
         );
       });
+
       if (childMatch) return item.path;
-      // Check the parent path itself
+
       const parentPageId = pathToPageId(item.path);
       if (
         pathname === item.path ||
@@ -136,26 +134,26 @@ const FacilitiesSidebar = ({ sections }) => {
         return item.path;
       }
     }
+
     return null;
   };
 
   const [expandedGroup, setExpandedGroup] = useState(getActiveGroup);
 
-  // Auto-expand the group when the route changes
   useEffect(() => {
     const active = getActiveGroup();
     if (active) setExpandedGroup(active);
   }, [pathname, isEditing]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleScroll = (e, id) => {
-    e.preventDefault();
+  const handleScroll = (event, id) => {
+    event.preventDefault();
     const element = document.getElementById(id);
-    if (element) {
-      const headerOffset = 100;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-      window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-    }
+    if (!element) return;
+
+    const headerOffset = 100;
+    const elementPosition = element.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
   };
 
   const resolveLink = (path) => {
@@ -165,171 +163,146 @@ const FacilitiesSidebar = ({ sections }) => {
 
   const isPathActive = (path) => {
     const pageId = pathToPageId(path);
-    return (
-      pathname === path ||
-      (isEditing && pathname === `/admin/visual/${pageId}`)
-    );
+    return pathname === path || (isEditing && pathname === `/admin/visual/${pageId}`);
   };
 
-  return (
-    <div className="sticky top-24 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">
-        <h3 className="flex items-center text-lg font-bold text-white">
-          <FaBuilding className="mr-2" /> Facilities
-        </h3>
-      </div>
+  const navContent = (
+    <nav>
+      <ul className="max-h-[65vh] space-y-1 overflow-y-auto pr-1">
+        {menuItems.map((item) => {
+          const hasChildren = item.children && item.children.length > 0;
+          const isExpanded = expandedGroup === item.path;
+          const isParentActive = isPathActive(item.path);
+          const Icon = item.icon;
+          const isGroupActive =
+            isParentActive ||
+            (hasChildren && item.children.some((child) => isPathActive(child.path)));
 
-      {/* Navigation */}
-      <div className="p-3">
-        <nav>
-          <ul className="max-h-[65vh] space-y-1 overflow-y-auto pr-1">
-            {menuItems.map((item) => {
-              const hasChildren = item.children && item.children.length > 0;
-              const isExpanded = expandedGroup === item.path;
-              const isParentActive = isPathActive(item.path);
-              const Icon = item.icon;
+          return (
+            <li key={item.path}>
+              <div className="flex items-center">
+                <Link
+                  to={resolveLink(item.path)}
+                  className={`flex flex-1 items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium leading-snug transition-colors ${
+                    isGroupActive
+                      ? "bg-ssgmce-blue/10 font-semibold text-ssgmce-blue"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <Icon
+                    className={`shrink-0 text-xs ${
+                      isGroupActive ? "text-ssgmce-blue" : "text-gray-400"
+                    }`}
+                  />
+                  <span className="whitespace-normal">{item.title}</span>
+                </Link>
 
-              // For groups with children, check if any child is active
-              const isGroupActive =
-                isParentActive ||
-                (hasChildren &&
-                  item.children.some((child) => isPathActive(child.path)));
-
-              return (
-                <li key={item.path}>
-                  {/* Top-level item */}
-                  <div className="flex items-center">
-                    <Link
-                      to={resolveLink(item.path)}
-                      className={`flex flex-1 items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium leading-snug transition-colors ${
-                        isGroupActive
-                          ? "bg-ssgmce-blue/10 font-semibold text-ssgmce-blue"
-                          : "text-gray-700 hover:bg-gray-100"
+                {hasChildren ? (
+                  <button
+                    type="button"
+                    onClick={() => setExpandedGroup(isExpanded ? null : item.path)}
+                    className="shrink-0 rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                    aria-label={isExpanded ? "Collapse" : "Expand"}
+                  >
+                    <FaChevronDown
+                      className={`text-[10px] transition-transform duration-200 ${
+                        isExpanded ? "" : "-rotate-90"
                       }`}
-                    >
-                      {Icon && (
-                        <Icon
-                          className={`shrink-0 text-xs ${
-                            isGroupActive
-                              ? "text-ssgmce-blue"
-                              : "text-gray-400"
+                    />
+                  </button>
+                ) : (
+                  <FaChevronRight className="mr-3 shrink-0 text-[10px] text-gray-400" />
+                )}
+              </div>
+
+              {hasChildren && isExpanded ? (
+                <ul className="mt-1 mb-2 ml-4 space-y-0.5 border-l-2 border-blue-200 pl-3">
+                  {item.children.map((child) => {
+                    const isChildActive = isPathActive(child.path);
+                    return (
+                      <li key={child.path}>
+                        <Link
+                          to={resolveLink(child.path)}
+                          className={`block rounded-md px-3 py-1.5 text-xs leading-snug transition-all duration-200 ${
+                            isChildActive
+                              ? "bg-ssgmce-blue text-white font-semibold shadow-sm"
+                              : "text-gray-500 hover:bg-blue-50 hover:text-ssgmce-blue"
                           }`}
-                        />
-                      )}
-                      <span className="whitespace-normal">{item.title}</span>
-                    </Link>
+                        >
+                          {child.title}
+                        </Link>
 
-                    {/* Expand/collapse toggle for groups */}
-                    {hasChildren && (
-                      <button
-                        onClick={() =>
-                          setExpandedGroup(isExpanded ? null : item.path)
-                        }
-                        className="shrink-0 rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                        aria-label={isExpanded ? "Collapse" : "Expand"}
-                      >
-                        <FaChevronDown
-                          className={`text-[10px] transition-transform duration-200 ${
-                            isExpanded ? "" : "-rotate-90"
-                          }`}
-                        />
-                      </button>
-                    )}
+                        {isChildActive && sections && sections.length > 0 ? (
+                          <ul className="mt-1 mb-1 ml-3 space-y-0.5 border-l border-gray-200 pl-2">
+                            {sections
+                              .filter((section) => section.title && section.title !== "Intro")
+                              .sort((a, b) => a.order - b.order)
+                              .map((section) => (
+                                <li key={section.sectionId}>
+                                  <a
+                                    href={`#${section.sectionId}`}
+                                    onClick={(event) => handleScroll(event, section.sectionId)}
+                                    className="block rounded px-2 py-1 text-[11px] text-gray-400 transition-colors hover:bg-blue-50/50 hover:text-ssgmce-blue"
+                                  >
+                                    {section.title}
+                                  </a>
+                                </li>
+                              ))}
+                          </ul>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
 
-                    {/* Arrow for items without children */}
-                    {!hasChildren && (
-                      <FaChevronRight className="shrink-0 mr-3 text-[10px] text-gray-400" />
-                    )}
-                  </div>
+              {!hasChildren && isParentActive && sections && sections.length > 0 ? (
+                <ul className="mt-1 mb-2 ml-4 space-y-0.5 border-l-2 border-blue-200 pl-3">
+                  {sections
+                    .filter((section) => section.title && section.title !== "Intro")
+                    .sort((a, b) => a.order - b.order)
+                    .map((section) => (
+                      <li key={section.sectionId}>
+                        <a
+                          href={`#${section.sectionId}`}
+                          onClick={(event) => handleScroll(event, section.sectionId)}
+                          className="block rounded px-3 py-1.5 text-xs text-gray-500 transition-colors hover:bg-blue-50 hover:text-ssgmce-blue"
+                        >
+                          {section.title}
+                        </a>
+                      </li>
+                    ))}
+                </ul>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
 
-                  {/* Nested children */}
-                  {hasChildren && isExpanded && (
-                    <ul className="mt-1 mb-2 ml-4 space-y-0.5 border-l-2 border-blue-200 pl-3">
-                      {item.children.map((child) => {
-                        const isChildActive = isPathActive(child.path);
-                        return (
-                          <li key={child.path}>
-                            <Link
-                              to={resolveLink(child.path)}
-                              className={`block rounded-md px-3 py-1.5 text-xs leading-snug transition-all duration-200 ${
-                                isChildActive
-                                  ? "bg-ssgmce-blue text-white font-semibold shadow-sm"
-                                  : "text-gray-500 hover:bg-blue-50 hover:text-ssgmce-blue"
-                              }`}
-                            >
-                              {child.title}
-                            </Link>
+  return (
+    <>
+      <MobileSidebarToggle title="Facilities" icon={FaBuilding}>
+        {navContent}
+      </MobileSidebarToggle>
 
-                            {/* Show sections (anchors) for the active child */}
-                            {isChildActive &&
-                              sections &&
-                              sections.length > 0 && (
-                                <ul className="mt-1 mb-1 ml-3 space-y-0.5 border-l border-gray-200 pl-2">
-                                  {sections
-                                    .filter(
-                                      (s) => s.title && s.title !== "Intro"
-                                    )
-                                    .sort((a, b) => a.order - b.order)
-                                    .map((section) => (
-                                      <li key={section.sectionId}>
-                                        <a
-                                          href={`#${section.sectionId}`}
-                                          onClick={(e) =>
-                                            handleScroll(e, section.sectionId)
-                                          }
-                                          className="block px-2 py-1 text-[11px] text-gray-400 hover:text-ssgmce-blue hover:bg-blue-50/50 rounded transition-colors"
-                                        >
-                                          {section.title}
-                                        </a>
-                                      </li>
-                                    ))}
-                                </ul>
-                              )}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
+      <div className="hidden overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:sticky lg:top-24 lg:block">
+        <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">
+          <h3 className="flex items-center text-lg font-bold text-white">
+            <FaBuilding className="mr-2" /> Facilities
+          </h3>
+        </div>
 
-                  {/* Show sections for standalone (no-children) active items */}
-                  {!hasChildren &&
-                    isParentActive &&
-                    sections &&
-                    sections.length > 0 && (
-                      <ul className="mt-1 mb-2 ml-4 space-y-0.5 border-l-2 border-blue-200 pl-3">
-                        {sections
-                          .filter((s) => s.title && s.title !== "Intro")
-                          .sort((a, b) => a.order - b.order)
-                          .map((section) => (
-                            <li key={section.sectionId}>
-                              <a
-                                href={`#${section.sectionId}`}
-                                onClick={(e) =>
-                                  handleScroll(e, section.sectionId)
-                                }
-                                className="block px-3 py-1.5 text-xs text-gray-500 hover:text-ssgmce-blue hover:bg-blue-50 rounded transition-colors"
-                              >
-                                {section.title}
-                              </a>
-                            </li>
-                          ))}
-                      </ul>
-                    )}
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+        <div className="p-3">{navContent}</div>
+
+        <div className="border-t border-gray-100 bg-gray-50 px-4 py-3">
+          <p className="mb-1 text-xs font-semibold text-gray-500">Need Help?</p>
+          <p className="text-xs text-ssgmce-blue">+91-7265-252274</p>
+          <p className="text-xs text-ssgmce-blue">info@ssgmce.ac.in</p>
+        </div>
       </div>
-
-      {/* Footer */}
-      <div className="border-t border-gray-100 bg-gray-50 px-4 py-3">
-        <p className="mb-1 text-xs font-semibold text-gray-500">Need Help?</p>
-        <p className="text-xs text-ssgmce-blue">📞 +91-7265-252274</p>
-        <p className="text-xs text-ssgmce-blue">✉️ info@ssgmce.ac.in</p>
-      </div>
-    </div>
+    </>
   );
 };
 

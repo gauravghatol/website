@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import {
   FaArrowRight,
   FaEnvelope,
@@ -14,9 +14,11 @@ import {
   getVidwanUrl,
   useFacultyDirectoryData,
 } from "./FacultyDetail";
+import { getCurrentPath } from "../utils/navigation";
 
 const Faculty = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const [selectedDept, setSelectedDept] = useState(
     searchParams.get("dept") || "all",
   );
@@ -173,6 +175,7 @@ const Faculty = () => {
                       {!faculty.isIndustry ? (
                         <Link
                           to={`/faculty/${faculty.id}`}
+                          state={{ from: getCurrentPath(location) }}
                           className="inline-flex items-center text-[10px] font-bold uppercase tracking-wide text-ssgmce-blue hover:underline"
                         >
                           View Profile <FaArrowRight className="ml-1" />

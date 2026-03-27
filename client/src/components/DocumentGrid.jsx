@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import DocumentCard from "./DocumentCard";
 import { FaSearch, FaFilter, FaFileAlt } from "react-icons/fa";
+import { getErrorMessage, logUnexpectedError } from "../utils/apiErrors";
 
 /**
  * DocumentGrid Component
@@ -24,12 +25,13 @@ const DocumentGrid = ({ category, title, description }) => {
         if (res.data.success) {
           setDocuments(res.data.data);
           setAvailableYears(res.data.years || []);
+          setError(null);
         } else {
-          setError(res.data.message);
+          setError(res.data.message || "Failed to load documents");
         }
       } catch (err) {
-        console.error("Error fetching documents:", err);
-        setError("Failed to load documents");
+        logUnexpectedError("Error fetching documents:", err);
+        setError(getErrorMessage(err, "Failed to load documents"));
       } finally {
         setLoading(false);
       }

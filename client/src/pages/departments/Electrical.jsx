@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import GenericPage from "../../components/GenericPage";
 import { useDepartmentData } from "../../hooks/useDepartmentData";
@@ -28,6 +28,7 @@ import ivParasThermal2018 from "../../assets/images/departments/electrical/indus
 import ivVishwajeetNashik from "../../assets/images/departments/electrical/industrial-visits/vishwajeet_nashik.jpg";
 import ivAdaniMundra2016 from "../../assets/images/departments/electrical/industrial-visits/adani_mundra_2016.jpg";
 import srpPhoto from "../../assets/images/departments/electrical/faculty/SRP.jpg";
+import { getPathWithTab, getRequestedTab } from "../../utils/navigation";
 import uajPhoto from "../../assets/images/departments/electrical/faculty/UAJ.jpg";
 import aujPhoto from "../../assets/images/departments/electrical/faculty/AUJ.jpg";
 import ssjPhoto from "../../assets/images/departments/electrical/faculty/SSJ.jpg";
@@ -831,6 +832,7 @@ const ElecPrideMdView = ({ markdown }) => {
 };
 
 const Electrical = () => {
+  const location = useLocation();
   // Load department data (works in both edit and public view modes)
   const {
     data: contextData,
@@ -840,7 +842,9 @@ const Electrical = () => {
     removeData,
     t: tBase,
   } = useDepartmentData("departments-electrical");
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(() =>
+    getRequestedTab(location, "overview")
+  );
   const [achievementTab, setAchievementTab] = useState("faculty");
   const [certificateLightbox, setCertificateLightbox] = useState(null);
   const [projectYear, setProjectYear] = useState("2024-25");
@@ -883,6 +887,14 @@ const Electrical = () => {
     useState(false);
   const [expandedFacultyEditorIndex, setExpandedFacultyEditorIndex] =
     useState(null);
+
+  useEffect(() => {
+    const requestedTab = getRequestedTab(location, "overview");
+
+    setActiveTab((currentTab) =>
+      currentTab === requestedTab ? currentTab : requestedTab
+    );
+  }, [location.search]);
   const latestCourseMaterialRef = useRef(null);
 
   // Helper to access data safely
@@ -6013,6 +6025,7 @@ Upon successful completion of this course, students will be able to:
                   )}
                   <Link
                     to={`/faculty/${fac.id}`}
+                    state={{ from: getPathWithTab(location, "faculty") }}
                     className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
                   >
                     View Profile <FaAngleRight className="ml-1" />
@@ -8552,7 +8565,7 @@ Upon successful completion of this course, students will be able to:
                   <FaLightbulb className="text-yellow-500 mr-2" />
                   Patents Granted &amp; Published
                 </h3>
-                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                   {dynamicPatentsYears.map((year) => (
                     <button
                       key={year}
@@ -8654,7 +8667,7 @@ Upon successful completion of this course, students will be able to:
                   <FaChartLine className="text-ssgmce-orange mr-2" />
                   Research Publications
                 </h3>
-                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                   {dynamicPatentsYears.map((year) => (
                     <button
                       key={year}
@@ -8771,7 +8784,7 @@ Upon successful completion of this course, students will be able to:
                   <FaAward className="text-purple-500 mr-2" />
                   Copyrights
                 </h3>
-                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                   {dynamicPatentsYears.map((year) => (
                     <button
                       key={year}
@@ -8870,7 +8883,7 @@ Upon successful completion of this course, students will be able to:
                   <FaProjectDiagram className="text-teal-500 mr-2" />
                   Books &amp; Book Chapters Published
                 </h3>
-                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                   {dynamicPatentsYears.map((year) => (
                     <button
                       key={year}
@@ -9423,10 +9436,10 @@ Upon successful completion of this course, students will be able to:
       title="Electrical Engineering (Electronics & Power)"
       backgroundImage={electricalBanner}
     >
-      <div className="flex flex-col lg:flex-row gap-12 max-w-7xl mx-auto">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:gap-12">
         {/* Sidebar Navigation (Left Side) */}
         <div className="lg:w-1/4 order-1 lg:order-1">
-          <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 space-y-6 pb-4 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
+          <div className="space-y-4 pb-2 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:space-y-6 lg:pb-4 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
             {/* Academics Section */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
               <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">

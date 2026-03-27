@@ -5,6 +5,7 @@ import AdminLayout from "../../components/admin/AdminLayout";
 import { useAuth } from "../../hooks/useAuth";
 import { DASHBOARD_SECTIONS } from "../../constants/navConfig";
 import { isAcademicsWebsiteRoute } from "../../constants/academicsPages";
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 import {
   FaPlus, FaEdit, FaClock, FaFileAlt, FaChartLine, FaArrowRight,
   FaChartPie, FaDatabase, FaUniversity, FaArrowUp, FaNewspaper,
@@ -52,6 +53,7 @@ const AdminDashboard = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [recentPages, setRecentPages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [trafficData, setTrafficData] = useState([]);
   const [seeding, setSeeding] = useState(false);
 
@@ -79,9 +81,11 @@ const AdminDashboard = () => {
           (a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0),
         );
         setRecentPages(sorted.slice(0, 6));
+        setError("");
       }
     } catch (err) {
-      console.error("Error fetching dashboard data:", err);
+      logUnexpectedError("Error fetching dashboard data:", err);
+      setError(getErrorMessage(err, "Failed to load dashboard data"));
     } finally {
       setLoading(false);
     }
@@ -146,6 +150,11 @@ const AdminDashboard = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {error ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+            {error}
+          </div>
+        ) : null}
         {/* Page title */}
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">

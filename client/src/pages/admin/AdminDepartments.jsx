@@ -11,10 +11,12 @@ import {
   FaPalette,
 } from "react-icons/fa";
 import { ADMIN_ROUTE_PREFIX } from "../../config/adminAccess";
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 
 const AdminDepartments = () => {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -24,9 +26,11 @@ const AdminDepartments = () => {
         });
         if (res.data?.success) {
           setDepartments(res.data.data || []);
+          setError("");
         }
       } catch (error) {
-        console.error("Failed to load department pages:", error);
+        logUnexpectedError("Failed to load department pages:", error);
+        setError(getErrorMessage(error, "Failed to load department pages"));
       } finally {
         setLoading(false);
       }
@@ -47,6 +51,11 @@ const AdminDepartments = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {error ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+            {error}
+          </div>
+        ) : null}
         <div className="bg-white dark:bg-[#1a1a2e] rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
             Departments Management

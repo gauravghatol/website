@@ -12,6 +12,7 @@ import {
   FaLightbulb
 } from 'react-icons/fa';
 import axios from 'axios';
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 
 // Skeleton Loader
 const PatentSkeleton = () => (
@@ -35,6 +36,7 @@ const PatentsIP = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ status: '', type: '' });
   const [stats, setStats] = useState({ total: 0, granted: 0, filed: 0 });
+  const [error, setError] = useState("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -52,6 +54,7 @@ const PatentsIP = () => {
 
       const res = await axios.get(`/api/research/patents?${params}`);
       setPatents(res.data.patents);
+      setError("");
 
       // Calculate stats
       const all = res.data.patents;
@@ -61,7 +64,8 @@ const PatentsIP = () => {
         filed: all.filter(p => p.status === 'filed' || p.status === 'published').length
       });
     } catch (error) {
-      console.error('Error fetching patents:', error);
+      logUnexpectedError('Error fetching patents:', error);
+      setError(getErrorMessage(error, "Failed to load patents"));
     } finally {
       setLoading(false);
     }
@@ -102,6 +106,11 @@ const PatentsIP = () => {
           </div>
 
           <div className="lg:col-span-9 space-y-8">
+            {error ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            ) : null}
             {/* Stats */}
             <section className="grid md:grid-cols-3 gap-4">
               <div className="bg-gradient-to-br from-blue-900 to-blue-800 text-white p-6 rounded-2xl shadow-xl text-center">
