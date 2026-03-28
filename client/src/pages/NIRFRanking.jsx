@@ -246,11 +246,11 @@ const NIRFRanking = () => {
         backgroundImage="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200&q=80"
       />
 
-      <div className="container mx-auto max-w-[120rem] px-4 py-8 sm:px-5 sm:py-10 md:px-6 md:py-12">
+      <div className="container mx-auto px-4 py-12 max-w-7xl">
         {/* CMS Sections — editable in visual editor, fetched from API on public page */}
         {editContextSections ? (
           /* EDITING MODE: render sections from EditContext with inline edit controls */
-          <div className="mb-8 space-y-5 sm:space-y-6">
+          <div className="mb-8 space-y-6">
             {editContextSections.map((section, index) => (
               <EditableSection
                 key={section.sectionId || index}
@@ -261,7 +261,7 @@ const NIRFRanking = () => {
               >
                 <div>
                   {section.title && (
-                    <h3 className="mb-2 text-base font-bold text-gray-800 sm:text-lg">
+                    <h3 className="text-lg font-bold text-gray-800 mb-2">
                       {section.title}
                     </h3>
                   )}
@@ -281,14 +281,14 @@ const NIRFRanking = () => {
           </div>
         ) : publicSections.length > 0 ? (
           /* PUBLIC MODE: render CMS sections from API */
-          <div className="mb-8 space-y-5 sm:space-y-6">
+          <div className="mb-8 space-y-6">
             {publicSections.map((section, i) => (
               <div
                 key={section.sectionId || i}
                 className="text-gray-600 leading-relaxed"
               >
                 {section.title && (
-                  <h3 className="mb-2 text-base font-bold text-gray-800 sm:text-lg">
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">
                     {section.title}
                   </h3>
                 )}
@@ -326,7 +326,7 @@ const NIRFRanking = () => {
         )}
 
         {/* Year Filter */}
-        <div className="mb-8 rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:p-5 md:p-6">
+        <div className="mb-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <label className="flex text-sm font-semibold text-gray-700 mb-3 items-center gap-2">
             <FaCalendarAlt className="text-ssgmce-blue" />
             Select Academic Year
@@ -334,7 +334,7 @@ const NIRFRanking = () => {
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 focus:border-transparent focus:ring-2 focus:ring-ssgmce-blue sm:text-base md:w-64"
+            className="w-full md:w-64 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ssgmce-blue focus:border-transparent appearance-none bg-white cursor-pointer text-gray-700 font-medium"
           >
             {years.map((year) => (
               <option key={year} value={year}>
@@ -346,7 +346,7 @@ const NIRFRanking = () => {
 
         {/* Documents Grid */}
         <div>
-          <h2 className="mb-5 flex items-center gap-2 text-[clamp(1.1rem,0.9rem+0.8vw,1.45rem)] font-bold text-gray-800 sm:mb-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
             <span className="w-1 h-6 bg-ssgmce-blue rounded-full"></span>
             NIRF {selectedYear} Documents
           </h2>
@@ -362,7 +362,7 @@ const NIRFRanking = () => {
                       : "border-gray-200 hover:shadow-md"
                   }`}
                 >
-                  <div className="flex flex-col justify-between gap-4 p-4 sm:p-5 md:flex-row md:items-center md:p-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6">
                     <div className="flex items-start gap-4">
                       <div
                         className={`w-14 h-14 rounded-lg bg-gradient-to-br ${getCategoryColor(doc.category)} flex items-center justify-center flex-shrink-0`}
@@ -370,15 +370,15 @@ const NIRFRanking = () => {
                         <FaFilePdf className="text-2xl text-white" />
                       </div>
                       <div>
-                        <h3 className="mb-1 text-base font-bold text-gray-800 sm:text-lg">
+                        <h3 className="text-lg font-bold text-gray-800 mb-1">
                           {doc.category}
                         </h3>
-                        <p className="text-xs text-gray-600 sm:text-sm">
+                        <p className="text-sm text-gray-600">
                           Academic Year {selectedYear}
                         </p>
                       </div>
                     </div>
-                    <div className="flex w-full flex-wrap items-center gap-2 sm:gap-3 md:w-auto md:justify-end">
+                    <div className="flex items-center gap-3">
                       {/* Preview toggle — always visible */}
                       {doc.pdfUrl && (
                         <button
@@ -389,7 +389,7 @@ const NIRFRanking = () => {
                               [docKey]: !p[docKey],
                             }));
                           }}
-                          className="inline-flex min-h-[42px] items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 sm:px-4 sm:py-2.5 sm:text-sm"
+                          className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium text-sm"
                         >
                           {previewOpen[
                             `${selectedYear}__${doc.category.toLowerCase()}`
@@ -409,7 +409,7 @@ const NIRFRanking = () => {
                           const docKey = `${selectedYear}__${doc.category.toLowerCase()}`;
                           const state = docUploadState[docKey] || {};
                           return (
-                            <div className="flex min-w-0 flex-1 flex-col items-start gap-2 sm:min-w-[160px] sm:items-end">
+                            <div className="flex flex-col items-end gap-2 min-w-[160px]">
                               {state.uploading && (
                                 <div className="flex items-center gap-2 text-blue-600 text-sm">
                                   <FaSpinner className="animate-spin" />{" "}
@@ -422,7 +422,7 @@ const NIRFRanking = () => {
                                 </div>
                               )}
                               {state.error && (
-                                <div className="text-xs text-red-500 sm:text-right">
+                                <div className="text-red-500 text-xs text-right">
                                   {state.error}
                                 </div>
                               )}
@@ -446,7 +446,7 @@ const NIRFRanking = () => {
                                   fileInputRefs.current[docKey]?.click()
                                 }
                                 disabled={state.uploading}
-                                className="inline-flex min-h-[42px] w-full items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-amber-600 disabled:opacity-60 sm:w-auto sm:px-5 sm:py-2.5"
+                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-60 transition-all font-medium shadow-sm"
                               >
                                 <FaUpload className="text-sm" />
                                 Replace PDF
@@ -459,7 +459,7 @@ const NIRFRanking = () => {
                           href={doc.pdfUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex min-h-[42px] w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-ssgmce-blue to-blue-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-blue-600 hover:to-blue-800 hover:shadow-md sm:w-auto sm:px-6 sm:py-3"
+                          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white rounded-lg hover:from-blue-600 hover:to-blue-800 transition-all font-medium shadow-sm hover:shadow-md"
                         >
                           <FaDownload className="text-sm" />
                           Download PDF
@@ -473,15 +473,15 @@ const NIRFRanking = () => {
                       `${selectedYear}__${doc.category.toLowerCase()}`
                     ] && (
                       <div className="border-t border-gray-200 bg-gray-50">
-                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 bg-gray-100 p-3">
-                          <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 sm:text-xs">
+                        <div className="p-3 flex items-center justify-between bg-gray-100 border-b border-gray-200">
+                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                             Preview — NIRF {selectedYear} {doc.category}
                           </span>
                           <a
                             href={doc.pdfUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-[11px] text-blue-600 hover:underline sm:text-xs"
+                            className="text-xs text-blue-600 hover:underline flex items-center gap-1"
                           >
                             <FaFilePdf /> Open in new tab
                           </a>
@@ -489,8 +489,8 @@ const NIRFRanking = () => {
                         <iframe
                           src={`${doc.pdfUrl}#toolbar=1&navpanes=0&scrollbar=1`}
                           title={`NIRF ${selectedYear} ${doc.category}`}
-                          className="h-[65vh] min-h-[26rem] w-full md:h-[780px]"
-                          style={{ border: "none" }}
+                          className="w-full"
+                          style={{ height: "780px", border: "none" }}
                         />
                       </div>
                     )}
@@ -498,9 +498,9 @@ const NIRFRanking = () => {
               ))}
             </div>
           ) : (
-            <div className="rounded-lg border border-gray-200 bg-white p-8 text-center shadow-sm sm:p-10 md:p-12">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
               <FaFilePdf className="text-5xl text-gray-300 mx-auto mb-4" />
-              <p className="text-base text-gray-500 sm:text-lg">
+              <p className="text-gray-500 text-lg">
                 No NIRF documents available for {selectedYear}
               </p>
             </div>
@@ -508,20 +508,20 @@ const NIRFRanking = () => {
         </div>
 
         {/* Summary Statistics */}
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-12 sm:gap-5 md:grid-cols-3 md:gap-6">
-          <div className="rounded-lg border border-gray-200 bg-white p-5 text-center shadow-sm sm:p-6">
-            <div className="mb-2 text-2xl font-bold text-ssgmce-blue sm:text-3xl">5</div>
-            <div className="text-xs text-gray-600 sm:text-sm">Years of Data</div>
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
+            <div className="text-3xl font-bold text-ssgmce-blue mb-2">5</div>
+            <div className="text-sm text-gray-600">Years of Data</div>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-5 text-center shadow-sm sm:p-6">
-            <div className="mb-2 text-2xl font-bold text-ssgmce-orange sm:text-3xl">4</div>
-            <div className="text-xs text-gray-600 sm:text-sm">Categories</div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
+            <div className="text-3xl font-bold text-ssgmce-orange mb-2">4</div>
+            <div className="text-sm text-gray-600">Categories</div>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-5 text-center shadow-sm sm:p-6">
-            <div className="mb-2 text-2xl font-bold text-green-600 sm:text-3xl">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
+            <div className="text-3xl font-bold text-green-600 mb-2">
               {currentYearData.length}
             </div>
-            <div className="text-xs text-gray-600 sm:text-sm">Documents Available</div>
+            <div className="text-sm text-gray-600">Documents Available</div>
           </div>
         </div>
       </div>

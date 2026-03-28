@@ -19,21 +19,21 @@ const NewsCard = ({
       : "Latest");
 
   return (
-    <div className="rounded-xl border border-gray-100 bg-white p-3.5 transition-all duration-300 hover:border-gray-200 hover:shadow-md sm:p-4">
-      <div className="flex gap-3 sm:gap-4">
-        <div className="min-w-[4.5rem] flex-shrink-0 self-start rounded-lg bg-ssgmce-blue px-2.5 py-2 text-center text-[0.68rem] font-semibold text-white sm:min-w-[5rem] sm:px-3 sm:text-xs">
+    <div className="bg-white rounded-xl p-4 border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300">
+      <div className="flex gap-4">
+        <div className="bg-ssgmce-blue text-white px-3 py-2 rounded-lg text-center font-semibold min-w-[80px] text-xs flex-shrink-0 self-start">
           {dateText}
         </div>
         <div className="flex-1 min-w-0">
-          <span className="text-[0.62rem] font-semibold uppercase tracking-wide text-ssgmce-orange sm:text-[0.65rem]">{category}</span>
-          <h4 className="mb-1 text-[clamp(0.9rem,1.8vw,1rem)] font-semibold leading-snug text-ssgmce-blue">{title}</h4>
-          <p className="line-clamp-2 text-[clamp(0.74rem,1.25vw,0.8rem)] leading-relaxed text-ssgmce-muted">{description}</p>
+          <span className="text-[10px] text-ssgmce-orange font-semibold uppercase tracking-wide">{category}</span>
+          <h4 className="text-ssgmce-blue font-semibold text-sm mb-1 leading-snug">{title}</h4>
+          <p className="text-ssgmce-muted text-xs line-clamp-2 leading-relaxed">{description}</p>
           {showDetailsLink && fileUrl && (
             <a
               href={fileUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-2 inline-flex items-center text-[0.75rem] font-semibold text-ssgmce-blue transition-colors hover:text-ssgmce-orange"
+              className="inline-flex items-center mt-2 text-xs font-semibold text-ssgmce-blue hover:text-ssgmce-orange transition-colors"
             >
               Click for Details
             </a>

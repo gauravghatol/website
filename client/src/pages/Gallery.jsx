@@ -33,14 +33,14 @@ const Gallery = () => {
       />
 
       {/* Category Filter */}
-      <section className="bg-gray-50 py-7 sm:py-8">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
+      <section className="py-8 bg-gray-50">
+        <div className="container mx-auto px-4">
           <div className="flex flex-wrap justify-center gap-3">
             {categories.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 sm:px-6 sm:text-base ${
+                className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 ${
                   selectedCategory === category
                     ? 'bg-ssgmce-blue text-white shadow-lg scale-105'
                     : 'bg-white text-gray-700 hover:bg-gray-100 shadow'
@@ -54,9 +54,9 @@ const Gallery = () => {
       </section>
 
       {/* Gallery Grid */}
-      <section className="py-12 sm:py-14 md:py-16">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredImages.map((image) => (
               <div 
                 key={image.id}
@@ -70,11 +70,11 @@ const Gallery = () => {
                   />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute bottom-0 left-0 right-0 p-5 text-white sm:p-6">
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                     <span className="bg-ssgmce-orange px-3 py-1 rounded-full text-xs font-bold mb-2 inline-block">
                       {image.category}
                     </span>
-                    <h3 className="text-[clamp(1rem,2.3vw,1.25rem)] font-bold">{image.title}</h3>
+                    <h3 className="text-xl font-bold">{image.title}</h3>
                   </div>
                 </div>
               </div>
@@ -84,10 +84,10 @@ const Gallery = () => {
       </section>
 
       {/* Video Gallery Section */}
-      <section className="bg-gray-50 py-12 sm:py-14 md:py-16">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
-          <h2 className="mb-10 text-center text-[clamp(1.6rem,4vw,2.25rem)] font-bold text-ssgmce-blue sm:mb-12">Video Gallery</h2>
-          <div className="mx-auto grid max-w-5xl gap-5 sm:gap-6 md:grid-cols-2">
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center text-ssgmce-blue mb-12">Video Gallery</h2>
+          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             {[
               { title: 'Campus Tour', thumbnail: 'https://images.unsplash.com/photo-1562774053-701939374585?w=600' },
               { title: 'Technical Symposium 2023', thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600' },
@@ -103,14 +103,14 @@ const Gallery = () => {
                   />
                 </div>
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/50 transition-colors duration-300">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 transition-transform duration-300 group-hover:scale-110 sm:h-16 sm:w-16">
+                  <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                     <svg className="w-8 h-8 text-ssgmce-blue ml-1" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                     </svg>
                   </div>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
-                  <h3 className="text-[clamp(0.95rem,2vw,1.125rem)] font-bold text-white">{video.title}</h3>
+                  <h3 className="text-white font-bold text-lg">{video.title}</h3>
                 </div>
               </div>
             ))}
@@ -119,10 +119,10 @@ const Gallery = () => {
       </section>
 
       {/* Campus Virtual Tour */}
-      <section className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue py-12 text-white sm:py-14 md:py-16">
-        <div className="mx-auto w-full max-w-[120rem] px-4 text-center sm:px-5 lg:px-6">
-          <h2 className="mb-6 text-[clamp(1.6rem,4vw,2.25rem)] font-bold">Virtual Campus Tour</h2>
-          <p className="mx-auto mb-8 max-w-3xl text-[clamp(1rem,2.1vw,1.25rem)] text-ssgmce-light-blue">
+      <section className="py-16 bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl font-bold mb-6">Virtual Campus Tour</h2>
+          <p className="text-xl mb-8 text-ssgmce-light-blue max-w-3xl mx-auto">
             Take a 360° virtual tour of our beautiful campus and explore our facilities from anywhere
           </p>
           <button className="bg-ssgmce-orange hover:bg-ssgmce-light-orange text-white px-8 py-3 rounded-lg font-bold transition-all duration-300 hover:scale-105 shadow-lg">
@@ -132,17 +132,17 @@ const Gallery = () => {
       </section>
 
       {/* Download Options */}
-      <section className="py-12 sm:py-14 md:py-16">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
-          <h2 className="mb-8 text-center text-[clamp(1.6rem,4vw,2.25rem)] font-bold text-ssgmce-blue">Download Resources</h2>
-          <div className="mx-auto grid max-w-4xl gap-5 sm:gap-6 md:grid-cols-3">
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center text-ssgmce-blue mb-8">Download Resources</h2>
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {[
               { title: 'College Brochure', size: '2.5 MB', icon: '📄' },
               { title: 'Campus Map', size: '1.2 MB', icon: '🗺️' },
               { title: 'Prospectus 2024', size: '5.8 MB', icon: '📚' },
             ].map((resource, index) => (
-              <div key={index} className="rounded-lg bg-white p-5 text-center shadow-lg transition-shadow duration-300 hover:shadow-xl sm:p-6">
-                <div className="mb-4 text-5xl sm:text-6xl">{resource.icon}</div>
+              <div key={index} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 text-center">
+                <div className="text-6xl mb-4">{resource.icon}</div>
                 <h3 className="text-lg font-bold text-ssgmce-blue mb-2">{resource.title}</h3>
                 <p className="text-sm text-gray-600 mb-4">{resource.size}</p>
                 <button className="bg-ssgmce-blue hover:bg-ssgmce-dark-blue text-white px-6 py-2 rounded-lg font-semibold transition-colors duration-200">

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FaDownload, FaEdit, FaFilePdf } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
@@ -7,7 +7,6 @@ import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import AdminOfficeSidebar from "./AdminOfficeSidebar";
-import PageHeader from "./PageHeader";
 import { isAdminOfficeDbEnabled } from "../config/adminOfficeHybridFlags";
 
 function routeToPageId(pathname = "") {
@@ -22,7 +21,7 @@ function routeToPageId(pathname = "") {
 }
 
 const MARKDOWN_COMPONENTS = {
-  h2: ({ children }) => <h2 className="mb-3 mt-6 text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-900">{children}</h2>,
+  h2: ({ children }) => <h2 className="mb-3 mt-6 text-2xl font-bold text-gray-900">{children}</h2>,
   h3: ({ children }) => <h3 className="mb-2 mt-5 text-xl font-semibold text-gray-900">{children}</h3>,
   p: ({ children }) => <p className="mb-3 leading-relaxed text-gray-700">{children}</p>,
   li: ({ children }) => <li className="mb-1 text-gray-700">{children}</li>,
@@ -48,6 +47,7 @@ const AdminOfficePageLayout = ({
   useDbContent = false,
   enableInlineEditFallback = true,
 }) => {
+  const heroRef = useRef(null);
   const location = useLocation();
   const shouldUseDbContent = useMemo(() => {
     if (useDbContent) return true;
@@ -66,8 +66,11 @@ const AdminOfficePageLayout = ({
   }, [location.search]);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "auto" });
-  }, [location.pathname]);
+    // Scroll to hero section when page loads
+    if (heroRef.current) {
+      heroRef.current.scrollIntoView({ behavior: "instant" });
+    }
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -211,15 +214,26 @@ const AdminOfficePageLayout = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <PageHeader title={pageTitle} />
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue py-16">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <nav className="mb-4 text-sm text-blue-200">
+            <span>Home</span>
+            <span className="mx-2">/</span>
+            <span>Facilities</span>
+            <span className="mx-2">/</span>
+            <span>Administrative Office</span>
+            <span className="mx-2">/</span>
+            <span className="text-white">{pageTitle}</span>
+          </nav>
+          <h1 ref={heroRef} className="text-3xl font-bold text-white md:text-4xl">{pageTitle}</h1>
+        </div>
+      </div>
 
       {/* Main Content */}
-      <div className="mx-auto w-full max-w-[120rem] px-4 py-6 sm:px-5 sm:py-8 md:px-6">
-        <h2 className="mb-5 inline-block border-b-2 border-ssgmce-orange pb-2 text-[clamp(1.2rem,2.6vw,1.7rem)] font-bold text-ssgmce-blue sm:mb-6">
-          {pageTitle}
-        </h2>
-
-        <div className="flex flex-col gap-6 sm:gap-8 lg:flex-row">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-8 lg:flex-row">
           {/* Sidebar */}
           <aside className="lg:w-80 lg:shrink-0">
             <AdminOfficeSidebar />
@@ -231,7 +245,7 @@ const AdminOfficePageLayout = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 md:p-8"
+              className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm md:p-8"
             >
               {isLoading ? (
                 <p className="text-gray-600">Loading page content...</p>
@@ -244,7 +258,7 @@ const AdminOfficePageLayout = ({
               {/* PDF Download Section */}
               {!hasDbContent && pdfLink && (
                 <div className="mt-8 border-t border-gray-200 pt-6">
-                  <div className="rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-5 sm:p-6">
+                  <div className="rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
                     <div className="flex items-start gap-4">
                       <div className="rounded-lg bg-red-100 p-3">
                         <FaFilePdf className="h-8 w-8 text-red-600" />

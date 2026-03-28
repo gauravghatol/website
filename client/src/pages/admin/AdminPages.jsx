@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import AdminLayout from "../../components/admin/AdminLayout";
 import {
@@ -7,6 +7,7 @@ import {
   ACADEMICS_PAGE_ORDER_BY_ROUTE,
   isAcademicsWebsiteRoute,
 } from "../../constants/academicsPages";
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 import {
   FaSearch,
   FaChevronRight,
@@ -18,7 +19,6 @@ import {
   FaLaptop,
   FaIdCard,
 } from "react-icons/fa";
-import { buildReturnState } from "../../utils/navigation";
 
 const CATEGORY_ORDER = [
   "about",
@@ -339,10 +339,10 @@ const FACILITIES_NESTED = [
 ];
 
 const AdminPages = () => {
-  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
   const [categoryFilter, setCategoryFilter] = useState(
     searchParams.get("category") || "all",
@@ -386,9 +386,11 @@ const AdminPages = () => {
       const res = await axios.get("/api/pages");
       if (res.data.success) {
         setPages(res.data.data || []);
+        setError("");
       }
     } catch (err) {
-      console.error(err);
+      logUnexpectedError("Error fetching pages:", err);
+      setError(getErrorMessage(err, "Failed to load pages"));
     } finally {
       setLoading(false);
     }
@@ -537,6 +539,11 @@ const AdminPages = () => {
   return (
     <AdminLayout>
       <div className="space-y-4">
+        {error ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+            {error}
+          </div>
+        ) : null}
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end gap-3">
           <div className="flex-1">
@@ -681,7 +688,6 @@ const AdminPages = () => {
                                 )}
                                 <Link
                                   to={`/admin/visual/${group.parentId}`}
-                                  state={buildReturnState(location)}
                                   className="flex-1 flex items-center py-2 pr-4 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
                                 >
                                   <span className="flex-1 text-base font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
@@ -711,7 +717,6 @@ const AdminPages = () => {
                                       <Link
                                         key={page.pageId}
                                         to={`/admin/visual/${page.pageId}`}
-                                        state={buildReturnState(location)}
                                         className="flex items-center px-4 py-1.5 pl-[4.5rem] border-b border-gray-100/70 dark:border-gray-800/30 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
                                       >
                                         <span className="flex-1 text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
@@ -737,7 +742,6 @@ const AdminPages = () => {
                           <Link
                             key={page.pageId}
                             to={`/admin/visual/${page.pageId}`}
-                            state={buildReturnState(location)}
                             className="flex items-center px-4 py-2 pl-11 border-b border-gray-50 dark:border-gray-800/40 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
                           >
                             <span className="flex-1 text-base text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
@@ -754,7 +758,6 @@ const AdminPages = () => {
                           <Link
                             key={page.pageId}
                             to={`/admin/visual/${page.pageId}`}
-                            state={buildReturnState(location)}
                             className="flex items-center px-4 py-2 pl-11 border-b border-gray-50 dark:border-gray-800/40 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
                           >
                             <span className="flex-1 text-base text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">

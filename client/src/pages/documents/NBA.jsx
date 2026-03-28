@@ -83,8 +83,8 @@ const NBA = () => {
         backgroundImage="https://images.unsplash.com/photo-1568667256549-094345857637?w=1200&q=80"
       />
 
-      <div className="mx-auto w-full max-w-[120rem] px-4 py-10 sm:px-5 sm:py-12 lg:px-6">
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-12">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-12 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-3">
             <DocumentsSidebar />
@@ -93,8 +93,8 @@ const NBA = () => {
           {/* Main Content */}
           <div className="lg:col-span-9">
             {/* Header Info */}
-            <div id="nba-status" className="mb-6 rounded-lg bg-white p-5 shadow-md sm:mb-8 sm:p-6">
-              <h2 className="mb-3 text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-ssgmce-blue">
+            <div id="nba-status" className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <h2 className="text-2xl font-bold text-ssgmce-blue mb-3">
                 NBA ACCREDITATION STATUS
               </h2>
               <p className="text-gray-600 leading-relaxed">
@@ -108,21 +108,21 @@ const NBA = () => {
                 <table className="w-full border-collapse text-sm">
                   <thead>
                     <tr className="bg-gray-100 border-b">
-                      <th className="border-r px-3 py-3 text-left text-xs font-bold text-gray-800 sm:px-4 sm:text-sm">Program(s)</th>
-                      <th className="border-r px-3 py-3 text-left text-xs font-bold text-gray-800 sm:px-4 sm:text-sm">Period of Validity</th>
-                      <th className="border-r px-3 py-3 text-left text-xs font-bold text-gray-800 sm:px-4 sm:text-sm">UG/PG</th>
-                      <th className="border-r px-3 py-3 text-left text-xs font-bold text-gray-800 sm:px-4 sm:text-sm">Status</th>
-                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-800 sm:px-4 sm:text-sm">Documents</th>
+                      <th className="px-4 py-3 text-left font-bold text-gray-800 border-r">Program(s)</th>
+                      <th className="px-4 py-3 text-left font-bold text-gray-800 border-r">Period of Validity</th>
+                      <th className="px-4 py-3 text-left font-bold text-gray-800 border-r">UG/PG</th>
+                      <th className="px-4 py-3 text-left font-bold text-gray-800 border-r">Status</th>
+                      <th className="px-4 py-3 text-left font-bold text-gray-800">Documents</th>
                     </tr>
                   </thead>
                   <tbody>
                     {accreditations.map((acc, idx) => (
                       <tr key={idx} className="border-b hover:bg-gray-50">
-                        <td className="border-r px-3 py-3 text-xs text-gray-700 sm:px-4 sm:text-sm">{acc.programs}</td>
-                        <td className="border-r px-3 py-3 text-xs text-gray-700">{acc.validity}</td>
-                        <td className="border-r px-3 py-3 text-xs font-medium text-gray-700 sm:px-4 sm:text-sm">{acc.ugPg}</td>
-                        <td className="border-r px-3 py-3 text-xs text-gray-700 sm:px-4 sm:text-sm">{acc.status}</td>
-                        <td className="px-3 py-3 sm:px-4">
+                        <td className="px-4 py-3 text-gray-700 border-r">{acc.programs}</td>
+                        <td className="px-4 py-3 text-gray-700 border-r text-xs">{acc.validity}</td>
+                        <td className="px-4 py-3 text-gray-700 border-r font-medium">{acc.ugPg}</td>
+                        <td className="px-4 py-3 text-gray-700 border-r">{acc.status}</td>
+                        <td className="px-4 py-3">
                           <div className="flex flex-wrap gap-2">
                             {acc.links.map((link, linkIdx) => (
                               <a

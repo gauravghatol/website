@@ -17,6 +17,7 @@ import MBA from "../../pages/departments/MBA";
 import AppliedSciences from "../../pages/departments/AppliedSciences";
 import NIRFRankingPage from "../../pages/NIRFRanking";
 import { goBackOrFallback } from "../../utils/navigation";
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 
 // Map User-model department codes → the pageId the coordinator owns
 const DEPT_TO_PAGEID = {
@@ -113,11 +114,11 @@ const VisualPageEditor = () => {
           setPageNotFound(true);
         }
       } catch (err) {
-        console.error("Error fetching page for editor:", err);
+        logUnexpectedError("Error fetching page for editor:", err);
         if (err.response?.status === 404) {
           setPageNotFound(true);
         }
-        setError(err.response?.data?.message || err.message);
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
       }
@@ -197,13 +198,9 @@ const VisualPageEditor = () => {
             </button>
           )}
           <div>
-            <button
-              type="button"
-              onClick={() => goBackOrFallback(navigate, location, "/admin")}
-              className="text-blue-600 hover:underline text-sm"
-            >
-               Back to Dashboard
-            </button>
+            <a href="/admin" className="text-blue-600 hover:underline text-sm">
+              ← Back to Dashboard
+            </a>
           </div>
         </div>
       </div>

@@ -299,12 +299,12 @@ const AdminPlacements = () => {
 
             <div className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
               {loading ? (
-                <div className="p-8 sm:p-10 md:p-12 text-center">
+                <div className="p-12 text-center">
                   <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500 mx-auto mb-4" />
                   <p className="text-gray-500 dark:text-gray-400">Loading statistics…</p>
                 </div>
               ) : stats.length === 0 ? (
-                <div className="p-8 sm:p-10 md:p-12 text-center">
+                <div className="p-12 text-center">
                   <FaChartLine className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
                   <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">No Statistics Yet</h3>
                   <p className="text-gray-500 dark:text-gray-400">Click &quot;Add Year&quot; to add placement statistics.</p>
@@ -422,7 +422,7 @@ const AdminPlacements = () => {
                 )}
 
                 {pageLoading ? (
-                  <div className="p-8 sm:p-10 md:p-12 text-center">
+                  <div className="p-12 text-center">
                     <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500 mx-auto mb-4" />
                     <p className="text-gray-500 dark:text-gray-400">Loading page content…</p>
                   </div>

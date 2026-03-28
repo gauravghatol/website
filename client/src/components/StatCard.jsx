@@ -1,13 +1,13 @@
 const StatCard = ({ icon: Icon, number, label }) => {
   return (
-    <div className="rounded-xl border border-gray-100 bg-white p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:p-6">
+    <div className="bg-white rounded-xl p-6 text-center shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
       {Icon && (
-        <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-ssgmce-blue/8 sm:mb-4 sm:h-12 sm:w-12">
-          <Icon className="text-[1rem] text-ssgmce-blue sm:text-lg" />
+        <div className="w-12 h-12 bg-ssgmce-blue/8 rounded-lg flex items-center justify-center mx-auto mb-4">
+          <Icon className="text-lg text-ssgmce-blue" />
         </div>
       )}
-      <h3 className="mb-1 text-[clamp(1.35rem,3vw,1.95rem)] font-bold text-gray-800">{number}</h3>
-      <p className="text-[0.7rem] font-medium uppercase tracking-wide text-ssgmce-muted sm:text-xs">{label}</p>
+      <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-1">{number}</h3>
+      <p className="text-xs text-ssgmce-muted font-medium uppercase tracking-wide">{label}</p>
     </div>
   );
 };

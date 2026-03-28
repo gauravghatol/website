@@ -12,6 +12,7 @@ import {
   FaHandshake,
 } from "react-icons/fa";
 import axios from "axios";
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 
 // Skeleton
 const InnovationSkeleton = () => (
@@ -26,6 +27,7 @@ const InnovationCell = () => {
   const [innovations, setInnovations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ type: "", status: "" });
+  const [error, setError] = useState("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -43,8 +45,10 @@ const InnovationCell = () => {
 
       const res = await axios.get(`/api/research/innovations?${params}`);
       setInnovations(res.data.innovations);
+      setError("");
     } catch (error) {
-      console.error("Error fetching innovations:", error);
+      logUnexpectedError("Error fetching innovations:", error);
+      setError(getErrorMessage(error, "Failed to load innovations"));
     } finally {
       setLoading(false);
     }
@@ -102,21 +106,26 @@ const InnovationCell = () => {
         ]}
       />
 
-      <div className="mx-auto w-full max-w-[120rem] px-4 py-10 sm:px-5 sm:py-12 lg:px-6">
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-12">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-12 gap-8">
           <div className="lg:col-span-3">
             <ResearchSidebar />
           </div>
 
-          <div className="space-y-8 sm:space-y-10 lg:col-span-9">
+          <div className="lg:col-span-9 space-y-10">
+            {error ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            ) : null}
             {/* About Innovation Cell */}
-            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-lg sm:p-8">
+            <section className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
               <div className="flex items-start gap-4 mb-6">
                 <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0">
                   <FaRocket className="text-2xl text-white" />
                 </div>
                 <div>
-                  <h2 className="mb-1 text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-800">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-1">
                     SSGMCE Innovation Cell
                   </h2>
                   <p className="text-gray-500">
@@ -124,7 +133,7 @@ const InnovationCell = () => {
                   </p>
                 </div>
               </div>
-              <p className="mb-6 text-[clamp(0.95rem,1.8vw,1.125rem)] leading-relaxed text-gray-700">
+              <p className="text-gray-700 leading-relaxed text-lg mb-6">
                 The SSGMCE Innovation Cell is dedicated to fostering a culture
                 of innovation and entrepreneurship among students. We provide
                 mentorship, resources, and incubation support to help students
@@ -132,7 +141,7 @@ const InnovationCell = () => {
               </p>
 
               {/* Highlights */}
-              <div className="grid gap-3.5 sm:gap-4 md:grid-cols-4">
+              <div className="grid md:grid-cols-4 gap-4">
                 {highlights.map((item, idx) => {
                   const Icon = item.icon;
                   return (
@@ -169,7 +178,7 @@ const InnovationCell = () => {
             <section>
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-1.5 h-8 bg-gradient-to-b from-blue-600 to-orange-500 rounded-full"></div>
-                <h3 className="text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-800">
+                <h3 className="text-2xl font-bold text-gray-800">
                   Our Programs
                 </h3>
               </div>
@@ -236,7 +245,7 @@ const InnovationCell = () => {
             <section>
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-1.5 h-8 bg-gradient-to-b from-blue-600 to-orange-500 rounded-full"></div>
-                <h3 className="text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-800">
+                <h3 className="text-2xl font-bold text-gray-800">
                   Student Innovations
                 </h3>
               </div>

@@ -60,10 +60,10 @@ const Departments = () => {
       />
 
       {/* Introduction */}
-      <section className="py-12 sm:py-14 md:py-16">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
-          <div className="mx-auto mb-10 max-w-4xl text-center sm:mb-12">
-            <p className="text-[clamp(0.95rem,1.9vw,1.125rem)] leading-relaxed text-gray-700">
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center mb-12">
+            <p className="text-lg text-gray-700 leading-relaxed">
               SSGMCE offers various undergraduate and postgraduate programs in engineering disciplines. 
               All our programs are affiliated to Sant Gadge Baba Amravati University and approved by AICTE. 
               Our departments are equipped with state-of-the-art laboratories and experienced faculty members.
@@ -72,12 +72,12 @@ const Departments = () => {
 
           {/* Department Cards */}
           {loading ? (
-            <div className="py-10 text-center sm:py-12">
+            <div className="text-center py-12">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-ssgmce-blue"></div>
-              <p className="mt-4 text-sm text-gray-600 sm:text-base">Loading departments...</p>
+              <p className="mt-4 text-gray-600">Loading departments...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {departments.map((dept) => (
                 <DepartmentCard 
                   key={dept._id}
@@ -93,20 +93,20 @@ const Departments = () => {
       </section>
 
       {/* Department Facilities */}
-      <section className="bg-gray-50 py-12 sm:py-14 md:py-16">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
-          <h2 className="mb-10 text-center text-[clamp(1.6rem,4vw,2.25rem)] font-bold text-ssgmce-blue sm:mb-12">Department Facilities</h2>
-          <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center text-ssgmce-blue mb-12">Department Facilities</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { icon: '🔬', title: 'Modern Laboratories', desc: 'Well-equipped labs with latest equipment' },
               { icon: '👨‍🏫', title: 'Qualified Faculty', desc: 'Experienced and dedicated teaching staff' },
               { icon: '📚', title: 'Digital Library', desc: 'Access to online journals and resources' },
               { icon: '💼', title: 'Industry Connect', desc: 'Internships and placement opportunities' },
             ].map((facility, index) => (
-              <div key={index} className="rounded-lg bg-white p-4 text-center shadow-lg transition-transform duration-300 hover:scale-105 sm:p-6">
-                <div className="mb-3 text-3xl sm:text-4xl md:text-5xl">{facility.icon}</div>
-                <h3 className="mb-2 text-base font-bold text-ssgmce-blue sm:text-lg">{facility.title}</h3>
-                <p className="text-xs text-gray-600 sm:text-sm">{facility.desc}</p>
+              <div key={index} className="bg-white p-6 rounded-lg shadow-lg text-center hover:scale-105 transition-transform duration-300">
+                <div className="text-5xl mb-3">{facility.icon}</div>
+                <h3 className="text-lg font-bold text-ssgmce-blue mb-2">{facility.title}</h3>
+                <p className="text-gray-600 text-sm">{facility.desc}</p>
               </div>
             ))}
           </div>
@@ -114,25 +114,25 @@ const Departments = () => {
       </section>
 
       {/* Accreditation Info */}
-      <section className="py-12 sm:py-14 md:py-16">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
-          <div className="rounded-lg bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-6 text-white shadow-2xl sm:p-8 md:p-10">
-            <h2 className="mb-6 text-center text-[clamp(1.5rem,3.6vw,1.9rem)] font-bold">Accreditation & Affiliation</h2>
-            <div className="grid gap-5 text-center sm:gap-6 md:grid-cols-3">
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white p-10 rounded-lg shadow-2xl">
+            <h2 className="text-3xl font-bold mb-6 text-center">Accreditation & Affiliation</h2>
+            <div className="grid md:grid-cols-3 gap-6 text-center">
               <div>
-                <div className="mb-3 text-3xl sm:text-4xl md:text-5xl">✅</div>
-                <h4 className="mb-2 text-[clamp(1rem,2.2vw,1.25rem)] font-bold">AICTE Approved</h4>
-                <p className="text-sm text-ssgmce-light-blue">All India Council for Technical Education</p>
+                <div className="text-5xl mb-3">✅</div>
+                <h4 className="font-bold text-xl mb-2">AICTE Approved</h4>
+                <p className="text-ssgmce-light-blue">All India Council for Technical Education</p>
               </div>
               <div>
-                <div className="mb-3 text-3xl sm:text-4xl md:text-5xl">🎓</div>
-                <h4 className="mb-2 text-[clamp(1rem,2.2vw,1.25rem)] font-bold">University Affiliated</h4>
-                <p className="text-sm text-ssgmce-light-blue">Sant Gadge Baba Amravati University</p>
+                <div className="text-5xl mb-3">🎓</div>
+                <h4 className="font-bold text-xl mb-2">University Affiliated</h4>
+                <p className="text-ssgmce-light-blue">Sant Gadge Baba Amravati University</p>
               </div>
               <div>
-                <div className="mb-3 text-3xl sm:text-4xl md:text-5xl">🏆</div>
-                <h4 className="mb-2 text-[clamp(1rem,2.2vw,1.25rem)] font-bold">NAAC Accredited</h4>
-                <p className="text-sm text-ssgmce-light-blue">National Assessment and Accreditation Council</p>
+                <div className="text-5xl mb-3">🏆</div>
+                <h4 className="font-bold text-xl mb-2">NAAC Accredited</h4>
+                <p className="text-ssgmce-light-blue">National Assessment and Accreditation Council</p>
               </div>
             </div>
           </div>

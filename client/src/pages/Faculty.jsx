@@ -14,11 +14,11 @@ import {
   getVidwanUrl,
   useFacultyDirectoryData,
 } from "./FacultyDetail";
-import { buildReturnState } from "../utils/navigation";
+import { getCurrentPath } from "../utils/navigation";
 
 const Faculty = () => {
-  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const [selectedDept, setSelectedDept] = useState(
     searchParams.get("dept") || "all",
   );
@@ -40,10 +40,10 @@ const Faculty = () => {
         subtitle="Faculty profiles from all departments, using the same institute directory data"
       />
 
-      <section className="bg-gray-50 py-10 sm:py-12">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
+      <section className="bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
           <div className="mx-auto max-w-4xl text-center">
-            <p className="text-[clamp(0.95rem,1.9vw,1.125rem)] leading-relaxed text-gray-700">
+            <p className="text-lg leading-relaxed text-gray-700">
               Browse faculty members from every department with the same details
               available on their individual department pages, including
               designation, specialization, contact information, and detailed
@@ -53,8 +53,8 @@ const Faculty = () => {
         </div>
       </section>
 
-      <section className="py-7 sm:py-8">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
+      <section className="py-8">
+        <div className="container mx-auto px-4">
           <div className="mb-8 flex flex-wrap justify-center gap-3">
             {FACULTY_DIRECTORY_DEPARTMENTS.map((dept) => (
               <button
@@ -69,7 +69,7 @@ const Faculty = () => {
                   }
                   setSearchParams(nextParams);
                 }}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 sm:px-6 sm:text-base ${
+                className={`rounded-full px-6 py-2 font-semibold transition-all duration-300 ${
                   selectedDept === dept.id
                     ? "scale-105 bg-ssgmce-blue text-white shadow-lg"
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -82,21 +82,21 @@ const Faculty = () => {
         </div>
       </section>
 
-      <section className="pb-12 pt-7 sm:pb-14 sm:pt-8 md:pb-16">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
+      <section className="pb-16 pt-8">
+        <div className="container mx-auto px-4">
           {loading ? (
             <div className="py-12 text-center">
               <div className="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-ssgmce-blue"></div>
               <p className="mt-4 text-gray-600">Loading faculty data...</p>
             </div>
           ) : (
-            <div className="grid gap-5 sm:gap-6 xl:grid-cols-2">
+            <div className="grid gap-6 xl:grid-cols-2">
               {filteredFaculty.map((faculty) => (
                 <article
                   key={faculty.id}
                   className="group relative flex overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-300 hover:shadow-lg"
                 >
-                  <div className="relative w-28 flex-shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:w-32 md:w-40">
+                  <div className="relative w-32 flex-shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:w-40">
                     {faculty.photo ? (
                       <img
                         src={faculty.photo}
@@ -105,16 +105,16 @@ const Faculty = () => {
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-ssgmce-blue to-ssgmce-dark-blue">
-                        <FaUserTie className="text-3xl text-white/80 sm:text-4xl" />
+                        <FaUserTie className="text-4xl text-white/80" />
                       </div>
                     )}
                   </div>
 
-                  <div className="flex-1 p-4 sm:p-5">
+                  <div className="flex-1 p-5">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-500">
                       {DEPARTMENT_MAP[faculty.department] || faculty.department}
                     </p>
-                    <h3 className="mt-2 text-[clamp(1rem,2.4vw,1.25rem)] font-bold text-gray-900 transition-colors group-hover:text-ssgmce-blue">
+                    <h3 className="mt-2 text-xl font-bold text-gray-900 transition-colors group-hover:text-ssgmce-blue">
                       {faculty.name}
                     </h3>
                     <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-ssgmce-blue">
@@ -175,7 +175,7 @@ const Faculty = () => {
                       {!faculty.isIndustry ? (
                         <Link
                           to={`/faculty/${faculty.id}`}
-                          state={buildReturnState(location)}
+                          state={{ from: getCurrentPath(location) }}
                           className="inline-flex items-center text-[10px] font-bold uppercase tracking-wide text-ssgmce-blue hover:underline"
                         >
                           View Profile <FaArrowRight className="ml-1" />

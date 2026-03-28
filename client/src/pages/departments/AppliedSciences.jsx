@@ -10,7 +10,7 @@ import remarkGfm from "remark-gfm";
 import appliedSciencesBanner from "../../assets/images/departments/applied-sciences/banner.png";
 import { AnimatePresence, motion } from "framer-motion";
 import axios from "axios";
-import { buildReturnState } from "../../utils/navigation";
+import { getPathWithTab, getRequestedTab } from "../../utils/navigation";
 import {
   FaLaptopCode,
   FaBullseye,
@@ -643,7 +643,9 @@ function AshPrideMdView({ markdown = "" }) {
 
 const AppliedSciences = () => {
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(() =>
+    getRequestedTab(location, "overview")
+  );
   const [vmTab, setVmTab] = useState("vision");
   const [poTab, setPoTab] = useState("peo");
   const [showAllPos, setShowAllPos] = useState(false);
@@ -652,6 +654,14 @@ const AppliedSciences = () => {
   const [achievementTab, setAchievementTab] = useState("faculty");
   const [expandedFacultyEditorIndex, setExpandedFacultyEditorIndex] =
     useState(null);
+
+  useEffect(() => {
+    const requestedTab = getRequestedTab(location, "overview");
+
+    setActiveTab((currentTab) =>
+      currentTab === requestedTab ? currentTab : requestedTab
+    );
+  }, [location.search]);
 
   // Load department data (works in both edit and public view modes)
   const {
@@ -1110,7 +1120,7 @@ const AppliedSciences = () => {
       <div className="space-y-10">
         <div className="space-y-6">
           <div className="flex flex-col gap-6">
-            <h3 className="inline-block w-fit border-b-2 border-orange-500 pb-2 text-[clamp(1.45rem,3.8vw,1.875rem)] font-bold text-gray-800">
+            <h3 className="text-3xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2 w-fit">
               Department Overview
             </h3>
 
@@ -1197,7 +1207,7 @@ Head, Dept. of Applied Sciences and Humanities
               <div className="flex items-start w-full">
                 <FaBullseye className="text-4xl text-ssgmce-orange mr-4 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 mb-4">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">
                     <EditableText
                       value={t("visionTitle", "Our Vision")}
                       onSave={(val) => updateField("visionTitle", val)}
@@ -1226,7 +1236,7 @@ Head, Dept. of Applied Sciences and Humanities
               exit={{ opacity: 0, y: -20 }}
               className="bg-gradient-to-r from-orange-50 to-red-50 p-8 rounded-lg border-l-4 border-orange-600"
             >
-              <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 mb-4">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">
                 Our Mission
               </h3>
               <ul className="space-y-3">
@@ -1280,7 +1290,7 @@ Head, Dept. of Applied Sciences and Humanities
 
               {poTab === "peo" && (
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h4 className="text-lg font-bold text-gray-800 sm:text-xl mb-4">
+                  <h4 className="text-xl font-bold text-gray-800 mb-4">
                     Program Educational Objectives
                   </h4>
                   <p className="text-gray-600 mb-4 italic">
@@ -1291,7 +1301,7 @@ Head, Dept. of Applied Sciences and Humanities
 
               {poTab === "po" && (
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h4 className="text-lg font-bold text-gray-800 sm:text-xl mb-4">
+                  <h4 className="text-xl font-bold text-gray-800 mb-4">
                     Program Outcomes
                   </h4>
                   <p className="text-gray-600 mb-4 italic">
@@ -1308,7 +1318,7 @@ Head, Dept. of Applied Sciences and Humanities
     hod: (
       <div className="space-y-8">
         <div className="text-center">
-          <h2 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-2">
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">
             Words from HOD
           </h2>
           <div className="w-24 h-1 bg-orange-500 mx-auto"></div>
@@ -1334,7 +1344,7 @@ Head, Dept. of Applied Sciences and Humanities
                 </div>
               </div>
               <div className="flex-1">
-                <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-900">
+                <h3 className="text-2xl font-bold text-gray-900">
                   <EditableText
                     value={t("templateData.hod.name", "Dr. A. S. Tate")}
                     onSave={(val) => updateField("templateData.hod.name", val)}
@@ -1492,7 +1502,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
 
     laboratories: (
       <div className="space-y-8">
-        <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
           Infrastructure and Laboratories
         </h3>
 
@@ -1640,7 +1650,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
     faculty: (
       <div className="space-y-10">
         <div className="text-center border-b border-gray-200 pb-6 mb-8">
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-900">
+          <h3 className="text-3xl font-bold text-gray-900">
             <EditableText
               value={t("facultyTitle", "Our Faculty")}
               onSave={(val) => updateField("facultyTitle", val)}
@@ -1746,7 +1756,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
                   ) : (
                     <Link
                       to={`/faculty/${fac.id}`}
-                      state={buildReturnState(location)}
+                      state={{ from: getPathWithTab(location, "faculty") }}
                       className="hover:text-ssgmce-blue hover:underline transition-colors cursor-pointer"
                     >
                       {fac.name}
@@ -1865,7 +1875,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
                   )}
                   <Link
                     to={`/faculty/${fac.id}`}
-                    state={buildReturnState(location)}
+                    state={{ from: getPathWithTab(location, "faculty") }}
                     className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
                   >
                     View Profile <FaAngleRight className="ml-1" />
@@ -1983,7 +1993,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center">
-          <h2 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-900">
+          <h2 className="text-3xl font-bold text-gray-900">
             Subject Taught @ Department
           </h2>
           <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
@@ -2180,7 +2190,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
     curriculum: (
       <div className="space-y-8">
         <div className="flex items-center justify-between">
-          <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+          <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
             Scheme and Syllabus
           </h3>
           {isEditing && (
@@ -2350,7 +2360,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
         >
           <div className="flex items-center gap-3 mb-8">
             <FaTrophy className="text-4xl text-yellow-500" />
-            <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800">
+            <h3 className="text-3xl font-bold text-gray-800">
               Pride of the Department
             </h3>
           </div>
@@ -2383,7 +2393,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center mb-10">
-          <h2 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-900">
+          <h2 className="text-3xl font-bold text-gray-900">
             Student Orientation and Induction Program
           </h2>
           <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
@@ -2440,7 +2450,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
 
         {/* Photo Gallery */}
         <div className="mt-10">
-          <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 mb-6 text-center">
+          <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
             Program Highlights
           </h3>
 
@@ -2497,7 +2507,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
           <div className="flex items-start">
             <FaLightbulb className="text-4xl text-ssgmce-blue mr-4 mt-1 flex-shrink-0" />
             <div>
-              <h3 className="text-lg font-bold text-gray-900 sm:text-xl mb-3">
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
                 About the Program
               </h3>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -2534,7 +2544,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
           <div className="w-16 h-16 bg-orange-50 text-ssgmce-orange rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
             <FaChalkboardTeacher />
           </div>
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-4">
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
             <EditableText
               value={t("courseMaterial.title", "Course Material")}
               onSave={(val) => updateData("courseMaterial.title", val)}
@@ -2636,7 +2646,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-3">
+          <h2 className="text-3xl font-bold text-gray-800 mb-3">
             Course Outcomes
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
@@ -2752,7 +2762,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center mb-10">
-          <h2 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-900">Achievements</h2>
+          <h2 className="text-3xl font-bold text-gray-900">Achievements</h2>
           <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
           <p className="text-gray-600 mt-3">2021-22 To 2025-26</p>
         </div>
@@ -2964,7 +2974,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center mb-10">
-          <h2 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-900">
+          <h2 className="text-3xl font-bold text-gray-900">
             Activities @ Department
           </h2>
           <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
@@ -3061,7 +3071,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
                 {/* Activity Details Section */}
                 <div className="md:col-span-7 p-6">
                   <div className="space-y-3">
-                    <h3 className="text-lg font-bold text-gray-900 sm:text-xl leading-tight">
+                    <h3 className="text-xl font-bold text-gray-900 leading-tight">
                       {activity.title}
                     </h3>
 
@@ -3072,15 +3082,15 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
                     )}
 
                     <div className="space-y-2 pt-2">
-                      <div className="flex items-start">
-                        <span className="font-bold text-gray-700 min-w-[140px]">
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-3">
+                        <span className="font-bold text-gray-700 sm:min-w-[140px]">
                           Date:
                         </span>
                         <span className="text-gray-600">{activity.date}</span>
                       </div>
 
-                      <div className="flex items-start">
-                        <span className="font-bold text-gray-700 min-w-[140px]">
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-3">
+                        <span className="font-bold text-gray-700 sm:min-w-[140px]">
                           Beneficiary/Participant:
                         </span>
                         <span className="text-gray-600">
@@ -3089,8 +3099,8 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
                       </div>
 
                       {activity.venue && (
-                        <div className="flex items-start">
-                          <span className="font-bold text-gray-700 min-w-[140px]">
+                        <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-3">
+                          <span className="font-bold text-gray-700 sm:min-w-[140px]">
                             Venue:
                           </span>
                           <span className="text-gray-600">
@@ -3100,8 +3110,8 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
                       )}
 
                       {activity.organizer && (
-                        <div className="flex items-start">
-                          <span className="font-bold text-gray-700 min-w-[140px]">
+                        <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-3">
+                          <span className="font-bold text-gray-700 sm:min-w-[140px]">
                             Organized by:
                           </span>
                           <span className="text-gray-600">
@@ -3128,7 +3138,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
       <div className="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded-lg">
         <div className="flex items-center mb-3">
           <FaLightbulb className="text-3xl text-yellow-600 mr-3" />
-          <h3 className="text-lg font-bold text-gray-800 sm:text-xl">Coming Soon</h3>
+          <h3 className="text-xl font-bold text-gray-800">Coming Soon</h3>
         </div>
         <p className="text-gray-600">
           This section is under development and will be updated soon with
@@ -3163,10 +3173,10 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
       title="Applied Sciences and Humanities"
       backgroundImage={appliedSciencesBanner}
     >
-      <div className="mx-auto flex w-full max-w-[120rem] flex-col gap-6 sm:gap-8 lg:flex-row lg:gap-12">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:gap-12">
         {/* Sidebar Navigation (Left Side) */}
-        <div className="order-1 lg:order-1 lg:w-1/4">
-          <div className="space-y-4 pb-3 sm:space-y-6 sm:pb-4 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
+        <div className="lg:w-1/4 order-1 lg:order-1">
+          <div className="space-y-4 pb-2 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:space-y-6 lg:pb-4 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
             {/* Academics Section */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
               <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">
@@ -3198,7 +3208,7 @@ The department has three well equipped laboratories namely **Physics, Chemistry 
         </div>
 
         {/* Main Content Area (Right Side) */}
-        <div className="order-2 min-h-[420px] lg:order-2 lg:min-h-[600px] lg:w-3/4">
+        <div className="lg:w-3/4 order-2 lg:order-2 min-h-[600px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

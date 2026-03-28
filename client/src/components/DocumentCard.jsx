@@ -1,212 +1,259 @@
 import { useState } from "react";
-import { FaDownload, FaEye, FaFilePdf, FaFileWord, FaFileExcel, FaFilePowerpoint, FaFileAlt, FaFileImage, FaFileArchive, FaTimes, FaExternalLinkAlt, FaInfoCircle } from "react-icons/fa";
+import {
+  FaDownload,
+  FaEye,
+  FaFileAlt,
+  FaFileArchive,
+  FaFileExcel,
+  FaFileImage,
+  FaFilePdf,
+  FaFilePowerpoint,
+  FaFileWord,
+  FaExternalLinkAlt,
+  FaInfoCircle,
+  FaTimes,
+} from "react-icons/fa";
 import axios from "axios";
+import { logUnexpectedError } from "../utils/apiErrors";
 
 /**
  * DocumentCard Component
- * Displays a single document with download/view options
- * For PDFs: shows summary modal with embedded viewer and download button
+ * Displays a single document with download/view options.
+ * For PDFs: shows summary modal with embedded viewer and download button.
  */
 const DocumentCard = ({ document }) => {
-  const { _id, title, description, fileUrl, fileSize, fileType, year, uploadDate, subcategory } = document;
+  const {
+    _id,
+    title,
+    description,
+    fileUrl,
+    fileSize,
+    fileType,
+    year,
+    uploadDate,
+    subcategory,
+  } = document;
   const [showPDFModal, setShowPDFModal] = useState(false);
 
-  const isPDF = fileType === 'pdf' || fileUrl?.toLowerCase().endsWith('.pdf');
+  const safeFileUrl = typeof fileUrl === "string" ? fileUrl.trim() : "";
+  const isPDF =
+    fileType === "pdf" || safeFileUrl.toLowerCase().endsWith(".pdf");
 
-  // Get file icon based on type
   const getFileIcon = () => {
     const iconClass = "text-3xl";
+
     switch (fileType) {
-      case 'pdf':
+      case "pdf":
         return <FaFilePdf className={`${iconClass} text-red-500`} />;
-      case 'doc':
-      case 'docx':
+      case "doc":
+      case "docx":
         return <FaFileWord className={`${iconClass} text-blue-600`} />;
-      case 'xls':
-      case 'xlsx':
+      case "xls":
+      case "xlsx":
         return <FaFileExcel className={`${iconClass} text-green-600`} />;
-      case 'ppt':
-      case 'pptx':
+      case "ppt":
+      case "pptx":
         return <FaFilePowerpoint className={`${iconClass} text-orange-500`} />;
-      case 'jpg':
-      case 'png':
+      case "jpg":
+      case "jpeg":
+      case "png":
         return <FaFileImage className={`${iconClass} text-purple-500`} />;
-      case 'zip':
+      case "zip":
         return <FaFileArchive className={`${iconClass} text-yellow-600`} />;
       default:
         return <FaFileAlt className={`${iconClass} text-gray-500`} />;
     }
   };
 
-  // Format date
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
+
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
+    return date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
   };
 
-  // Handle download click
+  const openFile = () => {
+    if (!safeFileUrl) return;
+    window.open(safeFileUrl, "_blank", "noopener,noreferrer");
+  };
+
   const handleDownload = async () => {
+    if (!safeFileUrl) return;
+
     try {
-      // Increment download count
       await axios.post(`/api/documents/${_id}/download`);
-      // Open file
-      window.open(fileUrl, '_blank');
+      openFile();
     } catch (error) {
-      console.error('Error tracking download:', error);
-      // Still open file even if tracking fails
-      window.open(fileUrl, '_blank');
+      logUnexpectedError("Error tracking download:", error);
+      openFile();
     }
   };
 
   return (
-    <div className="group overflow-hidden rounded-xl border border-gray-100 bg-white shadow-md transition-all duration-300 hover:border-gray-200 hover:shadow-xl">
-      {/* Card Header with Icon */}
-      <div className="border-b border-gray-100 p-4 sm:p-5">
-        <div className="flex items-start gap-3 sm:gap-4">
-          <div className="rounded-lg bg-gray-50 p-2.5 transition-colors group-hover:bg-blue-50 sm:p-3">
+    <div className="group overflow-hidden rounded-xl border border-gray-100 bg-white shadow-md transition-all duration-300 hover:shadow-xl">
+      <div className="border-b border-gray-100 p-5">
+        <div className="flex items-start gap-4">
+          <div className="rounded-lg bg-gray-50 p-3 transition-colors group-hover:bg-blue-50">
             {getFileIcon()}
           </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="line-clamp-2 text-[clamp(1rem,2.1vw,1.12rem)] font-semibold text-gray-800 transition-colors group-hover:text-ssgmce-blue">
+          <div className="min-w-0 flex-1">
+            <h3 className="line-clamp-2 text-lg font-semibold text-gray-800 transition-colors group-hover:text-ssgmce-blue">
               {title}
             </h3>
-            {description && (
-              <p className="mt-1 line-clamp-2 text-[clamp(0.78rem,1.35vw,0.88rem)] text-gray-500">{description}</p>
-            )}
+            {description ? (
+              <p className="mt-1 line-clamp-2 text-sm text-gray-500">
+                {description}
+              </p>
+            ) : null}
           </div>
         </div>
       </div>
 
-      {/* Meta Information */}
-      <div className="flex flex-wrap items-center gap-2.5 bg-gray-50 px-4 py-3 text-[0.72rem] text-gray-500 sm:px-5 sm:text-xs">
-        {year && (
-          <span className="px-2 py-1 bg-ssgmce-blue/10 text-ssgmce-blue rounded-full font-medium">
+      <div className="flex flex-wrap items-center gap-3 bg-gray-50 px-5 py-3 text-xs text-gray-500">
+        {year ? (
+          <span className="rounded-full bg-ssgmce-blue/10 px-2 py-1 font-medium text-ssgmce-blue">
             {year}
           </span>
-        )}
-        {subcategory && (
-          <span className="px-2 py-1 bg-ssgmce-orange/10 text-ssgmce-orange rounded-full font-medium">
+        ) : null}
+        {subcategory ? (
+          <span className="rounded-full bg-ssgmce-orange/10 px-2 py-1 font-medium text-ssgmce-orange">
             {subcategory}
           </span>
-        )}
+        ) : null}
         <span className="flex items-center gap-1">
-          📄 {fileType?.toUpperCase() || 'PDF'}
+          File: {fileType?.toUpperCase() || "PDF"}
         </span>
-        <span className="flex items-center gap-1">
-          💾 {fileSize || 'N/A'}
-        </span>
+        <span className="flex items-center gap-1">Size: {fileSize || "N/A"}</span>
         <span className="ml-auto flex items-center gap-1">
-          📅 {formatDate(uploadDate)}
+          Date: {formatDate(uploadDate)}
         </span>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex flex-col gap-2.5 p-4 sm:flex-row sm:gap-3">
+      <div className="flex gap-3 p-4">
         {isPDF ? (
           <button
             onClick={() => setShowPDFModal(true)}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gray-100 px-4 py-2.5 text-[0.84rem] font-medium text-gray-700 transition-colors hover:bg-gray-200 sm:text-sm"
+            className="flex-1 rounded-lg bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
           >
-            <FaEye />
-            View Summary
+            <span className="flex items-center justify-center gap-2">
+              <FaEye />
+              View Summary
+            </span>
           </button>
         ) : (
           <a
-            href={fileUrl}
+            href={safeFileUrl || undefined}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gray-100 px-4 py-2.5 text-[0.84rem] font-medium text-gray-700 transition-colors hover:bg-gray-200 sm:text-sm"
+            className="flex-1 rounded-lg bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
           >
-            <FaEye />
-            View
+            <span className="flex items-center justify-center gap-2">
+              <FaEye />
+              View
+            </span>
           </a>
         )}
+
         <button
           onClick={handleDownload}
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-ssgmce-blue to-blue-700 px-4 py-2.5 text-[0.84rem] font-medium text-white transition-all hover:from-blue-700 hover:to-ssgmce-blue sm:text-sm"
+          className="flex-1 rounded-lg bg-gradient-to-r from-ssgmce-blue to-blue-700 px-4 py-2.5 text-sm font-medium text-white transition-all hover:from-blue-700 hover:to-ssgmce-blue"
         >
-          <FaDownload />
-          Download
+          <span className="flex items-center justify-center gap-2">
+            <FaDownload />
+            Download
+          </span>
         </button>
       </div>
 
-      {/* PDF Summary Modal */}
-      {showPDFModal && isPDF && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowPDFModal(false)}>
-          <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-red-50 to-orange-50 p-4 sm:p-5">
+      {showPDFModal && isPDF ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setShowPDFModal(false)}
+        >
+          <div
+            className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-red-50 to-orange-50 p-5">
               <div className="flex items-center gap-3">
                 <FaFilePdf className="text-2xl text-red-500" />
-                <div className="min-w-0">
-                  <h3 className="truncate text-[clamp(1rem,2vw,1.12rem)] font-bold text-gray-800">{title}</h3>
-                  <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[0.78rem] text-gray-500 sm:text-sm">
-                    {year && <span className="text-blue-600 font-medium">{year}</span>}
-                    {fileSize && <span>• {fileSize}</span>}
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800">{title}</h3>
+                  <div className="mt-0.5 flex items-center gap-2 text-sm text-gray-500">
+                    {year ? (
+                      <span className="font-medium text-blue-600">{year}</span>
+                    ) : null}
+                    {fileSize ? <span>&bull; {fileSize}</span> : null}
                   </div>
                 </div>
               </div>
+
               <button
                 onClick={() => setShowPDFModal(false)}
-                className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                className="rounded-full p-2 transition-colors hover:bg-gray-200"
               >
                 <FaTimes className="text-gray-500" />
               </button>
             </div>
 
-            {/* Modal Content - Scrollable */}
             <div className="flex-1 overflow-y-auto">
-              {/* Summary */}
-              {description && (
-                <div className="border-b border-gray-100 p-4 sm:p-5">
-                  <div className="flex items-center gap-2 mb-2">
+              {description ? (
+                <div className="border-b border-gray-100 p-5">
+                  <div className="mb-2 flex items-center gap-2">
                     <FaInfoCircle className="text-blue-600" />
-                    <h4 className="text-[0.95rem] font-semibold text-gray-700">Document Summary</h4>
+                    <h4 className="font-semibold text-gray-700">
+                      Document Summary
+                    </h4>
                   </div>
-                  <p className="text-[0.84rem] leading-relaxed text-gray-600 sm:text-sm">{description}</p>
+                  <p className="text-sm leading-relaxed text-gray-600">
+                    {description}
+                  </p>
                 </div>
-              )}
+              ) : null}
 
-              {/* PDF Viewer */}
-              <div className="p-4 sm:p-5">
-                <h4 className="mb-3 text-[0.95rem] font-semibold text-gray-700">Document Preview</h4>
-                <div className="h-[58vh] min-h-[20rem] w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-100 sm:h-[31.25rem]">
+              <div className="p-5">
+                <h4 className="mb-3 font-semibold text-gray-700">
+                  Document Preview
+                </h4>
+                <div className="h-[500px] w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
                   <iframe
-                    src={`${fileUrl}#toolbar=1&navpanes=0`}
-                    className="w-full h-full"
+                    src={`${safeFileUrl}#toolbar=1&navpanes=0`}
+                    className="h-full w-full"
                     title={title}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Modal Footer - Download */}
-            <div className="flex flex-col gap-3 border-t border-gray-100 bg-gray-50 p-4 sm:flex-row sm:p-5">
+            <div className="flex flex-col gap-3 border-t border-gray-100 bg-gray-50 p-5 sm:flex-row">
               <button
                 onClick={handleDownload}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-ssgmce-blue px-5 py-3 text-[0.9rem] font-medium text-white shadow-md transition-colors hover:bg-ssgmce-dark-blue"
+                className="flex-1 rounded-lg bg-ssgmce-blue px-6 py-3 font-medium text-white shadow-md transition-colors hover:bg-ssgmce-dark-blue"
               >
-                <FaDownload />
-                Download PDF
+                <span className="flex items-center justify-center gap-2">
+                  <FaDownload />
+                  Download PDF
+                </span>
               </button>
               <a
-                href={fileUrl}
+                href={safeFileUrl || undefined}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-5 py-3 text-[0.9rem] font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                className="flex-1 rounded-lg border border-gray-200 bg-white px-6 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-100"
               >
-                <FaExternalLinkAlt />
-                Open in New Tab
+                <span className="flex items-center justify-center gap-2">
+                  <FaExternalLinkAlt />
+                  Open in New Tab
+                </span>
               </a>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };

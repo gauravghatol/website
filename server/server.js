@@ -113,41 +113,18 @@ app.use((err, req, res, next) => {
 
 // Start Server - Only after MongoDB connection
 const PORT = process.env.PORT || 5000;
-const mongoPrimaryUri =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/ssgmce";
-const mongoFallbackUri = process.env.MONGODB_URI_FALLBACK;
-const mongoOptions = {
-  family: 4,
-  serverSelectionTimeoutMS: 5000,
-  connectTimeoutMS: 10000,
-  socketTimeoutMS: 45000,
-  maxPoolSize: 20,
-  minPoolSize: 2,
-};
-
-const connectMongoWithFallback = async () => {
-  try {
-    await mongoose.connect(mongoPrimaryUri, mongoOptions);
-    return;
-  } catch (err) {
-    const isSrvDnsError =
-      err && err.code === "ECONNREFUSED" && err.syscall === "querySrv";
-
-    if (isSrvDnsError && mongoFallbackUri) {
-      console.warn(
-        "[WARN] SRV DNS lookup failed. Retrying MongoDB with direct-host fallback URI...",
-      );
-      await mongoose.connect(mongoFallbackUri, mongoOptions);
-      return;
-    }
-
-    throw err;
-  }
-};
 
 // MongoDB Connection
 const mongoConnectStartedAt = Date.now();
-connectMongoWithFallback()
+mongoose
+  .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/ssgmce", {
+    family: 4,
+    serverSelectionTimeoutMS: 5000,
+    connectTimeoutMS: 10000,
+    socketTimeoutMS: 45000,
+    maxPoolSize: 20,
+    minPoolSize: 2,
+  })
   .then(() => {
     const connectMs = Date.now() - mongoConnectStartedAt;
     console.log(`[OK] MongoDB Connected Successfully in ${connectMs}ms`);

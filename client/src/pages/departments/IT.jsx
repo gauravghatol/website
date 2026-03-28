@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useRef } from "react";
 import axios from "axios";
@@ -41,6 +41,7 @@ import {
   defaultPso,
   defaultPo,
 } from "../../data/itDefaults";
+import { getPathWithTab, getRequestedTab } from "../../utils/navigation";
 import { defaultPlacements } from "../../data/itPlacements";
 import { defaultItInternships } from "../../data/itInternships";
 import itBanner from "../../assets/images/departments/it/IT banner.png";
@@ -92,7 +93,6 @@ const IT_DEFAULT_FACULTY = IT_DEFAULTS.map((f) => ({
 }));
 
 import { AnimatePresence, motion } from "framer-motion";
-import { buildReturnState } from "../../utils/navigation";
 import {
   FaLaptopCode,
   FaBullseye,
@@ -897,7 +897,9 @@ const defaultCourseMaterials = [
 
 const IT = () => {
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(() =>
+    getRequestedTab(location, "overview")
+  );
   const [vmTab, setVmTab] = useState("vision");
   const [poTab, setPoTab] = useState("peo");
   const [showAllPos, setShowAllPos] = useState(false);
@@ -947,6 +949,14 @@ const IT = () => {
     useState(false);
   const [expandedFacultyEditorIndex, setExpandedFacultyEditorIndex] =
     useState(null);
+
+  useEffect(() => {
+    const requestedTab = getRequestedTab(location, "overview");
+
+    setActiveTab((currentTab) =>
+      currentTab === requestedTab ? currentTab : requestedTab
+    );
+  }, [location.search]);
   const latestCourseMaterialRef = useRef(null);
 
   const defaultResearchYears = [
@@ -1993,7 +2003,7 @@ const IT = () => {
 
   const getPlacementMarkdown = (year) => {
     const records = placementRecordsByYear[year] || [];
-    const header = `## Placement Record � ${year}`;
+    const header = `## Placement Record — ${year}`;
     const intro =
       year === currentPlacementYear
         ? "*Placements still in progress for the current academic year.*\n\n"
@@ -2036,7 +2046,7 @@ const IT = () => {
   };
 
   const placementRecordsToMarkdown = (year, records) => {
-    const header = `## Placement Record � ${year}`;
+    const header = `## Placement Record — ${year}`;
     const intro =
       year === currentPlacementYear
         ? "*Placements still in progress for the current academic year.*\n\n"
@@ -2108,7 +2118,7 @@ const IT = () => {
             Back to Statistics
           </button>
           <div className="text-right">
-            <h3 className="text-lg font-bold text-gray-800 sm:text-xl">
+            <h3 className="text-xl font-bold text-gray-800">
               Placement Record
             </h3>
             <p className="text-sm text-ssgmce-blue font-bold">
@@ -2984,7 +2994,7 @@ const IT = () => {
       <div className="space-y-10">
         <div className="space-y-6">
           <div className="flex flex-col gap-6">
-            <h3 className="inline-block w-fit border-b-2 border-orange-500 pb-2 text-[clamp(1.45rem,3.8vw,1.875rem)] font-bold text-gray-800">
+            <h3 className="text-3xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2 w-fit">
               Department Overview
             </h3>
 
@@ -3021,7 +3031,7 @@ const IT = () => {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 p-4">
-            <h3 className="text-lg font-bold text-gray-800 sm:text-xl flex items-center">
+            <h3 className="text-xl font-bold text-gray-800 flex items-center">
               Courses @ Department
             </h3>
           </div>
@@ -3358,7 +3368,7 @@ const IT = () => {
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-900">
+              <h3 className="text-2xl font-bold text-gray-900">
                 <EditableText
                   value={t("hodName", "Dr. S. D. Padiya")}
                   onSave={(val) => updateField("hodName", val)}
@@ -3426,7 +3436,7 @@ const IT = () => {
 
           <div className="relative z-10 max-w-5xl mx-auto">
             <div className="mb-6 text-center">
-              <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800">
+              <h3 className="text-2xl font-bold text-gray-800">
                 <EditableText
                   value={t("hodMessageTitle", "Message from the HOD")}
                   onSave={(val) => updateField("hodMessageTitle", val)}
@@ -3524,7 +3534,7 @@ const IT = () => {
                   (item, i) => (
                     <div key={i} className="flex items-start gap-4">
                       <div className="mt-1 text-ssgmce-orange text-2xl flex-shrink-0">
-                        ?
+                        ➤
                       </div>
                       <div className="text-lg text-gray-700 leading-relaxed font-medium flex-1">
                         <MarkdownEditor
@@ -3553,7 +3563,7 @@ const IT = () => {
                           className="flex-shrink-0 mt-1 text-red-400 hover:text-red-600 text-sm font-bold px-2"
                           title="Remove item"
                         >
-                          ?
+                          ✕
                         </button>
                       )}
                     </div>
@@ -3585,7 +3595,7 @@ const IT = () => {
               >
                 {t("mission", defaultMission).map((item, i) => (
                   <div key={i} className="flex items-start gap-4">
-                    <div className="mt-1 text-ssgmce-orange text-xl">?</div>
+                    <div className="mt-1 text-ssgmce-orange text-xl">➤</div>
                     <div className="text-gray-700 w-full">
                       <MarkdownEditor
                         value={item}
@@ -3609,7 +3619,7 @@ const IT = () => {
                         className="flex-shrink-0 mt-1 text-red-400 hover:text-red-600 text-sm font-bold px-2"
                         title="Remove item"
                       >
-                        ?
+                        ✕
                       </button>
                     )}
                   </div>
@@ -3669,7 +3679,7 @@ const IT = () => {
                 </p>
                 {t("peo", defaultPeo).map((item, i) => (
                   <div key={i} className="flex items-start gap-4">
-                    <div className="mt-1 text-ssgmce-orange text-xl">?</div>
+                    <div className="mt-1 text-ssgmce-orange text-xl">➤</div>
                     <div className="text-gray-700 leading-relaxed font-medium w-full">
                       <MarkdownEditor
                         value={item}
@@ -3693,7 +3703,7 @@ const IT = () => {
                         className="flex-shrink-0 mt-1 text-red-400 hover:text-red-600 text-sm font-bold px-2"
                         title="Remove item"
                       >
-                        ?
+                        ✕
                       </button>
                     )}
                   </div>
@@ -3722,7 +3732,7 @@ const IT = () => {
               >
                 {t("pso", defaultPso).map((item, i) => (
                   <div key={i} className="flex items-start gap-4">
-                    <div className="mt-1 text-ssgmce-orange text-xl">?</div>
+                    <div className="mt-1 text-ssgmce-orange text-xl">➤</div>
                     <div className="text-gray-700 leading-relaxed font-medium w-full">
                       <MarkdownEditor
                         value={item}
@@ -3746,7 +3756,7 @@ const IT = () => {
                         className="flex-shrink-0 mt-1 text-red-400 hover:text-red-600 text-sm font-bold px-2"
                         title="Remove item"
                       >
-                        ?
+                        ✕
                       </button>
                     )}
                   </div>
@@ -3820,7 +3830,7 @@ const IT = () => {
                               className="flex-shrink-0 mt-1 text-red-400 hover:text-red-600 text-sm font-bold px-2"
                               title="Remove item"
                             >
-                              ?
+                              ✕
                             </button>
                           )}
                         </div>
@@ -3832,8 +3842,8 @@ const IT = () => {
                   className="text-ssgmce-blue hover:text-ssgmce-orange font-medium text-sm transition-colors"
                 >
                   {showAllPos
-                    ? "Read Less ?"
-                    : `Read More ? (${t("po", defaultPo).length - 4} more)`}
+                    ? "Read Less ▲"
+                    : `Read More ▼ (${t("po", defaultPo).length - 4} more)`}
                 </button>
                 {isEditing && (
                   <button
@@ -3918,7 +3928,7 @@ After successful completion of the course, students will be able to:
 
 1. Understand the definitions and fundamental concepts of entrepreneurship and start-ups
 2. Understand the role of a business plan in guiding the implementation of business ideas
-3. Understand the company�s organization structure and its role in effective management. Course Name: Environmental Science Course Code: 3SH208VE
+3. Understand the company’s organization structure and its role in effective management. Course Name: Environmental Science Course Code: 3SH208VE
 4. Understand the multidisciplinary nature of environment and Renewable and non-renewable resources
 5. Understand natural environment and its relationship with human activities
 6. Understand the basic concepts and problems and follow sustainable development practices`,
@@ -3966,7 +3976,7 @@ After successful completion of the course, students will be able to:
 2. Apply synchronization and deadlock-related issues
 3. Investigate memory management techniques
 
-### 4IT215VS Computer Skills � I
+### 4IT215VS Computer Skills – I
 
 After successful completion of the course, students will be able to:
 
@@ -4144,7 +4154,7 @@ After successful completion of the course, students will be able to:
 5. Apply knowledge of signals, transmission media, and error detection and correction techniques in data communication
 6. Illustrate the building blocks and functioning of a digital communication system
 
-### 6IT09 Computer Skill Lab � IV
+### 6IT09 Computer Skill Lab – IV
 
 After successful completion of the course, students will be able to:
 
@@ -4389,7 +4399,7 @@ After successful completion of the course, students will be able to:
         <div className="space-y-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <h2 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-3">
+            <h2 className="text-3xl font-bold text-gray-800 mb-3">
               Course Outcomes
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
@@ -4429,7 +4439,7 @@ After successful completion of the course, students will be able to:
     curriculum: (
       <div className="space-y-8">
         <div className="flex items-center justify-between">
-          <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+          <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
             Scheme and Syllabus
           </h3>
         </div>
@@ -4519,7 +4529,7 @@ After successful completion of the course, students will be able to:
                                     className="text-xs text-green-700 bg-green-100 border border-green-300 rounded px-1.5 py-0.5 truncate max-w-[160px] font-medium"
                                     title={item.fileName}
                                   >
-                                    ? {item.fileName}
+                                    ✅ {item.fileName}
                                   </span>
                                 )}
                               </div>
@@ -4599,7 +4609,7 @@ After successful completion of the course, students will be able to:
     ),
     laboratories: (
       <div className="space-y-8">
-        <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
           Infrastructure and Laboratories
         </h3>
 
@@ -4746,7 +4756,7 @@ After successful completion of the course, students will be able to:
       return (
         <div className="space-y-8">
           <div className="text-center mb-10">
-            <h2 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-900">
+            <h2 className="text-3xl font-bold text-gray-900">
               Student's Best Projects
             </h2>
             <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
@@ -4779,7 +4789,7 @@ After successful completion of the course, students will be able to:
         >
           <div className="flex items-center gap-3 mb-8">
             <FaTrophy className="text-4xl text-yellow-500" />
-            <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800">
+            <h3 className="text-3xl font-bold text-gray-800">
               Pride of the Department
             </h3>
           </div>
@@ -4899,7 +4909,7 @@ After successful completion of the course, students will be able to:
             >
               <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                 <div>
-                  <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800">
+                  <h3 className="text-2xl font-bold text-gray-800">
                     Placement Statistics
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">
@@ -5002,7 +5012,7 @@ After successful completion of the course, students will be able to:
       <div className="space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+          <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
             <EditableText
               value={t("activitiesTitle", "Curricular Activities")}
               onSave={(val) => updateData("activitiesTitle", val)}
@@ -5088,7 +5098,7 @@ After successful completion of the course, students will be able to:
                       )}
                     </span>
 
-                    <div className="text-lg sm:text-lg font-bold text-gray-800 sm:text-xl leading-snug tracking-tight">
+                    <div className="text-lg sm:text-xl font-bold text-gray-800 leading-snug tracking-tight">
                       {isEditing ? (
                         <EditableText
                           value={activity.title}
@@ -5261,7 +5271,7 @@ After successful completion of the course, students will be able to:
     faculty: (
       <div className="space-y-10">
         <div className="text-center border-b border-gray-200 pb-6 mb-8">
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-900">Our Faculty</h3>
+          <h3 className="text-3xl font-bold text-gray-900">Our Faculty</h3>
           <p className="text-gray-500 mt-2">
             Department of Information Technology
           </p>
@@ -5298,7 +5308,7 @@ After successful completion of the course, students will be able to:
                   {fac.id && !fac.isIndustry ? (
                     <Link
                       to={`/faculty/${fac.id}`}
-                      state={buildReturnState(location)}
+                      state={{ from: getPathWithTab(location, "faculty") }}
                       className="hover:underline"
                     >
                       <EditableText
@@ -5378,7 +5388,7 @@ After successful completion of the course, students will be able to:
                   {fac.id && !fac.isIndustry && (
                     <Link
                       to={`/faculty/${fac.id}`}
-                      state={buildReturnState(location)}
+                      state={{ from: getPathWithTab(location, "faculty") }}
                       className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
                     >
                       View Profile <FaAngleRight className="ml-1" />
@@ -5526,7 +5536,7 @@ After successful completion of the course, students will be able to:
           <div className="w-16 h-16 bg-blue-50 text-ssgmce-blue rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
             <FaBullseye />
           </div>
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-4">
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
             <EditableText
               value={t("newsletterTitle", "Department Newsletters")}
               onSave={(val) => updateData("newsletterTitle", val)}
@@ -5816,7 +5826,7 @@ After successful completion of the course, students will be able to:
 
           {/* Header */}
           <div className="text-center mb-10">
-            <h2 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-900">Achievements</h2>
+            <h2 className="text-3xl font-bold text-gray-900">Achievements</h2>
             <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
             <p className="text-gray-600 mt-3">
               Department of Information Technology
@@ -6174,7 +6184,7 @@ After successful completion of the course, students will be able to:
           <div className="w-16 h-16 bg-orange-50 text-ssgmce-orange rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
             <FaChalkboardTeacher />
           </div>
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-4">
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
             <EditableText
               value={t("courseMaterial.title", "Course Material")}
               onSave={(val) => updateData("courseMaterial.title", val)}
@@ -6357,7 +6367,7 @@ After successful completion of the course, students will be able to:
     practices: (
       <div className="space-y-8">
         <div className="max-w-3xl">
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-4 border-l-4 border-orange-500 pl-4">
+          <h3 className="text-3xl font-bold text-gray-800 mb-4 border-l-4 border-orange-500 pl-4">
             Innovative Practice
           </h3>
         </div>
@@ -6527,7 +6537,7 @@ After successful completion of the course, students will be able to:
         <div className="space-y-10">
           {/* Header */}
           <div className="text-center mb-8">
-            <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-3">
+            <h3 className="text-3xl font-bold text-gray-800 mb-3">
               Industrial Visits
             </h3>
             <p className="text-gray-600 max-w-2xl mx-auto">
@@ -6543,7 +6553,7 @@ After successful completion of the course, students will be able to:
               <>
                 <div className="flex items-center gap-3 mb-4">
                   <FaImages className="text-2xl text-ssgmce-blue" />
-                  <h4 className="text-lg font-bold text-gray-800 sm:text-xl">Visit Gallery</h4>
+                  <h4 className="text-xl font-bold text-gray-800">Visit Gallery</h4>
                   <span className="text-sm font-medium text-ssgmce-blue bg-blue-50 px-3 py-1 rounded-full">
                     {industrialVisitPhotos.length} Photos
                   </span>
@@ -6816,7 +6826,7 @@ After successful completion of the course, students will be able to:
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-4">
               <FaIndustry className="text-2xl text-ssgmce-blue" />
-              <h4 className="text-lg font-bold text-gray-800 sm:text-xl">Visit Details</h4>
+              <h4 className="text-xl font-bold text-gray-800">Visit Details</h4>
             </div>
 
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
@@ -7000,7 +7010,7 @@ After successful completion of the course, students will be able to:
           return (
             <>
               <div className="text-center mb-8">
-                <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-3">MoUs</h3>
+                <h3 className="text-3xl font-bold text-gray-800 mb-3">MoUs</h3>
                 <p className="text-gray-600 max-w-2xl mx-auto">
                   Strategic partnerships with industry leaders to enhance learning
                   outcomes and provide students with real-world exposure.
@@ -7142,11 +7152,11 @@ After successful completion of the course, students will be able to:
               className="space-y-6"
             >
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
-                <h3 className="text-lg font-bold text-gray-800 sm:text-xl flex items-center mb-2 md:mb-0">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
                   <FaLightbulb className="text-yellow-500 mr-2" />
                   Patents Granted & Published
                 </h3>
-                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                   {researchYears.map((year) => (
                     <button
                       key={year}
@@ -7255,11 +7265,11 @@ After successful completion of the course, students will be able to:
               className="space-y-6"
             >
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
-                <h3 className="text-lg font-bold text-gray-800 sm:text-xl flex items-center mb-2 md:mb-0">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
                   <FaChartLine className="text-ssgmce-orange mr-2" />
                   Research Publications (Journals)
                 </h3>
-                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                   {researchYears.map((year) => (
                     <button
                       key={year}
@@ -7372,11 +7382,11 @@ After successful completion of the course, students will be able to:
               className="space-y-6"
             >
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
-                <h3 className="text-lg font-bold text-gray-800 sm:text-xl flex items-center mb-2 md:mb-0">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
                   <FaChalkboardTeacher className="text-indigo-500 mr-2" />
                   Conference Publications
                 </h3>
-                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                   {researchYears.map((year) => (
                     <button
                       key={year}
@@ -7489,11 +7499,11 @@ After successful completion of the course, students will be able to:
               className="space-y-6"
             >
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
-                <h3 className="text-lg font-bold text-gray-800 sm:text-xl flex items-center mb-2 md:mb-0">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
                   <FaAward className="text-purple-500 mr-2" />
                   Copyrights
                 </h3>
-                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                   {researchYears.map((year) => (
                     <button
                       key={year}
@@ -7599,11 +7609,11 @@ After successful completion of the course, students will be able to:
               className="space-y-6"
             >
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
-                <h3 className="text-lg font-bold text-gray-800 sm:text-xl flex items-center mb-2 md:mb-0">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
                   <FaBook className="text-teal-500 mr-2" />
                   Books / Book Chapters Published
                 </h3>
-                <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                   {researchYears.map((year) => (
                     <button
                       key={year}
@@ -7837,7 +7847,7 @@ After successful completion of the course, students will be able to:
     internships: (
       <div className="space-y-8">
         <div className="text-center mb-8">
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-3">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">
             <EditableText
               value={t("internshipsTitle", "Internship and Training Record")}
               onSave={(val) => updateField("internshipsTitle", val)}
@@ -8000,7 +8010,7 @@ After successful completion of the course, students will be able to:
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                     <FaPlus className="text-ssgmce-blue" /> Add Internship
                     Session
                   </h3>
@@ -8089,7 +8099,7 @@ After successful completion of the course, students will be able to:
 
           return (
             <>
-        <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
+        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
           <EditableText
             value={t("ugProjectsTitle", "UG Projects")}
             onSave={(val) => updateField("ugProjectsTitle", val)}
@@ -8132,7 +8142,7 @@ After successful completion of the course, students will be able to:
           <div className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white p-4">
             <h4 className="text-lg font-bold flex items-center gap-2">
               <FaBook className="text-ssgmce-orange" />
-              UG Projects � {ugProjectYear}
+              UG Projects – {ugProjectYear}
             </h4>
           </div>
           <div className="overflow-x-auto">
@@ -8173,7 +8183,7 @@ After successful completion of the course, students will be able to:
                             <FaExternalLinkAlt className="text-xs" /> View
                           </a>
                         ) : (
-                          <span className="text-gray-400 text-xs">�</span>
+                          <span className="text-gray-400 text-xs">—</span>
                         )}
                       </td>
                     )}
@@ -8227,7 +8237,7 @@ After successful completion of the course, students will be able to:
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                     <FaPlus className="text-ssgmce-blue" /> Add UG Project Session
                   </h3>
                   <button
@@ -8305,7 +8315,7 @@ After successful completion of the course, students will be able to:
       <div className="space-y-8">
         {/* Header */}
         <div className="max-w-4xl">
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-4 border-l-4 border-orange-500 pl-4">
+          <h3 className="text-3xl font-bold text-gray-800 mb-4 border-l-4 border-orange-500 pl-4">
             Services Offered
           </h3>
           <p className="text-gray-600 leading-relaxed">
@@ -8402,7 +8412,7 @@ After successful completion of the course, students will be able to:
       <div className="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded-lg">
         <div className="flex items-center mb-3">
           <FaLightbulb className="text-3xl text-yellow-600 mr-3" />
-          <h3 className="text-lg font-bold text-gray-800 sm:text-xl">Coming Soon</h3>
+          <h3 className="text-xl font-bold text-gray-800">Coming Soon</h3>
         </div>
         <p className="text-gray-600">
           This section is under development and will be updated soon with
@@ -8434,10 +8444,10 @@ After successful completion of the course, students will be able to:
 
   return (
     <GenericPage title="Information Technology" backgroundImage={itBanner}>
-      <div className="mx-auto flex w-full max-w-[120rem] flex-col gap-6 sm:gap-8 lg:flex-row lg:gap-12">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:gap-12">
         {/* Sidebar Navigation (Left Side) */}
-        <div className="order-1 lg:order-1 lg:w-1/4">
-          <div className="space-y-4 pb-3 sm:space-y-6 sm:pb-4 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
+        <div className="lg:w-1/4 order-1 lg:order-1">
+          <div className="space-y-4 pb-2 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:space-y-6 lg:pb-4 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
             {/* Academics Section */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
               <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">
@@ -8469,7 +8479,7 @@ After successful completion of the course, students will be able to:
         </div>
 
         {/* Main Content Area (Right Side) */}
-        <div className="order-2 min-h-[420px] lg:order-2 lg:min-h-[600px] lg:w-3/4">
+        <div className="lg:w-3/4 order-2 lg:order-2 min-h-[600px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -8504,7 +8514,7 @@ After successful completion of the course, students will be able to:
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                     <FaPlus className="text-ssgmce-blue" /> Add New Academic
                     Year
                   </h3>
@@ -8599,7 +8609,7 @@ After successful completion of the course, students will be able to:
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                     <FaPlus className="text-ssgmce-blue" /> Add Research
                     Session
                   </h3>

@@ -46,8 +46,8 @@ const NAAC = () => {
         backgroundImage="https://images.unsplash.com/photo-1568667256549-094345857637?w=1200&q=80"
       />
 
-      <div className="mx-auto w-full max-w-[120rem] px-4 py-10 sm:px-5 sm:py-12 lg:px-6">
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-12">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-12 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-3">
             <DocumentsSidebar />
@@ -56,8 +56,8 @@ const NAAC = () => {
           {/* Main Content */}
           <div className="lg:col-span-9">
             {/* Header Info */}
-            <div id="naac-status" className="mb-6 rounded-lg bg-white p-5 shadow-md sm:mb-8 sm:p-6">
-              <h2 className="mb-3 text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-ssgmce-blue">
+            <div id="naac-status" className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <h2 className="text-2xl font-bold text-ssgmce-blue mb-3">
                 NAAC ACCREDITATION STATUS
               </h2>
               <p className="text-gray-600 leading-relaxed">
@@ -70,16 +70,16 @@ const NAAC = () => {
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-100 border-b">
-                    <th className="border-r px-3 py-3 text-left text-xs font-bold text-gray-800 sm:px-6 sm:py-4 sm:text-base">Period of Validity</th>
-                    <th className="border-r px-3 py-3 text-left text-xs font-bold text-gray-800 sm:px-6 sm:py-4 sm:text-base">Report</th>
-                    <th className="px-3 py-3 text-left text-xs font-bold text-gray-800 sm:px-6 sm:py-4 sm:text-base">Certificate</th>
+                    <th className="px-6 py-4 text-left font-bold text-gray-800 border-r">Period of Validity</th>
+                    <th className="px-6 py-4 text-left font-bold text-gray-800 border-r">Report</th>
+                    <th className="px-6 py-4 text-left font-bold text-gray-800">Certificate</th>
                   </tr>
                 </thead>
                 <tbody>
                   {cycles.map((cycle, idx) => (
                     <tr key={idx} className="border-b hover:bg-gray-50">
-                      <td className="border-r px-3 py-3 text-sm text-gray-700 sm:px-6 sm:py-4">{cycle.validity}</td>
-                      <td className="border-r px-3 py-3 sm:px-6 sm:py-4">
+                      <td className="px-6 py-4 text-gray-700 border-r">{cycle.validity}</td>
+                      <td className="px-6 py-4 border-r">
                         <a
                           href={cycle.report.url}
                           target="_blank"
@@ -89,7 +89,7 @@ const NAAC = () => {
                           {cycle.report.title}
                         </a>
                       </td>
-                      <td className="px-3 py-3 sm:px-6 sm:py-4">
+                      <td className="px-6 py-4">
                         <a
                           href={cycle.certificate.url}
                           target="_blank"

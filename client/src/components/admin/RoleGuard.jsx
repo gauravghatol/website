@@ -1,7 +1,6 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { ADMIN_ROUTE_PREFIX } from "../../config/adminAccess";
-import { buildReturnState } from "../../utils/navigation";
 
 /**
  * RoleGuard – Role-Based Access Control wrapper for admin routes.
@@ -29,16 +28,9 @@ import { buildReturnState } from "../../utils/navigation";
  */
 const RoleGuard = ({ allowedRoles, allowedDepartments, children }) => {
   const { user } = useAuth();
-  const location = useLocation();
 
   if (!user) {
-    return (
-      <Navigate
-        to={`${ADMIN_ROUTE_PREFIX}/login`}
-        state={buildReturnState(location)}
-        replace
-      />
-    );
+    return <Navigate to={`${ADMIN_ROUTE_PREFIX}/login`} replace />;
   }
 
   // Normalise for comparison — route definitions can use "superadmin" or "SuperAdmin"

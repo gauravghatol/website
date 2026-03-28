@@ -2150,58 +2150,6 @@ const DEPT_TO_PAGEID = {
   ASH: "departments-applied-sciences",
 };
 
-const VALID_SECTION_TYPES = new Set([
-  "text",
-  "richtext",
-  "markdown",
-  "list",
-  "image",
-  "stats",
-  "timeline",
-  "cards",
-  "table",
-  "quote",
-  "tabs",
-  "accordion",
-  "faculty",
-  "gallery",
-  "video",
-  "pdf",
-  "sidebar",
-  "hod",
-  "link",
-  "iqac-stats",
-  "meeting-records",
-  "year-reports",
-  "naac-criteria",
-  "video-gallery",
-  "document-grid",
-  "process-steps",
-  "info-cards",
-]);
-
-const sanitizeSections = (sections) => {
-  if (!Array.isArray(sections)) return [];
-
-  return sections
-    .filter((section) => section && VALID_SECTION_TYPES.has(section.type))
-    .map((section, index) => ({
-      ...section,
-      sectionId:
-        typeof section.sectionId === "string" && section.sectionId.trim()
-          ? section.sectionId
-          : `restored-${section.type || "section"}-${index + 1}`,
-      title: typeof section.title === "string" ? section.title : "",
-      order: Number.isFinite(section.order) ? section.order : index,
-      isVisible:
-        typeof section.isVisible === "boolean" ? section.isVisible : true,
-      content:
-        section.content && typeof section.content === "object"
-          ? section.content
-          : {},
-    }));
-};
-
 const updatePage = async (req, res) => {
   try {
     const page = await PageContent.findOne({ pageId: req.params.pageId });
@@ -2237,11 +2185,46 @@ const updatePage = async (req, res) => {
       "pageId",
     ]);
 
+    // Allowed section types from the schema enum — used to strip any
+    // unknown types that the client might send (e.g. after a schema
+    // migration) so that page.save() never fails with a validation error.
+    const VALID_SECTION_TYPES = new Set([
+      "text",
+      "richtext",
+      "markdown",
+      "list",
+      "image",
+      "stats",
+      "timeline",
+      "cards",
+      "table",
+      "quote",
+      "tabs",
+      "accordion",
+      "faculty",
+      "gallery",
+      "video",
+      "pdf",
+      "sidebar",
+      "hod",
+      "link",
+      "iqac-stats",
+      "meeting-records",
+      "year-reports",
+      "naac-criteria",
+      "video-gallery",
+      "document-grid",
+      "process-steps",
+      "info-cards",
+    ]);
+
     const body = { ...(req.body || {}) };
 
     // Sanitize sections: drop any entry whose type is not in the enum
-    if (body.sections !== undefined) {
-      body.sections = sanitizeSections(body.sections);
+    if (Array.isArray(body.sections)) {
+      body.sections = body.sections.filter((s) =>
+        VALID_SECTION_TYPES.has(s.type),
+      );
     }
 
     Object.entries(body).forEach(([key, value]) => {
@@ -2454,36 +2437,9 @@ const getEditLogs = async (req, res) => {
     const logs = await EditLog.find(filter)
       .sort({ createdAt: -1 })
       .limit(parseInt(req.query.limit) || 100)
-      .lean();
+      .select("-previousData"); // Don't send bulky snapshots in listing
 
-    const editPageIds = [
-      ...new Set(
-        logs
-          .filter((log) => log.action === "edit" && typeof log.pageId === "string")
-          .map((log) => log.pageId),
-      ),
-    ];
-
-    const existingPages = new Set(
-      (
-        await PageContent.find(
-          { pageId: { $in: editPageIds } },
-          { _id: 0, pageId: 1 },
-        ).lean()
-      ).map((page) => page.pageId),
-    );
-
-    const serializedLogs = logs.map((log) => {
-      const canReset =
-        log.action === "edit" &&
-        !!log.previousData &&
-        typeof log.previousData === "object" &&
-        existingPages.has(log.pageId);
-      delete log.previousData;
-      return { ...log, canReset };
-    });
-
-    res.json({ success: true, data: serializedLogs });
+    res.json({ success: true, data: logs });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -2506,12 +2462,6 @@ const resetPageToVersion = async (req, res) => {
         message: "No previous data snapshot available for this log entry",
       });
     }
-    if (log.action !== "edit") {
-      return res.status(400).json({
-        success: false,
-        message: "Only edit entries can be reset",
-      });
-    }
 
     const page = await PageContent.findOne({ pageId: log.pageId });
     if (!page) {
@@ -2532,24 +2482,13 @@ const resetPageToVersion = async (req, res) => {
       "lastEditedBy",
       "pageId",
     ]);
-    const restoreData = { ...(log.previousData || {}) };
-
-    if (restoreData.sections !== undefined) {
-      restoreData.sections = sanitizeSections(restoreData.sections);
-    }
+    const restoreData = log.previousData;
 
     Object.keys(restoreData).forEach((key) => {
-      if (!immutableFields.has(key) && restoreData[key] !== undefined) {
+      if (!immutableFields.has(key)) {
         page.set(key, restoreData[key]);
       }
     });
-
-    if (restoreData.templateData !== undefined) {
-      page.markModified("templateData");
-    }
-    if (restoreData.sections !== undefined) {
-      page.markModified("sections");
-    }
 
     page.lastEditedBy = req.user._id;
     await page.save();

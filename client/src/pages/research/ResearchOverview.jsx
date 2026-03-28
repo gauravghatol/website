@@ -19,6 +19,7 @@ import {
   FaUsers
 } from 'react-icons/fa';
 import axios from 'axios';
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 
 // Skeleton Loader Component
 const SkeletonCard = () => (
@@ -34,6 +35,7 @@ const ResearchOverview = () => {
   const [stats, setStats] = useState(null);
   const [areas, setAreas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -49,8 +51,10 @@ const ResearchOverview = () => {
       ]);
       setStats(statsRes.data);
       setAreas(areasRes.data);
+      setError("");
     } catch (error) {
-      console.error('Error fetching research data:', error);
+      logUnexpectedError('Error fetching research data:', error);
+      setError(getErrorMessage(error, "Failed to load research overview"));
     } finally {
       setLoading(false);
     }
@@ -81,15 +85,20 @@ const ResearchOverview = () => {
         breadcrumbs={[{ label: 'Research & Innovation' }]}
       />
 
-      <div className="mx-auto w-full max-w-[120rem] px-4 py-10 sm:px-5 sm:py-12 lg:px-6">
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-12">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-12 gap-8">
           <div className="lg:col-span-3">
             <ResearchSidebar />
           </div>
 
-          <div className="space-y-8 sm:space-y-10 lg:col-span-9">
+          <div className="lg:col-span-9 space-y-10">
+            {error ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            ) : null}
             {/* Hero Stats */}
-            <section className="grid gap-3.5 sm:gap-4 md:grid-cols-4">
+            <section className="grid md:grid-cols-4 gap-4">
               {loading ? (
                 Array(4).fill(0).map((_, i) => (
                   <div key={i} className="bg-white p-6 rounded-xl animate-pulse">
@@ -124,17 +133,17 @@ const ResearchOverview = () => {
             </section>
 
             {/* Introduction */}
-            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-lg sm:p-8">
+            <section className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
               <div className="flex items-start gap-4 mb-6">
                 <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center flex-shrink-0">
                   <FaFlask className="text-2xl text-white" />
                 </div>
                 <div>
-                  <h2 className="mb-1 text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-800">Research Excellence</h2>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-1">Research Excellence</h2>
                   <p className="text-gray-500">Driving Innovation Through Academic Research</p>
                 </div>
               </div>
-              <p className="text-[clamp(0.95rem,1.8vw,1.125rem)] leading-relaxed text-gray-700">
+              <p className="text-gray-700 leading-relaxed text-lg">
                 SSGMCE is committed to fostering a vibrant research ecosystem that encourages
                 innovation, creativity, and knowledge creation. Our faculty and students are
                 engaged in cutting-edge research across multiple disciplines, contributing to
@@ -147,7 +156,7 @@ const ResearchOverview = () => {
             <section>
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-1.5 h-8 bg-gradient-to-b from-blue-600 to-orange-500 rounded-full"></div>
-                <h3 className="text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-800">Explore Research</h3>
+                <h3 className="text-2xl font-bold text-gray-800">Explore Research</h3>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
@@ -188,7 +197,7 @@ const ResearchOverview = () => {
             <section>
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-1.5 h-8 bg-gradient-to-b from-blue-600 to-orange-500 rounded-full"></div>
-                <h3 className="text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-gray-800">Research Focus Areas</h3>
+                <h3 className="text-2xl font-bold text-gray-800">Research Focus Areas</h3>
               </div>
 
               {loading ? (
@@ -232,8 +241,8 @@ const ResearchOverview = () => {
             </section>
 
             {/* Research Highlights */}
-            <section className="bg-gradient-to-r from-blue-900 to-blue-800 p-6 sm:p-8 rounded-2xl text-white">
-              <h3 className="text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold mb-6">Research Highlights</h3>
+            <section className="bg-gradient-to-r from-blue-900 to-blue-800 p-8 rounded-2xl text-white">
+              <h3 className="text-2xl font-bold mb-6">Research Highlights</h3>
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <p className="text-5xl font-bold text-orange-400 mb-2">4+</p>
@@ -251,8 +260,8 @@ const ResearchOverview = () => {
             </section>
 
             {/* CTA */}
-            <section className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 sm:p-8 rounded-2xl text-white text-center">
-              <h3 className="text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold mb-3">Collaborate With Us</h3>
+            <section className="bg-gradient-to-r from-orange-500 to-orange-600 p-8 rounded-2xl text-white text-center">
+              <h3 className="text-2xl font-bold mb-3">Collaborate With Us</h3>
               <p className="text-orange-100 mb-6 max-w-xl mx-auto">
                 We welcome research collaborations with industry, academia, and government organizations.
               </p>

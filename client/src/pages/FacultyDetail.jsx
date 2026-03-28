@@ -11,6 +11,7 @@ import {
   FaExternalLinkAlt,
 } from "react-icons/fa";
 import { goBackOrFallback } from "../utils/navigation";
+import { logUnexpectedError } from "../utils/apiErrors";
 
 // Import faculty data from all departments
 import { APPLIED_DEFAULT_FACULTY } from "./departments/AppliedSciences";
@@ -441,7 +442,7 @@ export const useFacultyDirectoryData = () => {
 
         setLiveFacultyByDept(nextLiveFaculty);
       } catch (error) {
-        console.error("Error loading live faculty data:", error);
+        logUnexpectedError("Error loading live faculty data:", error);
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -469,11 +470,11 @@ const InfoRow = ({ label, children, borderColor = "border-blue-600" }) => {
   return (
     <tr className="border-b border-gray-200 hover:bg-gray-50/50 transition-colors">
       <td
-        className={`w-[170px] bg-gray-50/80 px-3 py-3 align-top text-xs font-semibold uppercase tracking-wide text-gray-800 border-l-4 sm:w-[210px] sm:px-4 sm:py-4 sm:text-sm lg:w-[260px] lg:px-5 ${borderColor}`}
+        className={`py-4 px-5 font-semibold text-gray-800 text-sm uppercase tracking-wide align-top w-[260px] bg-gray-50/80 border-l-4 ${borderColor}`}
       >
         {label}
       </td>
-      <td className="px-3 py-3 align-top text-xs leading-relaxed text-gray-700 sm:px-4 sm:py-4 sm:text-sm lg:px-6">
+      <td className="py-4 px-6 text-gray-700 text-sm leading-relaxed align-top">
         {children}
       </td>
     </tr>
@@ -499,7 +500,7 @@ const FacultyDetail = () => {
   if (loading && !faculty) {
     return (
       <GenericPage title="Faculty Directory">
-        <div className="mx-auto w-full max-w-[120rem] px-4 py-12 text-center sm:px-5 sm:py-16 lg:px-6">
+        <div className="container mx-auto px-4 py-16 text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-ssgmce-blue"></div>
           <p className="mt-4 text-gray-600">Loading faculty profile...</p>
         </div>
@@ -510,7 +511,7 @@ const FacultyDetail = () => {
   if (!faculty) {
     return (
       <GenericPage title="Faculty Not Found">
-        <div className="mx-auto w-full max-w-[120rem] px-4 py-12 text-center sm:px-5 sm:py-16 lg:px-6">
+        <div className="container mx-auto px-4 py-16 text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
             Faculty Member Not Found
           </h2>
@@ -545,7 +546,7 @@ const FacultyDetail = () => {
       <div className="bg-gray-100 min-h-screen">
         {/* Top Header Bar */}
         <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900">
-          <div className="mx-auto w-full max-w-[120rem] px-4 py-4 sm:px-5 lg:px-6">
+          <div className="container mx-auto max-w-7xl px-4 py-4">
             <button
               onClick={() => goBackOrFallback(navigate, location, "/faculty")}
               className="inline-flex items-center text-blue-200 hover:text-white text-sm transition-colors"
@@ -556,19 +557,19 @@ const FacultyDetail = () => {
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-[120rem] px-4 py-6 sm:px-5 sm:py-8 lg:px-6">
+        <div className="container mx-auto max-w-7xl px-4 py-8">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="flex flex-col gap-5 sm:gap-6 lg:flex-row"
+            className="flex flex-col lg:flex-row gap-6"
           >
             {/* ─── Left Sidebar: Photo & Contact ─── */}
-            <div className="lg:w-[280px] xl:w-[300px] flex-shrink-0">
-              <div className="sticky top-20 overflow-hidden rounded-lg bg-white shadow-md lg:top-24">
+            <div className="lg:w-[300px] flex-shrink-0">
+              <div className="bg-white rounded-lg shadow-md overflow-hidden sticky top-24">
                 {/* Photo */}
-                <div className="flex flex-col items-center bg-gradient-to-b from-blue-900 to-blue-800 p-5 sm:p-6">
-                  <div className="mb-4 h-48 w-36 overflow-hidden rounded-lg border-4 border-white/30 bg-white shadow-xl sm:h-56 sm:w-44">
+                <div className="bg-gradient-to-b from-blue-900 to-blue-800 p-6 flex flex-col items-center">
+                  <div className="w-44 h-56 rounded-lg overflow-hidden border-4 border-white/30 shadow-xl mb-4 bg-white">
                     {faculty.photo ? (
                       <img
                         src={faculty.photo}
@@ -577,11 +578,11 @@ const FacultyDetail = () => {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-blue-700">
-                        <FaUserTie className="text-4xl text-blue-300 sm:text-5xl" />
+                        <FaUserTie className="text-5xl text-blue-300" />
                       </div>
                     )}
                   </div>
-                  <h2 className="text-center text-[clamp(1rem,2.6vw,1.25rem)] font-bold leading-tight text-white">
+                  <h2 className="text-xl font-bold text-white text-center leading-tight">
                     {faculty.name}
                   </h2>
                   <p className="text-blue-200 text-sm text-center mt-1">
@@ -594,7 +595,7 @@ const FacultyDetail = () => {
                 </div>
 
                 {/* Contact Details */}
-                <div className="space-y-3 border-t border-gray-100 p-4 sm:p-5">
+                <div className="p-5 space-y-3 border-t border-gray-100">
                   <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
                     Contact Information
                   </h3>
@@ -620,7 +621,7 @@ const FacultyDetail = () => {
 
                 {/* Vidwan Profile Link */}
                 {getVidwanUrl(faculty) && (
-                  <div className="px-4 pb-4 sm:px-5 sm:pb-5">
+                  <div className="px-5 pb-5">
                     <a
                       href={getVidwanUrl(faculty)}
                       target="_blank"
@@ -639,8 +640,8 @@ const FacultyDetail = () => {
             <div className="flex-1 min-w-0">
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 {/* Title Bar */}
-                <div className="bg-blue-900 px-4 py-4 sm:px-6">
-                  <h1 className="text-[clamp(1rem,2.6vw,1.25rem)] font-bold text-white">
+                <div className="bg-blue-900 px-6 py-4">
+                  <h1 className="text-xl font-bold text-white">
                     {faculty.name}
                   </h1>
                   <p className="text-blue-200 text-sm mt-0.5">{faculty.role}</p>
@@ -749,7 +750,7 @@ const FacultyDetail = () => {
                           <ul className="space-y-2">
                             {faculty.publications.map((pub, i) => (
                               <li key={i} className="flex items-start gap-2">
-                                <span className="mt-0.5 flex h-5 min-w-[20px] flex-shrink-0 items-center justify-center rounded bg-orange-100 text-[11px] font-bold text-orange-700 sm:h-[22px] sm:min-w-[22px] sm:text-xs">
+                                <span className="mt-0.5 min-w-[22px] h-[22px] bg-orange-100 text-orange-700 rounded text-xs font-bold flex items-center justify-center flex-shrink-0">
                                   {i + 1}
                                 </span>
                                 <span>{pub}</span>

@@ -20,6 +20,11 @@ import EditableSection from "./admin/EditableSection";
 import MarkdownEditor from "./admin/MarkdownEditor";
 import { useEdit } from "../contexts/EditContext";
 import {
+  getErrorMessage,
+  isNotFoundError,
+  logUnexpectedError,
+} from "../utils/apiErrors";
+import {
   FaGraduationCap,
   FaHandshake,
   FaChartLine,
@@ -500,9 +505,9 @@ const GenericContentPage = ({ pageId }) => {
         setError(null);
       } catch (err) {
         if (!isActive) return;
-        console.error("[GenericContentPage] Error:", err);
+        logUnexpectedError("[GenericContentPage] Error:", err);
         if (!cachedPage) {
-          setError(err.message);
+          setError(isNotFoundError(err) ? "Page not found" : getErrorMessage(err));
         }
       } finally {
         if (!backgroundRefresh && isActive) {
@@ -2123,14 +2128,14 @@ Constituted By **All India Council for Technical Education, New Delhi**
       variant={isAboutThemePage ? "about" : "default"}
     >
       <div
-        className={`flex flex-col lg:flex-row ${isAboutThemePage ? "gap-5 sm:gap-6 lg:gap-10" : "gap-6 sm:gap-8"} ${sidebar ? "" : "justify-center"}`}
+        className={`flex flex-col lg:flex-row ${isAboutThemePage ? "gap-6 lg:gap-10" : "gap-8"} ${sidebar ? "" : "justify-center"}`}
       >
         {/* Sidebar */}
         {sidebar && (
           <div
             className={isAboutThemePage ? "lg:w-[300px] flex-shrink-0" : "lg:w-1/4 flex-shrink-0"}
           >
-            <div className="lg:sticky lg:top-24">{sidebar}</div>
+            <div className="sticky top-24">{sidebar}</div>
           </div>
         )}
 
@@ -2145,8 +2150,8 @@ Constituted By **All India Council for Technical Education, New Delhi**
                 element="h1"
                 className={
                   isAboutThemePage
-                    ? "text-[clamp(1.4rem,3.6vw,1.875rem)] font-semibold text-slate-900 border-b border-slate-200 pb-2 mb-4"
-                    : "text-[clamp(1.4rem,3.6vw,1.875rem)] font-bold text-gray-900 border-b pb-2 mb-4"
+                    ? "text-3xl font-semibold text-slate-900 border-b border-slate-200 pb-2 mb-4"
+                    : "text-3xl font-bold text-gray-900 border-b pb-2 mb-4"
                 }
               />
             </div>

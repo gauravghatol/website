@@ -230,37 +230,37 @@ const Navbar = () => {
   return (
     <>
       {/* Top Buttons and Contact Bar - Above Image */}
-      <div className="bg-[#003366] text-white py-2">
-        <div className="mx-auto w-full max-w-[120rem] px-3 sm:px-4 lg:px-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="bg-[#003366] text-white py-2 md:py-1.5">
+        <div className="container mx-auto px-3 md:px-4">
+          <div className="flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between">
             {/* Left side - Quick Links */}
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <button className="rounded-full bg-ssgmce-orange px-3 py-1 text-[clamp(0.64rem,1.6vw,0.74rem)] font-semibold text-white shadow-lg transition-colors hover:bg-ssgmce-light-orange">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:justify-start">
+              <button className="bg-ssgmce-orange hover:bg-ssgmce-light-orange px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white">
                 FRA Fee Structure
               </button>
-              <button className="hidden rounded-full bg-blue-700 px-3 py-1 text-[clamp(0.64rem,1.6vw,0.74rem)] font-semibold text-white shadow-lg transition-colors hover:bg-blue-600 sm:inline">
+              <button className="bg-blue-700 hover:bg-blue-600 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden sm:inline">
                 Best Practices
               </button>
-              <button className="hidden rounded-full bg-red-600 px-3 py-1 text-[clamp(0.64rem,1.6vw,0.74rem)] font-semibold text-white shadow-lg transition-colors hover:bg-red-500 md:inline">
+              <button className="bg-red-600 hover:bg-red-500 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden md:inline">
                 SSGMCE Blog
               </button>
-              <button className="hidden rounded-full bg-ssgmce-orange px-3 py-1 text-[clamp(0.64rem,1.6vw,0.74rem)] font-semibold text-white shadow-lg transition-colors hover:bg-ssgmce-light-orange lg:inline">
+              <button className="bg-ssgmce-orange hover:bg-ssgmce-light-orange px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden lg:inline">
                 Grievance Form
               </button>
             </div>
             
             {/* Right side - Contact Info moved/removed */}
-            <div className="flex flex-wrap items-center gap-1.5 sm:justify-end sm:gap-2">
-               <a href="#" className="rounded-full bg-red-600 px-3 py-1 text-[clamp(0.64rem,1.6vw,0.74rem)] font-semibold text-white shadow-lg transition-colors hover:bg-red-500">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:justify-end text-white">
+               <a href="#" className="bg-red-600 hover:bg-red-500 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white">
                  Institute Brochure
                </a>
-               <a href="#" className="rounded-full bg-ssgmce-orange px-3 py-1 text-[clamp(0.64rem,1.6vw,0.74rem)] font-semibold text-white shadow-lg transition-colors hover:bg-ssgmce-light-orange">
+               <a href="#" className="bg-ssgmce-orange hover:bg-ssgmce-light-orange px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white">
                  Academic Calendar
                </a>
-               <a href="https://alumni.ssgmce.ac.in/" target="_blank" rel="noreferrer" className="hidden rounded-full bg-red-600 px-3 py-1 text-[clamp(0.64rem,1.6vw,0.74rem)] font-semibold text-white shadow-lg transition-colors hover:bg-red-500 lg:inline">
+               <a href="https://alumni.ssgmce.ac.in/" target="_blank" rel="noreferrer" className="bg-red-600 hover:bg-red-500 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden lg:inline">
                  Alumni Registration
                </a>
-               <a href="https://erp.ssgmce.ac.in/login.aspx" target="_blank" rel="noreferrer" className="hidden rounded-full bg-blue-700 px-3 py-1 text-[clamp(0.64rem,1.6vw,0.74rem)] font-semibold text-white shadow-lg transition-colors hover:bg-blue-600 lg:inline">
+               <a href="https://erp.ssgmce.ac.in/login.aspx" target="_blank" rel="noreferrer" className="bg-blue-700 hover:bg-blue-600 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold transition-colors shadow-lg text-white hidden lg:inline">
                  ERP Login
                </a>
             </div>
@@ -269,12 +269,12 @@ const Navbar = () => {
       </div>
 
       {/* Upper Navbar Image Banner */}
-      <div className="bg-[#003366] py-1.5">
-        <div className="mx-auto w-full max-w-[120rem] px-3 sm:px-4 lg:px-6">
+      <div className="bg-[#003366] py-1 md:py-1.5">
+        <div className="container mx-auto px-3 md:px-4">
           <img 
             src={uppernavbar} 
             alt="SSGMCE Header" 
-            className="h-[clamp(2.75rem,8.5vw,5rem)] w-full object-contain"
+            className="w-full h-14 md:h-16 lg:h-20 object-contain"
             style={{ display: 'block' }}
           />
         </div>
@@ -282,14 +282,14 @@ const Navbar = () => {
 
       {/* Main Navigation Menu - White Background */}
       <nav className="bg-white sticky top-0 z-50 shadow-md border-b border-gray-200 relative">
-        <div className="mx-auto w-full max-w-[120rem] px-3 sm:px-4 lg:px-6">
-          <div className="flex min-h-[3.75rem] items-center justify-between lg:min-h-[4.5rem]">
+        <div className="w-full px-4 md:px-6 lg:px-8">
+          <div className="flex justify-between items-center min-h-[60px] md:min-h-[70px]">
             {/* Logo on Left */}
-            <Link to="/" className="flex-shrink-0 py-2">
+            <Link to="/" className="flex-shrink-0 py-2 md:py-2.5">
               <img 
                 src={logo} 
                 alt="SSGMCE" 
-                className="h-[clamp(2.25rem,6vw,3.5rem)] w-auto object-contain"
+                className="h-10 md:h-12 lg:h-14 w-auto object-contain"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.parentElement.innerHTML = '<span class="text-ssgmce-blue font-bold text-lg md:text-xl">SSGMCE</span>';
@@ -300,14 +300,15 @@ const Navbar = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-ssgmce-blue text-2xl py-2 lg:hidden"
+              className="rounded-md border border-gray-200 p-2 text-xl text-ssgmce-blue transition-colors hover:bg-gray-50 md:hidden"
+              aria-label={isOpen ? "Close menu" : "Open menu"}
             >
               {isOpen ? <FaTimes /> : <FaBars />}
             </button>
 
             {/* Desktop Menu */}
             <div 
-              className="hidden lg:flex items-center flex-1 justify-end"
+              className="hidden md:flex items-center flex-1 justify-end"
               onMouseLeave={() => {
                 setActiveDropdown(null);
                 setActiveSubDropdown(null);
@@ -327,7 +328,7 @@ const Navbar = () => {
                           setActiveDropdown(null);
                           setActiveSubDropdown(null);
                         }}
-                        className={`flex items-center whitespace-nowrap px-2.5 py-3 text-[clamp(0.8rem,0.9vw,0.98rem)] font-medium text-gray-700 transition-colors duration-300 hover:text-ssgmce-blue ${
+                        className={`px-2.5 lg:px-3 py-2.5 text-gray-700 font-medium hover:text-ssgmce-blue transition-colors duration-300 flex items-center whitespace-nowrap text-sm lg:text-base ${
                           activeDropdown === item.name ? 'text-ssgmce-blue border-b-2 border-ssgmce-orange' : isActive(item.path) ? 'text-ssgmce-blue border-b-2 border-ssgmce-blue' : ''
                         }`}
                       >
@@ -336,7 +337,7 @@ const Navbar = () => {
                     ) : (
                       <Link
                         to={item.path}
-                        className={`block whitespace-nowrap px-2.5 py-3 text-[clamp(0.8rem,0.9vw,0.98rem)] font-medium text-gray-700 transition-colors duration-300 hover:text-ssgmce-blue ${
+                        className={`block px-2.5 lg:px-3 py-2.5 text-gray-700 font-medium hover:text-ssgmce-blue transition-colors duration-300 whitespace-nowrap text-sm lg:text-base ${
                           isActive(item.path) ? 'text-ssgmce-blue border-b-2 border-ssgmce-blue' : ''
                         }`}
                         onMouseEnter={() => setActiveDropdown(null)}
@@ -372,10 +373,10 @@ const Navbar = () => {
                 return (
                   <div className="absolute left-0 right-0 top-full pt-3 z-50">
                     <div className="bg-white rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.12)] relative">
-                    <div className="px-7 py-7">
-                      <div className="flex gap-6">
+                    <div className="px-8 py-8">
+                      <div className="flex gap-8">
                         {/* Left Side - Menu Items */}
-                        <div className="flex flex-1 gap-6">
+                        <div className="flex-1 flex gap-8">
                           {columns.map((col, colIdx) => (
                             <div key={`col-${colIdx}`} className="flex-1 min-w-[180px]">
                               <ul className="space-y-1.5">
@@ -391,7 +392,7 @@ const Navbar = () => {
                                           subDropdownTimeout.current = setTimeout(() => setActiveSubDropdown(null), 150);
                                         }}
                                       >
-                                        <button className="group flex w-full items-center justify-between py-1.5 text-[0.95rem] font-medium text-gray-700 transition-all hover:text-ssgmce-orange">
+                                        <button className="w-full flex items-center justify-between py-1.5 text-gray-700 hover:text-ssgmce-orange transition-all text-base font-medium group">
                                           {subItem.name}
                                           <FaChevronRight className="text-[10px] text-gray-400 group-hover:text-ssgmce-orange transition-colors" />
                                         </button>
@@ -403,7 +404,7 @@ const Navbar = () => {
                                           setActiveDropdown(null);
                                           setActiveSubDropdown(null);
                                         }}
-                                        className="block py-1.5 text-[0.95rem] font-medium text-gray-700 transition-all hover:text-ssgmce-orange hover:underline"
+                                        className="block py-1.5 text-gray-700 hover:text-ssgmce-orange hover:underline transition-all text-base font-medium"
                                       >
                                         {subItem.name}
                                       </Link>
@@ -416,7 +417,7 @@ const Navbar = () => {
                         </div>
                         
                         {/* Right Side - Promotional Image */}
-                        <div className="relative hidden w-[19rem] flex-shrink-0 overflow-hidden rounded-lg shadow-lg xl:block 2xl:w-[22rem]">
+                        <div className="w-[350px] relative overflow-hidden rounded-lg shadow-lg flex-shrink-0">
                           <img 
                             src={activeItem.megaMenuImage} 
                             alt={activeItem.megaMenuTitle}
@@ -483,7 +484,7 @@ const Navbar = () => {
 
           {/* Mobile Menu */}
           {isOpen && (
-            <div className="py-3 max-h-[72vh] overflow-y-auto lg:hidden">
+            <div className="md:hidden border-t border-gray-200 bg-white px-1 py-3 max-h-[70vh] overflow-y-auto shadow-lg">
               <ul className="space-y-1">
                 {menuItems.map((item, index) => (
                   <li key={index}>
@@ -491,28 +492,28 @@ const Navbar = () => {
                       <>
                         <button
                           onClick={() => setActiveDropdown(activeDropdown === item.name ? null : item.name)}
-                          className="flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left text-[0.9rem] font-semibold text-gray-700 hover:bg-gray-50"
+                          className="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 rounded flex justify-between items-center font-semibold text-sm"
                         >
                           {item.name} <FaChevronDown className={`text-[10px] transition-transform ${
                             activeDropdown === item.name ? 'rotate-180' : ''
                           }`} />
                         </button>
                         {activeDropdown === item.name && (
-                          <ul className="ml-2 mt-1 space-y-1 border-l border-gray-200 pl-2">
+                          <ul className="ml-2 mt-1 space-y-1">
                             {item.dropdown.map((subItem, subIndex) => (
                               <li key={subIndex}>
                                 {subItem.hasSubDropdown ? (
                                   <>
                                     <button
                                       onClick={() => setActiveSubDropdown(activeSubDropdown === subItem.name ? null : subItem.name)}
-                                      className="flex w-full items-center justify-between rounded px-3 py-2 text-left text-[0.79rem] text-gray-600 hover:bg-gray-50"
+                                      className="w-full text-left px-3 py-1.5 text-gray-600 hover:bg-gray-50 rounded flex justify-between items-center text-xs"
                                     >
                                       {subItem.name} <FaChevronRight className={`text-[9px] transition-transform ${
                                         activeSubDropdown === subItem.name ? 'rotate-90' : ''
                                       }`} />
                                     </button>
                                     {activeSubDropdown === subItem.name && (
-                                      <ul className="ml-2 mt-1 space-y-1 border-l border-gray-200 pl-2">
+                                      <ul className="ml-2 mt-1 space-y-1">
                                         {subItem.subDropdown.map((nestedItem, nestedIndex) => (
                                           <li key={nestedIndex}>
                                             <Link
@@ -522,7 +523,7 @@ const Navbar = () => {
                                                 setActiveDropdown(null);
                                                 setActiveSubDropdown(null);
                                               }}
-                                              className="block rounded px-3 py-1.5 text-[0.75rem] text-gray-500 hover:bg-gray-50"
+                                              className="block px-3 py-1.5 text-gray-500 hover:bg-gray-50 rounded text-xs"
                                             >
                                               {nestedItem.name}
                                             </Link>
@@ -539,7 +540,7 @@ const Navbar = () => {
                                       setActiveDropdown(null);
                                       setActiveSubDropdown(null);
                                     }}
-                                    className="block rounded px-3 py-2 text-[0.79rem] text-gray-600 hover:bg-gray-50"
+                                    className="block px-3 py-1.5 text-gray-600 hover:bg-gray-50 rounded text-xs"
                                   >
                                     {subItem.name}
                                   </Link>
@@ -553,7 +554,7 @@ const Navbar = () => {
                       <Link
                         to={item.path}
                         onClick={() => setIsOpen(false)}
-                        className={`block rounded-md px-3 py-2.5 text-[0.9rem] font-semibold ${
+                        className={`block px-3 py-2 rounded font-semibold text-sm ${
                           isActive(item.path)
                             ? 'bg-ssgmce-blue text-white'
                             : 'text-gray-700 hover:bg-gray-50'

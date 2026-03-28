@@ -10,12 +10,12 @@ const Admissions = () => {
       />
 
       {/* Important Notice */}
-      <section className="bg-gradient-to-r from-ssgmce-orange to-red-600 py-10 text-white sm:py-12">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
+      <section className="py-12 bg-gradient-to-r from-ssgmce-orange to-red-600 text-white">
+        <div className="container mx-auto px-4">
           <div className="text-center">
-            <FaGraduationCap className="mx-auto mb-4 text-5xl sm:text-6xl" />
-            <h2 className="mb-3 text-[clamp(1.5rem,4.2vw,1.9rem)] font-bold">Admissions Open for Academic Year 2024-25</h2>
-            <p className="mb-6 text-[clamp(1rem,2.1vw,1.25rem)]">Apply now for B.E. and M.E. programs</p>
+            <FaGraduationCap className="text-6xl mx-auto mb-4" />
+            <h2 className="text-3xl font-bold mb-3">Admissions Open for Academic Year 2024-25</h2>
+            <p className="text-xl mb-6">Apply now for B.E. and M.E. programs</p>
             <button className="bg-white text-ssgmce-orange px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors duration-300">
               Apply Online Now
             </button>
@@ -24,16 +24,16 @@ const Admissions = () => {
       </section>
 
       {/* Programs Offered */}
-      <section className="py-12 sm:py-14 md:py-16">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
-          <h2 className="mb-10 text-center text-[clamp(1.6rem,4vw,2.25rem)] font-bold text-ssgmce-blue sm:mb-12">Programs Offered</h2>
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center text-ssgmce-blue mb-12">Programs Offered</h2>
           
           {/* UG Programs */}
           <div className="mb-12">
-            <h3 className="mb-6 inline-block border-b-4 border-ssgmce-orange pb-2 text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-ssgmce-dark-blue">
+            <h3 className="text-2xl font-bold text-ssgmce-dark-blue mb-6 border-b-4 border-ssgmce-orange inline-block pb-2">
               Undergraduate Programs (B.E.)
             </h3>
-            <div className="mt-6 grid gap-4 sm:gap-6 md:grid-cols-2">
+            <div className="grid md:grid-cols-2 gap-6 mt-6">
               {[
                 { name: 'Computer Science & Engineering', duration: '4 Years', intake: '120' },
                 { name: 'Mechanical Engineering', duration: '4 Years', intake: '60' },
@@ -42,9 +42,9 @@ const Admissions = () => {
                 { name: 'Electronics & Telecommunication', duration: '4 Years', intake: '60' },
                 { name: 'Information Technology', duration: '4 Years', intake: '60' },
               ].map((program, index) => (
-                <div key={index} className="rounded-lg border border-gray-200 bg-white p-5 transition-all duration-300 hover:border-ssgmce-orange hover:shadow-lg sm:p-6">
-                  <h4 className="mb-3 text-[clamp(1rem,2.1vw,1.125rem)] font-bold text-ssgmce-blue">{program.name}</h4>
-                  <div className="flex flex-col gap-1.5 text-[clamp(0.82rem,1.4vw,0.875rem)] text-gray-600 sm:flex-row sm:justify-between">
+                <div key={index} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-ssgmce-orange transition-all duration-300">
+                  <h4 className="font-bold text-lg text-ssgmce-blue mb-3">{program.name}</h4>
+                  <div className="flex justify-between text-sm text-gray-600">
                     <span><FaCalendarAlt className="inline mr-2 text-ssgmce-orange" />Duration: {program.duration}</span>
                     <span><FaGraduationCap className="inline mr-2 text-ssgmce-orange" />Intake: {program.intake}</span>
                   </div>
@@ -55,18 +55,18 @@ const Admissions = () => {
 
           {/* PG Programs */}
           <div>
-            <h3 className="mb-6 inline-block border-b-4 border-ssgmce-orange pb-2 text-[clamp(1.2rem,2.8vw,1.5rem)] font-bold text-ssgmce-dark-blue">
+            <h3 className="text-2xl font-bold text-ssgmce-dark-blue mb-6 border-b-4 border-ssgmce-orange inline-block pb-2">
               Postgraduate Programs (M.E.)
             </h3>
-            <div className="mt-6 grid gap-4 sm:gap-6 md:grid-cols-2">
+            <div className="grid md:grid-cols-2 gap-6 mt-6">
               {[
                 { name: 'Computer Science & Engineering', duration: '2 Years', intake: '18' },
                 { name: 'Heat Power Engineering', duration: '2 Years', intake: '18' },
                 { name: 'Structural Engineering', duration: '2 Years', intake: '18' },
               ].map((program, index) => (
-                <div key={index} className="rounded-lg border border-gray-200 bg-white p-5 transition-all duration-300 hover:border-ssgmce-orange hover:shadow-lg sm:p-6">
-                  <h4 className="mb-3 text-[clamp(1rem,2.1vw,1.125rem)] font-bold text-ssgmce-blue">{program.name}</h4>
-                  <div className="flex flex-col gap-1.5 text-[clamp(0.82rem,1.4vw,0.875rem)] text-gray-600 sm:flex-row sm:justify-between">
+                <div key={index} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-ssgmce-orange transition-all duration-300">
+                  <h4 className="font-bold text-lg text-ssgmce-blue mb-3">{program.name}</h4>
+                  <div className="flex justify-between text-sm text-gray-600">
                     <span><FaCalendarAlt className="inline mr-2 text-ssgmce-orange" />Duration: {program.duration}</span>
                     <span><FaGraduationCap className="inline mr-2 text-ssgmce-orange" />Intake: {program.intake}</span>
                   </div>
@@ -78,12 +78,12 @@ const Admissions = () => {
       </section>
 
       {/* Eligibility Criteria */}
-      <section className="bg-gray-50 py-12 sm:py-14 md:py-16">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
-          <h2 className="mb-10 text-center text-[clamp(1.6rem,4vw,2.25rem)] font-bold text-ssgmce-blue sm:mb-12">Eligibility Criteria</h2>
-          <div className="mx-auto grid max-w-5xl gap-6 sm:gap-8 md:grid-cols-2">
-            <div className="rounded-lg border-t-4 border-ssgmce-blue bg-white p-6 shadow-lg sm:p-8">
-              <h3 className="mb-4 text-[clamp(1.15rem,2.8vw,1.5rem)] font-bold text-ssgmce-blue">For B.E. Programs</h3>
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center text-ssgmce-blue mb-12">Eligibility Criteria</h2>
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <div className="bg-white p-8 rounded-lg shadow-lg border-t-4 border-ssgmce-blue">
+              <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">For B.E. Programs</h3>
               <ul className="space-y-3">
                 <li className="flex items-start">
                   <FaCheckCircle className="text-green-600 mt-1 mr-3 flex-shrink-0" />
@@ -99,8 +99,8 @@ const Admissions = () => {
                 </li>
               </ul>
             </div>
-            <div className="rounded-lg border-t-4 border-ssgmce-orange bg-white p-6 shadow-lg sm:p-8">
-              <h3 className="mb-4 text-[clamp(1.15rem,2.8vw,1.5rem)] font-bold text-ssgmce-blue">For M.E. Programs</h3>
+            <div className="bg-white p-8 rounded-lg shadow-lg border-t-4 border-ssgmce-orange">
+              <h3 className="text-2xl font-bold text-ssgmce-blue mb-4">For M.E. Programs</h3>
               <ul className="space-y-3">
                 <li className="flex items-start">
                   <FaCheckCircle className="text-green-600 mt-1 mr-3 flex-shrink-0" />
@@ -121,9 +121,9 @@ const Admissions = () => {
       </section>
 
       {/* Admission Process */}
-      <section className="py-12 sm:py-14 md:py-16">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
-          <h2 className="mb-10 text-center text-[clamp(1.6rem,4vw,2.25rem)] font-bold text-ssgmce-blue sm:mb-12">Admission Process</h2>
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center text-ssgmce-blue mb-12">Admission Process</h2>
           <div className="max-w-4xl mx-auto">
             <div className="relative">
               {[
@@ -133,15 +133,15 @@ const Admissions = () => {
                 { step: '4', title: 'Document Verification', desc: 'Attend document verification on scheduled date' },
                 { step: '5', title: 'Fee Payment', desc: 'Pay admission fee to confirm your seat' },
               ].map((item, index) => (
-                <div key={index} className="mb-8 flex gap-4 last:mb-0 sm:gap-6">
+                <div key={index} className="flex gap-6 mb-8 last:mb-0">
                   <div className="flex-shrink-0">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-ssgmce-blue to-ssgmce-dark-blue text-xl font-bold text-white shadow-lg sm:h-16 sm:w-16 sm:text-2xl">
+                    <div className="w-16 h-16 bg-gradient-to-br from-ssgmce-blue to-ssgmce-dark-blue rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg">
                       {item.step}
                     </div>
                   </div>
-                  <div className="flex-1 rounded-lg border-l-4 border-ssgmce-orange bg-white p-5 shadow-lg sm:p-6">
-                    <h4 className="mb-2 text-[clamp(1rem,2.2vw,1.25rem)] font-bold text-ssgmce-blue">{item.title}</h4>
-                    <p className="text-[clamp(0.9rem,1.6vw,1rem)] text-gray-600">{item.desc}</p>
+                  <div className="flex-1 bg-white p-6 rounded-lg shadow-lg border-l-4 border-ssgmce-orange">
+                    <h4 className="text-xl font-bold text-ssgmce-blue mb-2">{item.title}</h4>
+                    <p className="text-gray-600">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -151,11 +151,11 @@ const Admissions = () => {
       </section>
 
       {/* Documents Required */}
-      <section className="bg-gray-50 py-12 sm:py-14 md:py-16">
-        <div className="mx-auto w-full max-w-[120rem] px-4 sm:px-5 lg:px-6">
-          <h2 className="mb-10 text-center text-[clamp(1.6rem,4vw,2.25rem)] font-bold text-ssgmce-blue sm:mb-12">Documents Required</h2>
-          <div className="mx-auto max-w-3xl rounded-lg bg-white p-6 shadow-lg sm:p-8">
-            <ul className="grid gap-3.5 md:grid-cols-2 md:gap-4">
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center text-ssgmce-blue mb-12">Documents Required</h2>
+          <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+            <ul className="grid md:grid-cols-2 gap-4">
               {[
                 '10th Mark Sheet',
                 '12th Mark Sheet',
@@ -179,10 +179,10 @@ const Admissions = () => {
       </section>
 
       {/* Contact for Admission */}
-      <section className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue py-12 text-white sm:py-14 md:py-16">
-        <div className="mx-auto w-full max-w-[120rem] px-4 text-center sm:px-5 lg:px-6">
-          <h2 className="mb-6 text-[clamp(1.6rem,4vw,2.25rem)] font-bold">Need Help with Admissions?</h2>
-          <p className="mb-8 text-[clamp(1rem,2.1vw,1.25rem)] text-ssgmce-light-blue">Contact our admission office for any queries</p>
+      <section className="py-16 bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl font-bold mb-6">Need Help with Admissions?</h2>
+          <p className="text-xl mb-8 text-ssgmce-light-blue">Contact our admission office for any queries</p>
           <div className="flex flex-wrap justify-center gap-6">
             <div className="bg-white/10 backdrop-blur-sm px-6 py-4 rounded-lg">
               <p className="font-bold text-lg">Phone</p>

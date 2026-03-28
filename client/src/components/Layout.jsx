@@ -1,14 +1,16 @@
 import Navbar from './Navbar';
 import Footer from './Footer';
+import BackToTopButton from './BackToTopButton';
 
 const Layout = ({ children }) => {
   return (
-    <div className="flex min-h-screen w-full flex-col overflow-x-clip bg-white">
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main className="min-w-0 flex-1">
+      <main className="flex-grow">
         {children}
       </main>
       <Footer />
+      <BackToTopButton />
     </div>
   );
 };

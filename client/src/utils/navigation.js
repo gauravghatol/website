@@ -18,6 +18,18 @@ const normalizeFromLocationLike = (value) => {
   return null;
 };
 
+export const getPathWithTab = (location, tabId) => {
+  const params = new URLSearchParams(location?.search || "");
+  params.set("tab", tabId);
+
+  const search = params.toString();
+
+  return `${location?.pathname || ""}${search ? `?${search}` : ""}${location?.hash || ""}`;
+};
+
+export const getRequestedTab = (location, fallbackTab = "overview") =>
+  new URLSearchParams(location?.search || "").get("tab") || fallbackTab;
+
 export const getReturnTarget = (location, fallbackPath) => {
   const fromState = normalizeFromLocationLike(location?.state?.from);
   if (fromState) return fromState;

@@ -25,16 +25,16 @@ const AICTE = () => {
         backgroundImage="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&q=80"
       />
 
-      <div className="mx-auto w-full max-w-[120rem] px-4 py-10 sm:px-5 sm:py-12 lg:px-6">
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-12">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-12 gap-8">
           <div className="lg:col-span-3">
             <DocumentsSidebar />
           </div>
 
-          <div className="space-y-6 sm:space-y-8 lg:col-span-9">
+          <div className="lg:col-span-9 space-y-8">
             {/* About */}
-            <div className="rounded-xl bg-white p-5 shadow-md sm:p-6">
-              <h2 className="mb-3 text-[clamp(1.05rem,2.2vw,1.25rem)] font-bold text-gray-800">About AICTE Approval</h2>
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-3">About AICTE Approval</h2>
               <p className="text-gray-600 leading-relaxed">
                 SSGMCE, Shegaon is approved by the All India Council for Technical Education (AICTE), New Delhi
                 for offering technical education programs in Engineering and Management. The Extension of Approval (EOA)
@@ -44,7 +44,7 @@ const AICTE = () => {
 
             {/* Approvals Table */}
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
-              <div className="bg-gradient-to-r from-ssgmce-blue to-blue-700 px-5 py-4 text-white sm:px-6">
+              <div className="bg-gradient-to-r from-ssgmce-blue to-blue-700 text-white px-6 py-4">
                 <h3 className="text-lg font-bold">AICTE Approvals</h3>
               </div>
               <div className="overflow-x-auto">

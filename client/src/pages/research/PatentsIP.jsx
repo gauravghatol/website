@@ -12,6 +12,7 @@ import {
   FaLightbulb
 } from 'react-icons/fa';
 import axios from 'axios';
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 
 // Skeleton Loader
 const PatentSkeleton = () => (
@@ -35,6 +36,7 @@ const PatentsIP = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ status: '', type: '' });
   const [stats, setStats] = useState({ total: 0, granted: 0, filed: 0 });
+  const [error, setError] = useState("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -52,6 +54,7 @@ const PatentsIP = () => {
 
       const res = await axios.get(`/api/research/patents?${params}`);
       setPatents(res.data.patents);
+      setError("");
 
       // Calculate stats
       const all = res.data.patents;
@@ -61,7 +64,8 @@ const PatentsIP = () => {
         filed: all.filter(p => p.status === 'filed' || p.status === 'published').length
       });
     } catch (error) {
-      console.error('Error fetching patents:', error);
+      logUnexpectedError('Error fetching patents:', error);
+      setError(getErrorMessage(error, "Failed to load patents"));
     } finally {
       setLoading(false);
     }
@@ -95,15 +99,20 @@ const PatentsIP = () => {
         ]}
       />
 
-      <div className="mx-auto w-full max-w-[120rem] px-4 py-10 sm:px-5 sm:py-12 lg:px-6">
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-12">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-12 gap-8">
           <div className="lg:col-span-3">
             <ResearchSidebar />
           </div>
 
-          <div className="space-y-6 sm:space-y-8 lg:col-span-9">
+          <div className="lg:col-span-9 space-y-8">
+            {error ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            ) : null}
             {/* Stats */}
-            <section className="grid gap-3.5 sm:gap-4 md:grid-cols-3">
+            <section className="grid md:grid-cols-3 gap-4">
               <div className="bg-gradient-to-br from-blue-900 to-blue-800 text-white p-6 rounded-2xl shadow-xl text-center">
                 <FaCertificate className="text-4xl mx-auto mb-3 text-blue-300" />
                 <p className="text-4xl font-bold">{stats.total}</p>
@@ -122,7 +131,7 @@ const PatentsIP = () => {
             </section>
 
             {/* Filters */}
-            <section className="rounded-xl border border-gray-100 bg-white p-4 shadow-md sm:p-5">
+            <section className="bg-white p-4 rounded-xl shadow-md border border-gray-100">
               <div className="flex flex-wrap gap-4 items-center">
                 <span className="text-sm font-medium text-gray-600">Filter by:</span>
                 <select

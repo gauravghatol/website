@@ -27,15 +27,15 @@ const DocumentsLayout = ({
         backgroundImage={backgroundImage}
       />
 
-      <div className="mx-auto w-full max-w-[120rem] px-4 py-8 sm:px-5 sm:py-10 lg:px-6 lg:py-12">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-12 gap-8">
           {/* Sidebar */}
-          <div className="lg:col-span-3 lg:self-start">
+          <div className="lg:col-span-3">
             <DocumentsSidebar />
           </div>
 
           {/* Main Content */}
-          <div className="min-w-0 lg:col-span-9">
+          <div className="lg:col-span-9">
             <DocumentGrid
               category={category}
               title={pageTitle}

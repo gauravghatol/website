@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { useAuth } from "../../hooks/useAuth";
 import { DASHBOARD_SECTIONS } from "../../constants/navConfig";
 import { isAcademicsWebsiteRoute } from "../../constants/academicsPages";
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 import {
   FaPlus, FaEdit, FaClock, FaFileAlt, FaChartLine, FaArrowRight,
   FaChartPie, FaDatabase, FaUniversity, FaArrowUp, FaNewspaper,
@@ -13,7 +14,6 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
-import { buildReturnState } from "../../utils/navigation";
 
 const DEPT_TO_PAGEID = {
   CSE: "departments-cse", IT: "departments-it", MECH: "departments-mechanical",
@@ -48,12 +48,12 @@ const StatCard = ({ label, value, sub, icon: Icon, accent = "gray" }) => {
 };
 
 const AdminDashboard = () => {
-  const location = useLocation();
   const { isSuperAdmin, isCoordinator, userDepartment, user } = useAuth();
   const [categoryCounts, setCategoryCounts] = useState({});
   const [totalPages, setTotalPages] = useState(0);
   const [recentPages, setRecentPages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [trafficData, setTrafficData] = useState([]);
   const [seeding, setSeeding] = useState(false);
 
@@ -81,9 +81,11 @@ const AdminDashboard = () => {
           (a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0),
         );
         setRecentPages(sorted.slice(0, 6));
+        setError("");
       }
     } catch (err) {
-      console.error("Error fetching dashboard data:", err);
+      logUnexpectedError("Error fetching dashboard data:", err);
+      setError(getErrorMessage(err, "Failed to load dashboard data"));
     } finally {
       setLoading(false);
     }
@@ -148,6 +150,11 @@ const AdminDashboard = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {error ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+            {error}
+          </div>
+        ) : null}
         {/* Page title */}
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
@@ -164,7 +171,6 @@ const AdminDashboard = () => {
         {isCoordinator && DEPT_TO_PAGEID[userDepartment] && (
           <Link
             to={`/admin/visual/${DEPT_TO_PAGEID[userDepartment]}`}
-            state={buildReturnState(location)}
             className="flex items-center justify-between bg-white dark:bg-[#1a1a2e] border border-gray-200/80 dark:border-gray-800 rounded-xl p-5 hover:shadow-md transition-all group"
           >
             <div className="flex items-center gap-4">
@@ -308,7 +314,6 @@ const AdminDashboard = () => {
                       <Link
                         key={idx}
                         to={`/admin/visual/${page.pageId}`}
-                        state={buildReturnState(location)}
                         className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       >
                         <div className="w-7 h-7 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">

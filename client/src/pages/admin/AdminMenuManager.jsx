@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { isAcademicsWebsiteRoute } from "../../constants/academicsPages";
+import { getErrorMessage, logUnexpectedError } from "../../utils/apiErrors";
 import {
   FaBars,
   FaSave,
@@ -28,6 +29,7 @@ const AdminMenuManager = () => {
   const [menuStructure, setMenuStructure] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const [selectedPage, setSelectedPage] = useState(null);
   const [editForm, setEditForm] = useState({
     parentMenu: "none",
@@ -69,8 +71,10 @@ const AdminMenuManager = () => {
       if (menuRes.data.success) {
         setMenuStructure(sanitizeMenuStructure(menuRes.data.data));
       }
+      setError("");
     } catch (error) {
-      console.error("Error fetching data:", error);
+      logUnexpectedError("Error fetching data:", error);
+      setError(getErrorMessage(error, "Failed to load menu manager data"));
     } finally {
       setLoading(false);
     }
@@ -136,6 +140,11 @@ const AdminMenuManager = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {error ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+            {error}
+          </div>
+        ) : null}
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Menu Manager</h1>

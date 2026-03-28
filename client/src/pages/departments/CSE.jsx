@@ -41,7 +41,7 @@ import {
   FaUpload,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import { buildReturnState } from "../../utils/navigation";
+import { getPathWithTab, getRequestedTab } from "../../utils/navigation";
 
 import {
   defaultLabs,
@@ -1108,7 +1108,9 @@ const splitFacultyMultiline = (value = "") =>
 const CSE = () => {
   const location = useLocation();
   // Department of Computer Science & Engineering Page
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(() =>
+    getRequestedTab(location, "overview")
+  );
 
   // State for Vision/Mission/PEO section tabs
   const [vmTab, setVmTab] = useState("vision");
@@ -1132,6 +1134,14 @@ const CSE = () => {
   const [researchYearError, setResearchYearError] = useState("");
   const [expandedFacultyEditorIndex, setExpandedFacultyEditorIndex] =
     useState(null);
+
+  useEffect(() => {
+    const requestedTab = getRequestedTab(location, "overview");
+
+    setActiveTab((currentTab) =>
+      currentTab === requestedTab ? currentTab : requestedTab
+    );
+  }, [location.search]);
 
   // Placement data (default) — used for summary + markdown generation
   const defaultPlacementYearOrder = [
@@ -2092,7 +2102,7 @@ const CSE = () => {
             Back to Statistics
           </button>
           <div className="text-right">
-            <h3 className="text-lg font-bold text-gray-800 sm:text-xl">
+            <h3 className="text-xl font-bold text-gray-800">
               Placement Record
             </h3>
             <p className="text-sm text-ssgmce-blue font-bold">
@@ -3608,7 +3618,7 @@ const CSE = () => {
       <div className="space-y-10">
         <div className="space-y-6">
           <div className="flex flex-col gap-6">
-            <h3 className="inline-block w-fit border-b-2 border-orange-500 pb-2 text-[clamp(1.45rem,3.8vw,1.875rem)] font-bold text-gray-800">
+            <h3 className="text-3xl font-bold text-gray-800 border-b-2 border-orange-500 inline-block pb-2 w-fit">
               Department Overview
             </h3>
 
@@ -3646,7 +3656,7 @@ const CSE = () => {
         {/* Courses Section - Minimalistic */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 p-4">
-            <h3 className="text-lg font-bold text-gray-800 sm:text-xl flex items-center">
+            <h3 className="text-xl font-bold text-gray-800 flex items-center">
               Courses @ Department
             </h3>
           </div>
@@ -4324,7 +4334,7 @@ const CSE = () => {
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-900">
+              <h3 className="text-2xl font-bold text-gray-900">
                 <EditableText
                   value={t("hod.name", "Dr. J. M. Patil")}
                   onSave={(v) => updateField("hod.name", v)}
@@ -4370,7 +4380,7 @@ const CSE = () => {
 
           <div className="relative z-10 max-w-5xl mx-auto">
             <div className="mb-6 text-center">
-              <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800">
+              <h3 className="text-2xl font-bold text-gray-800">
                 Message from the HOD
               </h3>
               <div className="h-1 w-20 bg-ssgmce-orange mt-2 rounded-full mx-auto"></div>
@@ -4421,7 +4431,7 @@ const CSE = () => {
     ),
     laboratories: (
       <div className="space-y-8">
-        <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
           Infrastructure and Laboratories
         </h3>
 
@@ -4556,7 +4566,7 @@ const CSE = () => {
         >
           <div className="flex items-center gap-3 mb-8">
             <FaTrophy className="text-4xl text-yellow-500" />
-            <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800">
+            <h3 className="text-3xl font-bold text-gray-800">
               Pride of the Department
             </h3>
           </div>
@@ -4694,7 +4704,7 @@ const CSE = () => {
 
     "student-chapter": (
       <div className="space-y-8">
-        <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
+        <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-ssgmce-orange pl-4">
           <EditableText
             value={t("csesa.title", "Student Chapter (CSESA)")}
             onSave={(val) => updateData("csesa.title", val)}
@@ -4703,7 +4713,7 @@ const CSE = () => {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
           <div className="prose max-w-none">
-            <h4 className="text-lg font-bold text-gray-800 sm:text-xl mb-4">
+            <h4 className="text-xl font-bold text-gray-800 mb-4">
               <EditableText
                 value={t(
                   "csesa.subTitle",
@@ -4816,7 +4826,7 @@ const CSE = () => {
       <div className="space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+          <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
             <EditableText
               value={t("activitiesTitle", "Curricular Activities")}
               onSave={(val) => updateData("activitiesTitle", val)}
@@ -4902,7 +4912,7 @@ const CSE = () => {
                       )}
                     </span>
 
-                    <div className="text-lg sm:text-lg font-bold text-gray-800 sm:text-xl leading-snug tracking-tight">
+                    <div className="text-lg sm:text-xl font-bold text-gray-800 leading-snug tracking-tight">
                       {isEditing ? (
                         <EditableText
                           value={activity.title}
@@ -5081,7 +5091,7 @@ const CSE = () => {
                         <span className="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded mb-2">
                           {activity.date}
                         </span>
-                        <h3 className="text-lg font-bold text-gray-800 sm:text-xl leading-snug">
+                        <h3 className="text-xl font-bold text-gray-800 leading-snug">
                           {activity.title}
                         </h3>
                       </div>
@@ -5139,7 +5149,7 @@ const CSE = () => {
           <div className="w-16 h-16 bg-orange-50 text-ssgmce-orange rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
             <FaChalkboardTeacher />
           </div>
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-4">
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
             <EditableText
               value={t("courseMaterial.title", "Course Material")}
               onSave={(val) => updateData("courseMaterial.title", val)}
@@ -5303,7 +5313,7 @@ const CSE = () => {
     "ug-projects": (
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
-          <h3 className="text-lg font-bold text-gray-800 sm:text-xl flex items-center mb-2 md:mb-0">
+          <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
             <FaProjectDiagram className="text-orange-500 mr-2" />
             <EditableText
               value={t("ugProjects.title", "Student Projects (UG)")}
@@ -5311,7 +5321,7 @@ const CSE = () => {
             />
           </h3>
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+            <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
               {ugProjectYears.map((year) => (
                 <button
                   key={year}
@@ -5440,7 +5450,7 @@ const CSE = () => {
     faculty: (
       <div className="space-y-10">
         <div className="text-center border-b border-gray-200 pb-6 mb-8">
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-900">
+          <h3 className="text-3xl font-bold text-gray-900">
             <EditableText
               value={t("facultyTitle", "Our Faculty")}
               onSave={(val) => updateData("facultyTitle", val)}
@@ -5582,7 +5592,7 @@ const CSE = () => {
                   {!fac.isIndustry && (
                     <Link
                       to={`/faculty/${fac.id || createFacultySlug(fac.name)}`}
-                      state={buildReturnState(location)}
+                      state={{ from: getPathWithTab(location, "faculty") }}
                       className="inline-flex items-center text-[10px] font-bold text-ssgmce-blue mt-1 hover:underline uppercase tracking-wide"
                     >
                       View Profile <FaAngleRight className="ml-1" />
@@ -6021,7 +6031,7 @@ const CSE = () => {
         <div className="space-y-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <h2 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-3">
+            <h2 className="text-3xl font-bold text-gray-800 mb-3">
               Course Outcomes
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
@@ -6089,7 +6099,7 @@ const CSE = () => {
     curriculum: (
       <div className="space-y-8">
         <div className="flex items-center justify-between">
-          <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
+          <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-orange-500 pl-4">
             Scheme and Syllabus
           </h3>
         </div>
@@ -6420,7 +6430,7 @@ const CSE = () => {
     "student-activities": (
       <div className="space-y-8">
         <div className="text-center mb-8">
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-3">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">
             Student Activities & Chapters
           </h3>
           <p className="text-gray-600 max-w-2xl mx-auto">
@@ -6439,7 +6449,7 @@ const CSE = () => {
             whileHover={{ y: -5 }}
             className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all group cursor-pointer"
           >
-            <div className="w-14 h-14 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-blue-50 text-ssgmce-blue rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-ssgmce-blue group-hover:text-white transition-colors">
+            <div className="w-14 h-14 bg-blue-50 text-ssgmce-blue rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-ssgmce-blue group-hover:text-white transition-colors">
               <FaLaptopCode />
             </div>
             <h4 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-ssgmce-blue transition-colors">
@@ -6459,7 +6469,7 @@ const CSE = () => {
             whileHover={{ y: -5 }}
             className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all group"
           >
-            <div className="w-14 h-14 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center text-2xl mb-4">
+            <div className="w-14 h-14 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center text-2xl mb-4">
               <FaAward />
             </div>
             <h4 className="text-lg font-bold text-gray-800 mb-2">
@@ -6479,7 +6489,7 @@ const CSE = () => {
             whileHover={{ y: -5 }}
             className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all group"
           >
-            <div className="w-14 h-14 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center text-2xl mb-4">
+            <div className="w-14 h-14 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center text-2xl mb-4">
               <FaBullseye />
             </div>
             <h4 className="text-lg font-bold text-gray-800 mb-2">
@@ -6504,7 +6514,7 @@ const CSE = () => {
       return (
         <div className="space-y-8">
           <div className="text-center mb-10">
-            <h2 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-900">
+            <h2 className="text-3xl font-bold text-gray-900">
               Student's Best Projects
             </h2>
             <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
@@ -6541,7 +6551,7 @@ const CSE = () => {
             >
               <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                 <div>
-                  <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800">
+                  <h3 className="text-2xl font-bold text-gray-800">
                     Placement Statistics
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">
@@ -6642,7 +6652,7 @@ const CSE = () => {
     practices: (
       <div className="space-y-8">
         <div className="max-w-3xl">
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-4 border-l-4 border-orange-500 pl-4">
+          <h3 className="text-3xl font-bold text-gray-800 mb-4 border-l-4 border-orange-500 pl-4">
             Innovative Practice
           </h3>
         </div>
@@ -6810,7 +6820,7 @@ const CSE = () => {
           return (
             <>
         <div className="text-center mb-8">
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-3">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">
             Industrial Visits
           </h3>
           <p className="text-gray-600 max-w-2xl mx-auto">
@@ -7000,7 +7010,7 @@ const CSE = () => {
           return (
             <>
               <div className="text-center mb-8">
-                <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-3">MoUs</h3>
+                <h3 className="text-3xl font-bold text-gray-800 mb-3">MoUs</h3>
                 <p className="text-gray-600 max-w-2xl mx-auto">
                   Strategic partnerships with industry leaders to enhance learning
                   outcomes and provide students with real-world exposure.
@@ -7198,7 +7208,7 @@ const CSE = () => {
               className="space-y-6"
             >
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
-                <h3 className="text-lg font-bold text-gray-800 sm:text-xl flex items-center mb-2 md:mb-0">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
                   <FaLightbulb className="text-yellow-500 mr-2" />
                   <EditableText
                     value={t("patentsTitle", "Patents Granted & Published")}
@@ -7206,7 +7216,7 @@ const CSE = () => {
                   />
                 </h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                     {researchYears.map((year) => (
                       <button
                         key={year}
@@ -7347,7 +7357,7 @@ const CSE = () => {
               className="space-y-6"
             >
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
-                <h3 className="text-lg font-bold text-gray-800 sm:text-xl flex items-center mb-2 md:mb-0">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
                   <FaChartLine className="text-ssgmce-orange mr-2" />
                   <EditableText
                     value={t("publicationsTitle", "Research Publications")}
@@ -7355,7 +7365,7 @@ const CSE = () => {
                   />
                 </h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar mr-4">
+                  <div className="mr-4 flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                     {researchYears.map((year) => (
                       <button
                         key={year}
@@ -7507,12 +7517,12 @@ const CSE = () => {
               className="space-y-6"
             >
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
-                <h3 className="text-lg font-bold text-gray-800 sm:text-xl flex items-center mb-2 md:mb-0">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
                   <FaAward className="text-purple-500 mr-2" />
                   Copyrights
                 </h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                     {researchYears.map((year) => (
                       <button
                         key={year}
@@ -7648,12 +7658,12 @@ const CSE = () => {
               className="space-y-6"
             >
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4">
-                <h3 className="text-lg font-bold text-gray-800 sm:text-xl flex items-center mb-2 md:mb-0">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center mb-2 md:mb-0">
                   <FaProjectDiagram className="text-teal-500 mr-2" />
                   Books Published
                 </h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex overflow-x-auto space-x-2 pb-2 md:pb-0 hide-scrollbar">
+                  <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 hide-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
                     {researchYears.map((year) => (
                       <button
                         key={year}
@@ -7790,7 +7800,7 @@ const CSE = () => {
     internships: (
       <div className="space-y-8">
         <div className="text-center mb-8">
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-3">
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">
             <EditableText
               value={t("internshipsTitle", "Internship Record")}
               onSave={(val) => updateData("internshipsTitle", val)}
@@ -7935,7 +7945,7 @@ const CSE = () => {
           <div className="w-16 h-16 bg-blue-50 text-ssgmce-blue rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-sm">
             <FaBullseye />
           </div>
-          <h3 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-800 mb-4">
+          <h3 className="text-3xl font-bold text-gray-800 mb-4">
             <EditableText
               value={t("newsletters.title", "Department Newsletters")}
               onSave={(val) => updateData("newsletters.title", val)}
@@ -8227,7 +8237,7 @@ const CSE = () => {
 
           {/* Header */}
           <div className="text-center mb-10">
-            <h2 className="text-[clamp(1.4rem,1.1rem+1.1vw,1.9rem)] font-bold text-gray-900">Achievements</h2>
+            <h2 className="text-3xl font-bold text-gray-900">Achievements</h2>
             <div className="w-24 h-1 bg-orange-500 mx-auto mt-2"></div>
             <p className="text-gray-600 mt-3">
               Department of Computer Science and Engineering
@@ -8597,7 +8607,7 @@ const CSE = () => {
             Coming Soon
           </span>
 
-          <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 mb-2">
+          <h3 className="text-2xl font-bold text-gray-800 mb-2">
             {activeLabel}
           </h3>
 
@@ -8643,10 +8653,10 @@ const CSE = () => {
       title="Computer Science and Engineering"
       backgroundImage={cseBanner}
     >
-      <div className="mx-auto flex w-full max-w-[120rem] flex-col gap-6 sm:gap-8 lg:flex-row lg:gap-12">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:gap-12">
         {/* Sidebar Navigation (Left Side) */}
-        <div className="order-1 lg:order-1 lg:w-1/4">
-          <div className="space-y-4 pb-3 sm:space-y-6 sm:pb-4 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
+        <div className="lg:w-1/4 order-1 lg:order-1">
+          <div className="space-y-4 pb-2 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:space-y-6 lg:pb-4 scrollbar-thin scrollbar-thumb-ssgmce-blue scrollbar-track-gray-100">
             {/* Academics Section */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
               <div className="bg-gradient-to-r from-ssgmce-blue to-ssgmce-dark-blue p-4">
@@ -8678,7 +8688,7 @@ const CSE = () => {
         </div>
 
         {/* Main Content Area (Right Side) */}
-        <div className="order-2 min-h-[420px] lg:order-2 lg:min-h-[600px] lg:w-3/4">
+        <div className="lg:w-3/4 order-2 lg:order-2 min-h-[600px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -8711,7 +8721,7 @@ const CSE = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                     <FaPlus className="text-ssgmce-blue" /> Add New Academic
                     Year
                   </h3>
@@ -8800,7 +8810,7 @@ const CSE = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                     <FaPlus className="text-ssgmce-blue" /> Add UG Project
                     Session
                   </h3>
@@ -8895,7 +8905,7 @@ const CSE = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                     <FaPlus className="text-ssgmce-blue" /> Add Internship
                     Session
                   </h3>
@@ -8989,7 +8999,7 @@ const CSE = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-[clamp(1.2rem,1rem+0.8vw,1.55rem)] font-bold text-gray-800 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                     <FaPlus className="text-ssgmce-blue" /> Add Research Session
                   </h3>
                   <button

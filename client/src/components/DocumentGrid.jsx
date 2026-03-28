@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import DocumentCard from "./DocumentCard";
 import { FaSearch, FaFilter, FaFileAlt } from "react-icons/fa";
+import { getErrorMessage, logUnexpectedError } from "../utils/apiErrors";
 
 /**
  * DocumentGrid Component
@@ -24,12 +25,13 @@ const DocumentGrid = ({ category, title, description }) => {
         if (res.data.success) {
           setDocuments(res.data.data);
           setAvailableYears(res.data.years || []);
+          setError(null);
         } else {
-          setError(res.data.message);
+          setError(res.data.message || "Failed to load documents");
         }
       } catch (err) {
-        console.error("Error fetching documents:", err);
-        setError("Failed to load documents");
+        logUnexpectedError("Error fetching documents:", err);
+        setError(getErrorMessage(err, "Failed to load documents"));
       } finally {
         setLoading(false);
       }
@@ -102,22 +104,22 @@ const DocumentGrid = ({ category, title, description }) => {
   );
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       {(title || description) && (
-        <div className="mb-4 sm:mb-6">
+        <div className="mb-6">
           {title && (
-            <h2 className="flex items-center gap-3 text-[clamp(1.2rem,2.6vw,1.7rem)] font-bold text-ssgmce-blue">
+            <h2 className="text-2xl font-bold text-ssgmce-blue flex items-center gap-3">
               <FaFileAlt className="text-ssgmce-orange" />
               {title}
             </h2>
           )}
-          {description && <p className="mt-2 text-[clamp(0.88rem,1.5vw,0.98rem)] text-gray-600">{description}</p>}
+          {description && <p className="text-gray-600 mt-2">{description}</p>}
         </div>
       )}
 
       {/* Search and Filter Bar */}
-      <div className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-md sm:gap-4 sm:p-5 md:flex-row md:items-center">
+      <div className="bg-white rounded-xl shadow-md p-4 flex flex-col md:flex-row gap-4">
         {/* Search Input */}
         <div className="relative flex-1">
           <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -126,18 +128,18 @@ const DocumentGrid = ({ category, title, description }) => {
             placeholder="Search documents..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 py-3 pl-12 pr-4 text-[0.9rem] transition-all focus:border-transparent focus:ring-2 focus:ring-ssgmce-blue"
+            className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ssgmce-blue focus:border-transparent transition-all"
           />
         </div>
 
         {/* Year Filter */}
         {availableYears.length > 0 && (
-          <div className="relative w-full md:w-auto">
+          <div className="relative">
             <FaFilter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="min-w-[10rem] w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-white py-3 pl-12 pr-8 text-[0.9rem] focus:border-transparent focus:ring-2 focus:ring-ssgmce-blue md:w-auto"
+              className="pl-12 pr-8 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ssgmce-blue focus:border-transparent appearance-none bg-white cursor-pointer min-w-[150px]"
             >
               <option value="">All Years</option>
               {availableYears.map((year) => (
@@ -150,7 +152,7 @@ const DocumentGrid = ({ category, title, description }) => {
         )}
 
         {/* Results Count */}
-        <div className="flex items-center rounded-lg bg-gray-100 px-4 py-2 text-[0.82rem] text-gray-600 md:self-stretch">
+        <div className="flex items-center px-4 py-2 bg-gray-100 rounded-lg text-sm text-gray-600">
           <span className="font-medium text-ssgmce-blue">
             {filteredDocuments.length}
           </span>
@@ -168,7 +170,7 @@ const DocumentGrid = ({ category, title, description }) => {
       )}
 
       {/* Document Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
         {loading ? (
           // Skeleton Loading
           <>
